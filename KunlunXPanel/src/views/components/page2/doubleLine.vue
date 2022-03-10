@@ -69,7 +69,7 @@ export default {
                             showMaxLabel: false,
                             fontSize: 9
                         },
-                        name: '(次)',
+                        name: '(个)',
                         nameGap: -10,
                         nameTextStyle: {
                             color: '#61B9C8',

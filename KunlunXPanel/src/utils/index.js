@@ -168,3 +168,61 @@ export function formatDataTimeTotime(time){
   let arr = time.split('T');
   return arr[0]+' '+arr[1];
 }
+//获取当前时间,得到2017-03-29 11:41:10
+export function getNowDate() {
+  var date = new Date();
+  var sign1 = "-";
+  var sign2 = ":";
+  var year = date.getFullYear() // 年
+  var month = date.getMonth() + 1; // 月
+  var day  = date.getDate(); // 日
+  var hour = date.getHours(); // 时
+  var minutes = date.getMinutes(); // 分
+  var seconds = date.getSeconds() //秒
+  var weekArr = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期天'];
+  var week = weekArr[date.getDay()];
+  // 给一位数数据前面加 “0”
+  if (month >= 1 && month <= 9) {
+    month = "0" + month;
+  }
+  if (day >= 0 && day <= 9) {
+    day = "0" + day;
+  }
+  if (hour >= 0 && hour <= 9) {
+    hour = "0" + hour;
+  }
+  if (minutes >= 0 && minutes <= 9) {
+    minutes = "0" + minutes;
+  }
+  if (seconds >= 0 && seconds <= 9) {
+    seconds = "0" + seconds;
+  }
+  var currentdate = year + sign1 + month + sign1 + day + " " + hour + sign2 + minutes + sign2 + seconds;
+  return currentdate;
+ }
+//  获取下一个月          
+export function getNextMonth(date) {  
+   var arr = date.split('-');  
+   var year = arr[0]; //获取当前日期的年份  
+   var month = arr[1]; //获取当前日期的月份  
+   var day = arr[2]; //获取当前日期的日  
+   var days = new Date(year, month, 0);  
+   days = days.getDate(); //获取当前日期中的月的天数  
+   var year2 = year;  
+   var month2 = parseInt(month) + 1;  
+   if (month2 == 13) {  
+       year2 = parseInt(year2) + 1;  
+       month2 = 1;  
+   }  
+   var day2 = day;  
+   var days2 = new Date(year2, month2, 0);  
+   days2 = days2.getDate();  
+   if (day2 > days2) {  
+       day2 = days2;  
+   }  
+   if (month2 < 10) {  
+       month2 = '0' + month2;  
+   }  
+   var t2 = year2 + '-' + month2 + '-' + day2;  
+   return t2;  
+}  

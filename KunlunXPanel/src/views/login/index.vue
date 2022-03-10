@@ -1,54 +1,5 @@
 <template>
   <div class="login-container">
-    <!-- <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
-
-      <div class="title-container">
-        <h3 class="title">用户登陆</h3>
-      </div>
-
-      <el-form-item prop="username">
-        <span class="svg-container">
-          <svg-icon icon-class="user" />
-        </span>
-        <el-input
-          ref="username"
-          v-model="loginForm.username"
-          placeholder="Username"
-          name="username"
-          type="text"
-          tabindex="1"
-          auto-complete="on"
-        />
-      </el-form-item>
-
-      <el-form-item prop="password">
-        <span class="svg-container">
-          <svg-icon icon-class="password" />
-        </span>
-        <el-input
-          :key="passwordType"
-          ref="password"
-          v-model="loginForm.password"
-          :type="passwordType"
-          placeholder="Password"
-          name="password"
-          tabindex="2"
-          auto-complete="on"
-          @keyup.enter.native="handleLogin"
-        />
-        <span class="show-pwd" @click="showPwd">
-          <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
-        </span>
-      </el-form-item>
-
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
-
-      <div class="tips">
-        <span style="margin-right:20px;">username: admin</span>
-        <span> password: any</span>
-      </div>
-
-    </el-form> -->
      <Loginheader />
      <div class="login-bg">
     </div>
@@ -94,22 +45,7 @@
         </span>
       </el-form-item>
 
-      <!-- <el-form-item>
-        <el-input
-          placeholder="请输入验证码"
-          type="text"
-          v-model="loginForm.inputCodeContent"
-          @change="inputCodeChange"
-          tabindex="3"
-          auto-complete="on"
-          style="width:160px;float:left;"
-        />
-        <span style="float:right">
-          <img v-if="requestCodeSuccess" style="margin-top: 6px;width:94px;" :src="randCodeImage" @click="handlegetRandomImage"/>
-          <img v-else style="margin-top: 6px;width:94px;" src="../../assets/images/checkcode.png" @click="handlegetRandomImage"/>
-        </span>
-      </el-form-item> -->
-
+    
       <div class="oh change_password_wrap">
         <el-checkbox v-model="checked" class="remember">记住密码</el-checkbox>
         <router-link :to="{path: '/alteration'}" class="change_password">忘记密码</router-link>
@@ -158,15 +94,7 @@ export default {
         callback();
       }
     };
-    // const validateInputCode = (rule, value, callback) => {
-    //   if (value.length < 4) {
-    //     callback(new Error("请输入验证码"));
-    //   } else {
-    //     callback();
-    //   }
-    // };
     return {
-      //cCode:'',
       loginForm: {
         username: '',
         password: '',
@@ -252,50 +180,20 @@ export default {
         }
       });
     },
-    // async handlegetRandomImage() {
-    //   this.loading = false;
-    //   this.currdatetime = new Date().getTime();
-    //   let res = await getRandomImage(this.currdatetime);
-    //   if(res.success){
-    //     this.randCodeImage = res.result
-    //     this.requestCodeSuccess=true
-    //     //this.loginForm.inputCodeContent = '';
-
-    //   }else{
-    //     this.$message({ message:res.message, type: 'error'})
-    //     this.requestCodeSuccess=false
-    //   }
-    // },
-    // test(){
-    //   test();
-    // },
     goto(loginRes){
       this.loading = false;
-      // // console.log(loginRes.result);
+      console.log(loginRes.result);
       if(!loginRes.accessToken){
         messageTip('登录接口没有返回token','error');return;
       }
-    sessionStorage.setItem('zettadb_vue_token',loginRes.accessToken);
-    sessionStorage.setItem('zettadb_vue_name',loginRes.userName);
-      // if(!loginRes.result.userName){
-      //   messageTip('登录接口没有返回userName','error');return
-      // }
-      // sessionStorage.setItem('aiyunland_vue_name',loginRes.result.userName);
-      // //修改成不需要url加上cCode时用这个方法
-      // // if(this.cCode && this.loginForm.username=="admin"){
-      // //   sessionStorage.setItem('cCode',this.cCode);
-      // // }
-      // // else{
-      // //   if(!loginRes.result.customerCode){
-      // //     messageTip('登录接口没有customerCode','error');return
-      // //   }
-      // //   sessionStorage.setItem('cCode',loginRes.result.customerCode);
-      // // }
-      // // console.log(sessionStorage.getItem('cCode'));
-      // // console.log(sessionStorage.getItem('aiyunland_vue_token'));
-      //messageTip('登录成功','success');
+      sessionStorage.setItem('zettadb_vue_token',loginRes.accessToken);
+      sessionStorage.setItem('zettadb_vue_name',loginRes.userName);
       let num =loginRes.num;
       if(num==1){
+        sessionStorage.setItem('apply_all_cluster',loginRes.apply_all_cluster);
+        sessionStorage.setItem('affected_clusters',loginRes.affected_clusters);
+        sessionStorage.setItem('priv',JSON.stringify(loginRes.priv));
+        //console.log(JSON.parse(sessionStorage.getItem('priv')).backup_priv);
         this.$router.push({ path: '/dashboard'})
       }
       else{

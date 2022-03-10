@@ -97,3 +97,36 @@ div:focus {
 .el-date-picker{
   width: 300px;
 }
+.el-checkbox__input.is-checked .el-checkbox__inner, .el-checkbox__input.is-indeterminate .el-checkbox__inner{
+  background-color: #409EFF !important;
+}
+.el-checkbox__inner:hover, .el-checkbox__inner, .el-checkbox__inner.is-focus .el-checkbox__inner{
+  border-color: #409EFF !important;
+}
+.el-checkbox__inner:hover, .el-checkbox__inner, .el-checkbox__inner.is-focus .el-checkbox__inner{
+  border-color: #DCDFE6 !important;
+}
+// .more{
+//   text-align: center;
+// }
+.ro-90:hover,.ro90:hover{
+	color: #409EFF;
+ }
+ .ro-90{
+  text-align: center;
+  transform:rotate(-90deg);
+ }
+ .ro90{
+  text-align: center;
+  transform:rotate(90deg);
+ }
+ .list_search_keyword{
+  width: 300px;
+ }
+ .info{
+   color: red;
+   width: 237px;
+   margin-left: 20px;
+   font-size: 16px;
+   display: inline-block;
+ }

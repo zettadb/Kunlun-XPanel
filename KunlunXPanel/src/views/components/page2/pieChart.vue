@@ -13,7 +13,7 @@ export default {
             let option = {
                 title: [
                     {
-                        text: "【金额】",
+                        text: "【shard】",
                         left: '12%',
                         bottom: '6%',
                         textStyle: {
@@ -22,7 +22,7 @@ export default {
                         }
                     },
                     {
-                        text: "【人数】",
+                        text: "【存储节点】",
                         left: '46%',
                         bottom: '6%',
                         textStyle: {
@@ -31,7 +31,7 @@ export default {
                         }
                     },
                     {
-                        text: "【次数】",
+                        text: "【计算节点】",
                         right: '12%',
                         bottom: '6%',
                         textStyle: {
@@ -63,7 +63,7 @@ export default {
                 },
                 series: [
                     {
-                        name: '【金额】',
+                        name: '【shard】',
                         type: 'pie',
                         radius: '40%',
                         center: ['17%', '60%'],
@@ -98,7 +98,7 @@ export default {
                         }
                     },
                     {
-                        name: '【人数】',
+                        name: '【存储节点】',
                         type: 'pie',
                         radius: '40%',
                         center: ['50%', '60%'],
@@ -133,7 +133,7 @@ export default {
                         }
                     },
                     {
-                        name: '【次数】',
+                        name: '【计算节点】',
                         type: 'pie',
                         radius: '40%',
                         center: ['82%', '60%'],

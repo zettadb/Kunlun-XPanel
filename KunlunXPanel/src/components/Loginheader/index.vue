@@ -18,12 +18,7 @@ export default {
     }
   },
   created() {
-    // if(sessionStorage.getItem('cCode')&&sessionStorage.getItem('aiyunland_vue_token')&&process.env.VUE_APP_BASE_API!=="http://47.115.112.23/villagecenter"){
-    //   this.getCustomer();
-    // }
-    // else{
       this.company = "泽拓科技";
-    //}
   },
   methods: {
     // getCustomer(){

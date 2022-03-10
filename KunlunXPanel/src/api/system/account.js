@@ -31,3 +31,10 @@ export function delAccount(id) {
       data:{id:id}
     })
 }
+export function findMobile(mobile) {
+  return request({
+    url: '/user/User/checkMobile',
+    method: 'post',
+    data:{phone_number:mobile}
+  })
+}

@@ -56,7 +56,7 @@ export default {
                             fontSize: 10,
                             interval: 0,
                         },
-                        data: ["1部", "2部", "3部", "4部", "5部", "6部", "7部", "8部", "9部", "10部"]
+                        data: ["cluste1", "cluster2", "cluster3", "cluster4", "cluster5", "cluster6", "cluster7", "cluster8", "cluster9", "10部"]
                     }
                 ],
                 yAxis: [

@@ -48,6 +48,20 @@ export function getAllRole() {
   });
 }
 
+export function getAllUser() {
+  return request({
+      url: '/user/Role/getAllUser',
+      method: 'get',
+      params:''
+  });
+}
+export function rolePermission(roleId) {
+  return request({
+     url: `/user/Role/rolePermission?roleId=${roleId}`,
+     method: 'get',
+     param:''
+  })
+}
 // export function getUserPermissionByToken() {
 //   return request({
 //     url: `/user/permission/getUserPermissionByToken`,
@@ -56,13 +70,6 @@ export function getAllRole() {
 //   })
 // }
 
-// export function queryRolePermission(roleId) {
-//   return request({
-//     url: `/user/permission/queryRolePermission?roleId=${roleId}`,
-//     method: 'get',
-//     param:''
-//   })
-// }
 
 // export function saveRolePermission(data) {
 //   return request({

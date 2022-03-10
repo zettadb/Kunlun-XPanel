@@ -18,19 +18,11 @@ class Login_model extends CI_Model {
 	}
 	//更新数据
 	public function updateList($sql){
+		//先查看那个是主节点,根据主节点连接数据库todo
+		$mysql="select * from performance_schema.replication_group_members;";
 		$this->db->query($sql);
 		return $this->db->affected_rows();
 	}
-//	function getToken($phone){
-//		$str = md5(uniqid(md5(microtime(true)),true));
-//		$token = sha1($str.$phone);
-//		return $token;
-//	}
-	//验证token
-//	function checkToken($token){
-//		$detoken = base64_decode($token);
-//		return $detoken;
-//	}
 	function getToken($string,$operation,$key)
 	{
 		$key = md5($key);

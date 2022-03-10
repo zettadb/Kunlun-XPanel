@@ -1,4 +1,4 @@
-import router from './router'
+import router from './router/index'
 import store from './store'
 import { Message } from 'element-ui'
 import NProgress from 'nprogress' // progress bar
@@ -19,7 +19,7 @@ router.beforeEach(async(to, from, next) => {
 
   // determine whether the user has logged in
   const hasToken = sessionStorage.getItem('zettadb_vue_token');
-  console.log(hasToken);
+  //console.log(hasToken);
   if (hasToken) {
     if (to.path === '/login') {
       // if is logged in, redirect to the home page

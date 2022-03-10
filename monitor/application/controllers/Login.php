@@ -55,20 +55,282 @@ class Login extends CI_Controller {
 			}elseif($res[0]['count']==1){
 				$userId=$res[0]['id'];
 				//获取角色id
-				$sql_role="select role_id,cluster_id from kunlun_cluster_privilege where user_id='$userId';";
+				$sql_role="select role_id,apply_all_cluster,affected_clusters from kunlun_role_assign where user_id='$userId' and valid_period='permanent' ";
+				$sql_role.=" union select role_id,apply_all_cluster,affected_clusters from kunlun_role_assign where user_id='$userId' and valid_period='from_to' and start_ts is not null and start_ts<now()";
+				$sql_role.=" union select role_id,apply_all_cluster,affected_clusters from kunlun_role_assign where user_id='$userId' and valid_period='from_to' and end_ts is not null and end_ts>now();";
 				$res_role=$this->Login_model->getList($sql_role);
+				$token=$this->Login_model->getToken($user_name,'E',$this->key);
+				//print_r(count($res_role));exit;
+				$apply_all_cluster='';
+				$affected_clusters='';
 				if(!empty($res_role)) {
-					$role_id = $res_role[0]['role_id'];
-					$cluster_id = $res_role[0]['cluster_id'];
-					if($cluster_id<=0){
-						$token=$this->Login_model->getToken($user_name,'E',$this->key);
-						$data['accessToken'] =$token;
-						$data['code'] = 200;
-						$data['num'] = 1;
-						$data['userName'] = $user_name;
-						$data['message'] = 'success';
-						print_r(json_encode($data));
+					//如果只有一条数据
+					$role_count=count($res_role);
+					$arr=array();
+					if($role_count==1){
+						$role_id = $res_role[0]['role_id'];
+						$apply_all_cluster = $res_role[0]['apply_all_cluster'];
+						$affected_clusters = $res_role[0]['affected_clusters'];
+						//if($apply_all_cluster==1){
+					}elseif($role_count>1){
+						$role_id='';
+						foreach ($res_role as $key=>$row){
+							foreach ($row as $key2=>$value2){
+								if($key2=='role_id'){
+									if(!empty($value2)){
+										$role_id.=$value2.',';
+									}
+								}
+								//应用集群，求并集
+								if($key2=='apply_all_cluster'){
+									if(!empty($value2)&&$value2==1){
+										$apply_all_cluster=$row['apply_all_cluster'];
+										$affected_clusters=$row['affected_clusters'];
+										break;
+									}elseif(!empty($value2)&&$value2==2){
+										$apply_all_cluster=$row['apply_all_cluster'];
+										$affected_clusters.=$row['affected_clusters'].',';
+									}
+								}
+							}
+						}
+						$role_id=substr($role_id,0,-1);
 					}
+					//获取该用户权限（多条记录求并集）
+					$sql_priv="select user_add_priv,user_drop_priv,user_grant_priv,user_edit_priv,role_add_priv,role_drop_priv,role_edit_priv,machine_priv,cluster_creata_priv,cluster_drop_priv,shard_create_priv,shard_drop_priv,storage_node_create_priv,storage_node_drop_priv,compute_node_create_priv,compute_node_drop_priv,machine_add_priv,machine_drop_priv,backup_service_enable_priv,backup_service_disable_priv,storage_enable_priv,storage_disable_priv,compute_enable_priv,compute_disable_priv,backup_priv,restore_priv,expand_cluster_priv,shrink_cluster_priv from kunlun_role_privilege where id in($role_id);";
+					$res_priv=$this->Login_model->getList($sql_priv);
+					if(!empty($res_priv)){
+						$priv_count=count($res_priv);
+						if($priv_count==1){
+							$data['priv'] = $res_priv[0];
+						}elseif($priv_count>1){
+							$arr=array();
+							//初始化
+							$user_add_priv='N';
+							$user_drop_priv='N';
+							$user_edit_priv='N';
+							$user_grant_priv='N';
+							$role_add_priv='N';
+							$role_drop_priv='N';
+							$role_edit_priv='N';
+							$cluster_creata_priv='N';
+							$cluster_drop_priv='N';
+							$backup_priv='N';
+							$restore_priv='N';
+							$expand_cluster_priv='N';
+							$shrink_cluster_priv='N';
+							$storage_node_create_priv='N';
+							$storage_node_drop_priv='N';
+							$storage_enable_priv='N';
+							$storage_disable_priv='N';
+							$shard_create_priv='N';
+							$shard_drop_priv='N';
+							$compute_node_create_priv='N';
+							$compute_node_drop_priv='N';
+							$compute_enable_priv='N';
+							$compute_disable_priv='N';
+							$machine_add_priv='N';
+							$machine_priv='N';
+							$machine_drop_priv='N';
+							$backup_service_enable_priv='N';
+							$backup_service_disable_priv='N';
+							foreach ($res_priv as $key=>$value){
+								foreach ($value as $key2=>$value2){
+									if($key2=='user_add_priv'){
+										if($value2=='Y'){
+											$user_add_priv=$value2;
+										}
+									}
+									if($key2=='user_drop_priv'){
+										if($value2=='Y'){
+											$user_drop_priv=$value2;
+										}
+									}
+									if($key2=='user_edit_priv'){
+										if($value2=='Y'){
+											$user_edit_priv=$value2;
+										}
+									}
+									if($key2=='user_grant_priv'){
+										if($value2=='Y'){
+											$user_grant_priv=$value2;
+										}
+									}
+									if($key2=='role_add_priv'){
+										if($value2=='Y'){
+											$role_add_priv=$value2;
+										}
+									}
+									if($key2=='role_drop_priv'){
+										if($value2=='Y'){
+											$role_drop_priv=$value2;
+										}
+									}
+									if($key2=='role_edit_priv'){
+										if($value2=='Y'){
+											$role_edit_priv=$value2;
+										}
+									}
+									if($key2=='cluster_creata_priv'){
+										if($value2=='Y'){
+											$cluster_creata_priv=$value2;
+										}
+									}
+									if($key2=='cluster_drop_priv'){
+										if($value2=='Y'){
+											$cluster_drop_priv=$value2;
+										}
+									}
+									if($key2=='backup_priv'){
+										if($value2=='Y'){
+											$backup_priv=$value2;
+										}
+									}
+									if($key2=='restore_priv'){
+										if($value2=='Y'){
+											$restore_priv=$value2;
+										}
+									}
+									if($key2=='expand_cluster_priv'){
+										if($value2=='Y'){
+											$expand_cluster_priv=$value2;
+										}
+									}if($key2=='shrink_cluster_priv'){
+										if($value2=='Y'){
+											$shrink_cluster_priv=$value2;
+										}
+									}if($key2=='expand_cluster_priv'){
+										if($value2=='Y'){
+											$expand_cluster_priv=$value2;
+										}
+									}
+									if($key2=='storage_node_create_priv'){
+										if($value2=='Y'){
+											$storage_node_create_priv=$value2;
+										}
+									}
+									if($key2=='storage_node_drop_priv'){
+										if($value2=='Y'){
+											$storage_node_drop_priv=$value2;
+										}
+									}
+									if($key2=='storage_enable_priv'){
+										if($value2=='Y'){
+											$storage_enable_priv=$value2;
+										}
+									}if($key2=='storage_enable_priv'){
+										if($value2=='Y'){
+											$storage_enable_priv=$value2;
+										}
+									}
+									if($key2=='storage_disable_priv'){
+										if($value2=='Y'){
+											$storage_disable_priv=$value2;
+										}
+									}
+									if($key2=='shard_create_priv'){
+										if($value2=='Y'){
+											$shard_create_priv=$value2;
+										}
+									}
+									if($key2=='shard_drop_priv'){
+										if($value2=='Y'){
+											$shard_drop_priv=$value2;
+										}
+									}
+									if($key2=='compute_node_create_priv'){
+										if($value2=='Y'){
+											$compute_node_create_priv=$value2;
+										}
+									}
+									if($key2=='compute_node_drop_priv'){
+										if($value2=='Y'){
+											$compute_node_drop_priv=$value2;
+										}
+									}
+									if($key2=='compute_enable_priv'){
+										if($value2=='Y'){
+											$compute_enable_priv=$value2;
+										}
+									}
+									if($key2=='compute_disable_priv'){
+										if($value2=='Y'){
+											$compute_disable_priv=$value2;
+										}
+									}if($key2=='machine_add_priv'){
+										if($value2=='Y'){
+											$machine_add_priv=$value2;
+										}
+									}
+									if($key2=='machine_priv'){
+										if($value2=='Y'){
+											$machine_priv=$value2;
+										}
+									}
+									if($key2=='machine_drop_priv'){
+										if($value2=='Y'){
+											$machine_drop_priv=$value2;
+										}
+									}
+									if($key2=='backup_service_enable_priv'){
+										if($value2=='Y'){
+											$backup_service_enable_priv=$value2;
+										}
+									}
+									if($key2=='backup_service_disable_priv'){
+										if($value2=='Y'){
+											$backup_service_disable_priv=$value2;
+										}
+									}
+								}
+							}
+							$arr['user_add_priv']=$user_add_priv;
+							$arr['user_drop_priv']=$user_drop_priv;
+							$arr['user_edit_priv']=$user_edit_priv;
+							$arr['user_grant_priv']=$user_grant_priv;
+							$arr['role_add_priv']=$role_add_priv;
+							$arr['role_drop_priv']=$role_drop_priv;
+							$arr['role_edit_priv']=$role_edit_priv;
+							$arr['cluster_creata_priv']=$cluster_creata_priv;
+							$arr['cluster_drop_priv']=$cluster_drop_priv;
+							$arr['backup_priv']=$backup_priv;
+							$arr['restore_priv']=$restore_priv;
+							$arr['expand_cluster_priv']=$expand_cluster_priv;
+							$arr['shrink_cluster_priv']=$shrink_cluster_priv;
+							$arr['storage_node_create_priv']=$storage_node_create_priv;
+							$arr['storage_node_drop_priv']=$storage_node_drop_priv;
+							$arr['storage_enable_priv']=$storage_enable_priv;
+							$arr['storage_disable_priv']=$storage_disable_priv;
+							$arr['shard_create_priv']=$shard_create_priv;
+							$arr['shard_drop_priv']=$shard_drop_priv;
+							$arr['compute_node_create_priv']=$compute_node_create_priv;
+							$arr['compute_node_drop_priv']=$compute_node_drop_priv;
+							$arr['compute_enable_priv']=$compute_enable_priv;
+							$arr['compute_disable_priv']=$compute_disable_priv;
+							$arr['machine_add_priv']=$machine_add_priv;
+							$arr['machine_priv']=$machine_priv;
+							$arr['machine_drop_priv']=$machine_drop_priv;
+							$arr['backup_service_enable_priv']=$backup_service_enable_priv;
+							$arr['backup_service_disable_priv']=$backup_service_disable_priv;
+							$data['priv'] = $arr;
+						}
+					}
+					$affected_clusters=rtrim($affected_clusters, ',');
+					//字符串去重
+					$affected_clusters=$this->unique($affected_clusters);
+					$data['accessToken'] =$token;
+					$data['code'] = 200;
+					$data['num'] = 1;
+					$data['userName'] = $user_name;
+					$data['apply_all_cluster'] = $apply_all_cluster;
+					$data['affected_clusters'] = $affected_clusters;
+					$data['message'] = 'success';
+					print_r(json_encode($data));
+					//}
+				}else{
+					$data['code'] = 500;
+					$data['message'] = '该用户未授权，没有登录权限';
+					print_r(json_encode($data));
 				}
 			}else{
 				$data['code'] = 500;
@@ -149,5 +411,12 @@ class Login extends CI_Controller {
 			$data['message'] = 'token错误';
 			print_r(json_encode($data));return;
 		}
+	}
+	public function unique($str){
+		$arr = explode(',', $str);
+		$arr = array_unique($arr);//内置数组去重算法
+		$data = implode(',', $arr);
+		$data = trim($data,',');//trim — 去除字符串首尾处的空白字符
+		return $data;
 	}
 }

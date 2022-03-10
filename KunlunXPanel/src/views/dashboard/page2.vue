@@ -259,7 +259,7 @@ export default {
                 ],
                 data: [
                     {
-                        name: '好友总数',
+                        name: '集群总数',
                         color: '#FA8486',
                         value: [100, 8, 0.40, -80, 2000, 332],
                     }

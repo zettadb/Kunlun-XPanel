@@ -522,20 +522,20 @@ $config['rewrite_short_tags'] = FALSE;
 | Comma-separated:	'10.0.1.200,192.168.5.0/24'
 | Array:		array('10.0.1.200', '192.168.5.0/24')
 */
-$config['meta_username'] = "pgx";
-$config['meta_pwd'] = "pgx_pwd";
-$config['meta_database'] = "kunlun_metadata_db";
-$config['meta_permission'] = "kunlun_dba_tools_db";
-
-$config['pg_username'] = "abc";
-$config['pg_pwd'] = "abc";
-$config['pg_database'] = "postgres";
+//$config['meta_username'] = "pgx";
+//$config['meta_pwd'] = "pgx_pwd";
+//$config['meta_database'] = "kunlun_metadata_db";
+//$config['meta_permission'] = "kunlun_dba_tools_db";
+//
+//$config['pg_username'] = "abc";
+//$config['pg_pwd'] = "abc";
+//$config['pg_database'] = "postgres";
 
 //集群元数据连接
 /*$config['meta_ip'] = "192.168.0.127";
 $config['meta_port'] = "40010";*/
-$config['meta_ip'] = "192.168.0.127";
-$config['meta_port'] = "57301";
+//$config['meta_ip'] = "192.168.0.128";
+//$config['meta_port'] = "57301";
 //ver
 $config['ver'] = "0.1";
 $config['post_url'] = "http://192.168.0.127:57000";

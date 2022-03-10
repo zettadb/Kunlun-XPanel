@@ -28,8 +28,7 @@ class User extends CI_Controller {
 		$pageNo=$arr['pageNo'];
 		$pageSize=$arr['pageSize'];
 		$username=$arr['username'];
-		$start=$pageNo-1;
-		//print_r($pageSize);exit;
+		$start=($pageNo - 1) * $pageSize;
 		//获取用户数据
 		$this->load->model('Login_model');
 		$sql="select id, name as username,password,email,phone_number,wechat_number,update_time from kunlun_user";
@@ -37,11 +36,18 @@ class User extends CI_Controller {
 			$sql .=" where  name like '%$username%'";
 		}
 		$sql .=" order by id desc limit ".$pageSize." offset ".$start;
-		//print_r($sql);exit;
 		$res=$this->Login_model->getList($sql);
+		if($res===false){
+			$res=array();
+		}
+		$total_sql="select count(id) as count from kunlun_user ";
+		if(!empty($username)){
+			$total_sql .=" where  name like '%$username%'";
+		}
+		$res_total=$this->Login_model->getList($total_sql);
 		$data['code'] = 200;
 		$data['list'] = $res;
-		$data['total'] = count($res);
+		$data['total'] = $res_total ? (int)$res_total[0]['count'] : 0;
 		print_r(json_encode($data));
 	}
 	public function add(){
@@ -60,7 +66,11 @@ class User extends CI_Controller {
 		$phone_number = $string['phone_number'];
 		$email = $string['email'];
 		$wechat_number = $string['wechat_number'];
-		if (empty($user_name)||empty($user_name)) {
+		/*$role_id = $string['selectedroles'];
+		$start_ts= $string['start_ts'];
+		$end_ts= $string['end_ts'];
+		$valid_period= $string['valid_period'];*/
+		if (empty($user_name)||empty($password)) {
 			$data['code'] = 201;
 			$data['message'] = '账户或密码不能为空';
 			print_r(json_encode($data));return;
@@ -189,8 +199,13 @@ class User extends CI_Controller {
 					$sql_update="delete from kunlun_user where id='$id';";
 					$res_update=$this->Login_model->updateList($sql_update);
 					if($res_update==1){
-						$data['code'] = 200;
-						$data['message'] = '删除成功';
+						//删除授权信息
+						$sql_assign="delete from kunlun_role_assign where user_id='$id';";
+						$res_assign=$this->Login_model->updateList($sql_assign);
+						if($res_assign!==0){
+							$data['code'] = 200;
+							$data['message'] = '删除成功';
+						}
 					}else{
 						$data['code'] = 501;
 						$data['message'] = '删除失败';
@@ -201,6 +216,34 @@ class User extends CI_Controller {
 		}else{
 			$data['code'] = 500;
 			$data['message'] = 'token错误';
+			print_r(json_encode($data));
+		}
+	}
+
+	public function checkMobile(){
+		//获取token
+		$arr = apache_request_headers();//获取请求头数组
+		$token=$arr["accessToken"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));return;
+		}
+		//判断参数
+		$string=json_decode(@file_get_contents('php://input'),true);
+		$phone_number = $string['phone_number'];
+		//验证token
+		$this->load->model('Login_model');
+		$res_token=$this->Login_model->getToken($token,'D',$this->key);
+		if(!empty($res_token)) {
+			$sql = "select id from kunlun_user where phone_number='$phone_number';";
+			$res = $this->Login_model->getList($sql);
+			if (empty($res)) {
+				$data['code'] = 200;
+			}else{
+				$data['code'] = 501;
+				$data['message'] = '手机号码重复';
+			}
 			print_r(json_encode($data));
 		}
 	}

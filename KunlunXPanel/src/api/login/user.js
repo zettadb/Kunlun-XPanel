@@ -8,15 +8,6 @@ export function login(data) {
   });
 }
 
-// export function getRandomImage(currdatetime) {
-//  return request({
-//     url: `/login/web/randomImage/${currdatetime}`,
-//     // url: `/login/timesweb/random/${currdatetime}`,
-//     method: 'get',
-//     params:''
-//   });
-// }
-
 export function changePassword(data) {
  return request({
     url: '/Login/changePassword',
@@ -58,12 +49,3 @@ export function getCustomer() {
     params: ''
   })
 }
-
-//测试用接口
-// export function test() {
-//   return request({
-//      url: '/health/check',
-//      method: 'get',
-//      params: ''
-//    });
-//  }

@@ -8,21 +8,21 @@
           placeholder="可输入用户账号搜索"
           @keyup.enter.native="handleFilter"
         />
-        <el-button  type="primary" icon="el-icon-search" @click="handleFilter">
+        <el-button  icon="el-icon-search" @click="handleFilter">
           查询
         </el-button>
-        <el-button  type="primary" icon="el-icon-refresh-right" @click="handleClear">
+        <el-button  icon="el-icon-refresh-right" @click="handleClear">
           重置
         </el-button>
-      </div>
-      <div class="table-list-wrap">
         <el-button
           class="filter-item"
           type="primary"
           icon="el-icon-plus"
           @click="handleCreate"
+          v-show="user_add_priv==='Y'"
         >新增</el-button>
       </div>
+      
     </div>
 
     <el-table
@@ -68,26 +68,21 @@
             align="center"
             label="更新时间">
       </el-table-column>
-      <!-- <el-table-column
-            align="center"
-            label="状态">
-            <template slot-scope="{row}">
-              <span>{{row.status==1?"正常":"冻结"}}</span>
-            </template>
-      </el-table-column> -->
-
+      
       <el-table-column
         label="操作"
         align="center"
         width="230"
         class-name="small-padding fixed-width"
+        v-if="user_edit_priv==='Y' && user_drop_priv==='Y'"
       >
         <template slot-scope="{row,$index}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button>
+          <el-button type="primary" size="mini" @click="handleUpdate(row)" v-show="user_edit_priv==='Y'">编辑</el-button>
           <el-button
             size="mini"
             type="danger"
             @click="handleDelete(row,$index)"
+            v-show="user_drop_priv==='Y'&&row.username!=='super_dba'"
           >删除</el-button>
         </template>
       </el-table-column>
@@ -105,15 +100,15 @@
       >
       
         <el-form-item label="用户账号:" prop="username">
-          <el-input v-model="temp.username" placeholder="请输入用户账号" :disabled="dialogStatus==='detail'"/>
+          <el-input v-model="temp.username" placeholder="请输入用户账号" :disabled="dialogStatus==='detail'||temp.username=='super_dba'"/>
         </el-form-item>
 
         <el-form-item label="登录密码:" prop="password" v-if="dialogStatus==='create'?true:false">
-          <el-input type="password" v-model="temp.password" placeholder="请输入登录密码" autocomplete='new-password' :disabled="dialogStatus==='detail'"/>
+          <el-input type="password" v-model="temp.password" placeholder="请输入登录密码" autocomplete='new-password' :disabled="dialogStatus==='detail'" />
         </el-form-item>
 
         <el-form-item label="手机号码:" prop="phone_number" >
-          <el-input v-model="temp.phone_number" placeholder="请输入手机号码" maxlength="11" show-word-limit clearable :disabled="dialogStatus==='detail' "/>
+          <el-input v-model="temp.phone_number" placeholder="请输入手机号码" maxlength="11" show-word-limit clearable  :disabled="dialogStatus==='detail' || search_person_has_m "/>
         </el-form-item>
 
         <el-form-item label="邮箱地址:" prop="email">
@@ -123,61 +118,6 @@
         <el-form-item label="微信号:" prop="wechat_number">
           <el-input type="wechat_number" v-model="temp.wechat_number" placeholder="请输入微信号"  :disabled="dialogStatus==='detail'"/>
         </el-form-item>
-        <!-- <el-form-item label="用户姓名:" prop="personCode" v-show="dialogStatus==='create'">
-            <el-select
-            filterable
-            remote
-            reserve-keyword
-            @change="selectPerson"
-            :remote-method="querySearchPersonAsync"
-            :loading="searchLoading"
-            v-model="temp.personCode"
-            placeholder="请输入姓名搜索"
-            :disabled="dialogStatus==='detail'" 
-            >
-              <el-option
-                v-for="item in temp.personCodeList"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value">
-              </el-option>
-            </el-select>
-        </el-form-item> -->
-
-        <el-form-item label="角色分配:">
-          <el-select v-model="temp.selectedroles" placeholder="请选择用户角色" :disabled="dialogStatus==='detail'">
-          <el-option
-            v-for="item in rolesData"
-            :key="item.id"
-            :label="item.roleName"
-            :value="item.id">
-          </el-option>
-        </el-select>
-        </el-form-item>
-
-        <!-- <el-form-item label="绑定小区:">
-          <el-select
-            multiple
-            filterable
-            remote
-            reserve-keyword
-            :remote-method="querySearchVillageAsync"
-            :loading="searchLoading"
-            v-model="temp.villageCodeList"
-            placeholder="请选择小区"
-            :disabled="dialogStatus==='detail'"
-            >
-              <el-option
-                v-for="item in tempVillageList"
-                :key="item.villageCode"
-                :label="item.name"
-                :value="item.villageCode">
-              </el-option>
-          </el-select>
-
-        </el-form-item> -->
-        
-
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false" v-show="!dialogDetail">关闭</el-button>
@@ -190,10 +130,9 @@
 
 <script>
  import { messageTip,handleCofirm } from "@/utils";
- import { getAccountList,addAccount,update,delAccount} from '@/api/system/account'
- import { getAllRole } from '@/api/system/role'
-// import { findPersonByName,findMobile } from "@/api/person";
+ import { getAccountList,addAccount,update,delAccount,findMobile} from '@/api/system/account'
  import Pagination from '@/components/Pagination' 
+//  import {getUserPremisson} from '@/api/system/priv'
 
 export default {
   name: "account",
@@ -217,7 +156,7 @@ export default {
         callback();
       }
     };
-    const validateMobile = (rule, value, callback) => {
+     const validateMobile = (rule, value, callback) => {
         if(this.search_person_has_m){
           callback();return
         }
@@ -231,7 +170,7 @@ export default {
         else {
           if(!this.temp.old_mobile){
             findMobile(value).then((response) => {
-              if(response.result){
+              if(response.message){
                 callback(new Error("手机号重复"));
               }
               else{
@@ -241,7 +180,7 @@ export default {
           }
           else if(this.temp.old_mobile && (this.temp.old_mobile!==value)){
             findMobile(value).then((response) => {
-              if(response.result){
+              if(response.message){
                 callback(new Error("手机号重复"));
               }
               else{
@@ -259,8 +198,6 @@ export default {
       list: null,
       listLoading: true,
       searchLoading:false,
-      villageList:[],
-      tempVillageList:[],
       total: 0,
       listQuery: {
         pageNo: 1,
@@ -271,15 +208,11 @@ export default {
       temp: {
         username: '',
         password:'',
-        confirmpassword:'',
-        old_mobile:'',
-        mobile:'',
-        personCode:'',
-        avatar:'',
-        selectedroles:'',
-        villageCodeList:[],
-        personCodeList:[],
-        finalPersonArr:[]
+        phone_number:'',
+        email:'',
+        wechat_number:'',
+        old_mobile:''
+        //confirmpassword:'',
       },
       dialogFormVisible: false,
       dialogEditVisible:false,
@@ -292,9 +225,10 @@ export default {
       dialogDetail: false,
       message_tips:'',
       message_type:'',
+      user_add_priv:JSON.parse(sessionStorage.getItem('priv')).user_add_priv,
+      user_drop_priv:JSON.parse(sessionStorage.getItem('priv')).user_drop_priv,
+      user_edit_priv:JSON.parse(sessionStorage.getItem('priv')).user_edit_priv,
       row:{},
-      rolesData:[],
-      villagesData:[],
       rules: {
         username: [
           { required: true, trigger: "blur",validator: validateUsername },
@@ -302,28 +236,23 @@ export default {
         password: [
           { required: true, trigger: "blur",validator: validatePassword },
         ],
-        mobile: [
-          { required: true, trigger: "blur",validator: validateMobile },
-        ],
-        personCode: [
-          { required: true, message: "请选择姓名",trigger: "blur"},
-        ],
-        selectedroles:[
-          { required: true, message: "请选择角色",trigger: "blur"},
+        phone_number: [
+           { required: true, trigger: "blur",validator: validateMobile },
         ]
       },
     };
   },
   created() {
     this.getList()
-    //this.getRole()
-    //this.getVillageList();
+    //this.getPremission()
   },
   methods: {
-    getVillageList(){
-      this.villageList = this.$store.getters.villageList
-      this.tempVillageList = this.villageList
-    },
+    //  async getPremission() {
+    //   const res = await getUserPremisson()
+    //   this.user_add_priv = res.list[0].user_add_priv;
+    //   this.user_drop_priv = res.list[0].user_drop_priv;
+    //   this.user_edit_priv = res.list[0].user_edit_priv;
+    // },
     handleFilter() {
       this.listQuery.pageNo = 1
       this.getList()
@@ -350,15 +279,11 @@ export default {
       this.temp = {
         username: '',
         password:'',
-        confirmpassword:'',
-        old_mobile:'',
-        mobile:'',
-        personCode:'',
-        avatar:'',
-        selectedroles:'',
-        villageCodeList:[],
-        personCodeList:[],
-        finalPersonArr:[]
+        phone_number:'',
+        email:'',
+        wechat_number:'',
+        old_mobile:''
+       // confirmpassword:''
       };
     },
     handleCreate() {
@@ -371,29 +296,11 @@ export default {
       });
     },
     createData() {
-      // console.log(this.temp);return;
       this.$refs["dataForm"].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp);
-          tempData.confirmpassword = this.temp.password
-          tempData.personCode = this.temp.personCode.split(',')[0];
-          // console.log(this.temp.villageCodeList)
-          // tempData.selectedroles = this.temp.selectedroles?this.temp.selectedroles.join(','):null;
-          // if(this.temp.selectedroles.length==0){
-          //   tempData.selectedroles = null
-          // }
-          // else{
-          //   tempData.selectedroles = this.temp.selectedroles.join(',')
-          // }
-          //现在是单选框,所以是字符串,不用再转换一次
-          tempData.selectedroles = this.temp.selectedroles?this.temp.selectedroles:null;
-          // if(this.temp.villageCodeList.length==0){
-          //   tempData.villageCodeList = null
-          // }
-          // else{
-          //   tempData.villageCodeList = this.temp.villageCodeList.join(',')
-          // }
-           console.log(tempData);
+          //tempData.confirmpassword = this.temp.password
+          //console.log(tempData);return;
           //发送接口
           addAccount(tempData).then(response=>{
             let res = response;
@@ -416,21 +323,15 @@ export default {
       this.dialogStatus = "detail"
       this.dialogFormVisible = true
       this.temp = Object.assign({}, row);
-      if(typeof row.selectedroles == 'object' && row.selectedroles){
-        this.temp.selectedroles = row.selectedroles.join(",")
-      }
       this.dialogDetail = true
     },
     handleUpdate(row) {
       this.temp = Object.assign({}, row); 
-      if(typeof row.selectedroles == 'object' && row.selectedroles){
-        this.temp.selectedroles = row.selectedroles.join(",")
-      }
        console.log(row);
       this.dialogStatus = "update";
       this.dialogFormVisible = true;
       this.dialogDetail = false;
-      this.temp.old_mobile = row.mobile;
+      this.temp.old_mobile = row.phone_number;
       this.$nextTick(() => {
         this.$refs["dataForm"].clearValidate();
       });
@@ -438,28 +339,8 @@ export default {
     updateData() {
       this.$refs["dataForm"].validate((valid) => {
         if (valid) {
-          // const tempData = Object.assign({}, this.temp);
-          // console.log(tempData);
-          // tempData.selectedroles = tempData.selectedroles.join(',')
-          // tempData.villageCodeList = tempData.villageCodeList.join(',')
           const tempData = Object.assign({}, this.temp);
-          tempData.confirmpassword = this.temp.password
-          // tempData.selectedroles = this.temp.selectedroles?this.temp.selectedroles.join(','):null;
-          // console.log(this.temp.villageCodeList)
-          // if(this.temp.selectedroles.length==0){
-          //   tempData.selectedroles = null
-          // }
-          // else{
-          //   tempData.selectedroles = this.temp.selectedroles.join(',')
-          // }
-          //现在是单选框,所以是字符串,不用再转换一次
-          tempData.selectedroles = this.temp.selectedroles?this.temp.selectedroles:null;
-          // if(this.temp.villageCodeList.length==0){
-          //   tempData.villageCodeList = null
-          // }
-          // else{
-          //   tempData.villageCodeList = this.temp.villageCodeList.join(',')
-          // }
+          //tempData.confirmpassword = this.temp.password
           update(tempData).then((response) => {
             let res = response;
             if(res.code==200){
@@ -501,62 +382,6 @@ export default {
           console.log('quxiao')
           messageTip('已取消删除','info');
       }); 
-    },
-    async getRole() {
-      const res = await getAllRole()
-      this.rolesData = res.result;
-    },
-    querySearchPersonAsync(queryString){
-      if(queryString){
-        //限制输入框的输入内容
-				if(!(/^[a-zA-Z\u4e00-\u9fa5]+$/.test(queryString))){
-          messageTip('姓名只能输入汉字、字母!','info');
-          return;
-        }
-        else{
-          findPersonByName(queryString).then(response => {
-              let list = [{}];
-              list = response.result.map(item=>{
-                //组装，只需要code和name
-                return {value: item.personCode+','+item.mobile, label: item.mobile+" "+item.personName};
-              })
-              // console.log(list);
-              this.searchLoading = true;
-              setTimeout(() => {
-                  this.searchLoading = false;
-                  this.temp.personCodeList = list.filter(item => {
-                    return item.label;
-                  });
-              }, 200);
-          })
-
-        }
-      }
-    },
-    selectPerson(v){
-      let person_mobile_arr = v.split(',');
-      if(person_mobile_arr[1]){
-        this.temp.mobile = person_mobile_arr[1];
-        this.search_person_has_m = true;
-      }
-    },
-    querySearchVillageAsync(queryString){
-      if(queryString){
-        //限制输入框的输入内容
-				if(!(/^[a-zA-Z0-9\u4e00-\u9fa5]+$/.test(queryString))){
-          messageTip('小区名称只能输入汉字、字母和数字!','info');
-          return;
-        }
-        else{
-          setTimeout(() => {
-              this.searchLoading = false;
-              this.tempVillageList = this.villageList.filter(item => {
-                return item.name.toLowerCase()
-                .indexOf(queryString.toLowerCase()) > -1;
-              });
-          }, 200);
-        }
-      }
     },
   },
 };

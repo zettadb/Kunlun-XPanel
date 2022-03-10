@@ -25,24 +25,6 @@
           />
         </el-form-item>
 
-        <!-- <el-button
-          :loading="loadingCode"
-          type="primary"
-          style="width:100%;margin-bottom:20px;"
-          @click.native.prevent="getCode"
-        >获取手机短信验证码</el-button> -->
-
-        <!-- <el-form-item prop="inputCodeContent">
-          <el-input
-            ref="inputCodeContent"
-            v-model="loginForm.inputCodeContent"
-            placeholder="请输入手机短信验证码"
-            name="inputCodeContent"
-            type="text"
-            tabindex="2"
-          />
-        </el-form-item> -->
-
         <el-form-item prop="password">
           <el-input
             :key="passwordType"
@@ -80,13 +62,6 @@
 </template>
 
 <style scoped>
-/* .login-container {
-  width: 1440px;
-  height: 780px;
-  margin: 0 auto;
-  overflow: hidden;
-  color: #333333;
-} */
 .header {
   font-size: 18px;
   font-weight: bold;
@@ -171,13 +146,6 @@ export default {
         callback();
       }
     };
-    // const validateInputCode = (rule, value, callback) => {
-    //   if (value.length < 4) {
-    //     callback(new Error("请输入手机验证码!"));
-    //   } else {
-    //     callback();
-    //   }
-    // };
     return {
       loginForm: {
         username: sessionStorage.getItem('zettadb_vue_name'),
@@ -229,8 +197,9 @@ export default {
               type: 'success', 
               onClose:function(){
                 setTimeout(function(){
+                  sessionStorage.clear();
                   that.$router.push({path:'/login'})
-                },10)
+                },0)
               }
             });
           }else{

@@ -10,7 +10,7 @@ import '@/styles/index.scss' // global css
 
 import App from './App'
 import store from './store'
-import router from './router'
+import router from './router/index'
 
 import '@/icons' // icon
 import '@/permission' // permission control
@@ -28,6 +28,8 @@ Vue.prototype.$images = img
 Vue.config.productionTip = false;
 Vue.use(iView);
 Vue.use(utils)
+//uuid
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * If you don't want to use mock-server

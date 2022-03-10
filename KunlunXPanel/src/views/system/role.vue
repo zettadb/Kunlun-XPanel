@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="filter-container">
       
-      <div class="table-list-wrap">
+      <div class="table-list-wrap" v-show="role_add_priv==='Y'">
         <el-button
           class="filter-item"
           type="primary"
@@ -40,7 +40,7 @@
             :formatter='handleRoleType'>
       </el-table-column> -->
 
-       <el-table-column
+       <!-- <el-table-column
             prop="valid_period"
             align="center"
             label="有效期类型"
@@ -59,7 +59,7 @@
             align="center"
             label="结束时间"
             :formatter='handleEndTime'>
-      </el-table-column>
+      </el-table-column> -->
 
       <el-table-column
             prop="update_time"
@@ -75,11 +75,12 @@
         align="center"
         width="230"
         class-name="small-padding fixed-width"
+        v-if="role_edit_priv==='Y'&&role_drop_priv==='Y'"
       >
         <template slot-scope="{row,$index}">
           <!-- <el-button type="primary" size="mini" @click="handleEdit(row)">授权</el-button> -->
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(row,$index)" v-show="row.id!=='admin'" >删除</el-button>
+          <el-button type="primary" size="mini" @click="handleUpdate(row)" v-show="role_edit_priv==='Y'&&row.role_name!=='super_dba'">编辑</el-button>
+          <el-button size="mini" type="danger" @click="handleDelete(row,$index)" v-show="role_drop_priv==='Y'&&row.role_name!=='super_dba'" >删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -95,7 +96,7 @@
         label-width="110px"
       >
         <el-form-item label="角色名称:" prop="role_name">
-          <el-input v-model="temp.roleName" placeholder="请输入角色名称" :disabled="dialogStatus==='detail'"/>
+          <el-input v-model="temp.role_name" placeholder="请输入角色名称" :disabled="dialogStatus==='detail'||temp.role_name=='super_dba'"/>
         </el-form-item>
 
         <!-- <el-form-item label="角色类型:" prop="role_name" :disabled="dialogStatus==='detail' || dialogStatus==='update'||dialogStatus==='create'" v-if="dialogStatus==='grant'?false:true">
@@ -153,14 +154,14 @@
           </el-form-item> -->
 
           <!-- 角色权限 -->
-          <el-form-item label="拥有权限:" prop="priv_type_arr"  :disabled="dialogStatus==='detail'">
+          <el-form-item label="拥有权限:" prop="checkkeys"  :disabled="dialogStatus==='detail'">
           <el-tree
             ref="tree"
             :data="datatree"
             show-checkbox
             node-key="id"
             :default-expanded-keys="[3]"
-            :default-checked-keys="[5]"
+            :default-checked-keys="checkkeys"
             :props="defaultProps1"
             >
           </el-tree>
@@ -175,7 +176,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog title="编辑权限" :visible.sync="dialogEditVisible" custom-class="single_dal_view">
+    <!-- <el-dialog title="编辑权限" :visible.sync="dialogEditVisible" custom-class="single_dal_view">
       <el-form
         ref="rolesForm"
         :model="temp"
@@ -199,18 +200,18 @@
           <el-button @click="dialogEditVisible = false">关闭</el-button>
           <el-button type="primary" @click="savePermission()">确认</el-button>
         </div>
-    </el-dialog>
+    </el-dialog> -->
 
   </div>
 </template>
 
 <script>
  import { messageTip,handleCofirm,formatDataTimeTotime} from "@/utils"
- import { rolelist,addRole,update,delRole,getAllRole} from '@/api/system/role'
+ import { rolelist,addRole,update,delRole,getAllRole,rolePermission} from '@/api/system/role'
  import Pagination from '@/components/Pagination' 
- import { role_type_arr,valid_period,priv_type_arr } from "@/utils/global_variable"
- //import { asyncRoutes,router } from '@/router'
-//import store from '@/store'
+ import { role_type_arr,valid_period,priv_type_arr,datatree_arr } from "@/utils/global_variable"
+
+
 
 export default {
   name: "role",
@@ -224,15 +225,10 @@ export default {
       listQuery: {
         pageNo: 1,
         pageSize: 10,
-        //roleName: '',
-        //role_name: '',
       },
       temp: {
-        //roleName: '',
         role_name: '',
-        valid_period:'',
-        start_ts:'',
-        end_ts:''
+        priv:{}
       },
       dialogFormVisible: false,
       dialogEditVisible:false,
@@ -251,128 +247,19 @@ export default {
       priv_type_arr:priv_type_arr,
       checkedGrant:[],
       rolesData:[],
+      role_add_priv:JSON.parse(sessionStorage.getItem('priv')).role_add_priv,
+      role_drop_priv:JSON.parse(sessionStorage.getItem('priv')).role_drop_priv,
+      role_edit_priv:JSON.parse(sessionStorage.getItem('priv')).role_edit_priv,
       row:{},
-       datatree:[{
-          id: 'user',
-          label: '用户权限',
-          children: [{
-            id: 'add',
-            label: '新增用户'
-          },{
-            id: 'edit',
-            label: '编辑用户'
-          },{
-            id: 'del',
-            label: '删除用户'
-          },{
-            id: 'grant',
-            label: '用户授权'
-          }]
-        }, {
-          id: 'role',
-          label: '角色权限',
-          children: [{
-            id: 'add',
-            label: '新增角色'
-          }, {
-            id: 'edit',
-            label: '编辑角色'
-          }, {
-            id: 'del',
-            label: '删除角色'
-          }]
-        }, {
-          id: 'cluster',
-          label: '集群权限',
-          children: [{
-            id: 'add',
-            label: '新增集群'
-          }, {
-            id: 'del',
-            label: '删除集群'
-          }, {
-            id: 'backeup',
-            label: '备份集群'
-          }, {
-            id: 'restore',
-            label: '恢复集群'
-          }, {
-            id: 'expand',
-            label: '集群扩容'
-          }, {
-            id: 'shrink',
-            label: '集群缩容'
-          }, {
-            id: 'storage',
-            label: '存储节点权限',
-            children: [
-              {
-               id:'node_create',
-               label:'新增存储节点'
-              },{
-               id:'node_drop',
-               label:'删除存储节点'
-              },{
-               id:'en',
-               label:'启/禁用存储节点'
-              }]
-          },{
-            id: 'comp',
-            label: '计算节点权限',
-            children: [
-              {
-               id:'add',
-               label:'新增计算节点'
-              },{
-               id:'del',
-               label:'删除计算节点'
-              },{
-               id:'en',
-               label:'启/禁用计算节点'
-              }]
-          },{
-            id: 'shard',
-            label: '存储shard权限',
-            children: [
-              {
-               id:'add',
-               label:'新增存储shard'
-              },{
-               id:'del',
-               label:'删除存储shard'
-              }]
-          }]
-        }, {
-          id: 'equip',
-          label: '计算机权限',
-          children: [{
-            id: 'add',
-            label: '新增计算机'
-          }, {
-            id: 'edit',
-            label: '编辑计算机'
-          }, {
-            id: 'del',
-            label: '删除计算机'
-          }, {
-            id: 'en',
-            label: '启/禁用计算机'
-          }]
-        }],
+       datatree:datatree_arr,
         defaultProps1: {
           children: 'children',
           label: 'label'
         },
       rules: {
-        // roleName: [
-        //   { required: true, message: "请输入角色名称!", trigger: "blur" },
-        // ],
         role_name: [
           { required: true, message: "请输入角色名称!", trigger: "blur" },
-        ],
-        // valid_period: [
-        //   { required: true, message: "请选择角色类型!", trigger: "blur" },
-        // ]
+        ]
       },
       rolId:'',
       routesData:[],
@@ -381,20 +268,15 @@ export default {
         children: 'children',
         label: 'slotTitle'
       },
-      routes:[]
+      routes:[],
+      checkkeys:[]
     };
   },
   created() {
     this.getList()
-    this.getRole()
-    //this.getRoutes()
-    //this.getRoleTypes()
+    
   },
   methods: {
-    async getRole() {
-      const res = await getAllRole()
-      this.rolesData = res.list;
-    },
     getList() {
         this.listLoading = true
         let queryParam = Object.assign({}, this.listQuery)
@@ -410,11 +292,8 @@ export default {
     },
     resetTemp() {
       this.temp = {
-        //roleName: '',
         role_name: '',
-        valid_period:'',
-        start_ts:'',
-        end_ts:''
+        priv:{}
       };
     },
     handleCreate() {
@@ -428,23 +307,10 @@ export default {
     },
     createData() {
        let checkedNodes =  this.$refs.tree.getCheckedKeys();
-        let addData = {roleId:this.id,permissionIds:checkedNodes.join(","),lastpermissionIds:this.checkedNodes.join(",")};
-         console.log(addData);
+       let priv = {permissionIds:checkedNodes.join(",")};
+       this.temp.priv=priv;
       this.$refs["dataForm"].validate((valid) => {
         if (valid) {
-          if(this.temp.valid_period=='from_to'){
-            if(!this.temp.start_ts||!this.temp.end_ts){
-              messageTip(`起止时间起止时间必须有一个不为空`,'info');return;
-            }
-            if(this.temp.start_ts&&this.temp.end_ts){
-              if(this.temp.start_ts>=this.temp.end_ts){
-                messageTip(`开始时间不能大于等于结束时间`,'info');return;
-              }
-            }
-          }else{
-            this.temp.start_ts='';
-            this.temp.end_ts='';
-          }
           //发送接口
           addRole(this.temp).then(response=>{
             let res = response;
@@ -470,7 +336,16 @@ export default {
       this.dialogDetail = true
     },
     handleUpdate(row) {
-      // console.log(row);
+      //设置默认选中节点(即当前角色所拥有的菜单权限)
+      rolePermission(row.id).then(res => {
+          this.checkkeys = res.list[0].checkkeys;
+          this.dialogEditVisible = true;
+          console.log( this.checkkeys);
+          //不会重新渲染dom树,所以要手动设置tree的选中节点
+          //this.$nextTick(() => {
+          //  this.$refs.tree.setCheckedKeys(this.checkkeys)
+          //})
+      });
       this.temp = Object.assign({}, row); // copy obj,***很重要,不需要一步步赋值了***
       this.temp.id = row.id;
       this.dialogStatus = "update";
@@ -483,20 +358,11 @@ export default {
     updateData(row) {
       this.$refs["dataForm"].validate((valid) => {
         if (valid) {
-          if(this.temp.valid_period=='from_to'){
-            if(!this.temp.start_ts||!this.temp.end_ts){
-              messageTip(`起止时间起止时间必须有一个不为空`,'info');return;
-            }
-            if(this.temp.start_ts&&this.temp.end_ts){
-              if(this.temp.start_ts>=this.temp.end_ts){
-                messageTip(`开始时间不能大于等于结束时间`,'info');return;
-              }
-            }
-          }else{
-            this.temp.start_ts='';
-            this.temp.end_ts='';
-          }
+          let checkedNodes =  this.$refs.tree.getCheckedKeys();
+          let priv = {permissionIds:checkedNodes.join(",")};
+          this.temp.priv=priv;
           const tempData = Object.assign({}, this.temp);
+          console.log(tempData);
           update(tempData).then((response) => {
             let res = response;
             if(res.code==200){
@@ -568,14 +434,6 @@ export default {
             this.dialogEditVisible = false;
             this.message_tips = '编辑成功';
             this.message_type = 'success';
-            // //编辑权限后应该刷新左侧菜单栏,todo
-            // let constRoutes = [];
-            // constRoutes = asyncRoutes;
-            // store.dispatch('permission/UpdateAppRouter',  { constRoutes }).then(() => {
-            //   // 根据roles权限生成可访问的路由表
-            //   // 动态添加可访问路由表
-            //   router.addRoutes(store.getters.addRoutes)
-            // })
           }
           else{
             this.message_tips = res.message;
@@ -587,29 +445,7 @@ export default {
     async getRoutes() {
       const res = await getRoutes()
       this.routesData = getTreeData(res.result.treeList);
-      // console.log(this.routesData);
     },
-    // getRoleTypes(){
-    //   //这里根据用户的role来给定能分配的角色类型
-    //   console.log('登录用户所属角色编码:',sessionStorage.getItem('userRolesCodeArr'))
-    //   let userRolesCodeArr = sessionStorage.getItem('userRolesCodeArr')
-    //   userRolesCodeArr = JSON.parse(userRolesCodeArr)
-    //   let role_type_arr = []
-    //   //有系统管理员,最高权限,可配置:系统管理员-项目管理员-普通操作员
-    //   if(userRolesCodeArr.includes('admin')){
-    //     role_type_arr = [{value:'system_admin',label:'系统管理员'},{value:'system_manager',label:'项目管理员'},{value:'system_operator',label:'普通操作员'}]
-    //   }
-    //   //系统管理员,可配置:项目管理员-普通操作员
-    //   else if(userRolesCodeArr.includes('system_admin')){
-    //     role_type_arr = [{value:'system_manager',label:'项目管理员'},{value:'system_operator',label:'普通操作员'}]
-    //   }
-    //   //项目管理员,可配置:普通操作员
-    //   else{
-    //     role_type_arr = [{value:'system_operator',label:'普通操作员'}]
-    //   }
-    //   this.role_type_data = role_type_arr;
-    //   // console.log(role_type_arr);
-    // },
     handleRoleType(row){
       let res = '';
         for(let v of role_type_arr){
@@ -621,7 +457,6 @@ export default {
           }
         }
         return res;
-        // console.log(row);
     },
      handleEffectTime(row){
       let res = '';

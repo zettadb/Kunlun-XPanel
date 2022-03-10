@@ -82,7 +82,7 @@ export default {
                         axisTick: {
                             length: 3
                         },
-                        name: '(人)',
+                        name: '(GB)',
                         nameGap: -5,
                         nameTextStyle: {
                             color: '#61B9C8',
