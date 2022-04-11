@@ -19,7 +19,6 @@
       border
       highlight-current-row
       style="width: 100%;margin-bottom: 20px;">
-    >
       <el-table-column
         type="index"
         align="center"
@@ -64,9 +63,6 @@
             prop="update_time"
             align="center"
             label="更新时间">
-            <!-- <template slot-scope="{row}">
-              <span>{{formatDataTimeTotime(row.update_time)}}</span>
-            </template> -->
       </el-table-column>
       <el-table-column
         label="操作"
@@ -76,9 +72,8 @@
         v-if="user_grant==='Y'"
       >
         <template slot-scope="{row,$index}">
-          <!-- <el-button type="primary" size="mini" @click="handleEdit(row)">授权</el-button> -->
-          <el-button type="primary" size="mini" @click="handleUpdate(row)" v-show="user_grant==='Y'">编辑</el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(row,$index)" v-show="user_grant==='Y'">删除</el-button>
+          <el-button type="primary" size="mini" @click="handleUpdate(row)" v-show="user_grant==='Y'&&row.username!=='super_dba'">编辑</el-button>
+          <el-button size="mini" type="danger" @click="handleDelete(row,$index)" v-show="user_grant==='Y'&&row.username!=='super_dba'">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -150,7 +145,6 @@
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false" v-show="!dialogDetail">关闭</el-button>
         <el-button type="primary" @click="dialogStatus==='create'?createData():updateData(row)" v-show="!dialogDetail">确认</el-button>
-        <!-- <el-button type="primary" @click="dialogStatus==='create'?createData():(dialogStatus==='update'?updateData(row):grantData(row))" v-show="!dialogDetail">确认</el-button> -->
       </div>
     </el-dialog>
 
@@ -301,13 +295,9 @@ export default {
   watch: {
     'checkedCluster': {
       handler: function(val,oldVal) {
-       //旧数据中包含时无需push todo
-       //this.temp.checkedCluster.push(this.checkedCluster);
-       //旧数据中包含时无需push
         this.temp.checkedCluster=[];
         this.checkedCluster.forEach(item => {
         if (this.temp.checkedCluster.indexOf(item) == -1) {
-          //const newArr={"hostaddr":item};
           this.temp.checkedCluster.push(item)
         }
       })
@@ -392,7 +382,6 @@ export default {
                 messageTip(`请勾选集群`,'info');return;
               }
           }
-          //console.log(this.temp);
           //发送接口
           addAccess(this.temp).then(response=>{
             let res = response;
@@ -443,7 +432,6 @@ export default {
             this.temp.end_ts='';
           }
           const tempData = Object.assign({}, this.temp);
-          //console.log(tempData);return;
           update(tempData).then((response) => {
             let res = response;
             if(res.code==200){

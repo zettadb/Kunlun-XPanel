@@ -2,7 +2,6 @@
 class Cluster_model extends CI_Model {
     public function __construct()
     {
-
     	parent::__construct();
 		$this->db=$this->load->database('default',true);
     }
@@ -14,7 +13,6 @@ class Cluster_model extends CI_Model {
 			return $arr;
 		}
 		return false;
-		//return $this->db->_error_message();
 	}
 	//更新数据
 	public function updateList($sql){
@@ -53,12 +51,25 @@ class Cluster_model extends CI_Model {
 		if (curl_errno($ch)) {
 			$data['result'] = 'connection failed';
 			$data['message'] = '接口请求超时';
-			//print_r(json_encode($data));
 			return json_encode($data);
 		}
 		curl_close($ch);
 		return $result;
-
+	}
+	//mysql连接
+	public function getMysql($host,$port,$username,$pwd,$dbname,$sql){
+		mysqli_report(MYSQLI_REPORT_STRICT);
+		try {
+			$conn = mysqli_connect("{$host}:{$port}",$username,$pwd,$dbname);
+			$query = mysqli_query($conn,$sql);
+			$arr=mysqli_fetch_row($query);
+			$arr['code']=200;
+			return $arr;
+		} catch( Exception $e ) {
+			$arr[0]=iconv('gbk', 'utf-8',  $e->getMessage());
+			$arr['code']=500;
+			return $arr;
+		}
 	}
 }
 

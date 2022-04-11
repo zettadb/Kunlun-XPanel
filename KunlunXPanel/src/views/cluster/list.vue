@@ -42,15 +42,9 @@
 
       <el-table-column label="集群名称" align="center">
         <template slot-scope="{row}">
-          <span class="link-type" @click="handleDetail(row)">{{ row.name }}</span>
+          <span class="link-type" @click="handleDetail(row)">{{ row.nick_name }}</span>
         </template>
       </el-table-column>
-
-      <!-- <el-table-column
-            prop="ha_mode"
-            align="center"
-            label="复制模式">
-      </el-table-column> -->
 
       <el-table-column
             prop="comptotal"
@@ -63,11 +57,6 @@
             align="center"
             label="shard分配">
       </el-table-column>
-      <!-- <el-table-column
-            prop="snode_count"
-            align="center"
-            label="每shard节点总数">
-      </el-table-column> -->
       <el-table-column
             prop="when_created"
             align="center"
@@ -82,7 +71,6 @@
         v-if="storage_node_create_priv==='Y'&&shard_create_priv==='Y'&&compute_node_create_priv==='Y'&&restore_priv==='Y'&&backup_priv==='Y'&&cluster_drop_priv==='Y'"
       >
         <template slot-scope="{row,$index}">
-          <!-- <el-button type="primary" size="mini" :loading="true"></el-button> -->
            <el-button type="primary" size="mini" @click="handleUpdate(row)" v-if="storage_node_create_priv==='Y'&&shard_create_priv==='Y'&&compute_node_create_priv==='Y'">+</el-button>
           <el-button type="primary" size="mini" @click="handleRestore(row)" v-if="restore_priv==='Y'">恢复</el-button>
           <el-button type="primary" size="mini" @click="handleBackUp(row,$index)" v-if="backup_priv==='Y'">备份</el-button>
@@ -106,11 +94,11 @@
         label-position="left"
         label-width="200px"
         >
-      <el-form-item label="选择计算机:" prop="machinelist"  v-if="dialogStatus==='create'||dialogStatus==='update'||dialogStatus==='restore'">
+      <el-form-item label="选择计算机:" prop="machinelist"  v-if="dialogStatus==='create'">
         <el-checkbox-group 
-        v-model="machinelist"
+        v-model="temp.machinelist"
         :min="minMachine"
-        :max="machineTotal" >
+        :max="machineTotal">
           <el-checkbox v-for="machine in machines" :label="machine.hostaddr" :key="machine.id">{{machine.hostaddr}}</el-checkbox>
         </el-checkbox-group>
       </el-form-item>
@@ -124,47 +112,21 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <!-- <div v-if="temp.ha_mode=='mgr'"  v-show="dialogStatus==='create'">
-        <el-form-item label="shard个数:" prop="shards_count" >
-          <el-select v-model="temp.shards_count" placeholder="请选择shard个数">
-            <el-option
-              v-for="item in shardsDate"
-              :key="item.id"
-              :label="item.label"
-              :value="item.id">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        </div> -->
+  
         <div v-show="dialogStatus==='create'">
         <el-form-item label="shard个数:" prop="shards_count" >
-            <el-select v-model="temp.shards_count" placeholder="请选择shard个数" :disabled="dialogStatus==='detail'">
-            <el-option
-              v-for="item in norepshardsDate"
-              :key="item.id"
-              :label="item.label"
-              :value="item.id">
-            </el-option>
-          </el-select>
+          <el-input  v-model="temp.shards_count" placeholder="请输入shard个数"  :disabled="dialogStatus==='detail'"/>
         </el-form-item>
         </div>
 
         <el-form-item label="副本数:" prop="snode_count"  v-if="dialogStatus==='create'?true:false">
-          <el-select v-model="temp.snode_count" placeholder="请选择副本数" :disabled="dialogStatus==='detail'">
-            <el-option
-              v-for="item in pershardDate"
-              :key="item.id"
-              :label="item.label"
-              :value="item.id">
-            </el-option>
-          </el-select>
+          <el-input  v-model="temp.snode_count" placeholder="副本数至少是3，且不能大于所选计算机数"  :disabled="dialogStatus==='detail'"/>
         </el-form-item>
-        <el-form-item label="集群名称:" prop="cluster_name">
-        <el-input  v-model="temp.cluster_name" placeholder="请输入集群名称"  :disabled="dialogStatus==='detail'"/>
-      </el-form-item>
-        <!-- <el-form-item label="计算节点总个数:" prop="comp_count"  v-if="dialogStatus==='create'?true:false">
-          <el-input v-model="temp.comp_count" placeholder="请输入计算节点总个数"  :disabled="dialogStatus==='detail'"/>
-        </el-form-item> -->
+
+        <el-form-item label="集群名称:" prop="cluster_name"  v-if="dialogStatus==='create'?true:false">
+          <el-input  v-model="temp.cluster_name" placeholder="请输入集群名称"  :disabled="dialogStatus==='detail'"/>
+        </el-form-item>
+
         <el-form-item label="缓冲池大小:" prop="buffer_pool"  v-if="dialogStatus==='create'?true:false">
           <el-input  v-model="temp.buffer_pool"  placeholder="缓冲池大小单位为GB"  :disabled="dialogStatus==='detail'"/>
         </el-form-item>
@@ -199,12 +161,35 @@
           </el-form-item> -->
         </div>
         <div :class="isShow === false?'ro-90':'ro90'"  @click="toggle"  v-if="dialogStatus==='create'?true:false"><i class="el-icon-d-arrow-left" /></div>
-        <!-- 添加节点 -->
-        <el-form-item label="集群名称:" prop="name"  v-if="dialogStatus==='update'?true:false" >
-          <el-input v-model="temp.name" :disabled="true" />
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false" v-show="!dialogDetail">关闭</el-button>
+        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData(row)"  v-show="!dialogDetail">确认</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 添加节点 -->
+    <el-dialog title="添加节点" :visible.sync="dialogNodeVisible" custom-class="single_dal_view">
+      <el-form
+        ref="nodeForm"
+        :model="nodetemp"
+        :rules="rules"
+        label-position="left"
+        label-width="110px"
+      >
+        <el-form-item label="选择计算机:" prop="machinelist"  v-if="dialogStatus==='update'">
+        <el-checkbox-group 
+        v-model="nodetemp.machinelist"
+        :min="minMachine"
+        :max="machineTotal">
+          <el-checkbox v-for="machine in machines" :label="machine.hostaddr" :key="machine.id">{{machine.hostaddr}}</el-checkbox>
+        </el-checkbox-group>
+      </el-form-item>
+        <el-form-item label="集群名称:" prop="nick_name"  v-if="dialogStatus==='update'?true:false" >
+          <el-input v-model="nodetemp.nick_name" :disabled="true" />
         </el-form-item>
-        <el-form-item label="节点类型:" prop="node_type" v-if="dialogStatus==='update'?true:false">
-          <el-select v-model="temp.node_type" placeholder="请选择节点类型"  v-if="dialogStatus=== 'update'?true:false">
+        <el-form-item label="类型:" prop="node_type" v-if="dialogStatus==='update'?true:false">
+          <el-select v-model="nodetemp.node_type" placeholder="请选择类型"  v-if="dialogStatus=== 'update'?true:false">
           <el-option
             v-for="item in node_types"
             :key="item.id"
@@ -213,8 +198,8 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="shard名称:" prop="shard_name" v-if="temp.node_type=='add_nodes' &&dialogStatus==='update'" >
-          <el-select v-model="temp.shard_name" placeholder="请选择shard名称"  v-if="dialogStatus=== 'update'?true:false">
+      <el-form-item label="shard名称:" prop="shard_name" v-if="nodetemp.node_type=='add_nodes' &&dialogStatus==='update'" >
+          <el-select v-model="nodetemp.shard_name" placeholder="请选择shard名称"  v-if="dialogStatus=== 'update'?true:false">
           <el-option
             v-for="shard in shardList"
             :key="shard.id"
@@ -224,7 +209,7 @@
         </el-select>
       </el-form-item>
        <el-form-item label="个数:" prop="shards" v-if="dialogStatus==='update'">
-            <el-select v-model="temp.shards" placeholder="请选择个数" :disabled="dialogStatus==='detail'">
+            <el-select v-model="nodetemp.shards" placeholder="请选择个数" :disabled="dialogStatus==='detail'">
             <el-option
               v-for="item in shardsDate"
               :key="item.id"
@@ -233,12 +218,11 @@
             </el-option>
           </el-select>
         </el-form-item>
-
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false" v-show="!dialogDetail">关闭</el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData(row)"  v-show="!dialogDetail">确认</el-button>
-      </div>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="dialogNodeVisible = false">关闭</el-button>
+          <el-button type="primary" @click="updateData(row)">确认</el-button>
+        </div>
     </el-dialog>
     <!-- 恢复-->
     <el-dialog title="恢复集群" :visible.sync="dialogRestoreVisible" custom-class="single_dal_view">
@@ -249,7 +233,7 @@
         label-position="left"
         label-width="110px"
       >
-      <el-form-item label="选择计算机:" prop="machinelist"  v-if="dialogStatus==='create'||dialogStatus==='update'||dialogStatus==='restore'">
+      <el-form-item label="选择计算机:" prop="machinelist"  v-if="dialogStatus==='restore'">
         <el-checkbox-group 
         v-model="restoretemp.machinelist"
         :min="minMachine"
@@ -260,8 +244,11 @@
         <el-form-item label="原集群名称:" prop="old_cluster_name">
           <el-input v-model="restoretemp.old_cluster_name" :disabled="true" />
         </el-form-item>
+        <el-form-item label="新集群名称:" prop="nick_name">
+          <el-input v-model="restoretemp.nick_name" placeholder="请输入新集群名称" />
+        </el-form-item>
         <el-form-item label="回档时间:" prop="now">
-          <el-date-picker v-model="restoretemp.now"  type="datetime" value-format="yyyy-MM-dd HH:mm:ss" placeholder="请选择结束时间"></el-date-picker>
+          <el-date-picker v-model="restoretemp.now"  type="datetime" value-format="yyyy-MM-dd HH:mm:ss" placeholder="请选择回档时间"></el-date-picker>
         </el-form-item>
         <el-form-item label="最早备份时间:" prop="end_ts">
           <el-input  v-model="restoretemp.end_ts"  :disabled="true" />
@@ -273,27 +260,27 @@
           <el-button type="primary" @click="restoreData(restoretemp)">确认</el-button>
         </div>
     </el-dialog>
-
   </div>
 </template>
 
 <script>
  import { messageTip,handleCofirm,getNowDate,getNextMonth } from "@/utils";
  import Pagination from '@/components/Pagination' 
- import { ha_mode_arr,shards_arr,per_shard_arr,norepshards_arr,node_type_arr,version_arr} from "@/utils/global_variable"
- import {createCluster,getClusterList,delCluster,backeUpCluster,ifBackUp,restoreCluster,getAllMachine,getShards,addComps,addNodes,getEvStatus,uAssign} from '@/api/cluster/list'
- import {addShards} from '@/api/cluster/listInterface'
+ import {ha_mode_arr,shards_arr,per_shard_arr,norepshards_arr,node_type_arr,version_arr,storage_type_arr} from "@/utils/global_variable"
+ import {getClusterList,ifBackUp,getAllMachine,getShards,uAssign} from '@/api/cluster/list'
+ import {addShards,createCluster,addComps,addNodes,getEvStatus,delCluster,backeUpCluster,restoreCluster,getMetaMode,getBackUpStorage} from '@/api/cluster/listInterface'
  import { v4 as uuidv4 } from 'uuid';
 export default {
   name: "list",
-  components: { Pagination },
+  components: { Pagination }, 
   data() {
     const validatemachine = (rule, value, callback) => {
      if(value.length === 0){
         callback(new Error("请选择计算机"));
-      }else  if(value.length <3&&value.length >0){
-        callback(new Error("所选计算机数不能小于3"));
       }
+      // else if(value.length <3){
+      //   callback(new Error("所选计算机数不能小于3"));
+      // }
       else {
         callback();
       }
@@ -308,7 +295,7 @@ export default {
     };
      const validateShardsCount = (rule, value, callback) => {
      if(!value){
-        callback(new Error("请选择shard个数"));
+        callback(new Error("请输入shard个数"));
       }
       else {
         callback();
@@ -316,8 +303,16 @@ export default {
     };
     const validateSnodeCount = (rule, value, callback) => {
      if(!value){
-        callback(new Error("请选择副本数"));
+        callback(new Error("请输入副本数"));
+      }else if(!(/^[0-9_]+$/.test(value))){
+        callback(new Error("副本数只能输入数字"));
       }
+      else if(value<3){
+        callback(new Error("副本数不能小于3"));
+      }
+      // else if(value>this.temp.machinelist.length){
+      //   callback(new Error("副本数不能大于所选计算机数"));
+      // }
       else {
         callback();
       }
@@ -342,11 +337,23 @@ export default {
         callback();
       }
     };
-    const validateRestoreTime = (rule, value, callback) => {};
+    const validateRestoreTime = (rule, value, callback) => {
+      //console.log(value);return;
+      const time=getNowDate();
+      const netxMonth=getNextMonth(time);
+      if(!this.restoretemp.now){
+        callback(new Error("请选择回档时间"));
+      }else if(vathis.restoretemp.nowlue<this.restoretemp.end_ts){
+        callback(new Error("回档时间不能早于最早备份时间"));
+      }else if(this.restoretemp.now>netxMonth){
+        callback(new Error("回档时间选择范围应在当前系统时间开始一个月之内"));
+      }else {
+      callback();
+      }
+    };
     const validateNodeType = (rule, value, callback) => {
-      // console.log(value);return;
      if(!value){
-        callback(new Error("请选择节点类型"));
+        callback(new Error("请选择类型"));
       }
       else {
         callback();
@@ -380,6 +387,27 @@ export default {
         callback();
       }
     };
+    const validateNickName = (rule, value, callback) => {
+      if(!value){
+        callback(new Error("请输入新集群名称"));
+      }
+      else {
+      callback();
+      }
+    };
+    // const validateNowName = (rule, value, callback) => {
+    //   const time=getNowDate();
+    //   const netxMonth=getNextMonth(time);
+    //   if(!value){
+    //     callback(new Error("请选择回档时间"));
+    //   }else if(value<this.restoretemp.end_ts){
+    //     callback(new Error("回档时间不能早于最早备份时间"));
+    //   }else if(value>netxMonth){
+    //     callback(new Error("回档时间选择范围应在当前系统时间开始一个月之内"));
+    //   }else {
+    //   callback();
+    //   }
+    // };
     return {
       tableKey: 0,
       list: null,
@@ -393,8 +421,8 @@ export default {
       },
       temp: {
         ha_mode:'',
-        shards_count:'',
-        snode_count: '',
+        shards_count:'0',
+        snode_count: '3',
         comp_count:'',
         buffer_pool:'1',
         max_connections:'',
@@ -415,10 +443,21 @@ export default {
         old_cluster_name:'',
         now:'',
         end_ts:'',
-        machinelist:[]
+        machinelist:[],
+        backup_cluster_name:'',
+        nick_name:''
+      },
+      nodetemp:{
+        machinelist:[],
+        node_type:'',
+        shard_name:'',
+        shards:'',
+        name:'',
+        nick_name:''
       },
       dialogFormVisible: false,
       dialogRestoreVisible:false,
+      dialogNodeVisible:false,
       dialogStatus: "",
       textMap: {
         update: "添加节点",
@@ -433,7 +472,7 @@ export default {
       user_drop_priv:'',
       user_edit_priv:'',
       row:{},
-      hamodeData:ha_mode_arr,
+      hamodeData:[],
       shardsDate:shards_arr,
       norepshardsDate:norepshards_arr,
       pershardDate:per_shard_arr,
@@ -454,6 +493,8 @@ export default {
       timer:null,
       installStatus:false,
       info:'',
+      //dialogBackUpStorageVisible:false,
+      //stypelist:storage_type_arr,
       rules: {
         machinelist: [
           { required: true, trigger: "blur",validator: validatemachine },
@@ -487,30 +528,49 @@ export default {
         ],
         cluster_name: [
             { required: true, trigger: "blur",validator: validateClusterName },
-        ]
+        ],
+        nick_name: [
+            { required: true, trigger: "blur",validator: validateNickName },
+        ],
+        // now:[
+        //   {required: true, trigger: "blur",validator: validateNowName }
+        //   ]
       },
   
     };
   },
   created() {
     this.getList();
+    //this.getMode();
   },
   watch: {
-    'machinelist': {
+    'temp.machinelist': {
       handler: function(val,oldVal) {
        //旧数据中包含时无需push
-        this.temp.machinelist=[];
-        this.machinelist.forEach(item => {
-        if (this.temp.machinelist.indexOf(item) == -1) {
-          const newArr={"hostaddr":item};
-          this.temp.machinelist.push(newArr)
-        }
-      })
-       //this.temp.machinelist.push(val);
+      //   this.temp.machinelist=[];
+      //   this.temp.machinelist.forEach(item => {
+      //   if (this.temp.machinelist.indexOf(item) == -1) {
+      //     const newArr={"hostaddr":item};
+      //     this.temp.machinelist.push(newArr)
+      //   }
+      // })
+      this.temp.shards_count=this.temp.machinelist.length;
       },
     }
   },
   methods: {
+    // async getMode() {
+    //   const temp={};
+    //   temp.job_type='get_meta_mode';
+    //   temp.ver=version_arr[0].ver;
+    //   temp.job_id=uuidv4();
+    //   const res = await getMetaMode(temp);
+    //   console.log(res);
+    //   if(res.length>0){
+    //     const ha_mode_arr={'id':res.mode,'label':res.mode};
+    //     this.hamodeData=ha_mode_arr;
+    //   }
+    // },
     toggle(){
        this.isShow = !this.isShow //取反
     },
@@ -540,8 +600,8 @@ export default {
     resetTemp() {
       this.temp = {
         ha_mode:'',
-        shards_count:'',
-        snode_count: '',
+        shards_count:'0',
+        snode_count: '3',
         comp_count:'',
         buffer_pool:'1',
         max_connections:'',
@@ -553,7 +613,7 @@ export default {
         per_storage_node_initial_storage_size:'',
         per_storage_node_max_storage_size:'',
         cluster_name:'',
-        rack_name:'',
+        // rack_name:'',
         machinelist:[],
         node_type:'',
         shard_name:'',
@@ -570,6 +630,18 @@ export default {
         this.minMachine=0;
         this.machineTotal=res.total;
       });
+      
+      const temp={};
+      temp.job_type='get_meta_mode';
+      temp.ver=version_arr[0].ver;
+      temp.job_id=uuidv4();
+      getMetaMode(temp).then((res) => {
+        if(res){
+          const ha_mode=[{"id":res.mode,"label":res.mode}];
+          this.hamodeData=ha_mode;
+        };
+      });
+      
       this.$nextTick(() => {
         this.$refs.dataForm.clearValidate();
       });
@@ -578,47 +650,61 @@ export default {
       this.$refs["dataForm"].validate((valid) => {
          if (valid) {
           const tempData = Object.assign({}, this.temp);
-          tempData.username=sessionStorage.getItem('login_username');
+          //处理machinelist的格式
+          let machinelist=[];
+          tempData.machinelist.forEach(item => {
+            const newArr={"hostaddr":item};
+            machinelist.push(newArr)
+          })
+          const clusterData={};
+          clusterData.user_name=sessionStorage.getItem('login_username');
+          clusterData.job_id=uuidv4();
+          clusterData.comps=tempData.machinelist.length+'';
+          clusterData.ver=version_arr[0].ver;
+          clusterData.job_type='create_cluster';
+          clusterData.shards=tempData.shards_count+'';
+          clusterData.nodes=tempData.snode_count;
+          clusterData.max_storage_size=tempData.per_computing_node_max_mem_size;
+          clusterData.max_connections=tempData.max_connections;
+          clusterData.innodb_size=tempData.buffer_pool;
+          clusterData.cpu_cores=tempData.per_computing_node_cpu_cores;
+          clusterData.ha_mode=tempData.ha_mode;
+          clusterData.machinelist=machinelist;
+          clusterData.nick_name=tempData.cluster_name;
           //发送接口
-          console.log(tempData);
-          createCluster(tempData).then(response=>{
+          createCluster(clusterData).then(response=>{
             let res = response;
-            if(res.code==200){
+            if(res.result=='accept'){
               this.dialogFormVisible = false;
               this.message_tips = '正在新增...';
               this.message_type = 'success';
               //调获取状态接口
               let i=0;
               let timer = setInterval(() => {
-                //this.getStatus(timer,res.uuid,i++)
                 setTimeout(()=>{
-                  getEvStatus(res.uuid).then((res) => {
-                  if(res.res.result=='done'||res.res.result=='failed'){
+                  const postarr={};
+                  postarr.job_type='get_status';
+                  postarr.ver=version_arr[0].ver;
+                  postarr.job_id=clusterData.job_id;
+                  getEvStatus(postarr).then((res) => {
+                  if(res.result=='done'||res.result=='failed'){
                     clearInterval(timer);
-                    this.info=res.res.info;
-                    if(res.res.result=='done'){
+                    this.info=res.info;
+                    if(res.result=='done'){
                       //查是否应用于全部集群，不是，增加cluster_id
                       const  apply_all_cluster=sessionStorage.getItem('apply_all_cluster');
                       if(apply_all_cluster==2){
                           const arrs= {};
                           arrs.effectCluster=sessionStorage.getItem('affected_clusters');
-                          arrs.cluster_name=res.res.info;
+                          arrs.cluster_name=res.info;
                           arrs.username=sessionStorage.getItem('login_username');
                           arrs.type='add';
                           uAssign(arrs).then((responses) => {
                             let res_update = responses;
                             if(res_update.code==200){
                               this.dialogFormVisible = false;
-                              //this.message_tips = '更新作用集群列表成功';
-                              //this.message_type = 'success';
                               sessionStorage.setItem('affected_clusters',res_update.effectCluster);
-                              //console.log(sessionStorage.getItem('affected_clusters'));
                             }
-                            // else{
-                            //   this.message_tips = res_update.message;
-                            //   this.message_type = 'error';
-                            // }
-                            // messageTip(this.message_tips,this.message_type);
                           });
                       }
                       this.getList();
@@ -626,7 +712,7 @@ export default {
                       this.installStatus = true;
                     }
                   }else{
-                    this.info=res.res.info;
+                    this.info=res.info;
                     this.installStatus = true;
                   }
                 });
@@ -637,9 +723,11 @@ export default {
                 }, 0)
               
                }, 1000)
-            }
-            else{
-              this.message_tips = res.message;
+            }else if(res.result=='ongoing'){
+              this.message_tips = '系统正在操作中，请等待一会！';
+              this.message_type = 'error';
+            }else{
+              this.message_tips = res.info;
               this.message_type = 'error';
             }
             messageTip(this.message_tips,this.message_type);
@@ -655,8 +743,10 @@ export default {
     },
     handleUpdate(row) {
       this.temp = Object.assign({}, row); 
+      this.nodetemp.nick_name=this.temp.nick_name;
+      this.nodetemp.name=this.temp.name;
       this.dialogStatus = "update";
-      this.dialogFormVisible = true;
+      this.dialogNodeVisible = true;
       this.dialogDetail = false;
       //获取计算机名称
       getAllMachine().then((res) => {
@@ -672,93 +762,104 @@ export default {
           }
         });
       this.$nextTick(() => {
-        this.$refs["dataForm"].clearValidate();
+        this.$refs["nodeForm"].clearValidate();
       });
       
     },
     updateData() {
-      this.$refs["dataForm"].validate((valid) => {
+      this.$refs["nodeForm"].validate((valid) => {
         if (valid) {
-          const tempData = Object.assign({}, this.temp);
+          const tempData = Object.assign({}, this.nodetemp);
+          //处理machinelist的格式
+          let machinelist=[];
+          tempData.machinelist.forEach(item => {
+            const newArr={"hostaddr":item};
+            machinelist.push(newArr)
+          })
           tempData.job_id = uuidv4();
           tempData.cluster_name = tempData.name;
-          tempData.ver=version_arr[0].ver;
-          tempData.username=sessionStorage.getItem('login_username');
+          tempData.version=version_arr[0].ver;
+          tempData.user_name=sessionStorage.getItem('login_username');
+          tempData.machinelist=machinelist;
+          tempData.job_type=tempData.node_type;
+          //console.log(tempData);return;
           //删除参数
-          this.$delete(tempData,'when_created');
-          this.$delete(tempData,'id');
-          this.$delete(tempData,'name');
-          this.$delete(tempData,'comptotal');
-          this.$delete(tempData,'shardtotal');
+           this.$delete(tempData,'node_type');
+           this.$delete(tempData,'name');
+           this.$delete(tempData,'nick_name');
+          // this.$delete(tempData,'shardtotal');
           //发送接口
-          //console.log(tempData);return;
-          //console.log(tempData);return;
-          const arr={"job_type":"get_meta_mode","job_id":"uuid999"};
           // if(this.tempData.machinelist.length===0){
-          //   messageTip("请选择计算机");return;
+          //   messageTip("请选择计算机","error");return;
           // }
-          if(tempData.node_type=='add_shards'){
+          if(tempData.job_type=='add_shards'){
+             this.$delete(tempData,'shard_name');
             //新增shard
-            addShards(arr).then((response) => {
+            addShards(tempData).then((response) => {
             let res = response;
-            if(res.code==200){
-              this.dialogFormVisible = false;
+            if(res.result=='accept'){
+              this.dialogNodeVisible = false;
               this.message_tips = '正在新增shard...';
               this.message_type = 'success';
               //调获取状态接口
               let i=0;
               let timer = setInterval(() => {
-                this.getStatus(timer,res.uuid,i++)
+                this.getStatus(timer,tempData.job_id,i++)
               }, 1000)
-              //编辑成功后重新设置数据
-              //this.getList();
-            }
-            else{
-              this.message_tips = res.message;
+            }else if(res.result=='ongoing'){
+              this.message_tips = '系统正在操作中，请等待一会！';
+              this.message_type = 'error';
+            }else{
+              this.message_tips = res.info;
               this.message_type = 'error';
             }
             messageTip(this.message_tips,this.message_type);
           });
-          }else if(tempData.node_type=='add_comps'){
+          }else if(tempData.job_type=='add_comps'){
+            tempData.comps=tempData.shards;
+            this.$delete(tempData,'shards');
             //新增计算节点
             addComps(tempData).then((response) => {
             let res = response;
-            if(res.code==200){
-              this.dialogFormVisible = false;
+            if(res.result=='accept'){
+             this.dialogNodeVisible = false;
               this.message_tips = '正在新增计算节点...';
               this.message_type = 'success';
               //调获取状态接口
               let i=0;
               let timer = setInterval(() => {
-                this.getStatus(timer,res.uuid,i++)
+                this.getStatus(timer,tempData.job_id,i++)
               }, 1000)
-              //编辑成功后重新设置数据
-              //this.getList();
             }
-            else{
-              this.message_tips = res.message;
+            else if(res.result=='ongoing'){
+              this.message_tips = '系统正在操作中，请等待一会！';
+              this.message_type = 'error';
+            }else{
+              this.message_tips = res.info;
               this.message_type = 'error';
             }
             messageTip(this.message_tips,this.message_type);
           });
-          }else if(tempData.node_type=='add_nodes'){
+          }else if(tempData.job_type=='add_nodes'){
+             tempData.nodes=tempData.shards;
+             this.$delete(tempData,'shards');
             //新增存储节点
             addNodes(tempData).then((response) => {
             let res = response;
-            if(res.code==200){
-              this.dialogFormVisible = false;
-              this.message_tips = res.message;
+            if(res.result=='accept'){
+              this.dialogNodeVisible = false;
+              this.message_tips =  '正在新增存储节点...';
               this.message_type = 'success';
               //调获取状态接口
               let i=0;
               let timer = setInterval(() => {
-                this.getStatus(timer,res.uuid,i++)
+                this.getStatus(timer,tempData.job_id,i++)
               }, 1000)
-              //编辑成功后重新设置数据
-              //this.getList();
-            }
-            else{
-              this.message_tips = res.message;
+            }else if(res.result=='ongoing'){
+              this.message_tips = '系统正在操作中，请等待一会！';
+              this.message_type = 'error';
+            }else{
+              this.message_tips = res.info;
               this.message_type = 'error';
             }
             messageTip(this.message_tips,this.message_type);
@@ -780,36 +881,33 @@ export default {
           let res_update = responses;
           if(res_update.code==200){
             this.dialogFormVisible = false;
-            //this.message_tips = '更新作用集群列表成功';
-            //this.message_type = 'success';
             sessionStorage.setItem('affected_clusters',res_update.effectCluster);
-            //console.log(sessionStorage.getItem('affected_clusters'));
           }
-          // else{
-          //   this.message_tips = res_update.message;
-          //   this.message_type = 'error';
-          // }
-          // messageTip(this.message_tips,this.message_type);
         });
         //调接口删集群
          const tempData = Object.assign({}, row);
-          tempData.username=sessionStorage.getItem('login_username');
+          tempData.user_name=sessionStorage.getItem('login_username');
+          tempData.job_id = uuidv4();
+          tempData.cluster_name = tempData.name;
+          tempData.ver=version_arr[0].ver;
+          tempData.job_type='delete_cluster';
           delCluster(tempData).then((response)=>{
             let res = response;
-            if(res.code==200){
+            if(res.result=='accept'){
               this.dialogFormVisible = false;
               this.message_tips = '正在删除...';
               this.message_type = 'success';
               //调获取状态接口
               let i=0;
               let timer = setInterval(() => {
-                this.getStatus(timer,res.uuid,i++)
+                this.getStatus(timer,tempData.job_id,i++)
               }, 1000)
-              //成功后重新设置数据
-              //this.getList();
             }
-            else{
-              this.message_tips = res.message;
+            else if(res.result=='ongoing'){
+              this.message_tips = '系统正在操作中，请等待一会！';
+              this.message_type = 'error';
+            }else{
+              this.message_tips = res.info;
               this.message_type = 'error';
             }
             messageTip(this.message_tips,this.message_type);
@@ -820,33 +918,51 @@ export default {
       }); 
     },
     handleBackUp(row) {
-      handleCofirm("确定要备份"+row.name+"这个集群么?").then( () =>{
-         const tempData = Object.assign({}, row);
-          tempData.username=sessionStorage.getItem('login_username');
-          backeUpCluster(tempData).then((response)=>{
-            let res = response;
-            if(res.code==200){
-              this.dialogFormVisible = false;
-              this.message_tips = '正在备份...';
-              this.message_type = 'success';
-              //调获取状态接口
-              let i=0;
-              let timer = setInterval(() => {
-                this.getStatus(timer,res.uuid,i++)
-              }, 1000)
-              //成功后重新设置数据
-              //this.getList();
-            }
-            else{
-              this.message_tips = res.message;
+      //先验证是否备份存储介质
+      const arrs= {};
+      arrs.version=version_arr[0].ver;
+      arrs.job_id=uuidv4();
+      arrs.job_type='get_backup_storage';
+      getBackUpStorage(arrs).then((res) => {
+        if(res.length>0){
+           handleCofirm("确定要备份"+row.nick_name+"这个集群么?").then( () =>{
+        const tempData = Object.assign({}, row);
+        const backupData={};
+        backupData.user_name=sessionStorage.getItem('login_username');
+        backupData.job_id = uuidv4();
+        backupData.backup_cluster_name = tempData.name;
+        backupData.ver=version_arr[0].ver;
+        backupData.job_type='backup_cluster';
+        backeUpCluster(backupData).then((response)=>{
+          let res = response;
+          if(res.result=='accept'){
+            this.dialogFormVisible = false;
+            this.message_tips = '正在备份...';
+            this.message_type = 'success';
+            //调获取状态接口
+            let i=0;
+            let timer = setInterval(() => {
+              this.getStatus(timer,backupData.job_id,i++)
+            }, 1000)
+          }
+          else if(res.result=='ongoing'){
+              this.message_tips = '系统正在操作中，请等待一会！';
+              this.message_type = 'error';
+            }else{
+              this.message_tips = res.info;
               this.message_type = 'error';
             }
-            messageTip(this.message_tips,this.message_type);
-          })
+          messageTip(this.message_tips,this.message_type);
+        })
       }).catch(() => {
-          console.log('quxiao')
           messageTip('已取消备份','info');
       }); 
+        }else{
+          
+          messageTip('请先添加备份存储目标!','error');
+        }
+      });
+     
     },
     handleRestore(row) {
       this.restoretempDate = Object.assign({}, row); 
@@ -859,7 +975,8 @@ export default {
         if(res.code==200){
          this.dialogRestoreVisible=true;
          this.restoretemp.end_ts=response.list[0].end_ts;
-         this.restoretemp.old_cluster_name=row.name;
+         this.restoretemp.old_cluster_name=row.nick_name;
+         this.restoretemp.backup_cluster_name = row.name;
          this.restoretemp.now=getNowDate();
           getAllMachine().then((res) => {
             this.machines = res.list;
@@ -880,59 +997,86 @@ export default {
       });
     },
     restoreData() {
-      // this.$refs["restoreForm"].validate((valid) => {
-      //   if (valid) {
-      if(!this.restoretemp.now){
-        messageTip("请选择回档时间");return;
-      }else if(!this.restoretemp.now<this.restoretemp.end_ts){
-        messageTip("回档时间不能早于最早备份时间!");return;
-      }else{
-        const time=getNowDate();
-        const netxMonth=getNextMonth(time);
-        if(this.restoretemp.now>netxMonth){
-          messageTip("回档时间选择范围应在当前系统时间开始一个月之内");return;
-        }
-      }
-      if(this.restoretemp.machinelist.length===0){
-        messageTip("请选择计算机");return;
-      }
+      this.$refs["restoreForm"].validate((valid) => {
+        if (valid) {
+      // if(!this.restoretemp.now){
+      //   messageTip("请选择回档时间");return;
+      // }else if(!this.restoretemp.now<this.restoretemp.end_ts){
+      //   messageTip("回档时间不能早于最早备份时间!");return;
+      // }else{
+      //   const time=getNowDate();
+      //   const netxMonth=getNextMonth(time);
+      //   if(this.restoretemp.now>netxMonth){
+      //     messageTip("回档时间选择范围应在当前系统时间开始一个月之内");return;
+      //   }
+      // }
+      // if(this.restoretemp.machinelist.length===0){
+      //   messageTip("请选择计算机");return;
+      // }
+      // if(this.restoretemp.machinelist.length<3){
+      //   messageTip("所选计算机数不能小于3");return;
+      // }
+      // if(!this.restoretemp.nick_name){
+      //   messageTip("请输入新集群名称");return;
+      // }
       const tempData = Object.assign({}, this.restoretemp);
-      tempData.username=sessionStorage.getItem('login_username');
-      restoreCluster(tempData).then((response) => {
+      //处理machinelist的格式
+      let machinelist=[];
+      tempData.machinelist.forEach(item => {
+        const newArr={"hostaddr":item};
+        machinelist.push(newArr)
+      })
+      const restoreData={};
+      restoreData.user_name=sessionStorage.getItem('login_username');
+      restoreData.job_id = uuidv4();
+      restoreData.nick_name = tempData.nick_name;
+      restoreData.backup_cluster_name = tempData.backup_cluster_name;
+      restoreData.version=version_arr[0].ver;
+      restoreData.job_type='restore_new_cluster';
+      restoreData.timestamp=tempData.now;
+      restoreData.machinelist=machinelist;
+      restoreCluster(restoreData).then((response) => {
         let res = response;
-        if(res.code==200){
+        if(res.result=='accept'){
           this.dialogRestoreVisible = false;
           this.message_tips = '正在恢复...';
           this.message_type = 'success';
           //调获取状态接口
           let i=0;
           let timer = setInterval(() => {
-            this.getStatus(timer,res.uuid,i++)
+            this.getStatus(timer,restoreData.job_id,i++)
           }, 1000)
-          //编辑成功后重新设置数据
-          //this.getList();
         }
-        else{
-          this.message_tips = res.message;
+        else if(res.result=='ongoing'){
+          this.message_tips = '系统正在操作中，请等待一会！';
+          this.message_type = 'error';
+        }else{
+          this.message_tips = res.info;
           this.message_type = 'error';
         }
         messageTip(this.message_tips,this.message_type);
 
       });
+        }
+      })
     },
     getStatus (timer,data,i) {
       setTimeout(()=>{
-        getEvStatus(data).then((res) => {
-        if(res.res.result=='done'||res.res.result=='failed'){
+        const postarr={};
+        postarr.job_type='get_status';
+        postarr.ver=version_arr[0].ver;
+        postarr.job_id=data;
+        getEvStatus(postarr).then((res) => {
+        if(res.result=='done'||res.result=='failed'){
           clearInterval(timer);
-          this.info=res.res.info;
-          if(res.res.result=='done'){
+          this.info=res.info;
+          if(res.result=='done'){
             this.getList();
           }else{
             this.installStatus = true;
           }
         }else{
-          this.info=res.res.info;
+          this.info=res.info;
           this.installStatus = true;
         }
       });

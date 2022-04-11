@@ -22,11 +22,8 @@
         >新增</el-button>
         <div v-text="info" v-show="installStatus===true" class="info"></div>
       </div>
-      <div class="table-list-wrap">
-
-      </div>
+      <div class="table-list-wrap"></div>
     </div>
-
     <el-table
       :key="tableKey"
       v-loading="listLoading"
@@ -34,7 +31,6 @@
       border
       highlight-current-row
       style="width: 100%;margin-bottom: 20px;">
-    >
       <el-table-column
         type="index"
         align="center"
@@ -58,11 +54,20 @@
             align="center"
             label="cpu核数">
       </el-table-column>
+      <el-table-column
+            prop="status"
+            align="center"
+            label="状态">
+        <template scope="scope">
+            <span v-if="scope.row.status==='online'" style="color: #00ed37">在线</span>
+            <span v-else-if="scope.row.status==='offline'" style="color: red">离线</span>
+        </template>
+      </el-table-column>
       
       <el-table-column
         label="操作"
         align="center"
-        width="240"
+        width="300"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{row,$index}">
@@ -73,7 +78,7 @@
             type="danger"
             @click="handleDelete(row,$index)"
           >删除</el-button>
-          <!-- <div v-text="info" v-show="installStatus===true" class="info"></div> -->
+          <div v-text="info" v-show="installStatus===true" class="info"></div>
         </template>
       </el-table-column>
     </el-table>
@@ -93,7 +98,7 @@
           <el-input v-model="temp.hostaddr" placeholder="请输入IP地址" :disabled="dialogStatus==='detail'||dialogStatus==='update'"/>
         </el-form-item>
 
-        <el-form-item label="机架编号:" prop="rack_id" v-if="dialogStatus==='create'?true:false">
+        <el-form-item label="机架编号:" prop="rack_id">
           <el-input v-model="temp.rack_id" placeholder="请输入机架编号" autocomplete='new-password' :disabled="dialogStatus==='detail'"/>
         </el-form-item>
 
@@ -124,19 +129,16 @@
         <el-button type="primary" @click="dialogStatus==='create'?createData():updateData(row)"  v-show="!dialogDetail">确认</el-button>
       </div>
     </el-dialog>
-
   </div>
 </template>
-
 <script>
  import { messageTip,handleCofirm } from "@/utils";
- import { getMachineList,addMachine,update,delMachine} from '@/api/machine/list'
- import {getEvStatus,pEnable} from '@/api/cluster/list'
+ import { getMachineList,getNodes} from '@/api/machine/list'
+ import {addMachine,delMachine,getEvStatus,pEnable,update} from '@/api/machine/listInterface'
+ import {getAllMachineStatus} from '@/api/cluster/listInterface'
  import {version_arr} from "@/utils/global_variable"
  import Pagination from '@/components/Pagination' 
  import { v4 as uuidv4 } from 'uuid';
-
-
 export default {
   name: "account",
   components: { Pagination },
@@ -208,7 +210,6 @@ export default {
         callback();
       }
     };
-    
     return {
       tableKey: 0,
       list: null,
@@ -288,11 +289,29 @@ export default {
         let queryParam = Object.assign({}, this.listQuery)
         //模糊搜索
         getMachineList(queryParam).then(response => {
-          this.list = response.list;
-          this.total = response.total;
-          setTimeout(() => {
-            this.listLoading = false
-          }, 0.5 * 1000)
+          //let arr = response.list;
+          //机器的状态
+          const tempData = {};
+          tempData.job_id =uuidv4();
+          tempData.job_type ='machine_summary';
+          tempData.ver=version_arr[0].ver;
+          getAllMachineStatus(tempData).then(res => {
+            for(let i=0;i<response.total;i++){
+              const arr=response.list[i];
+              for (let j = 0; j < res.length; j++) {
+                const ip=res[j].ip;
+                if(ip==arr.hostaddr){
+                  this.$set(arr, 'status', res[j].status)
+                }
+              }
+            }
+            this.list = response.list;
+            console.log(this.list);
+            this.total = response.total;
+            setTimeout(() => {
+              this.listLoading = false
+            }, 0.5 * 1000)
+          })
         });
     },
     resetTemp() {
@@ -320,22 +339,20 @@ export default {
       this.$refs["dataForm"].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp);
-          tempData.username = sessionStorage.getItem('login_username');
+          tempData.user_name = sessionStorage.getItem('login_username');
           tempData.job_id =uuidv4();
           tempData.job_type ='create_machine';
           tempData.ver=version_arr[0].ver;
-          //console.log(tempData);return;
           //发送接口
           addMachine(tempData).then(response=>{
             let res = response;
-            if(res.code==200){
-              this.getList();
+            if(res.result=='accept'){
               this.dialogFormVisible = false;
               this.message_tips = '正在新增计算机...';
               this.message_type = 'success';
               let i=0;
               let timer = setInterval(() => {
-                this.getStatus(timer,res.uuid,i++)
+                this.getStatus(timer,tempData.job_id,i++)
               }, 1000)
 
               //重启promentheus
@@ -343,18 +360,18 @@ export default {
               prometheus['job_id'] = uuidv4();
               prometheus['job_type']='update_prometheus';
               prometheus['ver']=version_arr[0].ver;
-              prometheus['username']=sessionStorage.getItem('login_username');
+              prometheus['user_name']=sessionStorage.getItem('login_username');
               pEnable(prometheus).then((resp) => {
-                if(resp.code==200){
+                if(res.result=='accept'){
                   let j=0;
                   let timerp = setInterval(() => {
-                  this.getStatus(timerp,resp.uuid,j++)
+                  this.getStatus(timerp,prometheus['job_id'],j++)
                   }, 1000)
                 }
               })
             }
             else{
-              this.message_tips = res.message;
+              this.message_tips = res.result;
               this.message_type = 'error';
             }
             messageTip(this.message_tips,this.message_type);
@@ -370,7 +387,6 @@ export default {
     },
     handleUpdate(row) {
       this.temp = Object.assign({}, row); 
-       //console.log(row);
       this.dialogStatus = "update";
       this.dialogFormVisible = true;
       this.dialogDetail = false;
@@ -383,37 +399,37 @@ export default {
       this.$refs["dataForm"].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp);
-          tempData.username = sessionStorage.getItem('login_username');
+          tempData.user_name = sessionStorage.getItem('login_username');
           tempData.job_id =uuidv4();
           tempData.job_type ='update_machine';
           tempData.ver=version_arr[0].ver;
           update(tempData).then((response) => {
             let res = response;
-            if(res.code==200){
+            if(res.result=='accept'){
               this.dialogFormVisible = false;
               this.message_tips = '正在编辑计算机...';
               this.message_type = 'success';
               let i=0;
               let timer = setInterval(() => {
-                this.getStatus(timer,res.uuid,i++)
+                this.getStatus(timer,tempData.job_id,i++)
               }, 1000)
               //重启promentheus
               const prometheus = {};
               prometheus['job_id'] = uuidv4();
               prometheus['job_type']='update_prometheus';
               prometheus['ver']=version_arr[0].ver;
-              prometheus['username']=sessionStorage.getItem('login_username');
+              prometheus['user_name']=sessionStorage.getItem('login_username');
               pEnable(prometheus).then((resp) => {
                 if(resp.code==200){
                   let j=0;
                   let timerp = setInterval(() => {
-                  this.getStatus(timerp,resp.uuid,j++)
+                  this.getStatus(timerp,prometheus['job_id'],j++)
                   }, 1000)
                 }
               })
             }
             else{
-              this.message_tips = res.message;
+              this.message_tips = res.result;
               this.message_type = 'error';
             }
             messageTip(this.message_tips,this.message_type);
@@ -425,38 +441,38 @@ export default {
     handleDelete(row) {
       handleCofirm("此操作将永久删除该数据, 是否继续?").then( () =>{
          const tempData = {};
-          tempData.username = sessionStorage.getItem('login_username');
+          tempData.user_name = sessionStorage.getItem('login_username');
           tempData.job_id =uuidv4();
           tempData.job_type ='delete_machine';
           tempData.ver=version_arr[0].ver;
           tempData.hostaddr=row.hostaddr;
           delMachine(tempData).then((response)=>{
             let res = response;
-            if(res.code==200){
+            if(res.result=='accept'){
               this.dialogFormVisible = false;
               this.message_tips = '正在删除计算机...';
               this.message_type = 'success';
               let i=0;
               let timer = setInterval(() => {
-                this.getStatus(timer,res.uuid,i++)
+                this.getStatus(timer, tempData.job_id,i++)
               }, 1000)
               //重启promentheus
               const prometheus = {};
               prometheus['job_id'] = uuidv4();
               prometheus['job_type']='update_prometheus';
               prometheus['ver']=version_arr[0].ver;
-              prometheus['username']=sessionStorage.getItem('login_username');
+              prometheus['user_name']=sessionStorage.getItem('login_username');
               pEnable(prometheus).then((resp) => {
                 if(resp.code==200){
                   let j=0;
                   let timerp = setInterval(() => {
-                  this.getStatus(timerp,resp.uuid,j++)
+                  this.getStatus(timerp,prometheus['job_id'],j++)
                   }, 1000)
                 }
               })
             }
             else{
-              this.message_tips = res.message;
+              this.message_tips = res.result;
               this.message_type = 'error';
             }
             messageTip(this.message_tips,this.message_type);
@@ -467,26 +483,38 @@ export default {
       }); 
     },
     gotolink(hostaddr){
-      this.$router.push({
-        path: '/machine/node',
-        query: {
-            hostaddr: hostaddr
-        }
-      })
+      //先查看该计算机机上是否存在节点信息
+        getNodes(hostaddr).then(response => {
+          let total = response.total;
+          if(total==0){
+            messageTip('该计算机上还没有节点','error');
+          }else{
+            this.$router.push({
+              path: '/machine/node',
+              query: {
+                  hostaddr: hostaddr
+              }
+            })
+          }
+        });
     },
     getStatus (timer,data,i) {
       setTimeout(()=>{
-        getEvStatus(data).then((res) => {
-        if(res.res.result=='done'||res.res.result=='failed'){
+        const postarr={};
+        postarr.job_type='get_status';
+        postarr.ver=version_arr[0].ver;
+        postarr.job_id=data;
+        getEvStatus(postarr).then((res) => {
+        if(res.result=='done'||res.result=='failed'){
           clearInterval(timer);
-          this.info=res.res.info;
-          if(res.res.result=='done'){
+          this.info=res.info;
+          if(res.result=='done'){
             this.getList();
           }else{
             this.installStatus = true;
           }
         }else{
-          this.info=res.res.info;
+          this.info=res.info;
           this.installStatus = true;
         }
       });

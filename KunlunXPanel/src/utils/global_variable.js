@@ -10,6 +10,7 @@ const norepshards_arr=[{id:'1',label:'1'}];;
 const per_shard_arr=[{id:'3',label:'3'},{id:'4',label:'4'},{id:'5',label:'5'},{id:'6',label:'6'},{id:'7',label:'7'},{id:'8',label:'8'},{id:'9',label:'9'},{id:'10',label:'10'}];
 const node_type_arr=[{id:'add_shards',label:'shard'},{id:'add_comps',label:'计算节点'},{id:'add_nodes',label:'存储节点'}];
 const version_arr=[{ver:'0.1'}];
+const storage_type_arr=[{id:'HDFS',name:'HDFS'}];
 const ip_arr=[{ip:'http://192.168.0.127:57014'}];
 // const ip_arr=[{ip:'http://192.168.0.128:3000'}];
 export {
@@ -23,5 +24,6 @@ export {
   norepshards_arr,
   node_type_arr,
   version_arr,
-  ip_arr
+  ip_arr,
+  storage_type_arr
 }

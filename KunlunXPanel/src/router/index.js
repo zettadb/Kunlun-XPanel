@@ -47,7 +47,8 @@ export const constantRoutes = [
         meta: { 
           title: '首页',
           noCache: true,
-          icon: 'el-icon-s-home'
+          icon: 'el-icon-s-home',
+           requireAuth: true,//表示进入这个路由是需要登录的
         }
       }
     ]
@@ -57,10 +58,13 @@ export const constantRoutes = [
     component: Layout,
     redirect: '/system/menu',
     name: 'menu',
+    //hidden:true,
     meta: { 
+      roles: ['super_dba'] ,
       title: '系统管理',
       //requiresAuth:true, 
-      icon: 'el-icon-setting'
+      icon: 'el-icon-setting',
+      roles: ['super_dba']
     },
     children: [
       {
@@ -68,9 +72,11 @@ export const constantRoutes = [
         name: 'account',
         component: () => import('@/views/system/account'),
         meta: {
+          roles: ['super_dba'] ,
           title: '用户管理',
           //requiresAuth:true, 
-          noCache: true
+          noCache: true,
+          roles: ['super_dba']
         }
       },
       {
@@ -78,9 +84,11 @@ export const constantRoutes = [
         name: 'role',
         component: () => import('@/views/system/role'),
         meta: {
+          roles: ['super_dba'] ,
           title: '角色管理',
           //requiresAuth:true, 
-          noCache: true
+          noCache: true,
+          roles: ['super_dba']
          }
       },
       {
@@ -88,9 +96,11 @@ export const constantRoutes = [
         name: 'access',
         component: () => import('@/views/system/access'),
         meta: {
+          roles: ['super_dba'] ,
           title: '授权管理',
           //requiresAuth:true, 
-          noCache: true 
+          noCache: true ,
+          roles: ['super_dba']
         }
       },
     ]
@@ -168,6 +178,16 @@ export const constantRoutes = [
           //  icon: 'tree' 
           }
       },
+      {
+        path: 'storage',
+        name: 'Storage',
+        component: () => import('@/views/cluster/storagelist'),
+        meta: { 
+          title: '备份存储目标管理',
+          requiresAuth:true, 
+          //  icon: 'tree' 
+          }
+      },
       // {
       //   path: 'tree',
       //   name: 'Tree',
@@ -197,6 +217,7 @@ export const constantRoutes = [
     ]
   },
 
+
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true },
 ]
@@ -207,10 +228,13 @@ export const asyncRoutes = [
     component: Layout,
     redirect: '/system/menu',
     name: 'menu',
+    //hidden:true,
     meta: { 
+      roles: ['super_dba'] ,
       title: '系统管理',
-      //requiresAuth:true, 
-      icon: 'el-icon-setting'
+      requiresAuth:true, 
+      icon: 'el-icon-setting',
+      roles: ['super_dba']
     },
     children: [
       {
@@ -218,9 +242,11 @@ export const asyncRoutes = [
         name: 'account',
         component: () => import('@/views/system/account'),
         meta: {
+          roles: ['super_dba'] ,
           title: '用户管理',
-          //requiresAuth:true, 
-          noCache: true
+          requiresAuth:true, 
+          noCache: true,
+          roles: ['super_dba']
         }
       },
       {
@@ -228,9 +254,11 @@ export const asyncRoutes = [
         name: 'role',
         component: () => import('@/views/system/role'),
         meta: {
+          roles: ['super_dba'] ,
           title: '角色管理',
-          //requiresAuth:true, 
-          noCache: true
+          requiresAuth:true, 
+          noCache: true,
+          roles: ['super_dba']
          }
       },
       {
@@ -238,9 +266,11 @@ export const asyncRoutes = [
         name: 'access',
         component: () => import('@/views/system/access'),
         meta: {
+          roles: ['super_dba'] ,
           title: '授权管理',
-          //requiresAuth:true, 
-          noCache: true 
+          requiresAuth:true, 
+          noCache: true ,
+          roles: ['super_dba']
         }
       },
     ]

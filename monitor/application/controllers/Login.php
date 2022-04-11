@@ -1,11 +1,8 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
-
 class Login extends CI_Controller {
-
 	public function __construct()
 	{
-		//session_start();
 		parent::__construct();
 		//打开重定向
 		$this->load->helper('form');
@@ -56,11 +53,11 @@ class Login extends CI_Controller {
 				$userId=$res[0]['id'];
 				//获取角色id
 				$sql_role="select role_id,apply_all_cluster,affected_clusters from kunlun_role_assign where user_id='$userId' and valid_period='permanent' ";
-				$sql_role.=" union select role_id,apply_all_cluster,affected_clusters from kunlun_role_assign where user_id='$userId' and valid_period='from_to' and start_ts is not null and start_ts<now()";
-				$sql_role.=" union select role_id,apply_all_cluster,affected_clusters from kunlun_role_assign where user_id='$userId' and valid_period='from_to' and end_ts is not null and end_ts>now();";
+				$sql_role.=" union select role_id,apply_all_cluster,affected_clusters from kunlun_role_assign where user_id='$userId' and valid_period='from_to' and start_ts is not null and start_ts<now() and end_ts is null";
+				$sql_role.=" union select role_id,apply_all_cluster,affected_clusters from kunlun_role_assign where user_id='$userId' and valid_period='from_to' and end_ts is not null and end_ts>now() and start_ts is null";
+				$sql_role.=" union select role_id,apply_all_cluster,affected_clusters from kunlun_role_assign where user_id='$userId' and valid_period='from_to' and end_ts is not null  and start_ts is not null and start_ts<now() and end_ts>now();";
 				$res_role=$this->Login_model->getList($sql_role);
 				$token=$this->Login_model->getToken($user_name,'E',$this->key);
-				//print_r(count($res_role));exit;
 				$apply_all_cluster='';
 				$affected_clusters='';
 				if(!empty($res_role)) {
@@ -71,7 +68,6 @@ class Login extends CI_Controller {
 						$role_id = $res_role[0]['role_id'];
 						$apply_all_cluster = $res_role[0]['apply_all_cluster'];
 						$affected_clusters = $res_role[0]['affected_clusters'];
-						//if($apply_all_cluster==1){
 					}elseif($role_count>1){
 						$role_id='';
 						foreach ($res_role as $key=>$row){
@@ -326,7 +322,6 @@ class Login extends CI_Controller {
 					$data['affected_clusters'] = $affected_clusters;
 					$data['message'] = 'success';
 					print_r(json_encode($data));
-					//}
 				}else{
 					$data['code'] = 500;
 					$data['message'] = '该用户未授权，没有登录权限';
@@ -366,7 +361,6 @@ class Login extends CI_Controller {
 		//验证token
 		$this->load->model('Login_model');
 		$res_token=$this->Login_model->getToken($token,'D',$this->key);
-		//var_dump($res_token);exit;
 		if(!empty($res_token)){
 			$sql="select count(id) as count from kunlun_user where name='$res_token';";
 			$res=$this->Login_model->getList($sql);
@@ -383,7 +377,6 @@ class Login extends CI_Controller {
 						if($res_user[0]['count']==0){
 							$sql_update="update kunlun_user set password='$password' where name='$user_name';";
 							$res_update=$this->Login_model->updateList($sql_update);
-							//print_r($res_update);exit;
 							if($res_update==1){
 								$data['code'] = 200;
 								$data['message'] = '修改密码成功';
@@ -409,7 +402,7 @@ class Login extends CI_Controller {
 		}else{
 			$data['code'] = 500;
 			$data['message'] = 'token错误';
-			print_r(json_encode($data));return;
+			print_r(json_encode($data));
 		}
 	}
 	public function unique($str){
@@ -418,5 +411,68 @@ class Login extends CI_Controller {
 		$data = implode(',', $arr);
 		$data = trim($data,',');//trim — 去除字符串首尾处的空白字符
 		return $data;
+	}
+	public function  modifyParam(){
+		//判断参数
+		$string=json_decode(@file_get_contents('php://input'),true);
+		$ip = $string['ip'];
+		$port = $string['port'];
+		$f = fopen('./application/config/database.php', 'w+');
+		$file="<?php
+		defined('BASEPATH') OR exit('No direct script access allowed');
+		\$active_group = 'default';
+		\$query_builder = TRUE;
+		\$db_debug=TRUE;
+		\$db['role']=array(
+			'dsn'	=> '',
+			'hostname' => '$ip',
+			'port' => $port,
+			'username' => 'pgx',
+			'password' => 'pgx_pwd',
+			'database' => 'kunlun_dba_tools_db',
+			'dbdriver' => 'mysqli',
+			'dbprefix' => '',
+			'pconnect' => FALSE,
+			'db_debug' => TRUE,
+			'cache_on' => FALSE,
+			'cachedir' => '',
+			'char_set' => 'utf8',
+			'dbcollat' => 'utf8_general_ci',
+			'swap_pre' => '',
+			'encrypt' => FALSE,
+			'compress' => FALSE,
+			'stricton' => FALSE,
+			'failover' => array(),
+			'options' => array(PDO::ATTR_TIMEOUT => 5),
+			'save_queries' => TRUE,
+		);
+		\$db['default']=array(
+			'dsn'	=> '',
+			'hostname' => '$ip',
+			'port' => $port,
+			'username' => 'pgx',
+			'password' => 'pgx_pwd',
+			'database' => 'kunlun_metadata_db',
+			'dbdriver' => 'mysqli',
+			'dbprefix' => '',
+			'pconnect' => FALSE,
+			'db_debug' => TRUE,
+			'cache_on' => FALSE,
+			'cachedir' => '',
+			'char_set' => 'utf8',
+			'dbcollat' => 'utf8_general_ci',
+			'swap_pre' => '',
+			'encrypt' => FALSE,
+			'compress' => FALSE,
+			'stricton' => FALSE,
+			'failover' => array(),
+			'options' => array(PDO::ATTR_TIMEOUT => 5),
+			'save_queries' => TRUE,
+		);";
+		fwrite($f, $file);
+		fgets($f);
+		$data['code'] = 200;
+		$data['message'] = 'success';
+		print_r(json_encode($data));
 	}
 }

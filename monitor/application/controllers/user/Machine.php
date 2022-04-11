@@ -244,15 +244,27 @@ class Machine extends CI_Controller {
 					//存储节点
 					if ($key2 == 'port') {
 						if (!empty($value2)) {
-							$shard_node_id='s'.$res[$row]['id'];
-							$shard_node=array('id'=>$shard_node_id, 'text'=>$value2);
+							$shard_node_id='snode'.$res[$row]['id'];
+							//获取shard_name
+							$shard_arr=$this->getShard($res[$row]['shard_id']);
+							if($shard_arr!==false){
+								//$shard_arr_id=$shard_arr[0]['id'];
+								$shard_arr_name=$shard_arr[0]['name'];
+							}
+							//获取cluster_name
+							$cluster_arr=$this->getCluster($res[$row]['db_cluster_id']);
+							if($cluster_arr!==false){
+								//$cluster_arr_id=$shard_arr[0]['id'];
+								$cluster_arr_name=$cluster_arr[0]['name'];
+							}
+							$shard_node=array('id'=>$shard_node_id, 'text'=>$value2 ,'data'=>array('shard_name'=>$shard_arr_name,'cluster_name'=>$cluster_arr_name,'ip'=>$ip));
 							$shard_link=array('from'=>$storage_id, 'to'=>$shard_node_id);
 							array_push($nodes,$shard_node);
 							array_push($links,$shard_link);
 						}
 					}
 					//shard名称
-					if ($key2 == 'shard_id') {
+					/*if ($key2 == 'shard_id') {
 						if (!empty($value2)) {
 							$shard_node_id='s'.$res[$row]['id'];
 							$shard_arr=$this->getShard($value2);
@@ -266,23 +278,23 @@ class Machine extends CI_Controller {
 							array_push($nodes,$shard_node);
 							array_push($links,$shard_link);
 						}
-					}
+					}*/
 					//shard名称
-					if ($key2 == 'db_cluster_id') {
-						if (!empty($value2)) {
-							$shard_node_id='shard'.$res[$row]['shard_id'];
-							$shard_arr=$this->getCluster($value2);
-							if($shard_arr!==false){
-								$shard_arr_id=$shard_arr[0]['id'];
-								$shard_arr_name=$shard_arr[0]['name'];
-							}
-							$shard_n_id='c'.$shard_arr_id;
-							$shard_node=array('id'=>$shard_n_id, 'text'=>$shard_arr_name);
-							$shard_link=array('from'=>$shard_node_id, 'to'=>$shard_n_id);
-							array_push($nodes,$shard_node);
-							array_push($links,$shard_link);
-						}
-					}
+//					if ($key2 == 'db_cluster_id') {
+//						if (!empty($value2)) {
+//							$shard_node_id='shard'.$res[$row]['shard_id'];
+//							$shard_arr=$this->getCluster($value2);
+//							if($shard_arr!==false){
+//								$shard_arr_id=$shard_arr[0]['id'];
+//								$shard_arr_name=$shard_arr[0]['name'];
+//							}
+//							$shard_n_id='c'.$shard_arr_id;
+//							$shard_node=array('id'=>$shard_n_id, 'text'=>$shard_arr_name);
+//							$shard_link=array('from'=>$shard_node_id, 'to'=>$shard_n_id);
+//							array_push($nodes,$shard_node);
+//							array_push($links,$shard_link);
+//						}
+//					}
 				}
 			}
 			//array_unique($nodes);
@@ -297,34 +309,40 @@ class Machine extends CI_Controller {
 					//存储节点
 					if ($key2 == 'port') {
 						if (!empty($value2)) {
-							$shard_node_id='comp'.$res_comp[$row]['id'];
-							$shard_node=array('id'=>$shard_node_id, 'text'=>$value2);
+							$shard_node_id='cnode'.$res_comp[$row]['id'];
+							//获取cluster_name
+							$cluster_comp_arr=$this->getCluster($res_comp[$row]['db_cluster_id']);
+							if($cluster_comp_arr!==false){
+								//$cluster_arr_id=$shard_arr[0]['id'];
+								$cluster_arr_name=$cluster_comp_arr[0]['name'];
+							}
+							$shard_node=array('id'=>$shard_node_id, 'text'=>$value2,'data'=>array('cluster_name'=>$cluster_arr_name,'ip'=>$ip));
 							$shard_link=array('from'=>$comp_id, 'to'=>$shard_node_id);
 							array_push($nodes,$shard_node);
 							array_push($links,$shard_link);
-							$shard_comp_id='comp_name'.$res_comp[$row]['id'];
-							$shard_node1=array('id'=>$shard_comp_id, 'text'=>$res_comp[$row]['name']);
-							$shard_link1=array('from'=>$shard_node_id, 'to'=>$shard_comp_id);
-							array_push($nodes,$shard_node1);
-							array_push($links,$shard_link1);
+//							$shard_comp_id='comp_name'.$res_comp[$row]['id'];
+//							$shard_node1=array('id'=>$shard_comp_id, 'text'=>$res_comp[$row]['name']);
+//							$shard_link1=array('from'=>$shard_node_id, 'to'=>$shard_comp_id);
+//							array_push($nodes,$shard_node1);
+//							array_push($links,$shard_link1);
 						}
 					}
 					//集群名称
-					if ($key2 == 'db_cluster_id') {
-						if (!empty($value2)) {
-							$shard_node_id='comp_name'.$res_comp[$row]['id'];
-							$shard_arr=$this->getCluster($value2);
-							if($shard_arr!==false){
-								$shard_arr_id=$shard_arr[0]['id'];
-								$shard_arr_name=$shard_arr[0]['name'];
-							}
-							$shard_n_id='c'.$shard_arr_id;
-							$shard_node=array('id'=>$shard_n_id, 'text'=>$shard_arr_name);
-							$shard_link=array('from'=>$shard_node_id, 'to'=>$shard_n_id);
-							array_push($nodes,$shard_node);
-							array_push($links,$shard_link);
-						}
-					}
+//					if ($key2 == 'db_cluster_id') {
+//						if (!empty($value2)) {
+//							$shard_node_id='comp_name'.$res_comp[$row]['id'];
+//							$shard_arr=$this->getCluster($value2);
+//							if($shard_arr!==false){
+//								$shard_arr_id=$shard_arr[0]['id'];
+//								$shard_arr_name=$shard_arr[0]['name'];
+//							}
+//							$shard_n_id='c'.$shard_arr_id;
+//							$shard_node=array('id'=>$shard_n_id, 'text'=>$shard_arr_name);
+//							$shard_link=array('from'=>$shard_node_id, 'to'=>$shard_n_id);
+//							array_push($nodes,$shard_node);
+//							array_push($links,$shard_link);
+//						}
+//					}
 				}
 			}
 		}
@@ -347,5 +365,23 @@ class Machine extends CI_Controller {
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		return $res;
+	}
+	public function getNodeCount(){
+		//获取token
+		$arr = apache_request_headers();//获取请求头数组
+		$token=$arr["accessToken"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));return;
+		}
+		//判断参数
+		$string=json_decode(@file_get_contents('php://input'),true);
+		$ip= $string['ip'];
+		$sql="SELECT COUNT(id)as count from shard_nodes where hostaddr='$ip' UNION SELECT COUNT(id)as count from comp_nodes where hostaddr='$ip'";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		$data['total']=$res[0]['count'];
+		print_r(json_encode($data));
 	}
 }

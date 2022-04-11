@@ -38,11 +38,11 @@ module.exports = {
     },
     proxy:{
       '/api': {
-        target: 'http://192.168.0.128:57000/web',  //真实的后台接口
+        target: 'http://192.168.0.127:57000',  //真实的后台接口
         changOrigin: true,  //允许跨域
         logLevel:'debug',
         pathRewrite: {
-          '^/api': 'http://192.168.0.128:57000/web' 
+          '^/api': '' 
         }
       },
     }

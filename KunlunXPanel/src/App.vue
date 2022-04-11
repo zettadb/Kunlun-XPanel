@@ -29,7 +29,7 @@ export default {
     },
     beforeDestroy() {
         window.removeEventListener('resize', this.resizeFn);
-    }
+    },
 }
 </script>
 <style lang="less">
