@@ -1,6 +1,5 @@
 <template>
   <div class="app-container">
-  
     <el-table
       :key="tableKey"
       v-loading="listLoading"
@@ -15,12 +14,6 @@
         label="序号"
         width="50">
       </el-table-column>
-      <!-- <el-button type="text" @click="handleDetail(row)"></el-button> -->
-      <!-- <el-table-column label="请求参数" align="center">
-        <template slot-scope="{row}">
-          <span class="link-type"  @click="handleDetail(row.list)">{{ row.list}}</span>
-        </template>
-      </el-table-column> -->
       <el-table-column
             prop="job_type"
             align="center"
@@ -62,7 +55,6 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{row}">
-          <!-- <el-button type="primary" size="mini" @click="handleEdit(row)">授权</el-button> -->
           <el-button type="primary" size="mini" @click="handleDetail(row)">查看</el-button>
         </template>
       </el-table-column>

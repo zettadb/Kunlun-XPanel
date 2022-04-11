@@ -1,4 +1,4 @@
-import { login as login2, getUserPermissionByToken } from '@/api/login/user'
+import { login as login2 ,getInfo} from '@/api/login/user'
 import { getCookie, removeCookie } from '@/utils/auth'
 
 const getDefaultState = () => {
@@ -6,9 +6,6 @@ const getDefaultState = () => {
     token: getCookie('zettadb_vue_token'),
     name: '',
     avatar: '',
-    //villagename:getCookie('aiyunland_vue_villagename'),
-    // villageName:'测试小区2',
-    //villageid:getCookie('aiyunland_vue_villageid')
   }
 }
 
@@ -46,29 +43,38 @@ const actions = {
       })
     })
   },
-
   // get user info
-  getUserPermissionByToken({ commit, state }) {
+  getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
-      getUserPermissionByToken(state.token).then(response => {
-        const data  = response
-        if (!data) {
-          return reject('验证失败,请重新登录')
-        }
-        resolve(data)
-      }).catch(error => {
-        reject(error)
-      })
-    })
-  },
+      // getInfo(state.token).then(response => {
+      //   const { data } =response
+      //   //console.log(data);
+      //   if (!data) {
+      //     reject('Verification failed, please Login again.')
+      //   }
 
+      //   const { roles, name, avatar, introduction } = data
+
+      //   // roles must be a non-empty array
+      //   if (!roles || roles.length <= 0) {
+      //     reject('getInfo: roles must be a non-null array!')
+      //   }
+
+      //   commit('SET_ROLES', roles)
+      //   commit('SET_NAME', name)
+      //   commit('SET_AVATAR', avatar)
+      //   commit('SET_INTRODUCTION', introduction)
+      //   resolve(data)
+      // }).catch(error => {
+      //   reject(error)
+      // })
+     })
+  },
   // remove token
   resetToken({ commit }) {
     return new Promise(resolve => {
-      removeCookie('aiyunland_vue_token') // must remove  token  first
-      removeCookie('aiyunland_vue_name')
-      removeCookie('aiyunland_vue_villagename')
-      removeCookie('aiyunland_vue_villageid')
+      removeCookie('zettadb_vue_token') // must remove  token  first
+      removeCookie('zettadb_vue_name')
       commit('RESET_STATE')
       resolve()
     })

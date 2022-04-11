@@ -68,7 +68,7 @@ service.interceptors.request.use(
     let aiyunland_vue_token = sessionStorage.getItem('zettadb_vue_token');
     if(aiyunland_vue_token !== null && aiyunland_vue_token !== "undefined" && aiyunland_vue_token !== ''){
       // 让每个请求携带自定义token
-      config.headers['accessToken'] = sessionStorage.getItem('zettadb_vue_token')
+       config.headers['accessToken'] = sessionStorage.getItem('zettadb_vue_token')
     }
     // let aiyunland_cCode = sessionStorage.getItem('cCode');
     // if(aiyunland_cCode !== null && aiyunland_cCode !== "undefined" && aiyunland_cCode !== ''){

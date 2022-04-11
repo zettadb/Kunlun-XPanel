@@ -1,6 +1,6 @@
 <template>
   <div class="login-container">
-    <p class="header fl">泽拓科技-DBA管理平台</p>
+    <p class="header fl">泽拓科技-XPanel管理系统</p>
     <div class="login-wrap">
       <el-form
         ref="loginForm"
@@ -73,15 +73,12 @@
 }
 .login-container .login-wrap {
   padding: 170px 0;
-  padding: 200px 0;
   width: 100%;
   background: #e4f4fb;
   position: absolute;
-    /* top: 0; */
     top: 50px;
     left: 0;
     z-index: 11;
-    /* padding-top: 230px; */
     padding-top: 180px;
 }
 .title-container{
@@ -102,7 +99,9 @@
   background-color: #fff;
   border-radius: 5px;
 }
-
+.el-form-item{
+  margin-bottom: 33px;
+}
 </style>
 
 <script>
@@ -114,11 +113,6 @@ export default {
     const validateUsername = (rule, value, callback) => {
       if (!value) {
         callback(new Error("请输入用户名!"));
-      // } else if (!/^1[3456789]\d{9}$/.test(value)) {
-      //   callback(new Error("手机号格式不对!"));
-      // } else {
-      //   callback();
-      // }
       }else if (!(/^[A-Za-z0-9_]+$/.test(value)) ) {
         callback(new Error("用户名只能输入英文字母、数字、下划线"));
       } else {
@@ -126,19 +120,22 @@ export default {
       }
     };
     const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error("密码不少于6位!"));
-      } else if (!/^[A-Za-z0-9_]+$/.test(value)) {
-        callback(new Error("密码只能输入英文字母、数字、下划线!"));
+      var passwordreg = /(?=.*\d)(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]).{8,12}/;
+      if(!value){
+        callback(new Error("请输入密码"));
+      }
+      else if (!passwordreg.test(value)){
+        callback(new Error("密码必须是大写字母，小写字母，数字，特殊字符组成，且长度为8到12位"));
       } else {
         callback();
       }
     };
     const validateConfirmPassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error("密码不少于6位!"));
-      } else if (!/^[A-Za-z0-9_]+$/.test(value)) {
-        callback(new Error("密码只能输入英文字母、数字、下划线!"));
+      var passwordreg = /(?=.*\d)(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]).{8,12}/;
+      if (!value) {
+        callback(new Error("请再次输入密码"));
+      }else if (!passwordreg.test(value)){
+        callback(new Error("密码必须是大写字母，小写字母，数字，特殊字符组成，且长度为8到12位"));
       } else if(value!==this.loginForm.password) {
          callback(new Error("密码不一致!")); 
       } 
@@ -167,9 +164,6 @@ export default {
             validator: validateConfirmPassword,
           },
         ]
-        // inputCodeContent: [
-        //   { required: true, trigger: "blur", validator: validateInputCode },
-        // ],
       },
       loading: false,
       loadingCode:false,

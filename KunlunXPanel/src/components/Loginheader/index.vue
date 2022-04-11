@@ -1,32 +1,22 @@
 <template>
   <div class="oh login-header">
-      <p class="header fl">{{company}}-DBA管理平台</p>
+      <p class="header fl">{{company}}-XPanel管理系统</p>
       <!-- <p class="select_lang fr"><span>English</span><span>繁體中文</span><span>简体中文</span></p> -->
   </div>
 </template>
 
 <script>
 
-//import { getCustomer } from "@/api/login/user";
-
 export default {
   name: 'Loginheader',
   data() {
     return {
-      //company由本地存储中的客户id(cCode)查询后台接口得到
       company:''
     }
   },
   created() {
       this.company = "泽拓科技";
   },
-  methods: {
-    // getCustomer(){
-    //   getCustomer().then(response => {
-    //       this.company = response.result.company;
-    //     });
-    // }
-  }
 }
 </script>
 

@@ -104,7 +104,14 @@
         </el-form-item>
 
         <el-form-item label="登录密码:" prop="password" v-if="dialogStatus==='create'?true:false">
-          <el-input type="password" v-model="temp.password" placeholder="请输入登录密码" autocomplete='new-password' :disabled="dialogStatus==='detail'" />
+          <el-input   :type="pwdType" v-model="temp.password" placeholder="登录密码，大小写字母/数字/特殊字符组合，长度8-12位" autocomplete='new-password' >
+           <i slot="suffix" class="el-icon-view" @click="changeType"></i>
+          </el-input>
+        </el-form-item>
+         <el-form-item label="重复密码:" prop="confirmPassword"  v-if="dialogStatus==='create'?true:false">
+          <el-input v-model="temp.confirmPassword" :type="pwdconfirmType" placeholder="请再次输入登录密码"  >
+            <i slot="suffix" class="el-icon-view" @click="changeconfirmType"></i>
+          </el-input>
         </el-form-item>
 
         <el-form-item label="手机号码:" prop="phone_number" >
@@ -132,7 +139,6 @@
  import { messageTip,handleCofirm } from "@/utils";
  import { getAccountList,addAccount,update,delAccount,findMobile} from '@/api/system/account'
  import Pagination from '@/components/Pagination' 
-//  import {getUserPremisson} from '@/api/system/priv'
 
 export default {
   name: "account",
@@ -150,15 +156,29 @@ export default {
       }
     };
     const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error("密码不少于6位"));
+      var passwordreg = /(?=.*\d)(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]).{8,12}/;
+     if(!value){
+        callback(new Error("请输入登陆密码"));
+      }
+      else if (!passwordreg.test(value)){
+        callback(new Error("密码必须是大写字母，小写字母，数字，特殊字符组成，且长度为8到12位"));
       } else {
+        callback();
+      }
+    };
+    const validateconfirmPassword = (rule, value, callback) => {
+      if(!value){
+        callback(new Error("重复密码不能为空"));
+      }
+      else if(value != this.temp.password){
+        callback(new Error('两次输入密码不一致'));
+      }else {
         callback();
       }
     };
      const validateMobile = (rule, value, callback) => {
         if(this.search_person_has_m){
-          callback();return
+          callback();return;
         }
         if(!value){
             callback(new Error("请输入手机号"));
@@ -174,7 +194,7 @@ export default {
                 callback(new Error("手机号重复"));
               }
               else{
-                callback();
+                callback();return;
               }
             });
           }
@@ -184,7 +204,7 @@ export default {
                 callback(new Error("手机号重复"));
               }
               else{
-                callback();
+                callback();return;
               }
             });
           }
@@ -192,6 +212,17 @@ export default {
             callback();
           }
         }
+    };
+    const validateEmail = (rule, value, callback) => {
+       const regEmail = /^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+      if(!value){
+        callback(new Error("请输入邮箱地址"));
+      }
+     else if(!regEmail.test(value)){
+        callback(new Error('邮箱地址格式有误'));
+      }else {
+        callback();
+      }
     };
     return {
       tableKey: 0,
@@ -211,8 +242,8 @@ export default {
         phone_number:'',
         email:'',
         wechat_number:'',
-        old_mobile:''
-        //confirmpassword:'',
+        old_mobile:'',
+        confirmPassword: ''
       },
       dialogFormVisible: false,
       dialogEditVisible:false,
@@ -229,6 +260,8 @@ export default {
       user_drop_priv:JSON.parse(sessionStorage.getItem('priv')).user_drop_priv,
       user_edit_priv:JSON.parse(sessionStorage.getItem('priv')).user_edit_priv,
       row:{},
+      pwdType: 'password',
+      pwdconfirmType:'password',
       rules: {
         username: [
           { required: true, trigger: "blur",validator: validateUsername },
@@ -238,21 +271,20 @@ export default {
         ],
         phone_number: [
            { required: true, trigger: "blur",validator: validateMobile },
+        ],
+        confirmPassword: [
+          { required: true, trigger: "blur",validator: validateconfirmPassword },
+        ],
+        email: [
+          { required: true, trigger: "blur",validator: validateEmail },
         ]
       },
     };
   },
   created() {
     this.getList()
-    //this.getPremission()
   },
   methods: {
-    //  async getPremission() {
-    //   const res = await getUserPremisson()
-    //   this.user_add_priv = res.list[0].user_add_priv;
-    //   this.user_drop_priv = res.list[0].user_drop_priv;
-    //   this.user_edit_priv = res.list[0].user_edit_priv;
-    // },
     handleFilter() {
       this.listQuery.pageNo = 1
       this.getList()
@@ -282,8 +314,8 @@ export default {
         phone_number:'',
         email:'',
         wechat_number:'',
-        old_mobile:''
-       // confirmpassword:''
+        old_mobile:'',
+        confirmPassword: ''
       };
     },
     handleCreate() {
@@ -299,8 +331,6 @@ export default {
       this.$refs["dataForm"].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp);
-          //tempData.confirmpassword = this.temp.password
-          //console.log(tempData);return;
           //发送接口
           addAccount(tempData).then(response=>{
             let res = response;
@@ -327,7 +357,6 @@ export default {
     },
     handleUpdate(row) {
       this.temp = Object.assign({}, row); 
-       console.log(row);
       this.dialogStatus = "update";
       this.dialogFormVisible = true;
       this.dialogDetail = false;
@@ -340,7 +369,6 @@ export default {
       this.$refs["dataForm"].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp);
-          //tempData.confirmpassword = this.temp.password
           update(tempData).then((response) => {
             let res = response;
             if(res.code==200){
@@ -382,6 +410,16 @@ export default {
           console.log('quxiao')
           messageTip('已取消删除','info');
       }); 
+    },
+    changeconfirmType(){
+      this.pwdconfirmType = this.pwdconfirmType === 'password' ? 'text' : 'password';
+      let e = document.getElementsByClassName('el-icon-view')[1];
+      this.pwdconfirmType == 'text' ? e.setAttribute('style', 'color: #409EFF') : e.setAttribute('style', 'color: #c0c4cc');
+    },
+    changeType() {
+      this.pwdType = this.pwdType === 'password' ? 'text' : 'password';
+      let e = document.getElementsByClassName('el-icon-view')[0];
+      this.pwdType == 'text' ? e.setAttribute('style', 'color: #409EFF') : e.setAttribute('style', 'color: #c0c4cc');
     },
   },
 };

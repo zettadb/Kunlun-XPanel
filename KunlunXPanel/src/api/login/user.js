@@ -24,22 +24,22 @@ export function getUserPermissionByToken() {
   })
 }
 
-export function getRoleVillageList() {
-  return request({
-    url: '/user/web/queryRoleVillageList',
-    method: 'get',
-    params: ''
-  })
-}
+// export function getRoleVillageList() {
+//   return request({
+//     url: '/user/web/queryRoleVillageList',
+//     method: 'get',
+//     params: ''
+//   })
+// }
 
-//使用auth登录方式
-export function loginByAuth(data) {
-  return request({
-     url: '/login/timesweb/auth',
-     method: 'post',
-     data
-   });
- }
+// //使用auth登录方式
+// export function loginByAuth(data) {
+//   return request({
+//      url: '/login/timesweb/auth',
+//      method: 'post',
+//      data
+//    });
+//  }
 
 //通过customerCode获取到项目信息
 export function getCustomer() {
@@ -48,4 +48,15 @@ export function getCustomer() {
     method: 'get',
     params: ''
   })
+}
+ 
+export function change(data){
+  return request({
+    url: '/Login/modifyParam',
+    method: 'post',
+    data
+  })
+}
+export function getInfo(token) {
+  return {roles:Array('admin'), introduction: 'I am a super administrator', avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif', name: 'Super Admin'}
 }

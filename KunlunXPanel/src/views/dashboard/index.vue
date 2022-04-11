@@ -6,8 +6,8 @@
                     <MenuItem name="page1">
                         page1
                     </MenuItem>
-                    <MenuItem name="page2">
-                        page2
+                    <MenuItem name="page">
+                        page
                     </MenuItem>
                     <MenuItem name="page3">
                         page3
@@ -58,7 +58,7 @@
     
 </template>
 <script>
-import page from '../dashboard/page2.vue'
+import page from '../dashboard/page.vue'
 export default {
   components: { page },
     name: '',

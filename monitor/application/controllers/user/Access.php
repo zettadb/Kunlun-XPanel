@@ -2,18 +2,13 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Access extends CI_Controller {
-
-	public function __construct()
-	{
-		//session_start();
+	public function __construct(){
 		parent::__construct();
-
 		header('Access-Control-Allow-Origin:*'); // *代表允许任何网址请求
 		header('Access-Control-Allow-Headers: Content-Type,Content-Length,Accept-Encoding,X-Requested-with, Origin'); // 设置允许自定义请求头的字段
 		header('Access-Control-Allow-Methods:POST,GET,OPTIONS,DELETE'); // 允许请求的类型
 		header('Access-Control-Allow-Headers:x-requested-with,content-type,accessToken');//允许接受token
 		header('Content-Type: application/json;charset=utf-8');
-		//header('Access-Control-Allow-Credentials: true'); // 设置是否允许发送 cookies
 		$this->key=$this->config->item('key');
 	}
 	public function accessList(){
@@ -90,14 +85,11 @@ class Access extends CI_Controller {
 			$data['message'] = 'token不能为空';
 			print_r(json_encode($data));return;
 		}
-		//判断参数
-		$string=json_decode(@file_get_contents('php://input'),true);
-		$id = $string['id'];
 		//验证token
 		$this->load->model('Login_model');
 		$res_token=$this->Login_model->getToken($token,'D',$this->key);
 		if(!empty($res_token)) {
-			$sql = "select count(id) as count,id from kunlun_user where name='$res_token';";
+			$sql = "select count(id) as count,id from kunlun_user where name='$res_token' group by id;";
 			$res = $this->Login_model->getList($sql);
 			if (!empty($res)) {
 				if ($res[0]['count'] == 0) {
@@ -161,9 +153,6 @@ class Access extends CI_Controller {
 			$affected_clusters='';
 		}else{
 			$affected_clusters=implode(',',$affected_clusters);
-			//$arr=count($affected_clusters)-1;
-			//$affected_clusters=implode(",",$affected_clusters[$arr]) ;
-			//print_r($affected_clusters);exit;
 		}
 		//验证token
 		$this->load->model('Login_model');
@@ -177,24 +166,6 @@ class Access extends CI_Controller {
 					$data['message'] = 'token错误';
 					print_r(json_encode($data));
 				}else{
-					//查看该账户是否有增加角色的权限
-					/*$user_id=$res[0]['id'];
-					$role_id="select role_id from kunlun_role_assign where user_id='$user_id';";
-					$res_role=$this->Login_model->getList($role_id);
-					if($res_role[0]['role_id']===NULL) {
-						$data['code'] = 500;
-						$data['message'] = '该账户不是角色用户';
-						print_r(json_encode($data));return;
-					}
-					$role_id=$res_role[0]['role_id'];
-					$sql_role="select role_add_priv from kunlun_role_privilege where id='$role_id';";
-					//print_r($sql_role);exit;
-					$res_role_priv=$this->Login_model->getList($sql_role);
-					if($res_role_priv[0]['role_add_priv']!=='Y') {
-						$data['code'] = 500;
-						$data['message'] = '该账户不具备新增权限';
-						print_r(json_encode($data));return;
-					}*/
 					//验证权限是否重复添加
 					$sql_role_assign="select count(role_id) as count from kunlun_role_assign where role_id='$role_name' and user_id='$username';";
 					$res_role_assign=$this->Login_model->getList($sql_role_assign);
@@ -211,7 +182,7 @@ class Access extends CI_Controller {
 						}
 					}else{
 						$data['code'] = 501;
-						$data['message'] = '该权限已经存在，请前往编辑';
+						$data['message'] = '该授权已经存在，请前往编辑';
 					}
 					print_r(json_encode($data));
 
@@ -267,9 +238,6 @@ class Access extends CI_Controller {
 				$affected_clusters = "";
 			} else {
 				$affected_clusters = implode(',', $affected_clusters);
-				//$arr=count($affected_clusters)-1;
-				//$affected_clusters=implode(",",$affected_clusters[$arr]) ;
-				//print_r($affected_clusters);exit;
 			}
 		}
 		//验证token
@@ -285,7 +253,6 @@ class Access extends CI_Controller {
 					print_r(json_encode($data));
 				}else{
 					$sql_update="update kunlun_role_assign set valid_period='$valid_period',start_ts=$start_ts,end_ts=$end_ts,apply_all_cluster=$apply_all_cluster,affected_clusters='$affected_clusters',update_time=now() where user_id='$user_id' and role_id='$role_id'";
-					//echo $sql_update;exit;
 					$res_update=$this->Login_model->updateList($sql_update);
 					if($res_update==1){
 						$data['code'] = 200;
@@ -572,39 +539,4 @@ class Access extends CI_Controller {
 			}
 		}
 	}
-//	public function grantAuth(){
-//		//获取token
-//		$arr = apache_request_headers();//获取请求头数组
-//		$token=$arr["accessToken"];
-//		if (empty($token)) {
-//			$data['code'] = 201;
-//			$data['message'] = 'token不能为空';
-//			print_r(json_encode($data));return;
-//		}
-//		//判断参数
-//		$string=json_decode(@file_get_contents('php://input'),true);
-//		$id = $string['id'];
-//		//验证token
-//		$this->load->model('Login_model');
-//		$res_token=$this->Login_model->getToken($token,'D',$this->key);
-//		if(!empty($res_token)) {
-//			$sql = "select count(id) as count,id from kunlun_user where name='$res_token';";
-//			$res = $this->Login_model->getList($sql);
-//			if (!empty($res)) {
-//				if ($res[0]['count'] == 0) {
-//					$data['code'] = 500;
-//					$data['message'] = 'token错误';
-//					print_r(json_encode($data));
-//				} else {
-//					//获取用户数据
-//					$this->load->model('Login_model');
-//					$sql="select id,name from kunlun_user";
-//					$res=$this->Login_model->getList($sql);
-//					$data['code'] = 200;
-//					$data['list'] = $res;
-//					print_r(json_encode($data));
-//				}
-//			}
-//		}
-//	}
 }

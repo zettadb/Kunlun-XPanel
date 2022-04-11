@@ -519,7 +519,7 @@ class Role extends CI_Controller {
 		}
 		//判断参数
 		$string=json_decode(@file_get_contents('php://input'),true);
-		$id = $string['id'];
+		//$id = $string['id'];
 		//验证token
 		$this->load->model('Login_model');
 		$res_token=$this->Login_model->getToken($token,'D',$this->key);
@@ -533,7 +533,7 @@ class Role extends CI_Controller {
 					print_r(json_encode($data));
 				} else {
 					//获取用户数据
-					$sql="select id,role_name as name from kunlun_role_privilege";
+					$sql="select id,role_name as name from kunlun_role_privilege where role_name!='super_dba'";
 					$res=$this->Login_model->getList($sql);
 					$data['code'] = 200;
 					$data['list'] = $res;
@@ -553,7 +553,7 @@ class Role extends CI_Controller {
 		}
 		//判断参数
 		$string=json_decode(@file_get_contents('php://input'),true);
-		$id = $string['id'];
+		//$id = $string['id'];
 		//验证token
 		$this->load->model('Login_model');
 		$res_token=$this->Login_model->getToken($token,'D',$this->key);
@@ -567,7 +567,7 @@ class Role extends CI_Controller {
 					print_r(json_encode($data));
 				} else {
 					//获取用户数据
-					$sql="select id,name from kunlun_user";
+					$sql="select id,name from kunlun_user where name!='super_dba'";
 					$res=$this->Login_model->getList($sql);
 					$data['code'] = 200;
 					$data['list'] = $res;

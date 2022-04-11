@@ -44,8 +44,17 @@
           <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
         </span>
       </el-form-item>
-
-    
+      <el-form-item prop="meta">
+        <el-select v-model="loginForm.meta" placeholder="请选择元数据">
+          <el-option
+            v-for="item in options"
+            :key="item.value"
+            :label="item.label"
+            :value="item.label">
+          </el-option>
+        </el-select>
+        <i class="el-icon-plus" style="margin-left: 15px;font-size: 20px;"></i>
+      </el-form-item>
       <div class="oh change_password_wrap">
         <el-checkbox v-model="checked" class="remember">记住密码</el-checkbox>
         <router-link :to="{path: '/alteration'}" class="change_password">忘记密码</router-link>
@@ -68,10 +77,12 @@
 </template>
 
 <script>
-import { login} from "@/api/login/user";
-//import { validUsername } from '@/utils/validate'
+import {login,change} from "@/api/login/user";
 import Loginheader from '@/components/Loginheader';
 import { messageTip } from "@/utils";
+import { getMetaPrimary } from "@/api/cluster/listInterface";
+import { v4 as uuidv4 } from 'uuid';
+import {version_arr} from "@/utils/global_variable"
 
 export default {
   name: 'Login',
@@ -88,8 +99,15 @@ export default {
       }
     };
     const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error("密码不少于6位"));
+      if (value.length < 8) {
+        callback(new Error("密码不少于8位"));
+      } else {
+        callback();
+      }
+    };
+    const validateMeta= (rule, value, callback) => {
+      if (!value) {
+        callback(new Error("请选择元数据"));
       } else {
         callback();
       }
@@ -98,7 +116,7 @@ export default {
       loginForm: {
         username: '',
         password: '',
-        //inputCodeContent:''
+        meta:''
       },
       loginRules: {
         username: [
@@ -106,10 +124,10 @@ export default {
         ],
         password: [
           { required: true, trigger: "blur", validator: validatePassword }
-        ] //,
-        // inputCodeContent: [
-        //   { required: true, trigger: 'blur',validator: validateInputCode}
-        // ]
+        ],
+        meta: [
+          { required: true, trigger: "blur", validator: validateMeta }
+        ] 
       },
       loading: false,
       passwordType: 'password',
@@ -118,7 +136,9 @@ export default {
       randCodeImage:'',
       requestCodeSuccess:false,
       verifiedCode:'',
-      //currdatetime:''
+      options: [],
+      meta:''
+
     };
   },
   watch: {
@@ -130,6 +150,24 @@ export default {
     }
   },
   methods: {
+     getMetaList() {
+       const temp={};
+       temp.job_type='get_meta';
+       temp.version=version_arr[0].ver;
+       temp.job_id=uuidv4();
+       getMetaPrimary(temp).then(response => {
+          const res=response;
+          if(res.length>0){
+            for(let i=0;i<res.length;i++){
+              //取主节点
+              if(res[i].master=='true'){
+                const arr={'value':i+1,'label':res[i].ip+'('+res[i].port+')'};
+                this.options.push(arr);
+              }
+            }
+          }
+        });
+    },
     showPwd() {
       if (this.passwordType === "password") {
         this.passwordType = "";
@@ -140,9 +178,6 @@ export default {
         this.$refs.password.focus();
       });
     },
-    // inputCodeChange(e){
-    //     this.loginForm.inputCodeContent = e
-    // },
     handleLogin() {
       if(this.checked){
         sessionStorage.setItem('login_username',this.loginForm.username);
@@ -152,19 +187,19 @@ export default {
         sessionStorage.setItem('login_username','');
         sessionStorage.setItem('login_password','');
       }
-      //修改登录方式不需要加cCode参数后需要去掉注释
-      // if(!this.cCode && this.loginForm.username=="admin"){
-      //   messageTip('admin账号登录时url中必须有cCode参数','error');return;
-      // }
       this.$refs.loginForm.validate(async valid => {
         if (valid) {
+          let arr=this.loginForm.meta.substring(0,this.loginForm.meta.length-1).split('(');
+          let post_ip={
+            ip:arr[0],
+            port:arr[1]
+          }
+          let res = await change(post_ip);
+          //console.log(res);return;
           this.loading = true;
           let post_data = {
             username: this.loginForm.username,
             password: this.loginForm.password,
-            //checkKey:this.currdatetime,
-            //remember_me:true,
-            // captcha:this.loginForm.inputCodeContent
           };
           let loginRes = await login(post_data);
           if (loginRes.code == 200) {
@@ -202,11 +237,6 @@ export default {
     }
   },
   created: function() {
-    //进入这个页面表示不是单点登录,所以需要去掉单点登录缓存信息(url中带的token)
-    //sessionStorage.removeItem('login_auth');
-   // const params = getUrlVars('cCode');
-    //this.cCode = params.cCode;
-    //this.handlegetRandomImage();
     if(this.checked){
       this.loginForm.username = sessionStorage.getItem('login_username');
       this.loginForm.password = sessionStorage.getItem('login_password');
@@ -215,6 +245,7 @@ export default {
       this.loginForm.username = '';
       this.loginForm.password = '';
     }
+    this.getMetaList();
   }
 };
 </script>
@@ -286,8 +317,6 @@ $border_radius:5px;
 .login-container {
   height: 100%;
   width: 100%;
-  // width: 1440px;
-  // height: 820px;
   margin:0 auto;
   background-color: $bg;
   overflow: hidden;
@@ -311,8 +340,8 @@ $border_radius:5px;
     left: 0;
     z-index: 11;
     width: 100%;
-    // padding-top: 270px;
-    padding-top:230px;
+    // padding-top:230px;
+    padding-top:180px;
   }
 
   .header {

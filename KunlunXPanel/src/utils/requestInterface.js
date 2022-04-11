@@ -65,19 +65,19 @@ service.interceptors.request.use(
   config => {
     // console.log("请求拦截中的:cCode",sessionStorage.getItem('cCode'));
     // console.log("请求拦截中的:token",sessionStorage.getItem('aiyunland_vue_token'));
-    // let aiyunland_vue_token = sessionStorage.getItem('zettadb_vue_token');
-    // if(aiyunland_vue_token !== null && aiyunland_vue_token !== "undefined" && aiyunland_vue_token !== ''){
-    //   // 让每个请求携带自定义token
-    //   config.headers['accessToken'] = sessionStorage.getItem('zettadb_vue_token')
-    // }
+    let aiyunland_vue_token = sessionStorage.getItem('zettadb_vue_token');
+    if(aiyunland_vue_token !== null && aiyunland_vue_token !== "undefined" && aiyunland_vue_token !== ''){
+      // 让每个请求携带自定义token
+      config.headers['accessToken'] = sessionStorage.getItem('zettadb_vue_token')
+    }
     // let aiyunland_cCode = sessionStorage.getItem('cCode');
     // if(aiyunland_cCode !== null && aiyunland_cCode !== "undefined" && aiyunland_cCode !== ''){
     //   // 让每个请求携带自定义token
     //   config.headers['customerCode'] = sessionStorage.getItem('cCode')
     // }
     // config.headers['X-Ca-Stage'] = 'TEST'
-     config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
-    config.headers['Access-Control-Allow-Origin'] = '*'
+    //config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+    // config.headers['Access-Control-Allow-Origin'] = '*'
     // config.headers['Accept'] = '*/*'
     // config.headers['Access-Control-Allow-Methods'] = 'POST,GET'
     // config.headers['Connection'] = 'keep-alive'

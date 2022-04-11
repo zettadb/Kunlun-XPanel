@@ -39,13 +39,7 @@ export function getAllCluster() {
     param:''
   })
 }
-// export function getAllRole() {
-//   return request({
-//       url: '/user/Role/queryall',
-//       method: 'get',
-//       params:''
-//   });
-// }
+
 
 // export function getAllUser() {
 //   return request({

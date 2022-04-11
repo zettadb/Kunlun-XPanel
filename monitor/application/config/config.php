@@ -538,6 +538,6 @@ $config['meta_port'] = "40010";*/
 //$config['meta_port'] = "57301";
 //ver
 $config['ver'] = "0.1";
-$config['post_url'] = "http://192.168.0.127:57000";
+$config['post_url'] = "http://192.168.0.128:57000";
 $config['user_per_page'] = 15;
 $config['key']='zetta@509';

@@ -51,14 +51,14 @@ export default {
       var toPath = pathToRegexp.compile(path)
       return toPath(params)
     },
-    handleLink(item) {
-      const { redirect, path } = item
-      if (redirect) {
-        this.$router.push(redirect)
-        return
-      }
-      this.$router.push(this.pathCompile(path))
-    }
+    // handleLink(item) {
+    //   const { redirect, path } = item
+    //   if (redirect) {
+    //     this.$router.push(redirect)
+    //     return
+    //   }
+    //   this.$router.push(this.pathCompile(path))
+    // }
   }
 }
 </script>
