@@ -437,27 +437,27 @@ export default {
       })
     },
     onNodeClick(nodeObject, $event) {
-     this.currentNode = nodeObject
-      var _base_position = this.$refs.myPage.getBoundingClientRect()
-      if(this.currentNode.id=='cluster' ||this.currentNode.text.indexOf('shard') !=-1){
-         if((this.currentNode.data.name=='shard'&&this.shard_drop_priv!=='Y')){
-        this.isShowNodeMenuPanel = false
-      }
-      else if(this.currentNode.id=='cluster'){//cluster not display
-        this.isShowNodeMenuPanel = false
-      }
-      else{
-        this.isShowNodeMenuPanel = true
-        this.nodeName=this.currentNode.text;
-        if(this.currentNode.text.indexOf('shard') !=-1) {
-          this.type='shard'
-        }else if(this.currentNode.id=='cluster'){
-          this.type='cluster'
-        }
-        this.nodeMenuPanelPosition.x = $event.clientX - _base_position.x
-        this.nodeMenuPanelPosition.y = $event.clientY - _base_position.y
-      }
-      }
+    //  this.currentNode = nodeObject
+    //   var _base_position = this.$refs.myPage.getBoundingClientRect()
+    //   if(this.currentNode.id=='cluster' ||this.currentNode.text.indexOf('shard') !=-1){
+    //      if((this.currentNode.data.name=='shard'&&this.shard_drop_priv!=='Y')){
+    //     this.isShowNodeMenuPanel = false
+    //   }
+    //   else if(this.currentNode.id=='cluster'){//cluster not display
+    //     this.isShowNodeMenuPanel = false
+    //   }
+    //   else{
+    //     this.isShowNodeMenuPanel = true
+    //     this.nodeName=this.currentNode.text;
+    //     if(this.currentNode.text.indexOf('shard') !=-1) {
+    //       this.type='shard'
+    //     }else if(this.currentNode.id=='cluster'){
+    //       this.type='cluster'
+    //     }
+    //     this.nodeMenuPanelPosition.x = $event.clientX - _base_position.x
+    //     this.nodeMenuPanelPosition.y = $event.clientY - _base_position.y
+    //   }
+    //   }
     },
     onLineClick(lineObject, $event) {
       console.log('onLineClick:', lineObject)
