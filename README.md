@@ -20,7 +20,7 @@ git clone https://github.com/zettadb/Kunlun-XPanel.git
 cd Kunlun-XPanel/KunlunXPanel  
 #安装依赖  
 npm install  
-#修改ip，port  
+#修改成自己的ip，port  
 vi Kunlun-XPanel/KunlunXPanel/.env.production  
 VUE_APP_BASE_API为apache的环境路径  
 VUE_APP_INTERFACE_API为cluste_mgr路径  
