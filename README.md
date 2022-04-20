@@ -2,11 +2,11 @@
 The fantastic tools used to manager 
 ## 说明
 开发环境 Windows 10 nodejs 14.14.0 Apache 2.4.48 x64 PHP Version 7.3.30
+
 ## 技术栈
 vue2 + vuex + vue-router + webpack + ES6/7 + less + element-ui+PHP
-## 前序准备
-## 运行前准备：
 
+## 运行前准备
 由于此项目是基于nodejs+php的前后端结合项目，你需要进行nodejs的相关准备工作。项目运行之前，请确保系统已经安装以下应用：<br>
 (1)、node (6.0 及以上版本)。使用细节，请参考：[node的下载及安装](https://nodejs.org/en/download/)。<br>
 (2)、Apache。使用细节，请参考：[apache的下载及安装](https://httpd.apache.org/download)。<br>
