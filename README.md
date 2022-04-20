@@ -14,21 +14,21 @@ vue2 + vuex + vue-router + webpack + ES6/7 + less + element-ui+PHP
 (4)、安装PHP的mysql和pgsql扩展。请参考：PHP官方的扩展库http://pecl.php.net/
 
 项目运行
-# 克隆到本地
+#克隆到本地
 git clone https://github.com/zettadb/Kunlun-XPanel.git
-# 进入文件夹
+#进入文件夹
 cd Kunlun-XPanel/KunlunXPanel
-# 安装依赖
+#安装依赖
 npm install 
 #修改ip，port
 vi Kunlun-XPanel/KunlunXPanel/.env.production
 VUE_APP_BASE_API为apache的环境路径
 VUE_APP_INTERFACE_API为cluste_mgr路径
-# 开启本地服务器http://localhost:9528
+#开启本地服务器http://localhost:9528
 npm run dev 
-# 发布生产环境
+#发布生产环境
 npm run build:prod
-# 生产环境部署
+#生产环境部署
 把monitor和dist文件放到apache的html路径下
 mv dist KunlunXPanel
 http://ip:port/KunlunXPanel访问即可
