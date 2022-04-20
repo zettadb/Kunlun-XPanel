@@ -21,7 +21,8 @@ cd Kunlun-XPanel/KunlunXPanel
 #安装依赖  
 npm install  
 #修改成自己的ip，port  
-vi Kunlun-XPanel/KunlunXPanel/.env.production  
+生产环境：vi Kunlun-XPanel/KunlunXPanel/.env.production  
+开发环境：vi Kunlun-XPanel/KunlunXPanel/.env.development  
 VUE_APP_BASE_API为apache的环境路径  
 VUE_APP_INTERFACE_API为cluste_mgr路径  
 #开启本地服务器http://localhost:9528  
