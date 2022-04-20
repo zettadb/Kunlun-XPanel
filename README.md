@@ -14,8 +14,8 @@ vue2 + vuex + vue-router + webpack + ES6/7 + less + element-ui+PHP
 (4)、安装PHP的mysql和pgsql扩展。请参考：[PHP官方的扩展库](http://pecl.php.net/)。<br>
 
 ## 项目运行<br>
-#克隆到本地<br>
-git clone https://github.com/zettadb/Kunlun-XPanel.git<br>
+TabTab#克隆到本地<br>
+TabTabgit clone https://github.com/zettadb/Kunlun-XPanel.git<br>
 #进入文件夹<br>
 cd Kunlun-XPanel/KunlunXPanel<br>
 #安装依赖<br>
