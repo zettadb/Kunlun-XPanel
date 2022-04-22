@@ -539,5 +539,11 @@ $config['meta_port'] = "40010";*/
 //ver
 $config['ver'] = "0.1";
 $config['post_url'] = "http://192.168.0.128:57000";
+
 $config['user_per_page'] = 15;
 $config['key']='zetta@509';
+$config['pg_username'] = "abc";
+$config['default_username'] = "player";
+$config['pg_database'] = "postgres";
+$config['db_prefix'] = "kunlundb_";
+

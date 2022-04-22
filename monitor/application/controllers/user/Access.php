@@ -406,8 +406,14 @@ class Access extends CI_Controller {
 		//获取角色数据
 		$this->load->model('Login_model');
 		$sql="select role_name from kunlun_role_privilege where id='$id'";
+		//print_r($sql);exit;
 		$res=$this->Login_model->getList($sql);
-		return $res[0]['role_name'];
+		if(empty($res)){
+			$role_name='';
+		}else{
+			$role_name=$res[0]['role_name'];
+		}
+		return $role_name;
 	}
 	public function getEffectedCluser($arr){
 		//获取集群数据

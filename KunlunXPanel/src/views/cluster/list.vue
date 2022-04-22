@@ -32,7 +32,6 @@
       border
       highlight-current-row
       style="width: 100%;margin-bottom: 20px;">
-    >
       <el-table-column
         type="index"
         align="center"
@@ -103,7 +102,7 @@
         </el-checkbox-group>
       </el-form-item>
        <el-form-item label="高可用模式:" prop="ha_mode" v-if="dialogStatus==='create'?true:false">
-          <el-select v-model="temp.ha_mode" placeholder="请选择高可用模式" :disabled="dialogStatus==='detail'"  v-if="dialogStatus==='create'?true:false">
+          <el-select v-model="temp.ha_mode" placeholder="请选择高可用模式"  v-if="dialogStatus==='create'?true:false">
             <el-option
               v-for="item in hamodeData"
               :key="item.id"
@@ -115,46 +114,46 @@
   
         <div v-show="dialogStatus==='create'">
         <el-form-item label="shard个数:" prop="shards_count" >
-          <el-input  v-model="temp.shards_count" placeholder="请输入shard个数"  :disabled="dialogStatus==='detail'"/>
+          <el-input  v-model="temp.shards_count" placeholder="请输入shard个数" />
         </el-form-item>
         </div>
 
         <el-form-item label="副本数:" prop="snode_count"  v-if="dialogStatus==='create'?true:false">
-          <el-input  v-model="temp.snode_count" placeholder="副本数至少是3，且不能大于所选计算机数"  :disabled="dialogStatus==='detail'"/>
+          <el-input  v-model="temp.snode_count" placeholder="副本数至少是3，且不能大于所选计算机数"/>
         </el-form-item>
 
         <el-form-item label="集群名称:" prop="cluster_name"  v-if="dialogStatus==='create'?true:false">
-          <el-input  v-model="temp.cluster_name" placeholder="请输入集群名称"  :disabled="dialogStatus==='detail'"/>
+          <el-input  v-model="temp.cluster_name" placeholder="请输入集群名称" />
         </el-form-item>
 
         <el-form-item label="缓冲池大小:" prop="buffer_pool"  v-if="dialogStatus==='create'?true:false">
-          <el-input  v-model="temp.buffer_pool"  placeholder="缓冲池大小单位为GB"  :disabled="dialogStatus==='detail'"/>
+          <el-input  v-model="temp.buffer_pool"  placeholder="缓冲池大小单位为GB" />
         </el-form-item>
 
         <div v-show="isShow"  v-if="dialogStatus==='create'?true:false">
           <el-form-item label="每个计算节点最大连接数:" prop="max_connections">
-            <el-input  v-model="temp.max_connections" placeholder="请输入每个计算节点最大连接数"  :disabled="dialogStatus==='detail'"/>
+            <el-input  v-model="temp.max_connections" placeholder="请输入每个计算节点最大连接数" />
           </el-form-item>
           <el-form-item label="每个计算节点的cpu核数:" prop="per_computing_node_cpu_cores">
-            <el-input  v-model="temp.per_computing_node_cpu_cores" placeholder="请输入每个计算节点的cpu核数"  :disabled="dialogStatus==='detail'"/>
+            <el-input  v-model="temp.per_computing_node_cpu_cores" placeholder="请输入每个计算节点的cpu核数" />
           </el-form-item>
           <el-form-item label="每个计算节点最大的存储值:" prop="per_computing_node_max_mem_size">
-            <el-input  v-model="temp.per_computing_node_max_mem_size" placeholder="请输入每个计算节点最大的存储值"  :disabled="dialogStatus==='detail'"/>
+            <el-input  v-model="temp.per_computing_node_max_mem_size" placeholder="请输入每个计算节点最大的存储值" />
           </el-form-item>
           <el-form-item label="每个存储节点的cpu核数:" prop="per_storage_node_cpu_cores">
-            <el-input  v-model="temp.per_storage_node_cpu_cores" placeholder="请输入每个存储节点的cpu核数"  :disabled="dialogStatus==='detail'"/>
+            <el-input  v-model="temp.per_storage_node_cpu_cores" placeholder="请输入每个存储节点的cpu核数"/>
           </el-form-item>
           <el-form-item label="每个存储节点innodb缓冲池大小:" prop="per_storage_node_innodb_buffer_pool_size">
-            <el-input  v-model="temp.per_storage_node_innodb_buffer_pool_size" placeholder="请输入每个存储节点innodb缓冲池大小"  :disabled="dialogStatus==='detail'"/>
+            <el-input  v-model="temp.per_storage_node_innodb_buffer_pool_size" placeholder="请输入每个存储节点innodb缓冲池大小" />
           </el-form-item>
           <el-form-item label="每个存储节点rocksdb缓冲池大小:" prop="per_storage_node_rocksdb_buffer_pool_size">
-            <el-input  v-model="temp.per_storage_node_rocksdb_buffer_pool_size" placeholder="请输入每个存储节点rocksdb缓冲池大小"  :disabled="dialogStatus==='detail'"/>
+            <el-input  v-model="temp.per_storage_node_rocksdb_buffer_pool_size" placeholder="请输入每个存储节点rocksdb缓冲池大小"/>
           </el-form-item>
           <el-form-item label="每个存储节点初始化存储值:" prop="per_storage_node_initial_storage_size">
-            <el-input  v-model="temp.per_storage_node_initial_storage_size" placeholder="请输入每个存储节点初始化存储值"  :disabled="dialogStatus==='detail'"/>
+            <el-input  v-model="temp.per_storage_node_initial_storage_size" placeholder="请输入每个存储节点初始化存储值" />
           </el-form-item>
           <el-form-item label="每个存储节点最大存储值:" prop="per_storage_node_max_storage_size">
-            <el-input  v-model="temp.per_storage_node_max_storage_size" placeholder="请输入每个存储节点最大存储值"  :disabled="dialogStatus==='detail'"/>
+            <el-input  v-model="temp.per_storage_node_max_storage_size" placeholder="请输入每个存储节点最大存储值" />
           </el-form-item>
           <!-- <el-form-item label="集群名称:" prop="cluster_name">
             <el-input  v-model="temp.cluster_name" placeholder="请输入集群名称"  :disabled="dialogStatus==='detail'"/>
@@ -228,7 +227,7 @@
     <el-dialog title="恢复集群" :visible.sync="dialogRestoreVisible" custom-class="single_dal_view">
       <el-form
         ref="restoreForm"
-        :model="temp"
+        :model="restoretemp"
         :rules="rules"
         label-position="left"
         label-width="110px"
@@ -343,7 +342,7 @@ export default {
       const netxMonth=getNextMonth(time);
       if(!this.restoretemp.now){
         callback(new Error("请选择回档时间"));
-      }else if(vathis.restoretemp.nowlue<this.restoretemp.end_ts){
+      }else if(this.restoretemp.nowlue<this.restoretemp.end_ts){
         callback(new Error("回档时间不能早于最早备份时间"));
       }else if(this.restoretemp.now>netxMonth){
         callback(new Error("回档时间选择范围应在当前系统时间开始一个月之内"));
@@ -704,10 +703,13 @@ export default {
                             if(res_update.code==200){
                               this.dialogFormVisible = false;
                               sessionStorage.setItem('affected_clusters',res_update.effectCluster);
+                              console.log(sessionStorage.getItem('affected_clusters'));
                             }
                           });
                       }
-                      this.getList();
+                      setTimeout(() => {
+                        this.getList();
+                      }, 3000);
                     }else{
                       this.installStatus = true;
                     }
@@ -882,6 +884,7 @@ export default {
           if(res_update.code==200){
             this.dialogFormVisible = false;
             sessionStorage.setItem('affected_clusters',res_update.effectCluster);
+            //console.log(sessionStorage.getItem('affected_clusters'));
           }
         });
         //调接口删集群

@@ -137,7 +137,7 @@
 
 <script>
  import { messageTip,handleCofirm } from "@/utils";
- import { getAccountList,addAccount,update,delAccount,findMobile} from '@/api/system/account'
+ import { getAccountList,addAccount,update,delAccount,findMobile,findUserName} from '@/api/system/account'
  import Pagination from '@/components/Pagination' 
 
 export default {
@@ -152,16 +152,39 @@ export default {
         callback(new Error("用户账号只能输入英文字母、数字、下划线"));
       }
       else {
-        callback();
+        if(!this.temp.old_username){
+            findUserName(value).then((response) => {
+              if(response.message){
+                callback(new Error("用户账号重复"));
+              }
+              else{
+                callback();return;
+              }
+            });
+          }
+          else if(this.temp.old_username && (this.temp.old_username!==value)){
+            findUserName(value).then((response) => {
+              if(response.message){
+                callback(new Error("用户账号重复"));
+              }
+              else{
+                callback();return;
+              }
+            });
+          }
+          else{
+            callback();
+          }
       }
     };
     const validatePassword = (rule, value, callback) => {
-      var passwordreg = /(?=.*\d)(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]).{8,12}/;
+      //  var passwordreg = /(?=.*\d)(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]).{8,12}/;
+      var passwordreg = /^(?!.*\s)(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[0-9])(?=.*?[-!@#$%^&*()_+|~=`{}\[\]:";'<>?,.\/]).{8,12}$/;
      if(!value){
         callback(new Error("请输入登陆密码"));
       }
       else if (!passwordreg.test(value)){
-        callback(new Error("密码必须是大写字母，小写字母，数字，特殊字符组成，且长度为8到12位"));
+        callback(new Error("密码必须由大小写字母,数字,特殊字符(不含空格)组成,且长度为8到12位"));
       } else {
         callback();
       }
@@ -238,6 +261,7 @@ export default {
       search_person_has_m:false,
       temp: {
         username: '',
+        old_username:'',
         password:'',
         phone_number:'',
         email:'',
@@ -310,6 +334,7 @@ export default {
       this.search_person_has_m = false;
       this.temp = {
         username: '',
+        old_username:'',
         password:'',
         phone_number:'',
         email:'',
@@ -361,6 +386,7 @@ export default {
       this.dialogFormVisible = true;
       this.dialogDetail = false;
       this.temp.old_mobile = row.phone_number;
+      this.temp.old_username = row.username;
       this.$nextTick(() => {
         this.$refs["dataForm"].clearValidate();
       });

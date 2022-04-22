@@ -5,25 +5,13 @@ import store from '@/store'
 import { getCookie } from '@/utils/auth'
 //引入加解密方法 
 // import { decrypt } from '@/utils/crypto.js'
-
+// const baseURL=JSON.parse(sessionStorage.getItem("response")).BASE_URL
+//process.env.VUE_APP_BASE_API
+//baseURL+'/monitor/index.php'
 // create an axios instance
 const service = axios.create({
-  // baseURL: '/api', // 代理服务器,本地运行可以跨域访问
   baseURL: process.env.VUE_APP_BASE_API, //正常情况下用这个
   timeout: 60000, // request timeout
-  //解决长整型转换后丢失精度的问题
-  // transformResponse: [function (data) {
-  //   try {
-  //     // 如果转换成功则返回转换的数据结果
-  //     let data_arr = JSONbig.parse(data)
-  //     return data_arr
-  //   } catch (err) {
-  //     // 如果转换失败，则包装为统一数据格式并返回
-  //     return {
-  //       data
-  //     }
-  //   }
-  // }],
 })
 
 const err = (error) => {
@@ -63,19 +51,11 @@ const err = (error) => {
 // request(请求)拦截器
 service.interceptors.request.use(
   config => {
-    // console.log("请求拦截中的:cCode",sessionStorage.getItem('cCode'));
-    // console.log("请求拦截中的:token",sessionStorage.getItem('aiyunland_vue_token'));
     let aiyunland_vue_token = sessionStorage.getItem('zettadb_vue_token');
     if(aiyunland_vue_token !== null && aiyunland_vue_token !== "undefined" && aiyunland_vue_token !== ''){
       // 让每个请求携带自定义token
        config.headers['accessToken'] = sessionStorage.getItem('zettadb_vue_token')
     }
-    // let aiyunland_cCode = sessionStorage.getItem('cCode');
-    // if(aiyunland_cCode !== null && aiyunland_cCode !== "undefined" && aiyunland_cCode !== ''){
-    //   // 让每个请求携带自定义token
-    //   config.headers['customerCode'] = sessionStorage.getItem('cCode')
-    // }
-    // config.headers['X-Ca-Stage'] = 'TEST'
     return config
   },
   error => {

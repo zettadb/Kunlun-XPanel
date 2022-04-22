@@ -15,6 +15,7 @@ class Role extends CI_Controller {
 		header('Content-Type: application/json;charset=utf-8');
 		//header('Access-Control-Allow-Credentials: true'); // 设置是否允许发送 cookies
 		$this->key=$this->config->item('key');
+		$this->db=$this->load->database('role',true);
 	}
 	public function roleList(){
 		//GET请求
@@ -490,14 +491,35 @@ class Role extends CI_Controller {
 						$data['message'] = '该账户不具备删除角色权限';
 						print_r(json_encode($data));return;
 					}
-					$sql_update="delete from kunlun_role_privilege where id='$id';";
-					$res_update=$this->Login_model->updateList($sql_update);
-					if($res_update==1){
-						$data['code'] = 200;
-						$data['message'] = '删除成功';
+					//先查授权信息
+					$select_sql="select count(*) as count from kunlun_role_assign where role_id='$id';";
+					$res_select=$this->Login_model->updateList($select_sql);
+					$this->db->trans_start();
+					if($res_select>0) {
+						$sql_update="delete from kunlun_role_privilege where id='$id';";
+						$res_update=$this->Login_model->updateList($sql_update);
+						if($res_update==1){
+							$data['code'] = 200;
+							$data['message'] = '删除成功';
+							//删除授权信息
+							$sql_assign="delete from kunlun_role_assign where role_id='$id';";
+							$res_assign=$this->Login_model->updateList($sql_assign);
+							$this->db->trans_complete();
+						}else{
+							$data['code'] = 501;
+							$data['message'] = '删除失败';
+						}
 					}else{
-						$data['code'] = 501;
-						$data['message'] = '删除失败';
+						$sql_update="delete from kunlun_role_privilege where id='$id';";
+						$res_update=$this->Login_model->updateList($sql_update);
+						if($res_update==1){
+							$data['code'] = 200;
+							$data['message'] = '删除成功';
+							$this->db->trans_complete();
+						}else{
+							$data['code'] = 501;
+							$data['message'] = '删除失败';
+						}
 					}
 					print_r(json_encode($data));
 				}

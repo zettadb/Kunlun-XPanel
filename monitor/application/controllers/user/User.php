@@ -258,4 +258,31 @@ class User extends CI_Controller {
 			print_r(json_encode($data));
 		}
 	}
+	public function checkUserName(){
+		//获取token
+		$arr = apache_request_headers();//获取请求头数组
+		$token=$arr["accessToken"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));return;
+		}
+		//判断参数
+		$string=json_decode(@file_get_contents('php://input'),true);
+		$username = $string['username'];
+		//验证token
+		$this->load->model('Login_model');
+		$res_token=$this->Login_model->getToken($token,'D',$this->key);
+		if(!empty($res_token)) {
+			$sql = "select id from kunlun_user where name='$username';";
+			$res = $this->Login_model->getList($sql);
+			if (empty($res)) {
+				$data['code'] = 200;
+			}else{
+				$data['code'] = 501;
+				$data['message'] = '用户账号重复';
+			}
+			print_r(json_encode($data));
+		}
+	}
 }

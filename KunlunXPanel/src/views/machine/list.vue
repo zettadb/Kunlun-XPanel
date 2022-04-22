@@ -19,6 +19,7 @@
           type="primary"
           icon="el-icon-plus"
           @click="handleCreate"
+          v-if="machine_add_priv==='Y'"
         >新增</el-button>
         <div v-text="info" v-show="installStatus===true" class="info"></div>
       </div>
@@ -72,13 +73,13 @@
       >
         <template slot-scope="{row,$index}">
           <el-button type="primary" size="mini" @click="gotolink(row.hostaddr)">节点视图</el-button>
-          <el-button type="primary" size="mini" @click="handleUpdate(row)" >编辑</el-button>
+          <el-button type="primary" size="mini" @click="handleUpdate(row)"  v-if="machine_priv==='Y'">编辑</el-button>
           <el-button
             size="mini"
             type="danger"
             @click="handleDelete(row,$index)"
+             v-if="machine_drop_priv==='Y'"
           >删除</el-button>
-          <div v-text="info" v-show="installStatus===true" class="info"></div>
         </template>
       </el-table-column>
     </el-table>
@@ -245,6 +246,10 @@ export default {
       installStatus:false,
       info:'',
       row:{},
+      machine_add_priv:JSON.parse(sessionStorage.getItem('priv')).machine_add_priv,
+      machine_drop_priv:JSON.parse(sessionStorage.getItem('priv')).machine_drop_priv,
+      machine_priv:JSON.parse(sessionStorage.getItem('priv')).machine_priv,
+      
       rules: {
         hostaddr: [
           { required: true, trigger: "blur",validator: validateIPAddress },
@@ -285,7 +290,7 @@ export default {
     },
     getList() {
         this.listLoading = true
-        this.installStatus = false
+        // this.installStatus = false
         let queryParam = Object.assign({}, this.listQuery)
         //模糊搜索
         getMachineList(queryParam).then(response => {
@@ -362,12 +367,12 @@ export default {
               prometheus['ver']=version_arr[0].ver;
               prometheus['user_name']=sessionStorage.getItem('login_username');
               pEnable(prometheus).then((resp) => {
-                if(res.result=='accept'){
-                  let j=0;
-                  let timerp = setInterval(() => {
-                  this.getStatus(timerp,prometheus['job_id'],j++)
-                  }, 1000)
-                }
+                // if(res.result=='accept'){
+                //   let j=0;
+                //   let timerp = setInterval(() => {
+                //   this.getStatus(timerp,prometheus['job_id'],j++)
+                //   }, 1000)
+                // }
               })
             }
             else{

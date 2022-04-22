@@ -31,6 +31,7 @@ Vue.use(iView);
 Vue.use(utils)
 //uuid
 import { v4 as uuidv4 } from 'uuid';
+// import "../public/config.json"
 
 /**
  * If you don't want to use mock-server
@@ -51,10 +52,10 @@ if (process.env.NODE_ENV === 'production') {
  Vue.use(ElementUI)
 
 Vue.config.productionTip = false
-
 new Vue({
   //el: '#app',
   router,
   store,
   render: h => h(App)
 }).$mount('#app')
+

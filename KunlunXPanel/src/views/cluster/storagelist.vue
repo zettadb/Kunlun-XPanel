@@ -19,6 +19,7 @@
           type="primary"
           icon="el-icon-plus"
           @click="handleCreate"
+          v-if="user_name=='super_dba'"
         >新增</el-button>
         <div v-text="info" v-show="installStatus===true" class="info"></div>
       </div>
@@ -69,13 +70,15 @@
         align="center"
         width="300"
         class-name="small-padding fixed-width"
+        v-if="user_name=='super_dba'"
       >
         <template slot-scope="{row,$index}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)" >编辑</el-button>
+          <el-button type="primary" size="mini" @click="handleUpdate(row)" v-if="user_name=='super_dba'">编辑</el-button>
           <el-button
             size="mini"
             type="danger"
             @click="handleDelete(row,$index)"
+            v-if="user_name=='super_dba'"
           >删除</el-button>
           <div v-text="info" v-show="installStatus===true" class="info"></div>
         </template>
@@ -216,6 +219,7 @@ export default {
       info:'',
       row:{},
       stypelist:storage_type_arr,
+      user_name:sessionStorage.getItem('login_username'),
       rules: {
         hostaddr: [
           { required: true, trigger: "blur",validator: validateIPAddress },

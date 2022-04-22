@@ -984,7 +984,7 @@ export default {
             this.installStatus = true;
           }
         }else{
-          this.info=res.res.info;
+          this.info=res.info;
           this.installStatus = true;
         }
       });

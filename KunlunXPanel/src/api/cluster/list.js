@@ -7,7 +7,20 @@ export function getClusterList(query) {
         params:query
     });
 }
-
+export function getEffectComp(data) {
+    return request({
+      url: '/user/Cluster/getEffectComp',
+      method: 'post',
+      data
+    })
+}
+export function getExperience(data) {
+  return request({
+    url: '/user/Cluster/getExperience',
+    method: 'post',
+    data
+  })
+}
 // export function createCluster(data) {
 //     return request({
 //       url: '/user/Cluster/createCluster',

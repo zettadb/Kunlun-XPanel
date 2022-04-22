@@ -130,3 +130,20 @@ div:focus {
    font-size: 16px;
    display: inline-block;
  }
+ .e{
+	display: block
+}
+.r{
+	color: red;
+}
+// 超出文本省略，提示框长度设置
+.el-tooltip__popper{
+  max-width:20%;
+}
+.el-tooltip__popper,.el-tooltip__popper.is-dark{
+  background:rgb(48, 65, 86) !important;
+  color: #fff !important;
+  line-height: 24px;
+}
+// 表格有空格保留
+.el-table .cell{white-space:pre-wrap}

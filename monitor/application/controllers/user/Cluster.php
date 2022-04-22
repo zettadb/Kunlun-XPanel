@@ -12,6 +12,9 @@ class Cluster extends CI_Controller {
 		$this->key=$this->config->item('key');
 		$this->ver=$this->config->item('ver');
 		$this->post_url=$this->config->item('post_url');
+		$this->default_username=$this->config->item('default_username');
+		$this->pg_username=$this->config->item('pg_username');
+		$this->db_prefix=$this->config->item('db_prefix');
 	}
 	public function createCluster(){
 		//获取token
@@ -119,6 +122,7 @@ class Cluster extends CI_Controller {
 			}
 		}
 		$sql .=" order by id desc limit ".$pageSize." offset ".$start;
+		//print_r($sql);exit;
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		//total
@@ -1252,6 +1256,7 @@ class Cluster extends CI_Controller {
 						}
 						//更新授权表
 						$sql_update="update kunlun_role_assign set affected_clusters='$affected_clusters',update_time=now() where user_id='$user_id' and role_id='$role_id' and apply_all_cluster=2";
+						//print_r($sql_update);exit;
 						$res_update=$this->Login_model->updateList($sql_update);
 						if($res_update==1){
 							$data['code'] = 200;
@@ -1568,6 +1573,229 @@ class Cluster extends CI_Controller {
 		}
 		$data['code'] = 200;
 		$data['list'] = $arr;
+		print_r(json_encode($data));
+	}
+	function getUnixTimestamp (){
+		list($s1, $s2) = explode(' ', microtime());
+		return (float)sprintf('%.0f',(floatval($s1) + floatval($s2)) * 1000);
+	}
+	public function getEffectComp(){
+		//判断参数
+		$string=json_decode(@file_get_contents('php://input'),true);
+		$effectCluster = $string['effectCluster'];
+		$user_name = $string['user_name'];
+		$this->load->model('Cluster_model');
+		if(empty($effectCluster)){
+			$sql = "select hostaddr,port from comp_nodes ORDER BY id desc;";
+		}else{
+			$s = explode(",", $effectCluster);
+			$effect = "'".implode("','",$s)."'";
+			$sql = "select hostaddr,port from comp_nodes where db_cluster_id in ($effect) ORDER BY id desc;";
+		}
+		$res = $this->Cluster_model->getList($sql);
+		if(!empty($res)){
+			$host=$res[0]['hostaddr'];
+			$port= $res[0]['port'];
+			//先创建用户
+			$username=$this->default_username;
+			$pgusername=$this->pg_username;
+			$db_prefix=$this->db_prefix;
+			//$user="DO \$body$ BEGIN IF NOT EXISTS (SELECT * FROM   pg_catalog.pg_user WHERE  usename = '$username') THEN CREATE ROLE $username LOGIN PASSWORD '$username'; END IF;END \$body$;";
+			$user="SELECT usename FROM  pg_catalog.pg_user WHERE  usename = '$username'";
+			$res_usename=$this->Cluster_model->DB($user,$host,$port,$pgusername);
+			if(empty($res_usename)){
+				$createuser="CREATE ROLE $username LOGIN PASSWORD '$username';";
+				$res_cuser=$this->Cluster_model->DB($createuser,$host,$port,$pgusername);
+				if($res_cuser['code']==500){
+					$data['message'] = $res_cuser['error'];
+					$data['code'] = $res_cuser['code'];
+					print_r(json_encode($data));return;
+				}
+			}
+			//创建数据库
+			$db_name=$db_prefix.$user_name;
+			//var_dump($db_name);exit;
+			//$sqls="DO \$body$ BEGIN IF NOT EXISTS (select 1 from pg_database where datname ='$db_name' ) THEN CREATE DATABASE $db_name; END IF;END \$body$;";
+			$selectdb="select 1 from pg_database where datname ='$db_name';";
+			$res_user=$this->Cluster_model->DB($selectdb,$host,$port,$pgusername);
+			if(empty($res_user)){
+				$createdb="CREATE DATABASE  $db_name;";
+				$res_cdb=$this->Cluster_model->DB($createdb,$host,$port,$pgusername);
+				if($res_cdb['code']==500){
+					$data['message'] = $res_cdb['error'];
+					$data['code'] = $res_cdb['code'];
+					print_r(json_encode($data));return;
+				}
+				$this->Cluster_model->DB("DROP DATABASE  $db_prefix;",$host,$port,$pgusername);
+				$command="/var/www/html/sysbench-tpcc/prepare.sh $host $port $db_name $username $username 2>&1";
+				exec($command,$array, $state);
+			}
+			$node=array();
+			//获取表信息
+			$tablesql="select tablename from pg_tables where schemaname='public';";
+			$res_table=$this->Cluster_model->getResult($tablesql,$host,$port,$username,$db_name);
+			if($res_table!==false){
+				foreach($res_table as $key => $value) {
+					if($key=='arr'){
+						foreach ($value as $key2 => $value2) {
+							if(is_object($value2)) {
+								$value2 = (array)$value2;
+							}
+							if(is_array($value2)) {
+								$table=$value2['tablename'];
+								//print_r($table);exit;
+								//获取表的shard
+								$sql1="select t1.name from pg_shard t1 join pg_class t2 on t2.relshardid=t1.id and t2.relname='$table';";
+								$res1=$this->Cluster_model->getResult($sql1,$host,$port,$username,$db_name);
+								if(!empty($res1['arr'])){
+									$shard=(array)$res1['arr'][0];
+									$tablename=$table.'('.$shard['name'].')';
+								}else{
+									$tablename=$table.'()';
+								}
+								//获取表字段
+								$field="select a.attname AS column_name,concat_ws('',t.typname,SUBSTRING(format_type(a.atttypid,a.atttypmod) from '\(.*\)')) as udt_name from pg_class c, pg_attribute a , pg_type t where  c.relname = '$table' and a.attnum>0 and a.attrelid = c.oid and a.atttypid = t.oid ;";
+								$res_field=$this->Cluster_model->getResult($field,$host,$port,$username,$db_name);
+								$field_arr=array();
+								foreach ($res_field['arr'] as $key3 => $value3) {
+									$field_one=$value3['column_name'].'----'.$value3['udt_name'];
+									$list = array('id' => $key3,'label' => $field_one);
+									array_push($field_arr,$list);
+
+								}
+								$arr = array('id' => $key2,'label' => $tablename,'children'=>$field_arr);
+								array_push($node,$arr);
+							}
+						}
+					}
+				}
+			}
+			$nodes=array('id'=>0, 'label'=>$db_name,'children'=>$node);
+			$data['code']=200;
+			$data['res']=$nodes;
+			$data['ip']=$host;
+			$data['port']=$port;
+			$data['db']=$db_name;
+			print_r(json_encode($data));
+		}else{
+			$data['code']=501;
+			$data['message']='请先创建集群再体验!';
+			print_r(json_encode($data));
+		}
+	}
+	public function getExperience(){
+		//判断参数
+		$string=json_decode(@file_get_contents('php://input'),true);
+		$text = $string['text'];
+		$ip = $string['ip'];
+		$port = $string['port'];
+		$db= $string['db'];
+		$username=$this->default_username;
+		$this->load->model("Cluster_model");
+		//判断字符串的长度不能超过2000
+		$len = strlen($text);
+		if($len>2000){
+			$data['message']='请输入2000字节以内的sql语句！';
+		}else{
+			//请求时控制重复执行不能小于1秒
+			if(!isset($_SESSION['last_time'])){
+				//先获取时间戳
+				$time = $this->getUnixTimestamp();
+				$_SESSION['last_time']=$time;
+			}else{
+				$last_time=$_SESSION['last_time'];
+				$current_time=$this->getUnixTimestamp();
+				$min=$current_time-$last_time;
+				$_SESSION['last_time']=$current_time;
+				if($min<=1000){
+					$data['message']='操作太频繁，请1秒后重试！';
+					$data['code']=200;
+					print_r(json_encode($data));return;
+				}
+			}
+			//如果多条语句一起执行时，需要增加影响行数总数：affected rows和rows
+			//按分号分割字符串，引号内的分号不做处理
+			//$matches = preg_split('/(?<!\d)(;)/', $text);
+			$matches = str_getcsv($text,";");
+			//print_r($matches);exit;
+			$length=count($matches);
+			$all=$matches[$length-1]?$length-1:$length-2;
+			$count=0;$len='';$time=0;$history=array();$res_date=array();
+			$now = date('Y-m-d H:i:s',time());
+			$res_date1='';
+			for($i=0;$i<=$all;$i++){
+				$len1='';$time1='';$count1=0;$result='';
+				//语句添加分号处理
+				if($all==$length-2){
+					$sql=$matches[$i].';';
+				}else{
+					if($all==$i){
+						$sql=$matches[$i];
+					}else{
+						$sql=$matches[$i].';';
+					}
+				}
+				//查询
+				if(stripos($sql,'select')!==false){
+					$res_count=$this->Cluster_model->getResult($sql,$ip,$port,$username,$db);
+					if($res_count['code']==200){
+						$select_count=count($res_count['arr']);
+						//执行时间
+						$time1=$res_count['times'];
+						//影响的行数
+						//$len1='<p><span class="e">===Success===</span><span class="e">[SQL]:'.$sql.'</span><span class="e">影响行数：'.$select_count.'</span><span class="e">时间：'.$time1.'ms</span></p>';
+						$len1='<p><span class="e">===Success===</span><span class="e">[SQL]:'.$sql.'</span><span class="e">影响行数：'.$select_count.'</span><span class="e">时间：'.$time1.'ms</span></p>';
+						//执行历史表格里的行数
+						$count1=$select_count;
+						$data['list']=$res_count;
+						$result='执行成功';
+						$data['code']=$res_count['code'];
+						//查询列表
+						$res_date1=$res_count;
+					}else{
+						//$len1='<p><span class="r">===Error===</span><span class="e">[SQL]:'.$sql.'</span><span class="e">[Err]：'.$res_count['error'].'</span></p>';
+						$len1='<p><span class="r">===Error===</span><span class="e">[SQL]:'.$sql.'</span><span class="e">[Err]：'.$res_count['error'].'</span></p>';
+						$data['code']=$res_count['code'];
+						$data['error']=$res_count['error'];
+						$result=$res_count['error'];
+						$res_date1='';
+					}
+				}else{
+					//其他sql
+					$res_q=$this->Cluster_model->getResult($sql,$ip,$port,$username,$db);
+					if($res_q['code']==200){
+						$time1=$res_q['times'];
+						$len1='<p><span class="e">===Success===</span><span class="e">[SQL]:'.$sql.'</span><span class="e">影响行数：'.$res_q['q'].'</span><span style="display: block">时间：'.$time1.'ms</span></p>';
+						$count1=1;
+						$data['result']='执行成功';
+						$data['code']=$res_q['code'];
+						$result='执行成功';
+						$res_date1='';
+					}else{
+						$len1='<p><span class="r">===Error===</span><span class="e">[SQL]:'.$sql.'</span><span class="e">[Err]：'.$res_q['error'].'</span></p>';
+						$data['code']=$res_q['code'];
+						$data['error']=$res_q['error'];
+						$result=$res_q['error'];
+						$res_date1='';
+					}
+				}
+				$arr=array('sql'=>$sql,'result'=>$result,'time'=>$now,'ms'=>$time1,'lines'=>$count1);
+				array_push($history,$arr);
+				if(!empty($res_date1)){
+					array_push($res_date,$res_date1);
+				}
+				$len.=$len1;
+				//$time+=$time1;
+				$count=$count1;
+				$time=$time1;
+			}
+			$data['count']=$count;
+			$data['len']=$len;
+			$data['times']=$time;
+			$data['history']=$history;
+			$data['res_date']=$res_date;
+			$data['code']=200;
+		}
 		print_r(json_encode($data));
 	}
 }
