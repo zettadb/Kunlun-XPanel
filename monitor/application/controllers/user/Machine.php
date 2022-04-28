@@ -11,7 +11,7 @@ class Machine extends CI_Controller {
 		header('Access-Control-Allow-Origin:*'); // *代表允许任何网址请求
 		header('Access-Control-Allow-Headers: Content-Type,Content-Length,Accept-Encoding,X-Requested-with, Origin'); // 设置允许自定义请求头的字段
 		header('Access-Control-Allow-Methods:POST,GET,OPTIONS,DELETE'); // 允许请求的类型
-		header('Access-Control-Allow-Headers:x-requested-with,content-type,accessToken');//允许接受token
+		header('Access-Control-Allow-Headers:x-requested-with,content-type,Token');//允许接受token
 		header('Content-Type: application/json;charset=utf-8');
 		//header('Access-Control-Allow-Credentials: true'); // 设置是否允许发送 cookies
 		$this->key=$this->config->item('key');
@@ -51,7 +51,7 @@ class Machine extends CI_Controller {
 	public function createMachine(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -111,7 +111,7 @@ class Machine extends CI_Controller {
 	public function editMachine(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -171,7 +171,7 @@ class Machine extends CI_Controller {
 	public function deleteMachine(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -217,7 +217,7 @@ class Machine extends CI_Controller {
 	public  function getMachineNodesList(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -369,7 +369,7 @@ class Machine extends CI_Controller {
 	public function getNodeCount(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';

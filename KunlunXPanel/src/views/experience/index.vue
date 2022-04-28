@@ -181,7 +181,8 @@ export default {
             sessionStorage.setItem('db',res.db);
           }else if(res.code==501){
             router.push('/404');
-          }else{
+          }
+          else{
             messageTip(res.message,'error');
           }
         });

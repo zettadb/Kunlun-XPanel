@@ -3,13 +3,32 @@
 </template>
 
 <script>
+import {getClusterShards} from '@/api/cluster/list'
 export default {
     name: '',
+    props:{
+            clusterName:{typeof:Object,default:[]}
+        },
     data() {
-        return {}
+        return {cluster:[],shard:[],comp:[],nodes:[] }
+
     },
     methods: {
-        setChart() {
+        async setChart() {
+            for (let i = 0; i < this.clusterName.length; i++) {
+                let param = this.clusterName[i];
+                const newArr={"name":param.name,"icon":"circle"};
+                this.cluster.push(newArr)
+                //获取每个cluster的shard，comp，nodes数量
+                const res=await getClusterShards(param.id);
+                const shardArr={"value":res.shard,"name":param.name};
+                this.shard.push(shardArr)
+                const nodesArr={"value":res.nodes,"name":param.name};
+                this.nodes.push(nodesArr)
+                const compArr={"value":res.comp,"name":param.name};
+                this.comp.push(compArr)
+
+            }
             let option = {
                 title: [
                     {
@@ -45,13 +64,7 @@ export default {
                     formatter: "{a} <br/>{b} : {c} ({d}%)"
                 },
                 legend: {
-                    data: [
-                        {name: 'cluster1', icon: 'circle'},
-                        {name: 'cluster2', icon: 'circle'},
-                        {name: 'cluster3', icon: 'circle'},
-                        {name: 'cluster4', icon: 'circle'},
-                        {name: 'cluster5', icon: 'circle'},
-                    ],
+                    data: this.cluster,
                     left: "8%",
                     top: "10%",
                     itemWidth: 7,
@@ -67,13 +80,7 @@ export default {
                         type: 'pie',
                         radius: '40%',
                         center: ['17%', '60%'],
-                        data: [
-                            {value: 335, name: 'cluster1'},
-                            {value: 310, name: 'cluster2'},
-                            {value: 234, name: 'cluster3'},
-                            {value: 135, name: 'cluster4'},
-                            {value: 1548, name: 'cluster5'}
-                        ],
+                        data: this.shard,
                         label: {
                             fontSize: 8,
                             color: '#00CCFF'
@@ -102,13 +109,7 @@ export default {
                         type: 'pie',
                         radius: '40%',
                         center: ['50%', '60%'],
-                        data: [
-                            {value: 545, name: 'cluster1'},
-                            {value: 210, name: 'cluster2'},
-                            {value: 2534, name: 'cluster3'},
-                            {value: 1335, name: 'cluster4'},
-                            {value: 1548, name: 'cluster5'}
-                        ],
+                        data: this.nodes,
                         label: {
                             fontSize: 8,
                             color: '#00CCFF'
@@ -137,13 +138,7 @@ export default {
                         type: 'pie',
                         radius: '40%',
                         center: ['82%', '60%'],
-                        data: [
-                            {value: 435, name: 'cluster1'},
-                            {value: 310, name: 'cluster2'},
-                            {value: 334, name: 'cluster3'},
-                            {value: 1135, name: 'cluster4'},
-                            {value: 1548, name: 'cluster5'}
-                        ],
+                        data: this.comp,
                         label: {
                             fontSize: 8,
                             color: '#00CCFF'

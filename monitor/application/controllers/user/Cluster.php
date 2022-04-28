@@ -7,7 +7,7 @@ class Cluster extends CI_Controller {
 		header('Access-Control-Allow-Origin:*'); // *代表允许任何网址请求
 		header('Access-Control-Allow-Headers: Content-Type,Content-Length, Origin'); // 设置允许自定义请求头的字段
 		header('Access-Control-Allow-Methods:POST,GET,OPTIONS,DELETE'); // 允许请求的类型
-		header('Access-Control-Allow-Headers:x-requested-with,content-type,accessToken');//允许接受token
+		header('Access-Control-Allow-Headers:x-requested-with,content-type,Token');//允许接受token
 		header('Content-Type: application/json;charset=utf-8');
 		$this->key=$this->config->item('key');
 		$this->ver=$this->config->item('ver');
@@ -19,7 +19,7 @@ class Cluster extends CI_Controller {
 	public function createCluster(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -172,7 +172,7 @@ class Cluster extends CI_Controller {
 	public function delCluster(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -215,7 +215,7 @@ class Cluster extends CI_Controller {
 	public function backUpCluster(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -311,7 +311,7 @@ class Cluster extends CI_Controller {
 	public function ifBackUp(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -335,7 +335,7 @@ class Cluster extends CI_Controller {
 	public function restoreCluster(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -382,7 +382,7 @@ class Cluster extends CI_Controller {
 	public function getAllMachine(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -399,7 +399,7 @@ class Cluster extends CI_Controller {
 	public function getShards(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -418,7 +418,7 @@ class Cluster extends CI_Controller {
 	public  function addShards(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -467,7 +467,7 @@ class Cluster extends CI_Controller {
 	public  function addComps(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -516,7 +516,7 @@ class Cluster extends CI_Controller {
 	public  function addNodes(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -602,7 +602,7 @@ class Cluster extends CI_Controller {
 	public  function getClusterNodesList(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -668,7 +668,7 @@ class Cluster extends CI_Controller {
 			//array_unique($nodes);
 		}
 		//获取计算节点数据
-		$sql="select id,name,port,hostaddr,cpu_cores,max_mem_MB,max_conns from comp_nodes where db_cluster_id='$id'";
+		$sql="select id,name,port,hostaddr,cpu_cores,max_mem_MB,max_conns,status from comp_nodes where db_cluster_id='$id'";
 		$this->load->model('Cluster_model');
 		$res_comp=$this->Cluster_model->getList($sql);
 		if($res_comp!==false){
@@ -684,7 +684,7 @@ class Cluster extends CI_Controller {
 							$shard_link1=array('from'=>$comp_id, 'to'=>$shard_node_id);
 							array_push($nodes,$shard_node1);
 							array_push($links,$shard_link1);*/
-							$shard_node=array('id'=>$shard_node_id, 'text'=>$value2,'data'=>array('cluster_name'=>$cluster_name,'nick_name'=>$cluster_text,'port'=>$value2,'hostaddr'=>$res_comp[$row]['hostaddr'],'cpu_cores'=>$res_comp[$row]['cpu_cores'],'max_mem_MB'=>$res_comp[$row]['max_mem_MB'],'max_conns'=>$res_comp[$row]['max_conns'],'name'=>'pgsql','comp'=>$res_comp[$row]['name']));
+							$shard_node=array('id'=>$shard_node_id, 'text'=>$value2,'data'=>array('cluster_name'=>$cluster_name,'nick_name'=>$cluster_text,'port'=>$value2,'hostaddr'=>$res_comp[$row]['hostaddr'],'cpu_cores'=>$res_comp[$row]['cpu_cores'],'max_mem_MB'=>$res_comp[$row]['max_mem_MB'],'max_conns'=>$res_comp[$row]['max_conns'],'name'=>'pgsql','comp'=>$res_comp[$row]['name'],'status'=>$res_comp[$row]['status']));
 							$shard_link=array('from'=>$cluster_id, 'to'=>$shard_node_id,'text'=>$res_comp[$row]['hostaddr']);
 							array_push($nodes,$shard_node);
 							array_push($links,$shard_link);
@@ -709,7 +709,7 @@ class Cluster extends CI_Controller {
 	public  function postgresEnable(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -756,7 +756,7 @@ class Cluster extends CI_Controller {
 	public  function prometheusEnable(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -798,7 +798,7 @@ class Cluster extends CI_Controller {
 	public  function mysqlEnable(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -844,7 +844,7 @@ class Cluster extends CI_Controller {
 	public  function delShard(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -904,7 +904,7 @@ class Cluster extends CI_Controller {
 	public  function delComp(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -964,7 +964,7 @@ class Cluster extends CI_Controller {
 	public  function delSnode(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -1028,7 +1028,7 @@ class Cluster extends CI_Controller {
 	public  function controlInstance(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -1154,7 +1154,7 @@ class Cluster extends CI_Controller {
 	public function getEffectCluster(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -1204,7 +1204,7 @@ class Cluster extends CI_Controller {
 	public function updateAssign(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -1303,7 +1303,7 @@ class Cluster extends CI_Controller {
 	public function delAssign(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -1427,7 +1427,7 @@ class Cluster extends CI_Controller {
 	public function getNode(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -1502,7 +1502,7 @@ class Cluster extends CI_Controller {
 	public function getShardCount(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -1536,7 +1536,7 @@ class Cluster extends CI_Controller {
 	public function getStandbyNode(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -1586,11 +1586,11 @@ class Cluster extends CI_Controller {
 		$user_name = $string['user_name'];
 		$this->load->model('Cluster_model');
 		if(empty($effectCluster)){
-			$sql = "select hostaddr,port from comp_nodes ORDER BY id desc;";
+			$sql = "select hostaddr,port from comp_nodes  ORDER BY id desc;";
 		}else{
 			$s = explode(",", $effectCluster);
 			$effect = "'".implode("','",$s)."'";
-			$sql = "select hostaddr,port from comp_nodes where db_cluster_id in ($effect) ORDER BY id desc;";
+			$sql = "select hostaddr,port from comp_nodes where db_cluster_id in ($effect)  ORDER BY id desc;";
 		}
 		$res = $this->Cluster_model->getList($sql);
 		if(!empty($res)){
@@ -1796,6 +1796,34 @@ class Cluster extends CI_Controller {
 			$data['res_date']=$res_date;
 			$data['code']=200;
 		}
+		print_r(json_encode($data));
+	}
+	public function getClusterShards(){
+		//获取token
+		$arr = apache_request_headers();//获取请求头数组
+		$token=$arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));return;
+		}
+		//判断参数
+		$string=json_decode(@file_get_contents('php://input'),true);
+		$cluster_id=$string['id'];
+		$this->load->model('Cluster_model');
+		//nodes
+		$sql_nodes="select count(id) as count from shard_nodes where db_cluster_id='$cluster_id'";
+		$nodes=$this->Cluster_model->getList($sql_nodes);
+		//shard
+		$sql_shard="select count(id) as count from shards where db_cluster_id='$cluster_id'";
+		$shards=$this->Cluster_model->getList($sql_shard);
+		//comp
+		$sql_comp="select count(id) as count from comp_nodes where db_cluster_id='$cluster_id'";
+		$comp=$this->Cluster_model->getList($sql_comp);
+		$data['code'] = 200;
+		$data['shard'] = (int)$shards[0]['count'];
+		$data['nodes'] =(int) $nodes[0]['count'];
+		$data['comp'] = (int)$comp[0]['count'];
 		print_r(json_encode($data));
 	}
 }

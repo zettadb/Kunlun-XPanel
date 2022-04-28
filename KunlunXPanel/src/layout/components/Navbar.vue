@@ -62,7 +62,7 @@ export default {
       this.$router.push(`/alteration`)
     },
     showMachine(){
-      window.open(ip_arr[0].ip+'/d/c8W2b01Zz/node-exporter-for-prometheus-dashboard-zhong-wen-jian-rong-ban?orgId=1');
+      window.open('http://'+ip_arr[0].ip+'/d/c8W2b01Zz/node-exporter-for-prometheus-dashboard-zhong-wen-jian-rong-ban?orgId=1');
     },
   }
 }

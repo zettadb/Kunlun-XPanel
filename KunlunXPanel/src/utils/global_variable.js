@@ -1,7 +1,7 @@
 // const baseURL = JSON.parse(sessionStorage.getItem("response")).API_URL;
 // let company=(baseURL || "").split(':');
 // const ip=company[0];
-const ip='192.168.0.127';
+const ip=process.env.VUE_APP_INTERFACE_API.split(':')[1].slice(2);
 const role_type_arr = [{value:'super_dba_role',label:'超级DBA'},{value:'ordinary_dba',label:'普通DBA'},{value:'ordinary_user',label:'普通用户'},{value:'role_user',label:'角色'}];
 const valid_period = [{value:'permanent',label:'永久'},{value:'from_to',label:'时间段'}];
 //const priv_type_arr = [{value:'user_add',label:'增加用户'},{value:'user_drop',label:'删除用户'},{value:'user_grant',label:'用户授权'},{value:'role_add',label:'添加角色'},{value:'role_drop',label:'删除角色'},{value:'role_edit',label:'编辑角色'},{value:'cluster_creata',label:'创建集群'},{value:'cluster_drop',label:'删除集群'},{value:'shard_create',label:'创建分片'},{value:'shard_drop',label:'删除分片'},{value:'storage_node_create',label:'创建存储节点'},{value:'storage_node_drop',label:'删除存储节点'},{value:'compute_node_create',label:'创建计算节点'},{value:'compute_node_drop',label:'删除计算节点'},{value:'machine_add',label:'创建计算机'},{value:'machine_drop',label:'删除计算机'}];
@@ -16,7 +16,7 @@ const node_type_arr=[{id:'add_shards',label:'shard'},{id:'add_comps',label:'计�
 const version_arr=[{ver:'0.1'}];
 const storage_type_arr=[{id:'HDFS',name:'HDFS'}];
 const ip_arr=[{ip:ip+':57014'}];
-// const ip_arr=[{ip:'http://192.168.0.128:3000'}];
+const timestamp_arr=[{time:new Date().getTime()}];
 export {
   role_type_arr,
   valid_period,
@@ -29,5 +29,6 @@ export {
   node_type_arr,
   version_arr,
   ip_arr,
-  storage_type_arr
+  storage_type_arr,
+  timestamp_arr
 }

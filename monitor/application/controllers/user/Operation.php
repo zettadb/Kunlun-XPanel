@@ -10,7 +10,7 @@ class Operation extends CI_Controller {
 		header('Access-Control-Allow-Origin:*'); // *代表允许任何网址请求
 		header('Access-Control-Allow-Headers: Content-Type,Content-Length,Accept-Encoding,X-Requested-with, Origin'); // 设置允许自定义请求头的字段
 		header('Access-Control-Allow-Methods:POST,GET,OPTIONS,DELETE'); // 允许请求的类型
-		header('Access-Control-Allow-Headers:x-requested-with,content-type,accessToken');//允许接受token
+		header('Access-Control-Allow-Headers:x-requested-with,content-type,Token');//允许接受token
 		header('Content-Type: application/json;charset=utf-8');
 		//header('Access-Control-Allow-Credentials: true'); // 设置是否允许发送 cookies
 		$this->key=$this->config->item('key');
@@ -71,12 +71,12 @@ class Operation extends CI_Controller {
 									}
 									$ip=rtrim($ip, ",");
 								}
-								$res[$row]['list']='<div>shard总个数：'.$string['shards'].'</div><div>每个shard含节点总个数：'.$string['nodes'].'</div><div>计算节点总个数：'.$string['comps'].'</div><div>每计算节点最大连接数：'.$string['max_connections'].'</div><div>缓冲池大小：'.$string['innodb_size'].'</div><div>cpu核数：'.$string['cpu_cores'].'</div><div>复制模式：'.$string['ha_mode'].'</div><div>选择计算机：'.$ip.'</div>';
+								$res[$row]['list']='<div>集群名称：'.$string['nick_name'].'</div><div>shard总个数：'.$string['shards'].'</div><div>每个shard含节点总个数：'.$string['nodes'].'</div><div>计算节点总个数：'.$string['comps'].'</div><div>每计算节点最大连接数：'.$string['max_connections'].'</div><div>缓冲池大小：'.$string['innodb_size'].'</div><div>cpu核数：'.$string['cpu_cores'].'</div><div>复制模式：'.$string['ha_mode'].'</div><div>选择计算机：'.$ip.'</div>';
 								//$res[$row]['list']=array('shard总个数'=>$string['shards'],'每个shard含节点总个数'=>$string['nodes'],'计算节点总个数'=>$string['comps'],'每计算节点最大连接数'=>$string['max_connections'],'缓冲池大小'=>$string['innodb_size'],'cpu核数'=>$string['cpu_cores'],'ha_mode'=>$string['ha_mode'],'选择计算机'=>$ip);
 							}
 							if($value2=='delete_cluster'){
 								$res[$row]['job_type'] = '删除集群';
-								$res[$row]['list']='<div>集群名称：'.$string['cluster_name'].'</div>';
+								$res[$row]['list']='<div>集群名称：'.$string['nick_name'].'</div>';
 								//$res[$row]['list']=array('集群名称'=>$string['cluster_name']);
 
 							}
@@ -104,7 +104,7 @@ class Operation extends CI_Controller {
 							}
 							if($value2=='restore_new_cluster'){
 								$res[$row]['job_type'] = '恢复集群';
-								$res[$row]['list']='<div>备份集群名称：'.$string['backup_cluster_name'].'</div>';
+								$res[$row]['list']='<div>备份集群名称：'.$string['backup_cluster_name'].'</div><div>新集群名称：'.$string['nick_name'].'</div>';
 								//$res[$row]['list']=array('备份集群名称'=>$string['backup_cluster_name']);
 							}
 							if($value2=='add_comps'){
@@ -122,6 +122,7 @@ class Operation extends CI_Controller {
 							}
 							if($value2=='delete_comp'){
 								$res[$row]['job_type'] = '删除计算节点';
+								$res[$row]['list']='<div>集群名称：'.$string['cluster_name'].'</div><div>计算节点名称：'.$string['comp_name'].'</div>';
 							}
 							if($value2=='add_nodes'){
 								$res[$row]['job_type'] = '增加存储节点';
@@ -156,6 +157,7 @@ class Operation extends CI_Controller {
 							}
 							if($value2=='create_machine'){
 								$res[$row]['job_type'] = '新增计算机';
+								$res[$row]['list']='<div>ip：'.$string['hostaddr'].'</div><div>机架编号：'.$string['rack_id'].'</div><div>数据目录：'.$string['datadir'].'</div><div>日志目录：'.$string['logdir'].'</div><div>wal日志目录：'.$string['wal_log_dir'].'</div><div>计算节点数据目录：'.$string['comp_datadir'].'</div>';
 							}
 							if($value2=='update_machine'){
 								$res[$row]['job_type'] = '编辑计算机';

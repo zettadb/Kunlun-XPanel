@@ -90,7 +90,7 @@
                             <radar-chart ref="chart7" id="right_3" :data="momentsRadarData"></radar-chart>
                         </div>
                         <div class="chart-68">
-                            <equipStatus ref="chart8" v-if="machineList" :machineStatus="machineList"></equipStatus>
+                            <equipStatus ref="chart8" v-if="machineList.machineTotal" :machineStatus="machineList"></equipStatus>
                             <!-- <single-area-chart ref="chart8" :selectRangeDate="selectRangeDate" id="right_4"></single-area-chart> -->
                         </div>
                     </div>
@@ -107,7 +107,7 @@
                         <span class="angle2"></span>
                         <span class="angle3"></span>
                         <span class="angle4"></span>
-                        <double-line ref="chart9" id="bottom_1"></double-line>
+                        <double-line ref="chart9" id="bottom_1" v-if="clusterName.length" :clusterNode="clusterName"></double-line>
                     </div>
                 </div>
                 <div class="list">
@@ -139,7 +139,7 @@
                         <span class="angle2"></span>
                         <span class="angle3"></span>
                         <span class="angle4"></span>
-                        <pie-chart ref="chart12" id="bottom_4"></pie-chart>
+                        <pie-chart ref="chart12" id="bottom_4" v-if="clusterName.length" :clusterName="clusterName"></pie-chart>
                     </div>
                 </div>
             </Col>
@@ -311,7 +311,7 @@ export default {
                 machineTotal:0,
                 machineOnline:0,
                 machineOffline:0
-            }
+            },
         }
     },
     created(){
@@ -333,8 +333,11 @@ export default {
         async getCluster() {
             const res = await getAllCluster();
             this.clusterTotal=res.total+'';
-            for(let i=0;i<res.total;i++){
-                this.clusterName.push(res.list[i].name)
+            if(res.total>0){
+                for(let i=0;i<res.total;i++){
+                    const newArr={"id":res.list[i].id,"name":res.list[i].nick_name};
+                    this.clusterName.push(newArr)
+                }
             }
         },
         async getClusterStauts(){

@@ -8,7 +8,7 @@ class User extends CI_Controller {
 		header('Access-Control-Allow-Origin:*'); // *代表允许任何网址请求
 		header('Access-Control-Allow-Headers: Content-Type,Content-Length,Accept-Encoding,X-Requested-with, Origin'); // 设置允许自定义请求头的字段
 		header('Access-Control-Allow-Methods:POST,GET,OPTIONS,DELETE'); // 允许请求的类型
-		header('Access-Control-Allow-Headers:x-requested-with,content-type,accessToken');//允许接受token
+		header('Access-Control-Allow-Headers:x-requested-with,content-type,Token');//允许接受token
 		header('Content-Type: application/json;charset=utf-8');
 		$this->key=$this->config->item('key');
 		$this->db=$this->load->database('role',true);
@@ -49,7 +49,7 @@ class User extends CI_Controller {
 	public function add(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -115,7 +115,7 @@ class User extends CI_Controller {
 	public function edit(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -167,7 +167,7 @@ class User extends CI_Controller {
 	public function delete(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -234,7 +234,7 @@ class User extends CI_Controller {
 	public function checkMobile(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -261,7 +261,7 @@ class User extends CI_Controller {
 	public function checkUserName(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';

@@ -20,7 +20,7 @@
       </SeeksRelationGraph>
     </div>
     <div v-show="isShowNodeMenuPanel&&g_loading" :style="{left: nodeMenuPanelPosition.x + 'px', top: nodeMenuPanelPosition.y + 'px' }" style="z-index: 999;padding:10px;background-color: #ffffff;border:#eeeeee solid 1px;box-shadow: 0px 0px 8px #cccccc;position: absolute;">
-      <div style="line-height: 25px;padding-left: 10px;color: #888888;font-size: 12px;">对{{nodeName}}进行操作：</div>
+      <div style="line-height: 25px;padding-left: 10px;color: #888888;font-size: 10px;">对{{nodeName}}进行操作：</div>
       <!-- <div class="c-node-menu-item" v-if="type==='shard'&& (storage_node_create_priv==='Y')" @click.stop="doAction('新增存储节点')">新增存储节点</div> -->
       <!-- <div class="c-node-menu-item" v-if="type==='shard'&& (storage_node_create_priv==='Y')" @click.stop="doAction('重做备机存储节点')">重做备机存储节点</div> -->
       <!-- <div class="c-node-menu-item" v-if="type==='cluster'&& (shard_create_priv==='Y')" @click.stop="doAction('新增存储集群')">新增存储集群</div> -->
@@ -30,6 +30,7 @@
       <div class="c-node-menu-item"  v-if="(type==='cnode'||type==='snode')&& (storage_disable_priv==='Y'||compute_disable_priv==='Y')" @click.stop="doAction('重启')">重启</div>
       <div class="c-node-menu-item"  v-if="(type==='shard'&& shard_drop_priv==='Y')||((type==='cnode'||type==='snode')&& compute_node_drop_priv==='Y')||((type==='cnode'||type==='snode')&& storage_node_drop_priv==='Y')" @click.stop="doAction('删除')">删除</div>
       <div class="c-node-menu-item"  v-if="(type==='cnode'||type==='snode')" @click.stop="doAction('进入')">进入</div>
+      <!-- <div class="c-node-menu-item"  v-if="user_name=='super_dba'&&(type==='cnode'||type==='snode')" @click.stop="doAction('设置全局变量')">设置全局变量</div> -->
     </div>
     <!--新增存储集群-->
     <el-dialog title="新增存储集群" :visible.sync="dialogShardVisible" custom-class="single_dal_view">
@@ -228,6 +229,7 @@ export default {
         detail: "新增存储节点",
         restore:'重做备机存储节点'
       },
+      user_name:sessionStorage.getItem('login_username'),
       g_loading: false,
       demoname: '---',
       range_horizontal: [ 100, 300 ],
@@ -329,15 +331,15 @@ export default {
                       this.$set(param.data, 'master', status[j].master)
                     }
                  }
-                 //console.log(param);
                 if(param.data.master=='true'){
                   this.$set(param.data, 'color', '#ff0000')
                 }else if(param.data.master=='false'){
                   this.$set(param.data, 'color', '#e98f36')
-                }else if(param.data.status=='offline'){
+                }else {
                   this.$set(param.data, 'color', '#acacac')
                 }
               }
+              //console.log(param);
             }
           })
           
@@ -411,7 +413,11 @@ export default {
             }
             if(param.id.indexOf('cnode')!=-1){
                this.$set(param.data, 'icon', 'iconfont icon-compnode')
-               this.$set(param.data, 'color', '#1196db')
+               if(param.data.status=='inactive'){
+                this.$set(param.data, 'color', '#acacac')
+               }else{
+                 this.$set(param.data, 'color', '#1196db')
+               }
             }
             if(param.id.indexOf('snode')!=-1){
                this.$set(param.data, 'icon', 'iconfont icon-snode')
@@ -526,7 +532,7 @@ export default {
                           this.info=res.info;
                           if(res.result=='done'){
                             //跳转新页面pgsql
-                            window.open(ip_arr[0].ip+'/d/postgresql/postgresql?orgId=1&refresh=5s');
+                            window.open('http://'+ip_arr[0].ip+'/d/postgresql/postgresql?orgId=1&refresh=5s');
                           }else{
                             this.installStatus = true;
                           }
@@ -561,7 +567,7 @@ export default {
                           this.info=res.info;
                           if(res.result=='done'){
                             //跳转新页面mysql
-                            window.open(ip_arr[0].ip+'/d/mysql/mysql?orgId=1&refresh=5s');
+                            window.open('http://'+ip_arr[0].ip+'/d/mysql/mysql?orgId=1&refresh=5s');
                           }else{
                             this.installStatus = true;
                           }
@@ -943,6 +949,9 @@ export default {
           this.machineTotal=res.total;
         });
       }
+      // if(actionName==='设置全局变量'){
+       
+      // }
       //获取备机节点
       const temp={};
       temp.cluster_id=this.currentNode.data.cluster_id;

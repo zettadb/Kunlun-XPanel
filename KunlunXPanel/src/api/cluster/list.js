@@ -256,3 +256,10 @@ export function getStandbyNode(data) {
     data
   })
 }
+export function getClusterShards(id) {
+  return request({
+    url: '/user/Cluster/getClusterShards',
+    method: 'post',
+    data:{id:id}
+  })
+}

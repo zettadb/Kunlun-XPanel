@@ -8,9 +8,16 @@ import { getCookie } from '@/utils/auth'
 // const baseURL=JSON.parse(sessionStorage.getItem("response")).BASE_URL
 //process.env.VUE_APP_BASE_API
 //baseURL+'/monitor/index.php'
+// const baseUrl = () => {
+//   const { promiseBaseUrl } = document.querySelector('html').dataset
+//   if (promiseBaseUrl.indexOf('http') === 0) {
+//     return `${promiseBaseUrl}`
+//   }
+//   return process.env.VUE_APP_BASE_API
+// }
 // create an axios instance
 const service = axios.create({
-  baseURL: process.env.VUE_APP_BASE_API, //正常情况下用这个
+  baseURL:  process.env.VUE_APP_BASE_API, //正常情况下用这个
   timeout: 60000, // request timeout
 })
 
@@ -54,7 +61,7 @@ service.interceptors.request.use(
     let aiyunland_vue_token = sessionStorage.getItem('zettadb_vue_token');
     if(aiyunland_vue_token !== null && aiyunland_vue_token !== "undefined" && aiyunland_vue_token !== ''){
       // 让每个请求携带自定义token
-       config.headers['accessToken'] = sessionStorage.getItem('zettadb_vue_token')
+       config.headers['Token'] = sessionStorage.getItem('zettadb_vue_token')
     }
     return config
   },

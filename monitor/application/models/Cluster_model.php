@@ -88,28 +88,28 @@ class Cluster_model extends CI_Model {
 		$database=$this->pg_database;
 		$pwd=$username;
 		$conn = pg_connect("host=$host dbname=$database user=$username password=$pwd port=$port");
-		@$query = pg_query($conn,$sql);
-		$q=pg_result_status($query);
-		if(!$query) {
+		@$query = pg_query($conn, $sql);
+		$q = pg_result_status($query);
+		if (!$query) {
 			$data['error'] = pg_last_error($conn);
-			$data['code']=500;
+			$data['code'] = 500;
 			return $data;
-		}else{
-			if($q==1) {
-				$data['code']=200;
-				$data['q']=$q;
+		} else {
+			if ($q == 1) {
+				$data['code'] = 200;
+				$data['q'] = $q;
 				return $data;
-			}else{
+			} else {
 				//查询语句
 				//获取字段的参数名pg_field_name
-				$td=array();
-				$tdn=pg_num_rows ($query);
+				$td = array();
+				$tdn = pg_num_rows($query);
 				for ($i = 0; $i < $tdn; ++$i) {
-					$td[]=pg_fetch_object($query, $i);
+					$td[] = pg_fetch_object($query, $i);
 				}
-				$data['code']=200;
-				$data['arr']=$td;
-				$data['q']=$q;
+				$data['code'] = 200;
+				$data['arr'] = $td;
+				$data['q'] = $q;
 				return $td;
 			}
 			pg_close($conn);

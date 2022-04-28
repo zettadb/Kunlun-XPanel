@@ -3,13 +3,26 @@
 </template>
 
 <script>
+import {getClusterShards} from '@/api/cluster/list'
 export default {
     name: '',
+    props:{
+        clusterNode:{typeof:Object,default:[]}
+    },
     data() {
-        return {}
+        return {cluster:[],comp:[],nodes:[]}
     },
     methods: {
-        setChart() {
+        async setChart() {
+            for (let i = 0; i < this.clusterNode.length; i++) {
+                let param = this.clusterNode[i];
+                this.cluster.push(param.name)
+                //获取每个cluster的shard，comp，nodes数量
+                const res=await getClusterShards(param.id);
+                this.nodes.push(res.nodes)
+                this.comp.push(res.comp)
+            }
+            console.log(this.cluster);
             let option = {
                 tooltip: {
                     trigger: 'axis'
@@ -48,7 +61,7 @@ export default {
                         color: '#61B9C8',
                         fontSize: 9
                     },
-                    data: ["集群1", "集群2", "集群3", "集群4", "集群5", "集群6", "集群7"]
+                    data: this.cluster
                 },
                 yAxis: [
                     {
@@ -124,7 +137,7 @@ export default {
                         itemStyle: {
                             color: '#F39800'
                         },
-                        data: [50, 132, 100, 300, 90, 230, 210]
+                        data: this.comp
                     },
                     {
                         name: '存储节点',
@@ -139,7 +152,7 @@ export default {
                         itemStyle: {
                             color: '#BF232A'
                         },
-                        data: [330, 310, 132, 100, 300, 90, 230]
+                        data: this.nodes
                     },
                 ]
             };

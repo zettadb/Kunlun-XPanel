@@ -82,7 +82,7 @@ import Loginheader from '@/components/Loginheader';
 import { messageTip } from "@/utils";
 import { getMetaPrimary } from "@/api/cluster/listInterface";
 import { v4 as uuidv4 } from 'uuid';
-import {version_arr} from "@/utils/global_variable"
+import {version_arr,timestamp_arr} from "@/utils/global_variable"
 
 export default {
   name: 'Login',
@@ -155,6 +155,13 @@ export default {
        temp.job_type='get_meta';
        temp.version=version_arr[0].ver;
        temp.job_id=uuidv4();
+       
+       //temp.job_type='get_meta_summary';
+       //temp.version=version_arr[0].ver;
+       //temp.job_id='';
+      //  temp.timestamp=timestamp_arr[0].time+'';
+      //  temp.paras={};
+       //console.log(temp);return;
        getMetaPrimary(temp).then(response => {
           const res=response;
           if(res.length>0){
@@ -217,11 +224,11 @@ export default {
     },
     goto(loginRes){
       this.loading = false;
-      console.log(loginRes.result);
-      if(!loginRes.accessToken){
+      console.log(loginRes);
+      if(!loginRes.Token){
         messageTip('登录接口没有返回token','error');return;
       }
-      sessionStorage.setItem('zettadb_vue_token',loginRes.accessToken);
+      sessionStorage.setItem('zettadb_vue_token',loginRes.Token);
       sessionStorage.setItem('zettadb_vue_name',loginRes.userName);
       let num =loginRes.num;
       if(num==1){
