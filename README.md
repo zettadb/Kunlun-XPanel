@@ -35,5 +35,5 @@ npm run build:prod
 #生产环境部署  
 把monitor、dist(dist文件在Kunlun-XPanel/KunlunXPanel目录下)和index.php文件都放到apache的/var/www/html/路径下  
 mv dist KunlunXPanel  
-http://ip:port/KunlunXPanel访问即可 
+http://ip:port/KunlunXPanel访问即可  
 默认账号密码均为super_dba 
