@@ -44,7 +44,11 @@
           <span class="link-type" @click="handleDetail(row)">{{ row.nick_name }}</span>
         </template>
       </el-table-column>
-
+      <el-table-column
+            prop="ha_mode"
+            align="center"
+            label="高可用模式">
+      </el-table-column>
       <el-table-column
             prop="comptotal"
             align="center"
@@ -93,6 +97,9 @@
         label-position="left"
         label-width="200px"
         >
+      <el-form-item label="集群名称:" prop="nick_name"  v-show="dialogStatus==='create'||'detail'">
+        <el-input  v-model="temp.nick_name" class="right_input" placeholder="请输入集群名称" :disabled="dialogStatus==='detail'"/>
+      </el-form-item>
       <el-form-item label="选择计算机:" prop="machinelist"  v-if="dialogStatus==='create'">
         <el-checkbox-group 
         v-model="temp.machinelist"
@@ -101,8 +108,8 @@
           <el-checkbox v-for="machine in machines" :label="machine.hostaddr" :key="machine.id">{{machine.hostaddr}}</el-checkbox>
         </el-checkbox-group>
       </el-form-item>
-       <el-form-item label="高可用模式:" prop="ha_mode" v-if="dialogStatus==='create'?true:false">
-          <el-select v-model="temp.ha_mode" placeholder="请选择高可用模式"  v-if="dialogStatus==='create'?true:false">
+       <el-form-item label="高可用模式:" prop="ha_mode" v-show="dialogStatus==='create'||'detail'" >
+          <el-select v-model="temp.ha_mode" placeholder="请选择高可用模式" :disabled="dialogStatus==='detail'">
             <el-option
               v-for="item in hamodeData"
               :key="item.id"
@@ -112,52 +119,51 @@
           </el-select>
         </el-form-item>
   
-        <div v-show="dialogStatus==='create'">
+        <div v-show="dialogStatus==='create'||'detail'">
         <el-form-item label="shard个数:" prop="shards_count" >
-          <el-input  v-model="temp.shards_count" placeholder="请输入shard个数" />
+          <el-input  v-model="temp.shards_count" class="right_input" placeholder="请输入shard个数" :disabled="dialogStatus==='detail'">
+            <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">个</i>
+          </el-input>
         </el-form-item>
         </div>
 
-        <el-form-item label="副本数:" prop="snode_count"  v-if="dialogStatus==='create'?true:false">
-          <el-input  v-model="temp.snode_count" placeholder="副本数至少是3，且不能大于所选计算机数"/>
+        <el-form-item label="副本数:" prop="snode_count"  v-show="dialogStatus==='create'||'detail'">
+          <el-input  v-model="temp.snode_count" class="right_input"  placeholder="副本数至少是3，且不能大于所选计算机数" :disabled="dialogStatus==='detail'">
+           <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">个</i>
+          </el-input>
         </el-form-item>
 
-        <el-form-item label="集群名称:" prop="cluster_name"  v-if="dialogStatus==='create'?true:false">
-          <el-input  v-model="temp.cluster_name" placeholder="请输入集群名称" />
-        </el-form-item>
-
-        <el-form-item label="缓冲池大小:" prop="buffer_pool"  v-if="dialogStatus==='create'?true:false">
-          <el-input  v-model="temp.buffer_pool"  placeholder="缓冲池大小单位为GB" />
+        <el-form-item label="缓冲池大小:" prop="buffer_pool"  v-show="dialogStatus==='create'||'detail'">
+          <el-input  v-model="temp.buffer_pool" class="right_input"  placeholder="缓冲池大小单位为GB" :disabled="dialogStatus==='detail'">
+            <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">GB</i>
+          </el-input>
         </el-form-item>
 
         <div v-show="isShow"  v-if="dialogStatus==='create'?true:false">
-          <el-form-item label="每个计算节点最大连接数:" prop="max_connections">
-            <el-input  v-model="temp.max_connections" placeholder="请输入每个计算节点最大连接数" />
+          <el-form-item label="每个计算节点最大连接数:"  prop="max_connections">
+            <el-input  v-model="temp.max_connections" class="right_input"  placeholder="请输入每个计算节点最大连接数" />
           </el-form-item>
           <el-form-item label="每个计算节点的cpu核数:" prop="per_computing_node_cpu_cores">
-            <el-input  v-model="temp.per_computing_node_cpu_cores" placeholder="请输入每个计算节点的cpu核数" />
+            <el-input  v-model="temp.per_computing_node_cpu_cores" class="right_input"  placeholder="请输入每个计算节点的cpu核数" />
           </el-form-item>
           <el-form-item label="每个计算节点最大的存储值:" prop="per_computing_node_max_mem_size">
-            <el-input  v-model="temp.per_computing_node_max_mem_size" placeholder="请输入每个计算节点最大的存储值" />
+            <el-input  v-model="temp.per_computing_node_max_mem_size" class="right_input"  placeholder="请输入每个计算节点最大的存储值" />
           </el-form-item>
           <el-form-item label="每个存储节点的cpu核数:" prop="per_storage_node_cpu_cores">
-            <el-input  v-model="temp.per_storage_node_cpu_cores" placeholder="请输入每个存储节点的cpu核数"/>
+            <el-input  v-model="temp.per_storage_node_cpu_cores" class="right_input"  placeholder="请输入每个存储节点的cpu核数"/>
           </el-form-item>
           <el-form-item label="每个存储节点innodb缓冲池大小:" prop="per_storage_node_innodb_buffer_pool_size">
-            <el-input  v-model="temp.per_storage_node_innodb_buffer_pool_size" placeholder="请输入每个存储节点innodb缓冲池大小" />
+            <el-input  v-model="temp.per_storage_node_innodb_buffer_pool_size" class="right_input"  placeholder="请输入每个存储节点innodb缓冲池大小" />
           </el-form-item>
           <el-form-item label="每个存储节点rocksdb缓冲池大小:" prop="per_storage_node_rocksdb_buffer_pool_size">
-            <el-input  v-model="temp.per_storage_node_rocksdb_buffer_pool_size" placeholder="请输入每个存储节点rocksdb缓冲池大小"/>
+            <el-input  v-model="temp.per_storage_node_rocksdb_buffer_pool_size" class="right_input"  placeholder="请输入每个存储节点rocksdb缓冲池大小"/>
           </el-form-item>
           <el-form-item label="每个存储节点初始化存储值:" prop="per_storage_node_initial_storage_size">
-            <el-input  v-model="temp.per_storage_node_initial_storage_size" placeholder="请输入每个存储节点初始化存储值" />
+            <el-input  v-model="temp.per_storage_node_initial_storage_size" class="right_input"  placeholder="请输入每个存储节点初始化存储值" />
           </el-form-item>
           <el-form-item label="每个存储节点最大存储值:" prop="per_storage_node_max_storage_size">
-            <el-input  v-model="temp.per_storage_node_max_storage_size" placeholder="请输入每个存储节点最大存储值" />
+            <el-input  v-model="temp.per_storage_node_max_storage_size" class="right_input"  placeholder="请输入每个存储节点最大存储值" />
           </el-form-item>
-          <!-- <el-form-item label="集群名称:" prop="cluster_name">
-            <el-input  v-model="temp.cluster_name" placeholder="请输入集群名称"  :disabled="dialogStatus==='detail'"/>
-          </el-form-item> -->
         </div>
         <div :class="isShow === false?'ro-90':'ro90'"  @click="toggle"  v-if="dialogStatus==='create'?true:false"><i class="el-icon-d-arrow-left" /></div>
       </el-form>
@@ -378,14 +384,14 @@ export default {
         callback();
       }
     };
-    const validateClusterName = (rule, value, callback) => {
-     if(!value){
-        callback(new Error("请输入集群名称"));
-      }
-      else {
-        callback();
-      }
-    };
+    // const validateClusterName = (rule, value, callback) => {
+    //  if(!value){
+    //     callback(new Error("请输入集群名称"));
+    //   }
+    //   else {
+    //     callback();
+    //   }
+    // };
     const validateNickName = (rule, value, callback) => {
       if(!value){
         callback(new Error("请输入新集群名称"));
@@ -432,7 +438,7 @@ export default {
         per_storage_node_rocksdb_buffer_pool_size:'',
         per_storage_node_initial_storage_size:'',
         per_storage_node_max_storage_size:'',
-        cluster_name:'',
+        nick_name:'',
         machinelist:[],
         node_type:'',
         shard_name:'',
@@ -525,9 +531,9 @@ export default {
         shards: [
             { required: true, trigger: "blur",validator: validateNodeTotal },
         ],
-        cluster_name: [
-            { required: true, trigger: "blur",validator: validateClusterName },
-        ],
+        // cluster_name: [
+        //     { required: true, trigger: "blur",validator: validateClusterName },
+        // ],
         nick_name: [
             { required: true, trigger: "blur",validator: validateNickName },
         ],
@@ -611,7 +617,7 @@ export default {
         per_storage_node_rocksdb_buffer_pool_size:'',
         per_storage_node_initial_storage_size:'',
         per_storage_node_max_storage_size:'',
-        cluster_name:'',
+        nick_name:'',
         // rack_name:'',
         machinelist:[],
         node_type:'',
@@ -669,7 +675,7 @@ export default {
           clusterData.cpu_cores=tempData.per_computing_node_cpu_cores;
           clusterData.ha_mode=tempData.ha_mode;
           clusterData.machinelist=machinelist;
-          clusterData.nick_name=tempData.cluster_name;
+          clusterData.nick_name=tempData.nick_name;
           //发送接口
           createCluster(clusterData).then(response=>{
             let res = response;
@@ -1092,3 +1098,8 @@ export default {
   },
 };
 </script>
+<style scoped>
+.right_input{
+  width:60%;
+}
+</style>

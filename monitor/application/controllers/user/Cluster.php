@@ -102,7 +102,7 @@ class Cluster extends CI_Controller {
 		//获取用户数据
 		if($apply_all_cluster==1){
 			if(empty($effectCluster)){
-				$sql="select id,name,when_created,nick_name from db_clusters ";
+				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters ";
 				if(!empty($username)){
 					$sql .=" where nick_name like '%$username%'";
 				}
@@ -113,9 +113,9 @@ class Cluster extends CI_Controller {
 				$effectCluster='NULL';
 			}
 			if(strpos($effectCluster,',')==false){
-				$sql="select id,name,when_created,nick_name from db_clusters where id=$effectCluster";
+				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters where id=$effectCluster";
 			}else{
-				$sql="select id,name,when_created,nick_name from db_clusters where id in ($effectCluster) ";
+				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters where id in ($effectCluster) ";
 			}
 			if(!empty($username)){
 				$sql .=" and nick_name like '%$username%'";
@@ -158,8 +158,15 @@ class Cluster extends CI_Controller {
 							//$nodetotal= $this->getThisNodes($value2);
 							$res[$row]['shardtotal'] = $shardtotal['nodedetail'];
 							$res[$row]['comptotal'] = $comptotal;
-							//$res[$row]['nodetotal'] = $nodetotal;
+							$res[$row]['shards_count'] = $shardtotal['shards_count'];
 						}
+					}
+					if($key2 == 'memo'){
+						$string=json_decode($res[$row]['memo'],true);
+						$res[$row]['snode_count'] = $string['nodes'];
+						$res[$row]['buffer_pool'] = $string['innodb_size'];
+						$res[$row]['machinelist'] = $string['machinelist'];
+						//print_r($string);exit;
 					}
 				}
 			}
@@ -570,6 +577,7 @@ class Cluster extends CI_Controller {
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		$count=count($res);
+		$data['shards_count']=$count;
 		if($count==1){
 			$resnode=$this->getThisNodes($id,$res[0]['id']);
 			$data['nodedetail']=$count.'个shard，'.$res[0]['name'].'('.$resnode.'个存储节点)';

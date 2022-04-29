@@ -216,22 +216,22 @@ export const constantRoutes = [
       }
     ]
   },
-  // {
-  //   path: '/experience',
-  //   component: Layout,
-  //   children: [
-  //     {
-  //       path: 'index',
-  //       name: 'Experience',
-  //       component: () => import('@/views/experience/index'),
-  //       meta: { 
-  //         title: '在线体验',
-  //         requiresAuth:true, 
-  //         icon: 'el-icon-coin'
-  //       }
-  //     },
-  //   ]
-  // },
+  {
+    path: '/experience',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        name: 'Experience',
+        component: () => import('@/views/experience/index'),
+        meta: { 
+          title: '在线体验',
+          requiresAuth:true, 
+          icon: 'el-icon-coin'
+        }
+      },
+    ]
+  },
 
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true },
