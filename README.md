@@ -17,7 +17,7 @@ vue2 + vuex + vue-router + webpack + ES6/7 + less + element-ui+PHP
 ## 项目运行
 #克隆到本地  
 主干：git clone https://github.com/zettadb/Kunlun-XPanel.git  
-0.9.1分支：git clone -b 0.9.1 https://github.com/zettadb/Kunlun-XPanel.git 
+0.9.1分支：git clone -b 0.9.1 https://github.com/zettadb/Kunlun-XPanel.git  
 #进入文件夹  
 cd Kunlun-XPanel/KunlunXPanel  
 #安装依赖  
