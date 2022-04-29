@@ -31,40 +31,40 @@ module.exports = {
       'after': true
     }],
     'block-spacing': [2, 'always'],
-    // 'brace-style': [2, '1tbs', {
-    //   'allowSingleLine': true
-    // }],
+    'brace-style': [2, '1tbs', {
+      'allowSingleLine': true
+    }],
     'camelcase': [0, {
       'properties': 'always'
     }],
-    // 'comma-dangle': [2, 'never'],
-    // 'comma-spacing': [2, {
-    //   'before': false,
-    //   'after': true
-    // }],
+    'comma-dangle': [2, 'never'],
+    'comma-spacing': [2, {
+      'before': false,
+      'after': true
+    }],
     'comma-style': [2, 'last'],
     'constructor-super': 2,
     'curly': [2, 'multi-line'],
     'dot-location': [2, 'property'],
     'eol-last': 2,
-    // 'eqeqeq': ["error", "always", {"null": "ignore"}],
+    'eqeqeq': ["error", "always", {"null": "ignore"}],
     'generator-star-spacing': [2, {
       'before': true,
       'after': true
     }],
     'handle-callback-err': [2, '^(err|error)$'],
-    // 'indent': [2, 2, {
-    //   'SwitchCase': 1
-    // }],
+    'indent': [2, 2, {
+      'SwitchCase': 1
+    }],
     'jsx-quotes': [2, 'prefer-single'],
     'key-spacing': [2, {
       'beforeColon': false,
       'afterColon': true
     }],
-    // 'keyword-spacing': [2, {
-    //   'before': true,
-    //   'after': true
-    // }],
+    'keyword-spacing': [2, {
+      'before': true,
+      'after': true
+    }],
     'new-cap': [2, {
       'newIsCap': true,
       'capIsNew': false
@@ -133,7 +133,7 @@ module.exports = {
     'no-this-before-super': 2,
     'no-throw-literal': 2,
     'no-trailing-spaces': 2,
-    // 'no-undef': 2,
+     'no-undef': 2,
     'no-undef-init': 2,
     'no-unexpected-multiline': 2,
     'no-unmodified-loop-condition': 2,
@@ -152,9 +152,9 @@ module.exports = {
     'no-useless-escape': 0,
     'no-whitespace-before-property': 2,
     'no-with': 2,
-    // 'one-var': [2, {
-    //   'initialized': 'never'
-    // }],
+    'one-var': [2, {
+      'initialized': 'never'
+    }],
     'operator-linebreak': [2, 'after', {
       'overrides': {
         '?': 'before',
@@ -166,29 +166,29 @@ module.exports = {
       'avoidEscape': true,
       'allowTemplateLiterals': true
     }],
-    // 'semi': [2, 'never'],
-    // 'semi-spacing': [2, {
-    //   'before': false,
-    //   'after': true
-    // }],
-    //'space-before-blocks': [2, 'always'],
+    'semi': [2, 'never'],
+    'semi-spacing': [2, {
+      'before': false,
+      'after': true
+    }],
+    'space-before-blocks': [2, 'always'],
     'space-before-function-paren': [2, 'never'],
     'space-in-parens': [2, 'never'],
-    // 'space-infix-ops': 2,
-    // 'space-unary-ops': [2, {
-    //   'words': true,
-    //   'nonwords': false
-    // }],
-    // 'spaced-comment': [2, 'always', {
-    //   'markers': ['global', 'globals', 'eslint', 'eslint-disable', '*package', '!', ',']
-    // }],
+    'space-infix-ops': 2,
+    'space-unary-ops': [2, {
+      'words': true,
+      'nonwords': false
+    }],
+    'spaced-comment': [2, 'always', {
+      'markers': ['global', 'globals', 'eslint', 'eslint-disable', '*package', '!', ',']
+    }],
     'template-curly-spacing': [2, 'never'],
     'use-isnan': 2,
     'valid-typeof': 2,
     'wrap-iife': [2, 'any'],
     'yield-star-spacing': [2, 'both'],
     'yoda': [2, 'never'],
-    // 'prefer-const': 2,
+    'prefer-const': 2,
     'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0,
     'object-curly-spacing': [2, 'always', {
       objectsInObjects: false
