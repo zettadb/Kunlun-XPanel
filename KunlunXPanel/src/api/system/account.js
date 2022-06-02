@@ -38,3 +38,10 @@ export function findMobile(mobile) {
     data:{phone_number:mobile}
   })
 }
+export function findUserName(username) {
+  return request({
+    url: '/user/User/checkUserName',
+    method: 'post',
+    data:{username:username}
+  })
+}

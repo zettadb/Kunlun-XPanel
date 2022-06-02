@@ -19,7 +19,7 @@
                                 <span>comp离线数</span>
                                 <span>storage离线数</span>
                             </div> -->
-                            <radar-chart ref="chart4" id="left_4" :data="officeRadarData"></radar-chart>
+                            <radar-chart ref="chart4" id="left_4" v-if="officeRadarData.indicator.length" :data="officeRadarData"></radar-chart>
                             <!-- <div class="ai_camera_list">
                                 <p class="title"> 
                                     <span class="equip_name" style="width:137px;">设备名称</span>
@@ -41,20 +41,37 @@
                 </div>
                 <div class="list" style="margin-top:200px;">
                     <div class="left">
-                        <span class='title'><span class="title-8">集群分布情况</span></span>
+                        <span class='title'><span class="title-8">操作记录列表</span></span>
                         <span class="angle1"></span>
                         <span class="angle2"></span>
                         <span class="angle3"></span>
                         <span class="angle4"></span>
                         <div class="chart-68">
-                            <bar-chart ref="chart3" id="left_3" :config="configData2"></bar-chart>
+                            <div class="per_inout_scroll_wrap">
+                            <p class="title_list">
+                                <span class="userName">用户名</span>
+                                <span class="personType">任务名称</span>
+                                <span class="passType">操作对象</span>
+                                <span class="address">状态</span>
+                                <span class="createTime">开始时间</span>
+                            </p>
+                             <div class="slide_wrap">
+                                <div class="bd">
+                                    <vue-seamless-scroll class="seamless-warp" :data="listData" :class-option="optionSingleHeightTime" >
+                                    <ul>
+                                        <li v-for="(item,index) in listData" :key="index"><span class="userName">{{item.user_name|ellipsis}}</span><span class="personType"  v-text="item.job_type"></span><span class="passType" >{{item.object|ellipsis}}</span><span class="address">{{item.status|ellipsis}}</span><span class="createTime" v-text="item.when_started"></span></li>
+                                    </ul>
+                                    </vue-seamless-scroll>
+                                </div>
+                            </div>
+                        </div>
+                            <!-- <bar-chart ref="chart3" id="left_3" :config="configData2"></bar-chart> -->
                         </div>
                         <div class="chart-32">
                             <!-- <radar-chart ref="chart4" id="left_4" :data="officeRadarData"></radar-chart> -->
                         </div>
                     </div>
                 </div>
-
             </Col>
             <Col span="8">
                 <div class="circlePie" id="circlePie">
@@ -73,10 +90,14 @@
                         <!-- <div class="chart-32">
                             <radar-chart ref="chart5" id="right_1" :data="friendRadarData"></radar-chart>
                         </div> -->
-                        <div class="chart-68">
-                            <double-bar-chart ref="chart6"></double-bar-chart>
+                        <div class="chart-68" style="position:relative;">
+                            <div class="backbg">
+                            <select name="status" id="tabs" class="selectGroup changeItem sel" v-model="ip" @change="ipFunc(ip)">
+                                <option v-for="item in ips" :key="item.value" :label="item.label" :value="item.value"></option>
+                            </select>
                         </div>
-
+                            <double-bar-chart ref="chart6" v-if="selectedIP.length" :selectResult="selectedIP"  ></double-bar-chart>
+                        </div>
                     </div>
                 </div>
                 <div class="list" style="margin-top:200px;">
@@ -87,10 +108,10 @@
                         <span class="angle3"></span>
                         <span class="angle4"></span>
                         <div class="chart-32">
-                            <radar-chart ref="chart7" id="right_3" :data="momentsRadarData"></radar-chart>
+                            <radar-chart ref="chart7" id="right_3" v-if="momentsRadarData.indicator.length" :data="momentsRadarData"></radar-chart>
                         </div>
                         <div class="chart-68">
-                            <equipStatus ref="chart8" v-if="machineList" :machineStatus="machineList"></equipStatus>
+                            <equipStatus ref="chart8" v-if="machineList.machineTotal" :machineStatus="machineList"></equipStatus>
                             <!-- <single-area-chart ref="chart8" :selectRangeDate="selectRangeDate" id="right_4"></single-area-chart> -->
                         </div>
                     </div>
@@ -107,7 +128,7 @@
                         <span class="angle2"></span>
                         <span class="angle3"></span>
                         <span class="angle4"></span>
-                        <double-line ref="chart9" id="bottom_1"></double-line>
+                        <double-line ref="chart9" id="bottom_1" v-if="clusterName.length" :clusterNode="clusterName"></double-line>
                     </div>
                 </div>
                 <div class="list">
@@ -117,12 +138,12 @@
                         <span class="angle2"></span>
                         <span class="angle3"></span>
                         <span class="angle4"></span>
-                        <double-bars ref="chart10" id="bottom_2"></double-bars>
+                        <double-bars ref="chart10" id="bottom_2" v-if="hostaddr.length" :hostAddrList="hostaddr"></double-bars>
                     </div>
                 </div>
                 <div class="list">
                     <div class="bottom">
-                        <span class='title'><span class="title-10">操作记录列表</span></span>
+                        <span class='title'><span class="title-10">操作记录统计</span></span>
                         <span class="angle1"></span>
                         <span class="angle2"></span>
                         <span class="angle3"></span>
@@ -139,7 +160,7 @@
                         <span class="angle2"></span>
                         <span class="angle3"></span>
                         <span class="angle4"></span>
-                        <pie-chart ref="chart12" id="bottom_4"></pie-chart>
+                        <pie-chart ref="chart12" id="bottom_4" v-if="clusterName.length" :clusterName="clusterName"></pie-chart>
                     </div>
                 </div>
             </Col>
@@ -149,10 +170,11 @@
 
 <script>
 import {getAllCluster} from '@/api/system/access'
-// import {getAllMachineStatus} from '@/api/cluster/list'
+import {getOptionList} from '@/api/operation/record'
 import {getAllClusterStatus,getAllMachineStatus} from '@/api/cluster/listInterface'
 import {v4 as uuidv4 } from 'uuid';
-import {version_arr} from "@/utils/global_variable"
+import {version_arr,timestamp_arr} from "@/utils/global_variable"
+import { getOperationList } from '@/api/operation/record';
 //import equipStatus from '../components/page/equipStatus.vue';
 const areaChart = ()=> import('../components/areaChart.vue');
 const radarChart = () => import('../components/radar');
@@ -164,7 +186,7 @@ const threeBarChart = () => import('../components/page/threeBarChart');
 const pieChart = () => import('../components/page/pieChart');
 const doubleBars = () => import('../components/page/doubleBars');
 const equipStatus = () => import('../components/page/equipStatus');
-const clusterStatus = () => import('../components/page/clusterStatus');
+const clusterStatus = () => import('../components/page/clusterStatus'); 
 export default {
     name: 'page',
     props: ['clusterCount'],
@@ -181,6 +203,15 @@ export default {
         equipStatus,
         clusterStatus
     },
+     filters: {
+        ellipsis (_val) {
+        if (!_val) return ''
+        if (_val.length > 10) {
+            return _val.slice(0, 10) + '...'
+        }
+        return _val
+        }
+    },
     data() {
         return {
             everyPer: 0,
@@ -190,7 +221,7 @@ export default {
                 y: 250,
                 radius: 218
             },
-            title: ['累计集群总数:45', '累计设备总数:12', '当前设备在线总数:13', '当前设备离线总数:23', '当前集群在线总数:12', '当前集群离线总数:67'],
+            title: ['累计集群总数:0', '累计设备总数:0', '当前设备在线总数:0', '当前设备离线总数:0', '当前集群在线总数:0', '当前集群离线总数:0'],
             cnfigData1: {
                 color: '#5CB1C1',
                 name: ['（次）', '（人）'],
@@ -236,22 +267,22 @@ export default {
                 ]
             },
             officeRadarData: {
-                title: '各集群运行时长对比',
+                title: '各集群名称',
                 position: ['center', '85%'],
                 center: ['50%', '50%'],
                 indicator: [
-                    {text: 'cluster1'},
-                    {text: 'cluster2'},
-                    {text: 'cluster3'},
-                    {text: 'cluster4'},
-                    {text: 'cluster5'},
-                    {text: 'cluster6'}
+                    // {text: 'cluster1'},
+                    // {text: 'cluster2'},
+                    // {text: 'cluster3'},
+                    // {text: 'cluster4'},
+                    // {text: 'cluster5'},
+                    // {text: 'cluster6'}
                 ],
                 data: [
                     {
-                        name: '运行时长',
+                        name: '集群名称',
                         color: '#55D35B',
-                        value: [100, 8, 0.40, -80, 2000, 332],
+                        //value: [100, 8, 0.40, -80, 2000, 332],
                     }
                 ]
             },
@@ -276,22 +307,22 @@ export default {
                 ]
             },
             momentsRadarData: {
-                title: '各设备运行时长对比',
+                title: '设备的IP列表',
                 position: ['center', '85%'],
                 center: ['50%', '50%'],
                 indicator: [
-                    {text: '192.168.0.168'},
-                    {text: '192.168.0.127'},
-                    {text: '192.168.0.128'},
-                    {text: '192.168.0.1'},
-                    {text: '192.168.0.2'},
-                    {text: '192.168.0.3'}
+                    // {text: '192.168.0.168'},
+                    // {text: '192.168.0.127'},
+                    // {text: '192.168.0.128'},
+                    // {text: '192.168.0.1'},
+                    // {text: '192.168.0.2'},
+                    // {text: '192.168.0.3'}
                 ],
                 data: [
                     {
-                        name: '设备的个数',
+                        name: '设备IP',
                         color: '#D91748',
-                        value: [100, 8, 0.40, -80, 2000, 332],
+                        // value: [100, 8, 0.40, -80, 2000, 332],
                     }
                 ]
             },
@@ -311,55 +342,105 @@ export default {
                 machineTotal:0,
                 machineOnline:0,
                 machineOffline:0
-            }
+            },
+            hostaddr:[],
+            ips:[],
+            ip:'',
+            selectedIP:'',
+             listData:[
+                {'user_name':'super_dba','job_type':'新增集群','object':'test','status':'done','when_started':'2020-8-9 16:34:01'},
+                {'user_name':'super_dba','job_type':'删除集群','object':'mgr','status':'failed','when_started':'2020-8-10 16:34:01'},
+                {'user_name':'super_dba','job_type':'新增计算节点','object':'testmgr','status':'done','when_started':'2020-8-10 16:34:01'},
+                {'user_name':'super_dba','job_type':'新增存储节点','object':'testmgr','status':'done','when_started':'2020-8-10 16:34:01'},
+                {'user_name':'super_dba','job_type':'新增shard','object':'testmgr','status':'done','when_started':'2020-8-10 16:34:01'},
+                {'user_name':'super_dba','job_type':'备份集群','object':'testmgr','status':'failed','when_started':'2020-8-10 16:34:01'},
+                {'user_name':'super_dba','job_type':'删除存储节点','object':'testmgr','status':'done','when_started':'2020-8-10 16:34:01'},
+            ],
         }
     },
     created(){
         this.getCluster();
-        this.getClusterStauts();
+        // this.getClusterStauts();
         this.getMachineStauts();
+        this.optionList();
     },
-    // watch:{
-    //     'clusterTotal':function(val,olval){
-    //         console.log(val);
-    //         this.clusterTotal=val;
-    //     },
-    //     // 一进页面就执行
-    //     immediate: true,
-    //     // 深度观察监听
-    //     deep: true
-    // },
+    computed: {
+        optionSingleHeightTime () {
+            return {
+                step: 0.8, // 数值越大速度滚动越快
+                limitMoveNum: 5, // 开始无缝滚动的数据量 this.dataList.length
+                hoverStop: true, // 是否开启鼠标悬停stop
+                direction: 1, // 0向下 1向上 2向左 3向右
+                openWatch: true, // 开启数据实时监控刷新dom
+                singleHeight: 0, // 单步运动停止的高度(默认值0是无缝不停止的滚动) direction => 0/1
+                singleWidth: 0, // 单步运动停止的宽度(默认值0是无缝不停止的滚动) direction => 2/3
+                waitTime: 100                    // 单步运动停止的时间(默认值1000ms)
+            }
+        }
+    },
     methods: {
+        optionList(){
+            getOptionList().then(response => {
+                this.listData =response.list;
+            });
+        },
+        ipFunc(val){
+        this.selectedIP=val;
+        },
         async getCluster() {
             const res = await getAllCluster();
             this.clusterTotal=res.total+'';
-            for(let i=0;i<res.total;i++){
-                this.clusterName.push(res.list[i].name)
+            if(res.total>0){
+                this.officeRadarData.indicator=[];
+                for(let i=0;i<res.total;i++){
+                    const newArr={"id":res.list[i].id,"name":res.list[i].nick_name};
+                    this.clusterName.push(newArr)
+                    let indicatorArr={text:res.list[i].nick_name};
+                    this.officeRadarData.indicator.push(indicatorArr);
+                }
+                //console.log(this.officeRadarData.indicator);
             }
         },
-        async getClusterStauts(){
-            const tempData = {};
-            tempData.job_id =uuidv4();
-            tempData.job_type ='get_cluster_summary';
-            tempData.ver=version_arr[0].ver;
-            const res=await getAllClusterStatus(tempData)
+        // async getClusterStauts(){
+        //     const tempData = {};
+        //     tempData.job_id ='';
+        //     tempData.job_type ='get_cluster_summary';
+        //     tempData.version=version_arr[0].ver;
+        //     tempData.paras={};
+        //     tempData.timestamp=timestamp_arr[0].time+'';
+        //     const res=await getAllClusterStatus(tempData)
             
-        },
+        // },
         async getMachineStauts(){
             const tempData = {};
-            tempData.job_id =uuidv4();
-            tempData.job_type ='machine_summary';
-            tempData.ver=version_arr[0].ver;
+            tempData.job_id ="";
+            tempData.job_type ='get_machine_summary';
+            tempData.version=version_arr[0].ver;
+            tempData.timestamp=timestamp_arr[0].time+'';
+            tempData.paras={};
             const res=await getAllMachineStatus(tempData)
-            this.machineList.machineTotal=res.length;
-            if(res.length>0){
-                for(let i=0;i<res.length;i++){
-                    if(res[i].status=='online'){
+            this.machineList.machineTotal=res.attachment.list_machine.length;
+            if(res.attachment.list_machine.length>0){
+                this.momentsRadarData.indicator=[];
+                for(let i=0;i<res.attachment.list_machine.length;i++){
+                    let newArr={value:res.attachment.list_machine[i].hostaddr,label:res.attachment.list_machine[i].hostaddr};
+                    this.ips.push(newArr);
+                    //let indicator={};
+                    let indicatorArr={text:res.attachment.list_machine[i].hostaddr};
+                    this.momentsRadarData.indicator.push(indicatorArr);
+                    //console.log(this.momentsRadarData.indicator);
+                    if(i==0){
+                        this.selectedIP=res.attachment.list_machine[i].hostaddr
+                        this.ip=res.attachment.list_machine[i].hostaddr
+                    }
+                    this.hostaddr.push(res.attachment.list_machine[i].hostaddr)
+                    if(res.attachment.list_machine[i].status=='online'){
                         this.machineList.machineOnline++;
-                    }else if(res[i].status=='offline'){
+                    }else if(res.attachment.list_machine[i].status=='offline'){
                         this.machineList.machineOffline++;
                     }
                 }
+                //console.log(this.hostaddr);
             }
         },
         drawDot() {
@@ -451,6 +532,7 @@ export default {
             context.closePath();
             context.fill();
             context.restore();
+            this.title=['累计集群总数:'+this.clusterTotal, '累计设备总数:'+this.machineList.machineTotal, '当前设备在线总数:'+this.machineList.machineOnline, '当前设备离线总数:'+this.machineList.machineOffline, '当前集群在线总数:'+this.clusterTotal, '当前集群离线总数:0'];
             for (let i = 0; i < this.title.length; i++) {//绘制文字。
                 context.save()
                 // 画文字
@@ -667,6 +749,17 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.backbg{
+    margin-left:40px;
+    position:absolute;
+    z-index: 99;
+}
+.sel{
+    background-color: #03044a;
+    border: #143f93 1px solid;
+    color: #65bdbd;
+    margin-top: 15px;
+}
 .page {
     height: 100%;
     width: 100%;
@@ -766,5 +859,56 @@ export default {
         }
     }
 
+}
+
+
+// 操作记录列表展示
+.per_inout_scroll_wrap{
+    width: 460px;
+    font-size: 12px;
+}
+.title_list{
+    color: #35CDE6;
+    margin: 25px auto 5px auto;
+}
+.slide_wrap{
+    font-size: 12px;
+    line-height: 31px;
+    height: 31px;
+    /*margin-left:19px;*/
+    color: rgb(255, 255, 255);
+}
+.slide_wrap li,.slide_wrap ul{
+    padding:0;
+    margin:0;
+    list-style:none;
+}
+.per_inout_scroll_wrap .title_list span,.per_inout_scroll_wrap .slide_wrap span{
+    display:inline-block;
+}
+.per_inout_scroll_wrap .title_list .userName,.per_inout_scroll_wrap .slide_wrap .userName{
+    width: 70px;
+    text-align:center;
+    margin-left:10px;
+}
+.per_inout_scroll_wrap .title_list .personType,.per_inout_scroll_wrap .slide_wrap .personType{
+    width: 80px;
+    text-align:center;
+}
+.per_inout_scroll_wrap .title_list .passType,.per_inout_scroll_wrap .slide_wrap .passType{
+    width: 85px;
+    text-align:center;
+}
+.per_inout_scroll_wrap .title_list .address,.per_inout_scroll_wrap .slide_wrap .address{
+    width: 50px;
+    text-align:center;
+}
+.per_inout_scroll_wrap .title_list .createTime,.per_inout_scroll_wrap .slide_wrap .createTime{
+    width: 155px;
+    text-align:center;
+}
+ .seamless-warp {
+	height: 140px;
+	overflow: hidden;
 }
 </style>

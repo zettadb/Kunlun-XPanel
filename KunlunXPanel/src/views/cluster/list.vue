@@ -32,7 +32,6 @@
       border
       highlight-current-row
       style="width: 100%;margin-bottom: 20px;">
-    >
       <el-table-column
         type="index"
         align="center"
@@ -45,7 +44,11 @@
           <span class="link-type" @click="handleDetail(row)">{{ row.nick_name }}</span>
         </template>
       </el-table-column>
-
+      <el-table-column
+            prop="ha_mode"
+            align="center"
+            label="高可用模式">
+      </el-table-column>
       <el-table-column
             prop="comptotal"
             align="center"
@@ -55,25 +58,36 @@
       <el-table-column
             prop="shardtotal"
             align="center"
-            label="shard分配">
+            label="shard分配"
+            :show-overflow-tooltip="true"
+            >
       </el-table-column>
-      <el-table-column
+      <!-- <el-table-column
             prop="when_created"
             align="center"
             label="创建时间">
+      </el-table-column> -->
+      <el-table-column
+            prop="back_up"
+            align="center"
+            label="最近备份时间">
+            <template slot-scope="scope">
+            <span v-if="scope.row.first_backup===''">无备份</span>
+            <span v-else-if="scope.row.first_backup!==''">{{scope.row.first_backup}}</span>
+        </template>
       </el-table-column>
-      
       <el-table-column
         label="操作"
         align="center"
-        width="260"
+        width="350"
         class-name="small-padding fixed-width"
-        v-if="storage_node_create_priv==='Y'&&shard_create_priv==='Y'&&compute_node_create_priv==='Y'&&restore_priv==='Y'&&backup_priv==='Y'&&cluster_drop_priv==='Y'"
+        v-if="storage_node_create_priv==='Y'||shard_create_priv==='Y'||compute_node_create_priv==='Y'||restore_priv==='Y'||backup_priv==='Y'||cluster_drop_priv==='Y'||row.ha_mode==='rbr'"
       >
         <template slot-scope="{row,$index}">
            <el-button type="primary" size="mini" @click="handleUpdate(row)" v-if="storage_node_create_priv==='Y'&&shard_create_priv==='Y'&&compute_node_create_priv==='Y'">+</el-button>
           <el-button type="primary" size="mini" @click="handleRestore(row)" v-if="restore_priv==='Y'">恢复</el-button>
           <el-button type="primary" size="mini" @click="handleBackUp(row,$index)" v-if="backup_priv==='Y'">备份</el-button>
+          <el-button type="primary" size="mini" @click="handleSwitchOver(row,$index)" v-if="row.ha_mode==='rbr'">主备切换</el-button>
           <el-button
             size="mini"
             type="danger"
@@ -92,8 +106,11 @@
         :rules="rules"
         :model="temp"
         label-position="left"
-        label-width="200px"
+        label-width="250px"
         >
+      <el-form-item label="集群名称:" prop="nick_name"  v-show="dialogStatus==='create'||'detail'">
+        <el-input  v-model="temp.nick_name" class="right_input" placeholder="请输入集群名称" :disabled="dialogStatus==='detail'"/>
+      </el-form-item>
       <el-form-item label="选择计算机:" prop="machinelist"  v-if="dialogStatus==='create'">
         <el-checkbox-group 
         v-model="temp.machinelist"
@@ -102,8 +119,8 @@
           <el-checkbox v-for="machine in machines" :label="machine.hostaddr" :key="machine.id">{{machine.hostaddr}}</el-checkbox>
         </el-checkbox-group>
       </el-form-item>
-       <el-form-item label="高可用模式:" prop="ha_mode" v-if="dialogStatus==='create'?true:false">
-          <el-select v-model="temp.ha_mode" placeholder="请选择高可用模式" :disabled="dialogStatus==='detail'"  v-if="dialogStatus==='create'?true:false">
+       <el-form-item label="高可用模式:" prop="ha_mode" v-show="dialogStatus==='create'||'detail'" >
+          <el-select v-model="temp.ha_mode" placeholder="请选择高可用模式" :disabled="dialogStatus==='detail'">
             <el-option
               v-for="item in hamodeData"
               :key="item.id"
@@ -113,52 +130,61 @@
           </el-select>
         </el-form-item>
   
-        <div v-show="dialogStatus==='create'">
+        <div v-show="dialogStatus==='create'||'detail'">
         <el-form-item label="shard个数:" prop="shards_count" >
-          <el-input  v-model="temp.shards_count" placeholder="请输入shard个数"  :disabled="dialogStatus==='detail'"/>
+          <el-input  v-model="temp.shards_count" class="right_input" placeholder="请输入shard个数" :disabled="dialogStatus==='detail'">
+            <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">个</i>
+          </el-input>
         </el-form-item>
         </div>
 
-        <el-form-item label="副本数:" prop="snode_count"  v-if="dialogStatus==='create'?true:false">
-          <el-input  v-model="temp.snode_count" placeholder="副本数至少是3，且不能大于所选计算机数"  :disabled="dialogStatus==='detail'"/>
+        <el-form-item label="副本数:" prop="snode_count"  v-show="dialogStatus==='create'||'detail'">
+          <el-input  v-model="temp.snode_count" class="right_input"  placeholder="副本数至少是3，且不能大于所选计算机数" :disabled="dialogStatus==='detail'">
+           <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">个</i>
+          </el-input>
         </el-form-item>
 
-        <el-form-item label="集群名称:" prop="cluster_name"  v-if="dialogStatus==='create'?true:false">
-          <el-input  v-model="temp.cluster_name" placeholder="请输入集群名称"  :disabled="dialogStatus==='detail'"/>
-        </el-form-item>
-
-        <el-form-item label="缓冲池大小:" prop="buffer_pool"  v-if="dialogStatus==='create'?true:false">
-          <el-input  v-model="temp.buffer_pool"  placeholder="缓冲池大小单位为GB"  :disabled="dialogStatus==='detail'"/>
+        <el-form-item label="缓冲池大小:" prop="buffer_pool"  v-show="dialogStatus==='create'||'detail'">
+          <el-input  v-model="temp.buffer_pool" class="right_input"  placeholder="缓冲池大小单位为GB" :disabled="dialogStatus==='detail'">
+            <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">GB</i>
+          </el-input>
         </el-form-item>
 
         <div v-show="isShow"  v-if="dialogStatus==='create'?true:false">
-          <el-form-item label="每个计算节点最大连接数:" prop="max_connections">
-            <el-input  v-model="temp.max_connections" placeholder="请输入每个计算节点最大连接数"  :disabled="dialogStatus==='detail'"/>
+          <el-form-item label="每个计算节点最大连接数:"  prop="max_connections">
+            <el-input  v-model="temp.max_connections" class="right_input"  placeholder="请输入每个计算节点最大连接数" />
           </el-form-item>
           <el-form-item label="每个计算节点的cpu核数:" prop="per_computing_node_cpu_cores">
-            <el-input  v-model="temp.per_computing_node_cpu_cores" placeholder="请输入每个计算节点的cpu核数"  :disabled="dialogStatus==='detail'"/>
+            <el-input  v-model="temp.per_computing_node_cpu_cores" class="right_input"  placeholder="请输入每个计算节点的cpu核数" />
           </el-form-item>
           <el-form-item label="每个计算节点最大的存储值:" prop="per_computing_node_max_mem_size">
-            <el-input  v-model="temp.per_computing_node_max_mem_size" placeholder="请输入每个计算节点最大的存储值"  :disabled="dialogStatus==='detail'"/>
+            <el-input  v-model="temp.per_computing_node_max_mem_size" class="right_input"  placeholder="请输入每个计算节点最大的存储值">
+              <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">MB</i>
+            </el-input>
           </el-form-item>
           <el-form-item label="每个存储节点的cpu核数:" prop="per_storage_node_cpu_cores">
-            <el-input  v-model="temp.per_storage_node_cpu_cores" placeholder="请输入每个存储节点的cpu核数"  :disabled="dialogStatus==='detail'"/>
+            <el-input  v-model="temp.per_storage_node_cpu_cores" class="right_input"  placeholder="请输入每个存储节点的cpu核数"/>
           </el-form-item>
           <el-form-item label="每个存储节点innodb缓冲池大小:" prop="per_storage_node_innodb_buffer_pool_size">
-            <el-input  v-model="temp.per_storage_node_innodb_buffer_pool_size" placeholder="请输入每个存储节点innodb缓冲池大小"  :disabled="dialogStatus==='detail'"/>
+            <el-input  v-model="temp.per_storage_node_innodb_buffer_pool_size" class="right_input"  placeholder="请输入每个存储节点innodb缓冲池大小">
+              <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">MB</i>
+            </el-input>
           </el-form-item>
           <el-form-item label="每个存储节点rocksdb缓冲池大小:" prop="per_storage_node_rocksdb_buffer_pool_size">
-            <el-input  v-model="temp.per_storage_node_rocksdb_buffer_pool_size" placeholder="请输入每个存储节点rocksdb缓冲池大小"  :disabled="dialogStatus==='detail'"/>
+            <el-input  v-model="temp.per_storage_node_rocksdb_buffer_pool_size" class="right_input"  placeholder="请输入每个存储节点rocksdb缓冲池大小">
+              <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">MB</i>
+            </el-input>
           </el-form-item>
           <el-form-item label="每个存储节点初始化存储值:" prop="per_storage_node_initial_storage_size">
-            <el-input  v-model="temp.per_storage_node_initial_storage_size" placeholder="请输入每个存储节点初始化存储值"  :disabled="dialogStatus==='detail'"/>
+            <el-input  v-model="temp.per_storage_node_initial_storage_size" class="right_input"  placeholder="请输入每个存储节点初始化存储值">
+              <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">GB</i>
+            </el-input>
           </el-form-item>
           <el-form-item label="每个存储节点最大存储值:" prop="per_storage_node_max_storage_size">
-            <el-input  v-model="temp.per_storage_node_max_storage_size" placeholder="请输入每个存储节点最大存储值"  :disabled="dialogStatus==='detail'"/>
+            <el-input  v-model="temp.per_storage_node_max_storage_size" class="right_input"  placeholder="请输入每个存储节点最大存储值">
+              <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">GB</i>
+            </el-input>
           </el-form-item>
-          <!-- <el-form-item label="集群名称:" prop="cluster_name">
-            <el-input  v-model="temp.cluster_name" placeholder="请输入集群名称"  :disabled="dialogStatus==='detail'"/>
-          </el-form-item> -->
         </div>
         <div :class="isShow === false?'ro-90':'ro90'"  @click="toggle"  v-if="dialogStatus==='create'?true:false"><i class="el-icon-d-arrow-left" /></div>
       </el-form>
@@ -228,7 +254,7 @@
     <el-dialog title="恢复集群" :visible.sync="dialogRestoreVisible" custom-class="single_dal_view">
       <el-form
         ref="restoreForm"
-        :model="temp"
+        :model="restoretemp"
         :rules="rules"
         label-position="left"
         label-width="110px"
@@ -237,7 +263,7 @@
         <el-checkbox-group 
         v-model="restoretemp.machinelist"
         :min="minMachine"
-        :max="machineTotal" >
+        :max="machineTotal">
           <el-checkbox v-for="machine in machines" :label="machine.hostaddr" :key="machine.id">{{machine.hostaddr}}</el-checkbox>
         </el-checkbox-group>
       </el-form-item>
@@ -260,16 +286,32 @@
           <el-button type="primary" @click="restoreData(restoretemp)">确认</el-button>
         </div>
     </el-dialog>
+    <!--  状态框 -->
+    <el-dialog :visible.sync="dialogStatusVisible" custom-class="single_dal_view" width="400px">
+      <div class="block">
+        <el-timeline>
+          <el-timeline-item
+            v-for="(activity, index) in activities"
+            :key="index"
+            :icon="activity.icon"
+            :type="activity.type"
+            :color="activity.color"
+            :size="activity.size"
+            :timestamp="activity.timestamp">
+            {{activity.content}}
+          </el-timeline-item>
+        </el-timeline>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
- import { messageTip,handleCofirm,getNowDate,getNextMonth } from "@/utils";
+ import { messageTip,handleCofirm,getNowDate,getNextMonth,createCode } from "@/utils";
  import Pagination from '@/components/Pagination' 
- import {ha_mode_arr,shards_arr,per_shard_arr,norepshards_arr,node_type_arr,version_arr,storage_type_arr} from "@/utils/global_variable"
+ import {ha_mode_arr,shards_arr,per_shard_arr,norepshards_arr,node_type_arr,version_arr,storage_type_arr,timestamp_arr} from "@/utils/global_variable"
  import {getClusterList,ifBackUp,getAllMachine,getShards,uAssign} from '@/api/cluster/list'
  import {addShards,createCluster,addComps,addNodes,getEvStatus,delCluster,backeUpCluster,restoreCluster,getMetaMode,getBackUpStorage} from '@/api/cluster/listInterface'
- import { v4 as uuidv4 } from 'uuid';
 export default {
   name: "list",
   components: { Pagination }, 
@@ -343,7 +385,7 @@ export default {
       const netxMonth=getNextMonth(time);
       if(!this.restoretemp.now){
         callback(new Error("请选择回档时间"));
-      }else if(vathis.restoretemp.nowlue<this.restoretemp.end_ts){
+      }else if(this.restoretemp.nowlue<this.restoretemp.end_ts){
         callback(new Error("回档时间不能早于最早备份时间"));
       }else if(this.restoretemp.now>netxMonth){
         callback(new Error("回档时间选择范围应在当前系统时间开始一个月之内"));
@@ -379,14 +421,14 @@ export default {
         callback();
       }
     };
-    const validateClusterName = (rule, value, callback) => {
-     if(!value){
-        callback(new Error("请输入集群名称"));
-      }
-      else {
-        callback();
-      }
-    };
+    // const validateClusterName = (rule, value, callback) => {
+    //  if(!value){
+    //     callback(new Error("请输入集群名称"));
+    //   }
+    //   else {
+    //     callback();
+    //   }
+    // };
     const validateNickName = (rule, value, callback) => {
       if(!value){
         callback(new Error("请输入新集群名称"));
@@ -425,15 +467,15 @@ export default {
         snode_count: '3',
         comp_count:'',
         buffer_pool:'1',
-        max_connections:'',
-        per_computing_node_cpu_cores:'',
+        max_connections:'6',
+        per_computing_node_cpu_cores:'8',
         per_computing_node_max_mem_size:'',
-        per_storage_node_cpu_cores:'',
+        per_storage_node_cpu_cores:'8',
         per_storage_node_innodb_buffer_pool_size:'',
         per_storage_node_rocksdb_buffer_pool_size:'',
-        per_storage_node_initial_storage_size:'',
-        per_storage_node_max_storage_size:'',
-        cluster_name:'',
+        per_storage_node_initial_storage_size:'20',
+        per_storage_node_max_storage_size:'20',
+        nick_name:'',
         machinelist:[],
         node_type:'',
         shard_name:'',
@@ -458,6 +500,7 @@ export default {
       dialogFormVisible: false,
       dialogRestoreVisible:false,
       dialogNodeVisible:false,
+      dialogStatusVisible:false,
       dialogStatus: "",
       textMap: {
         update: "添加节点",
@@ -472,7 +515,7 @@ export default {
       user_drop_priv:'',
       user_edit_priv:'',
       row:{},
-      hamodeData:[],
+      hamodeData:ha_mode_arr,
       shardsDate:shards_arr,
       norepshardsDate:norepshards_arr,
       pershardDate:per_shard_arr,
@@ -493,6 +536,7 @@ export default {
       timer:null,
       installStatus:false,
       info:'',
+      activities: [],
       //dialogBackUpStorageVisible:false,
       //stypelist:storage_type_arr,
       rules: {
@@ -526,9 +570,9 @@ export default {
         shards: [
             { required: true, trigger: "blur",validator: validateNodeTotal },
         ],
-        cluster_name: [
-            { required: true, trigger: "blur",validator: validateClusterName },
-        ],
+        // cluster_name: [
+        //     { required: true, trigger: "blur",validator: validateClusterName },
+        // ],
         nick_name: [
             { required: true, trigger: "blur",validator: validateNickName },
         ],
@@ -599,25 +643,24 @@ export default {
     },
     resetTemp() {
       this.temp = {
-        ha_mode:'',
+       ha_mode:'',
         shards_count:'0',
         snode_count: '3',
         comp_count:'',
         buffer_pool:'1',
-        max_connections:'',
-        per_computing_node_cpu_cores:'',
+        max_connections:'6',
+        per_computing_node_cpu_cores:'8',
         per_computing_node_max_mem_size:'',
-        per_storage_node_cpu_cores:'',
+        per_storage_node_cpu_cores:'8',
         per_storage_node_innodb_buffer_pool_size:'',
         per_storage_node_rocksdb_buffer_pool_size:'',
-        per_storage_node_initial_storage_size:'',
-        per_storage_node_max_storage_size:'',
-        cluster_name:'',
-        // rack_name:'',
+        per_storage_node_initial_storage_size:'20',
+        per_storage_node_max_storage_size:'20',
+        nick_name:'',
         machinelist:[],
         node_type:'',
         shard_name:'',
-        shards:''
+        shards:'',
       };
     },
     handleCreate() {
@@ -631,17 +674,18 @@ export default {
         this.machineTotal=res.total;
       });
       
-      const temp={};
-      temp.job_type='get_meta_mode';
-      temp.ver=version_arr[0].ver;
-      temp.job_id=uuidv4();
-      getMetaMode(temp).then((res) => {
-        if(res){
-          const ha_mode=[{"id":res.mode,"label":res.mode}];
-          this.hamodeData=ha_mode;
-        };
-      });
-      
+      // const temp={};
+      // temp.job_type='get_meta_mode';
+      // temp.version=version_arr[0].ver;
+      // temp.job_id='';
+      // temp.timestamp=timestamp_arr[0].time+'';
+      // temp.paras={}
+      // getMetaMode(temp).then((res) => {
+      //   if(res){
+      //     const ha_mode=[{"id":res.attachment.mode,"label":res.attachment.mode}];
+      //     this.hamodeData=ha_mode;
+      //   };
+      // });
       this.$nextTick(() => {
         this.$refs.dataForm.clearValidate();
       });
@@ -657,46 +701,70 @@ export default {
             machinelist.push(newArr)
           })
           const clusterData={};
+          const paras={};
           clusterData.user_name=sessionStorage.getItem('login_username');
-          clusterData.job_id=uuidv4();
-          clusterData.comps=tempData.machinelist.length+'';
-          clusterData.ver=version_arr[0].ver;
+          clusterData.job_id='';
+          clusterData.version=version_arr[0].ver;
+          clusterData.timestamp=timestamp_arr[0].time+'';
           clusterData.job_type='create_cluster';
-          clusterData.shards=tempData.shards_count+'';
-          clusterData.nodes=tempData.snode_count;
-          clusterData.max_storage_size=tempData.per_computing_node_max_mem_size;
-          clusterData.max_connections=tempData.max_connections;
-          clusterData.innodb_size=tempData.buffer_pool;
-          clusterData.cpu_cores=tempData.per_computing_node_cpu_cores;
-          clusterData.ha_mode=tempData.ha_mode;
-          clusterData.machinelist=machinelist;
-          clusterData.nick_name=tempData.cluster_name;
+
+          paras.comps=tempData.machinelist.length+'';
+          paras.shards=tempData.shards_count+'';
+          paras.nodes=tempData.snode_count;
+          paras.max_storage_size=tempData.per_storage_node_max_storage_size;
+          paras.max_connections=tempData.max_connections;
+          paras.innodb_size=tempData.buffer_pool;
+          paras.cpu_cores=tempData.per_computing_node_cpu_cores;
+          paras.ha_mode=tempData.ha_mode;
+          paras.machinelist=machinelist;
+          paras.nick_name=tempData.nick_name;
+          paras.dbcfg='1';
+          clusterData.paras=paras;
           //发送接口
           createCluster(clusterData).then(response=>{
             let res = response;
-            if(res.result=='accept'){
+            if(res.status=='accept'){
               this.dialogFormVisible = false;
-              this.message_tips = '正在新增...';
-              this.message_type = 'success';
+              this.dialogStatusVisible=true;
+              this.activities=[];
+              const newArr={
+                content:'正在新增集群...',
+                timestamp: getNowDate(),
+                size: 'large',
+                type: 'primary',
+                icon: 'el-icon-more'
+              };
+              this.activities.push(newArr)
+              // this.message_tips = '正在新增...';
+              // this.message_type = 'success';
               //调获取状态接口
               let i=0;
               let timer = setInterval(() => {
                 setTimeout(()=>{
                   const postarr={};
                   postarr.job_type='get_status';
-                  postarr.ver=version_arr[0].ver;
-                  postarr.job_id=clusterData.job_id;
-                  getEvStatus(postarr).then((res) => {
-                  if(res.result=='done'||res.result=='failed'){
+                  postarr.version=version_arr[0].ver;
+                  postarr.job_id=res.job_id;
+                  postarr.timestamp=timestamp_arr[0].time+'';
+                  postarr.paras={};
+                  getEvStatus(postarr).then((ress) => {
+                  if(ress.status=='done'||ress.status=='failed'){
                     clearInterval(timer);
-                    this.info=res.info;
-                    if(res.result=='done'){
+                    //this.info=ress.error_info;
+                    if(ress.status=='done'){
+                      const newArrdone={
+                        content:ress.error_info,
+                        timestamp: getNowDate(),
+                        color: '#0bbd87',
+                        icon: 'el-icon-circle-check'
+                      };
+                      this.activities.push(newArrdone)
                       //查是否应用于全部集群，不是，增加cluster_id
                       const  apply_all_cluster=sessionStorage.getItem('apply_all_cluster');
                       if(apply_all_cluster==2){
                           const arrs= {};
                           arrs.effectCluster=sessionStorage.getItem('affected_clusters');
-                          arrs.cluster_name=res.info;
+                          arrs.cluster_name=ress.attachment.cluster_name;
                           arrs.username=sessionStorage.getItem('login_username');
                           arrs.type='add';
                           uAssign(arrs).then((responses) => {
@@ -704,16 +772,33 @@ export default {
                             if(res_update.code==200){
                               this.dialogFormVisible = false;
                               sessionStorage.setItem('affected_clusters',res_update.effectCluster);
+                              //console.log(sessionStorage.getItem('affected_clusters'));
                             }
                           });
                       }
-                      this.getList();
+                      setTimeout(() => {
+                        this.getList();
+                        this.dialogStatusVisible=false;
+                      }, 3000);
                     }else{
-                      this.installStatus = true;
+                      const newArrdone={
+                        content:ress.error_info,
+                        timestamp: getNowDate(),
+                        color: 'red',
+                        icon: 'el-icon-circle-close'
+                      };
+                      this.activities.push(newArrdone)
+                      //this.installStatus = true;
                     }
                   }else{
-                    this.info=res.info;
-                    this.installStatus = true;
+                     const newArrgoing={
+                      content:ress.error_info,
+                      timestamp: getNowDate(),
+                      color: '#0bbd87'
+                    };
+                    this.activities.push(newArrgoing)
+                    //this.info=ress.error_info;
+                    //this.installStatus = true;
                   }
                 });
                   if(i>=86400){
@@ -723,11 +808,11 @@ export default {
                 }, 0)
               
                }, 1000)
-            }else if(res.result=='ongoing'){
+            }else if(res.status=='ongoing'){
               this.message_tips = '系统正在操作中，请等待一会！';
               this.message_type = 'error';
             }else{
-              this.message_tips = res.info;
+              this.message_tips = res.error_info;
               this.message_type = 'error';
             }
             messageTip(this.message_tips,this.message_type);
@@ -776,90 +861,127 @@ export default {
             const newArr={"hostaddr":item};
             machinelist.push(newArr)
           })
-          tempData.job_id = uuidv4();
-          tempData.cluster_name = tempData.name;
+          tempData.job_id = '';
           tempData.version=version_arr[0].ver;
           tempData.user_name=sessionStorage.getItem('login_username');
-          tempData.machinelist=machinelist;
           tempData.job_type=tempData.node_type;
-          //console.log(tempData);return;
+          tempData.timestamp=timestamp_arr[0].time+'';
+          const paras={}
+          paras.machinelist=machinelist;
+          paras.cluster_name = tempData.name;
+          paras.nick_name=tempData.nick_name;
           //删除参数
-           this.$delete(tempData,'node_type');
-           this.$delete(tempData,'name');
-           this.$delete(tempData,'nick_name');
+          this.$delete(tempData,'node_type');
+          this.$delete(tempData,'name');
+          this.$delete(tempData,'nick_name');
+          this.$delete(tempData,'machinelist');
           // this.$delete(tempData,'shardtotal');
-          //发送接口
-          // if(this.tempData.machinelist.length===0){
-          //   messageTip("请选择计算机","error");return;
-          // }
           if(tempData.job_type=='add_shards'){
-             this.$delete(tempData,'shard_name');
             //新增shard
+            paras.shards = tempData.shards;
+            this.$delete(tempData,'shard_name');
+            this.$delete(tempData,'shards');
+            tempData.paras=paras;
             addShards(tempData).then((response) => {
             let res = response;
-            if(res.result=='accept'){
+            if(res.status=='accept'){
               this.dialogNodeVisible = false;
-              this.message_tips = '正在新增shard...';
-              this.message_type = 'success';
+              this.dialogStatusVisible=true;
+              this.activities=[];
+              const newArr={
+                content:'正在新增shard...',
+                timestamp: getNowDate(),
+                size: 'large',
+                type: 'primary',
+                icon: 'el-icon-more'
+              };
+              this.activities.push(newArr)
+              //this.message_tips = '正在新增shard...';
+              //this.message_type = 'success';
               //调获取状态接口
               let i=0;
               let timer = setInterval(() => {
-                this.getStatus(timer,tempData.job_id,i++)
+                this.getStatus(timer,res.job_id,i++)
               }, 1000)
-            }else if(res.result=='ongoing'){
+            }else if(res.status=='ongoing'){
               this.message_tips = '系统正在操作中，请等待一会！';
               this.message_type = 'error';
             }else{
-              this.message_tips = res.info;
+              this.message_tips = res.error_info;
               this.message_type = 'error';
             }
             messageTip(this.message_tips,this.message_type);
           });
           }else if(tempData.job_type=='add_comps'){
-            tempData.comps=tempData.shards;
+            paras.comps=tempData.shards;
+            tempData.paras=paras;
             this.$delete(tempData,'shards');
+            this.$delete(tempData,'shard_name');
             //新增计算节点
             addComps(tempData).then((response) => {
             let res = response;
-            if(res.result=='accept'){
+            if(res.status=='accept'){
              this.dialogNodeVisible = false;
-              this.message_tips = '正在新增计算节点...';
-              this.message_type = 'success';
+             this.dialogStatusVisible=true;
+             this.activities=[];
+             const newArr={
+                content:'正在新增计算节点...',
+                timestamp: getNowDate(),
+                size: 'large',
+                type: 'primary',
+                icon: 'el-icon-more'
+             };
+             this.activities.push(newArr)
+              //this.message_tips = '正在新增计算节点...';
+              //this.message_type = 'success';
               //调获取状态接口
               let i=0;
               let timer = setInterval(() => {
-                this.getStatus(timer,tempData.job_id,i++)
+                this.getStatus(timer,res.job_id,i++)
               }, 1000)
             }
-            else if(res.result=='ongoing'){
+            else if(res.status=='ongoing'){
               this.message_tips = '系统正在操作中，请等待一会！';
               this.message_type = 'error';
             }else{
-              this.message_tips = res.info;
+              this.message_tips = res.error_info;
               this.message_type = 'error';
             }
             messageTip(this.message_tips,this.message_type);
           });
           }else if(tempData.job_type=='add_nodes'){
-             tempData.nodes=tempData.shards;
+             paras.nodes=tempData.shards;
+             paras.shard_name=tempData.shard_name;
+             tempData.paras=paras;
              this.$delete(tempData,'shards');
+             this.$delete(tempData,'shard_name');
             //新增存储节点
             addNodes(tempData).then((response) => {
             let res = response;
-            if(res.result=='accept'){
+            if(res.status=='accept'){
               this.dialogNodeVisible = false;
-              this.message_tips =  '正在新增存储节点...';
-              this.message_type = 'success';
+              this.dialogStatusVisible=true;
+              this.activities=[];
+              const newArr={
+                  content:'正在新增存储节点...',
+                  timestamp: getNowDate(),
+                  size: 'large',
+                  type: 'primary',
+                  icon: 'el-icon-more'
+              };
+              this.activities.push(newArr)
+              //this.message_tips =  '正在新增存储节点...';
+              //this.message_type = 'success';
               //调获取状态接口
               let i=0;
               let timer = setInterval(() => {
-                this.getStatus(timer,tempData.job_id,i++)
+                this.getStatus(timer,res.job_id,i++)
               }, 1000)
-            }else if(res.result=='ongoing'){
+            }else if(res.status=='ongoing'){
               this.message_tips = '系统正在操作中，请等待一会！';
               this.message_type = 'error';
             }else{
-              this.message_tips = res.info;
+              this.message_tips = res.error_info;
               this.message_type = 'error';
             }
             messageTip(this.message_tips,this.message_type);
@@ -870,6 +992,7 @@ export default {
       });
     },
     handleDelete(row) {
+      //const code=createCode();
       handleCofirm("此操作将永久删除该数据, 是否继续?").then( () =>{
         //先执行删权限
         const arrs= {};
@@ -885,29 +1008,40 @@ export default {
           }
         });
         //调接口删集群
-         const tempData = Object.assign({}, row);
+         const tempData={};
           tempData.user_name=sessionStorage.getItem('login_username');
-          tempData.job_id = uuidv4();
-          tempData.cluster_name = tempData.name;
-          tempData.ver=version_arr[0].ver;
+          tempData.job_id = '';
+          tempData.version=version_arr[0].ver;
           tempData.job_type='delete_cluster';
+          tempData.timestamp=timestamp_arr[0].time+'';
+          tempData.paras={'cluster_name':row.name,'nick_name':row.nick_name}
           delCluster(tempData).then((response)=>{
             let res = response;
-            if(res.result=='accept'){
+            if(res.status=='accept'){
               this.dialogFormVisible = false;
-              this.message_tips = '正在删除...';
-              this.message_type = 'success';
+              this.dialogStatusVisible=true;
+              this.activities=[];
+              const newArr={
+                content:'正在删除集群...',
+                timestamp: getNowDate(),
+                size: 'large',
+                type: 'primary',
+                icon: 'el-icon-more'
+              };
+              this.activities.push(newArr);
+              //this.message_tips = '正在删除...';
+              //this.message_type = 'success';
               //调获取状态接口
               let i=0;
               let timer = setInterval(() => {
-                this.getStatus(timer,tempData.job_id,i++)
+                this.getStatus(timer,res.job_id,i++)
               }, 1000)
             }
-            else if(res.result=='ongoing'){
+            else if(res.status=='ongoing'){
               this.message_tips = '系统正在操作中，请等待一会！';
               this.message_type = 'error';
             }else{
-              this.message_tips = res.info;
+              this.message_tips = res.error_info;
               this.message_type = 'error';
             }
             messageTip(this.message_tips,this.message_type);
@@ -921,44 +1055,56 @@ export default {
       //先验证是否备份存储介质
       const arrs= {};
       arrs.version=version_arr[0].ver;
-      arrs.job_id=uuidv4();
+      arrs.job_id='';
       arrs.job_type='get_backup_storage';
+      arrs.timestamp=timestamp_arr[0].time+'';
+      arrs.paras={}
       getBackUpStorage(arrs).then((res) => {
-        if(res.length>0){
-           handleCofirm("确定要备份"+row.nick_name+"这个集群么?").then( () =>{
-        const tempData = Object.assign({}, row);
-        const backupData={};
-        backupData.user_name=sessionStorage.getItem('login_username');
-        backupData.job_id = uuidv4();
-        backupData.backup_cluster_name = tempData.name;
-        backupData.ver=version_arr[0].ver;
-        backupData.job_type='backup_cluster';
-        backeUpCluster(backupData).then((response)=>{
-          let res = response;
-          if(res.result=='accept'){
-            this.dialogFormVisible = false;
-            this.message_tips = '正在备份...';
-            this.message_type = 'success';
-            //调获取状态接口
-            let i=0;
-            let timer = setInterval(() => {
-              this.getStatus(timer,backupData.job_id,i++)
-            }, 1000)
-          }
-          else if(res.result=='ongoing'){
-              this.message_tips = '系统正在操作中，请等待一会！';
-              this.message_type = 'error';
-            }else{
-              this.message_tips = res.info;
-              this.message_type = 'error';
+        if(res.attachment.list_backup_storage!==null){
+          handleCofirm("确定要备份"+row.nick_name+"这个集群么?").then( () =>{
+          const tempData = Object.assign({}, row);
+          const backupData={};
+          backupData.user_name=sessionStorage.getItem('login_username');
+          backupData.job_id = '';
+          backupData.paras = {'backup_cluster_name':tempData.name,'nick_name':tempData.nick_name};
+          backupData.version=version_arr[0].ver;
+          backupData.timestamp=timestamp_arr[0].time+'';
+          backupData.job_type='backup_cluster';
+          backeUpCluster(backupData).then((response)=>{
+            let res = response;
+            if(res.status=='accept'){
+              this.dialogFormVisible = false;
+              this.dialogStatusVisible=true;
+              this.activities=[];
+              const newArr={
+                content:'正在备份集群...',
+                timestamp: getNowDate(),
+                size: 'large',
+                type: 'primary',
+                icon: 'el-icon-more'
+              };
+              this.activities.push(newArr);
+              //this.message_tips = '正在备份...';
+              //this.message_type = 'success';
+              //调获取状态接口
+              let i=0;
+              let timer = setInterval(() => {
+                this.getStatus(timer,res.job_id,i++)
+              }, 1000)
             }
-          messageTip(this.message_tips,this.message_type);
-        })
-      }).catch(() => {
-          messageTip('已取消备份','info');
-      }); 
-        }else{
-          
+            else if(res.status=='ongoing'){
+                this.message_tips = '系统正在操作中，请等待一会！';
+                this.message_type = 'error';
+              }else{
+                this.message_tips = res.error_info;
+                this.message_type = 'error';
+              }
+            messageTip(this.message_tips,this.message_type);
+          })
+        }).catch(() => {
+            messageTip('已取消备份','info');
+        }); 
+        }else{  
           messageTip('请先添加备份存储目标!','error');
         }
       });
@@ -1028,30 +1174,43 @@ export default {
       })
       const restoreData={};
       restoreData.user_name=sessionStorage.getItem('login_username');
-      restoreData.job_id = uuidv4();
-      restoreData.nick_name = tempData.nick_name;
-      restoreData.backup_cluster_name = tempData.backup_cluster_name;
+      restoreData.job_id = '';
       restoreData.version=version_arr[0].ver;
       restoreData.job_type='restore_new_cluster';
-      restoreData.timestamp=tempData.now;
-      restoreData.machinelist=machinelist;
+      restoreData.timestamp=timestamp_arr[0].time+'';
+      const paras={}
+      paras.nick_name = tempData.nick_name;
+      paras.backup_cluster_name = tempData.backup_cluster_name;
+      paras.timestamp=tempData.now;
+      paras.machinelist=machinelist;
+      restoreData.paras=paras;
       restoreCluster(restoreData).then((response) => {
         let res = response;
-        if(res.result=='accept'){
+        if(res.status=='accept'){
           this.dialogRestoreVisible = false;
-          this.message_tips = '正在恢复...';
-          this.message_type = 'success';
+          this.dialogStatusVisible=true;
+          this.activities=[];
+          const newArr={
+            content:'正在恢复集群...',
+            timestamp: getNowDate(),
+            size: 'large',
+            type: 'primary',
+            icon: 'el-icon-more'
+          };
+          this.activities.push(newArr);
+          //this.message_tips = '正在恢复...';
+          //this.message_type = 'success';
           //调获取状态接口
           let i=0;
           let timer = setInterval(() => {
-            this.getStatus(timer,restoreData.job_id,i++)
+            this.getStatus(timer,res.job_id,i++)
           }, 1000)
         }
-        else if(res.result=='ongoing'){
+        else if(res.status=='ongoing'){
           this.message_tips = '系统正在操作中，请等待一会！';
           this.message_type = 'error';
         }else{
-          this.message_tips = res.info;
+          this.message_tips = res.error_info;
           this.message_type = 'error';
         }
         messageTip(this.message_tips,this.message_type);
@@ -1060,24 +1219,55 @@ export default {
         }
       })
     },
+    handleSwitchOver(row){
+      this.$router.push({
+        path: '/cluster/switchover',
+        query: {
+          id: row.id
+        }
+        })
+    },
     getStatus (timer,data,i) {
       setTimeout(()=>{
         const postarr={};
         postarr.job_type='get_status';
-        postarr.ver=version_arr[0].ver;
+        postarr.version=version_arr[0].ver;
         postarr.job_id=data;
+        postarr.timestamp=timestamp_arr[0].time+'';
+        postarr.paras={};
         getEvStatus(postarr).then((res) => {
-        if(res.result=='done'||res.result=='failed'){
+        if(res.status=='done'||res.status=='failed'){
           clearInterval(timer);
-          this.info=res.info;
-          if(res.result=='done'){
+          //this.info=res.error_info;
+          if(res.status=='done'){
+            const newArrdone={
+            content:res.error_info,
+              timestamp: getNowDate(),
+              color: '#0bbd87',
+              icon: 'el-icon-circle-check'
+            };
+            this.activities.push(newArrdone)
             this.getList();
+            this.dialogStatusVisible=false;
           }else{
-            this.installStatus = true;
+            const newArr={
+              content:res.error_info,
+              timestamp: getNowDate(),
+              color: 'red',
+              icon: 'el-icon-circle-close'
+            };
+            this.activities.push(newArr);
+            //this.installStatus = true;
           }
         }else{
-          this.info=res.info;
-          this.installStatus = true;
+           const newArrgoing={
+            content:res.error_info,
+            timestamp: getNowDate(),
+            color: '#0bbd87'
+          };
+          this.activities.push(newArrgoing)
+          //this.info=res.error_info;
+          //this.installStatus = true;
         }
       });
         if(i>=86400){
@@ -1089,3 +1279,25 @@ export default {
   },
 };
 </script>
+<style scoped>
+.right_input{
+  width:60%;
+}
+.block{
+  margin-left: 20px;
+  max-height: 400px;
+  overflow: auto;
+}
+.el-timeline{
+  margin-left: 2px;
+}
+/* 修改滚动条宽度 */
+::-webkit-scrollbar {
+	width: 5px;
+}
+::-webkit-scrollbar-thumb{
+  border-radius: 5px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+  background-color: rgba(0,0,0,0.1);
+}
+</style>

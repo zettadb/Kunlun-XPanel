@@ -135,9 +135,9 @@
       <div v-if="temp.radio=='2'">
       <el-checkbox-group 
       v-model="checkedCluster"
-      :min="minCluster"
-      :max="clusterTotal" prop="checkedCluster">
-      <el-checkbox v-for="cluster in clusters" :label="cluster.id" :key="cluster.id">{{cluster.name}}</el-checkbox>
+      prop="checkedCluster">
+      <!--  :min="minCluster" :max="clusterTotal" -->
+      <el-checkbox v-for="cluster in clusters" :label="cluster.id" :key="cluster.id">{{cluster.nick_name}}</el-checkbox>
     </el-checkbox-group>
       </div>
         
@@ -213,10 +213,20 @@ export default {
       }
     };
      const validradio = (rule, value, callback) => {
+       
      if(!value){
         callback(new Error("请选择是否应用于所有集群"));
-      }
-      else {
+      }else if(value==2){
+        if(this.checkedCluster.length<=0){
+          callback(new Error("请勾选集群"));
+        }else if(this.clusterTotal>1&&(this.clusterTotal==this.checkedCluster.length)){
+          callback(new Error("为否时，所选集群应小于集群总数"));
+        }else if(this.clusterTotal=1&&(this.clusterTotal==this.checkedCluster.length)){
+          callback(new Error("由于当前集群只有一个，请选择“是”按钮"));
+        }else{
+          callback();
+        }
+      }else {
         callback();
       }
     };
@@ -313,14 +323,20 @@ export default {
     async getCluster() {
       const res = await getAllCluster()
       this.clusters = res.list;
-      if(res.total<=1){
-        this.minCluster=0;
-        this.clusterTotal=0;
-        this.radio=1;
-      }else{
-        this.minCluster=1;
-        this.clusterTotal=res.total-1;
-      }
+      this.clusterTotal=res.total;
+      // if(res.total<=0){
+      //   this.minCluster=0;
+      //   this.clusterTotal=0;
+      //   this.radio=1;
+      // }  if(res.total==1){
+      //   this.minCluster=1;
+      //   this.clusterTotal=1;
+      //   this.radio=1;
+      // }
+      // else{
+      //   this.minCluster=1;
+      //   this.clusterTotal=res.total-1;
+      // }
     },
     async getUser() {
       const res = await getAllUser()
@@ -329,6 +345,7 @@ export default {
     getList() {
         this.listLoading = true
         let queryParam = Object.assign({}, this.listQuery)
+        queryParam.user_name=sessionStorage.getItem('login_username');
         //模糊搜索
         queryParam.roleName = `*${this.listQuery.roleName}*`
         accesslist(queryParam).then(response => {
@@ -382,6 +399,7 @@ export default {
                 messageTip(`请勾选集群`,'info');return;
               }
           }
+          //console.log(this.temp);return; 
           //发送接口
           addAccess(this.temp).then(response=>{
             let res = response;

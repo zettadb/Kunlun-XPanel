@@ -11,7 +11,7 @@ class Machine extends CI_Controller {
 		header('Access-Control-Allow-Origin:*'); // *代表允许任何网址请求
 		header('Access-Control-Allow-Headers: Content-Type,Content-Length,Accept-Encoding,X-Requested-with, Origin'); // 设置允许自定义请求头的字段
 		header('Access-Control-Allow-Methods:POST,GET,OPTIONS,DELETE'); // 允许请求的类型
-		header('Access-Control-Allow-Headers:x-requested-with,content-type,accessToken');//允许接受token
+		header('Access-Control-Allow-Headers:x-requested-with,content-type,Token');//允许接受token
 		header('Content-Type: application/json;charset=utf-8');
 		//header('Access-Control-Allow-Credentials: true'); // 设置是否允许发送 cookies
 		$this->key=$this->config->item('key');
@@ -51,7 +51,7 @@ class Machine extends CI_Controller {
 	public function createMachine(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -111,7 +111,7 @@ class Machine extends CI_Controller {
 	public function editMachine(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -171,7 +171,7 @@ class Machine extends CI_Controller {
 	public function deleteMachine(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -217,7 +217,7 @@ class Machine extends CI_Controller {
 	public  function getMachineNodesList(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -369,7 +369,7 @@ class Machine extends CI_Controller {
 	public function getNodeCount(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -382,6 +382,81 @@ class Machine extends CI_Controller {
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		$data['total']=$res[0]['count'];
+		print_r(json_encode($data));
+	}
+	public  function getNodeList(){
+		//获取token
+		$arr = apache_request_headers();//获取请求头数组
+		$token=$arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));return;
+		}
+		//判断参数
+		$string=json_decode(@file_get_contents('php://input'),true);
+		$hostAddrList= $string['hostAddrList'];
+		//print_r($hostAddrList);exit;
+		$this->load->model('Cluster_model');
+		$comp=array();
+		$storage=array();
+		if(!empty($hostAddrList)){
+			foreach ($hostAddrList as $row){
+				$sql_storage="SELECT COUNT(id)as count from shard_nodes where hostaddr='$row' ";
+				$res_storage=$this->Cluster_model->getList($sql_storage);
+				array_push($storage,(int)$res_storage[0]['count']);
+				$sql_comp="SELECT COUNT(id)as count from comp_nodes where hostaddr='$row'";
+				$res_comp=$this->Cluster_model->getList($sql_comp);
+				array_push($comp,(int)$res_comp[0]['count']);
+			}
+
+		}
+
+		$data['comp']=$comp;
+		$data['storage']=$storage;
+		print_r(json_encode($data));
+	}
+	public  function getUsedList(){
+		//获取token
+		$arr = apache_request_headers();//获取请求头数组
+		$token=$arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));return;
+		}
+		//判断参数
+		$string=json_decode(@file_get_contents('php://input'),true);
+		$hostAddrList= $string['hostAddrList'];
+		//print_r($hostAddrList);exit;
+		$this->load->model('Cluster_model');
+		$used=array();
+		$avail=array();
+		if(!empty($hostAddrList)){
+			$sql="select id from server_nodes where hostaddr='$hostAddrList'";
+			$res=$this->Cluster_model->getList($sql);
+			if(!empty($res)){
+				$id=$res[0]['id'];
+			}else{
+				$data['used']=false;
+				$data['avail']=false;
+				print_r(json_encode($data));
+			}
+			$sql_storage="SELECT comp_datadir_used,comp_datadir_avail,datadir_used,datadir_avail,wal_log_dir_used,wal_log_dir_avail,log_dir_used,log_dir_avail from server_nodes_stats where id='$id' ";
+			$res_storage=$this->Cluster_model->getList($sql_storage);
+			array_push($used,($res_storage[0]['comp_datadir_used']/1024));
+			array_push($used,($res_storage[0]['datadir_used']/1024));
+			array_push($used,($res_storage[0]['wal_log_dir_used']/1024));
+			array_push($used,($res_storage[0]['log_dir_used']/1024));
+
+			array_push($avail,($res_storage[0]['comp_datadir_avail']/1024));
+			array_push($avail,($res_storage[0]['datadir_avail']/1024));
+			array_push($avail,($res_storage[0]['wal_log_dir_avail']/1024));
+			array_push($avail,($res_storage[0]['log_dir_avail']/1024));
+		}
+
+		$data['used']=$used;
+		$data['avail']=$avail;
 		print_r(json_encode($data));
 	}
 }

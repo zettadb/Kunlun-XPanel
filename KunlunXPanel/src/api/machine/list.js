@@ -45,3 +45,17 @@ export function getNodes(ip) {
     data:{ip:ip}
   })
 }
+export function getNodeList(data){
+  return request({
+    url: `/user/Machine/getNodeList`,
+    method: 'post',
+    data
+  })
+}
+export function getUsedList(data){
+  return request({
+    url: `/user/Machine/getUsedList`,
+    method: 'post',
+    data
+  })
+}

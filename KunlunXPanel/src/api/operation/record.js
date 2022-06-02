@@ -7,27 +7,40 @@ export function getOperationList(query) {
         params:query
     });
 }
-
-export function addAccount(data) {
-    return request({
-      url: '/user/User/add',
-      method: 'post',
-      data
-    })
+export function getOptionList(){
+  return request({
+    url: `/user/Operation/getHomeOperationList`,
+    method: 'get',
+    params:''
+  })
 }
-
-export function update(data) {
-    return request({
-      url: '/user/User/edit',
-      method: 'post',
-      data
-    })
+export function getOptionCount(){
+  return request({
+    url: `/user/Operation/getOptionCount`,
+    method: 'get',
+    params:''
+  })
 }
+// export function addAccount(data) {
+//     return request({
+//       url: '/user/User/add',
+//       method: 'post',
+//       data
+//     })
+// }
 
-export function delAccount(id) {
-    return request({
-      url: '/user/User/delete',
-      method: 'post',
-      data:{id:id}
-    })
-}
+// export function update(data) {
+//     return request({
+//       url: '/user/User/edit',
+//       method: 'post',
+//       data
+//     })
+// }
+
+// export function delAccount(id) {
+//     return request({
+//       url: '/user/User/delete',
+//       method: 'post',
+//       data:{id:id}
+//     })
+// }

@@ -3,19 +3,35 @@
 </template>
 
 <script>
+import {getOptionCount} from '@/api/operation/record'
 export default {
     name: '',
     data() {
-        return {}
+        return {
+            numbers:[],
+            type:[],
+            per_total:[]
+        }
+    },
+    created(){
+       this.optionCount(); 
     },
     methods: {
-        setChart() {
+        optionCount(){
+            getOptionCount().then(response => {
+            this.numbers =response.numbers;
+            this.type =response.type;
+            this.per_total=response.per_total;
+            this.setChart(this.type,this.per_total, this.numbers)
+            });
+        },
+        setChart(type,per_total,numbers) {
             let option = {
                 grid: {
                     top: "20%",
-                    bottom: "15%",
-                    left: 40,
-                    right: 40,
+                    bottom: "25%",
+                    left: 30,
+                    right: 30,
                 },
                 tooltip: {
                     trigger: 'axis'
@@ -44,17 +60,19 @@ export default {
                         axisLabel: {
                             color: '#61B9C8',
                             showMaxLabel: false,
-                            fontSize: 10
+                            fontSize: 9,
+                            interval:0,
+                            rotate:40,
                         },
-                        data: ['增集群', '删集群', '增shard', '删shard', '增计算节点', '删计算节点', '增存储节点', '删存储节点','增计算机','修改计算机','删计算机']
+                        data: type
                     }
                 ],
                 yAxis: [
                     {
                         type: 'value',
-                        interval: 50,
+                        interval: 4,
                         min: 0,
-                        max: 400,
+                        max: 20,
                         splitNumber: 7,
                         axisLine: {
                             symbol: ['none', 'arrow'],
@@ -82,11 +100,11 @@ export default {
                     },
                     {
                         type: 'value',
-                        interval: 50,
+                        interval: 4,
                         position: "right",
-                        offset: -35,
+                        // offset: -35,
                         min: 0,
-                        max: 400,
+                        max: 20,
                         splitNumber: 7,
                         axisLine: {
                             symbol: ['none', 'arrow'],
@@ -112,37 +130,37 @@ export default {
                             padding: [0, 0, 0, 6]
                         }
                     },
-                    {
-                        type: 'value',
-                        position: "right",
-                        interval: 50,
-                        min: 0,
-                        max: 400,
-                        splitNumber: 7,
-                        axisLine: {
-                            symbol: ['none', 'arrow'],
-                            symbolSize: [6, 6],
-                            lineStyle: {
-                                color: '#122C49'
-                            }
-                        },
-                        axisLabel: {
-                            color: '#61B9C8',
-                            showMaxLabel: false,
-                            fontSize: 10
-                        },
-                        splitLine: {
-                            show: false,
-                        },
-                        name: '(次)',
-                        nameGap: -10,
-                        nameTextStyle: {
-                            color: '#61B9C8',
-                            fontSize: 9,
-                            align: 'left',
-                            padding: [0, 0, 0, 6]
-                        }
-                    }
+                    // {
+                    //     type: 'value',
+                    //     position: "right",
+                    //     interval: 50,
+                    //     min: 0,
+                    //     max: 400,
+                    //     splitNumber: 7,
+                    //     axisLine: {
+                    //         symbol: ['none', 'arrow'],
+                    //         symbolSize: [6, 6],
+                    //         lineStyle: {
+                    //             color: '#122C49'
+                    //         }
+                    //     },
+                    //     axisLabel: {
+                    //         color: '#61B9C8',
+                    //         showMaxLabel: false,
+                    //         fontSize: 10
+                    //     },
+                    //     splitLine: {
+                    //         show: false,
+                    //     },
+                    //     name: '(次)',
+                    //     nameGap: -10,
+                    //     nameTextStyle: {
+                    //         color: '#61B9C8',
+                    //         fontSize: 9,
+                    //         align: 'left',
+                    //         padding: [0, 0, 0, 6]
+                    //     }
+                    // }
                 ],
                 series: [
                     // {
@@ -175,7 +193,7 @@ export default {
                         type: 'bar',
                         barGap: 0,
                         barWidth: 6,
-                        data: [26, 59, 90, 264, 287, 70.7, 175.6,88.9,76.3,135.6],
+                        data: per_total,
                         itemStyle: {
                             barBorderRadius: [3, 3, 0, 0],
                             color: {
@@ -200,7 +218,7 @@ export default {
                         type: 'bar',
                         barGap: 0,
                         barWidth: 6,
-                        data: [264, 287, 150, 175.6, 182.2, 48.7, 18.8,177.8,156.9,111.2],
+                        data: numbers,
                         itemStyle: {
                             barBorderRadius: [3, 3, 0, 0],
                             color:  {

@@ -4,10 +4,14 @@ class Cluster_model extends CI_Model {
     {
     	parent::__construct();
 		$this->db=$this->load->database('default',true);
+		$this->pg_database=$this->config->item('pg_database');
+		$this->pg_username=$this->config->item('pg_username');
+		$this->default_username=$this->config->item('default_username');
     }
 	//查询数据
 	public function getList($sql){
 		$q = $this->db->query($sql); //自动转义
+		//print_r($q);exit;
 		if ( $q->num_rows() > 0 ) {
 			$arr=$q->result_array();
 			return $arr;
@@ -70,6 +74,121 @@ class Cluster_model extends CI_Model {
 			$arr['code']=500;
 			return $arr;
 		}
+	}
+
+	//pgsql
+	public function sqlUser($sql,$host,$port,$username){
+		$database=$this->pg_database;
+		$pwd=$username;
+		$conn = pg_connect("host=$host dbname=$database user=$username password=$pwd port=$port");
+		$query = pg_query($conn,$sql);
+		pg_close($conn);
+	}
+	public function DB($sql,$host,$port,$username){
+		$database=$this->pg_database;
+		$pwd=$username;
+		error_reporting(0);//禁止显示PHP警告提示
+		$conn = pg_connect("host=$host dbname=$database user=$username password=$pwd port=$port");
+		if(!$conn){
+			$data['error'] = 'pg_connect(): Unable to connect to PostgreSQL server';
+			$data['code'] = 500;
+			return $data;
+		}
+
+		@$query = pg_query($conn, $sql);
+		$q = pg_result_status($query);
+		if (!$query) {
+			$data['error'] = pg_last_error($conn);
+			$data['code'] = 500;
+			return $data;
+		} else {
+			if ($q == 1) {
+				$data['code'] = 200;
+				$data['q'] = $q;
+				return $data;
+			} else {
+				//查询语句
+				//获取字段的参数名pg_field_name
+				$td = array();
+				$tdn = pg_num_rows($query);
+				for ($i = 0; $i < $tdn; ++$i) {
+					$td[] = pg_fetch_object($query, $i);
+				}
+				$data['code'] = 200;
+				$data['arr'] = $td;
+				$data['q'] = $q;
+				return $td;
+			}
+			pg_close($conn);
+		}
+	}
+	//计时函数
+	function getmicrotime(){
+		list($usec, $sec) = explode(" ",microtime());
+		return (float)sprintf('%.0f',(floatval($usec)+floatval($sec))*1000);
+	}
+	public function getResult($text,$host,$port,$username,$dbname){
+			//$dbname=$_SESSION['database'];
+			//$username=$_SESSION['username'];
+			//$host=$this->server_ip;
+			//$port=$this->port;
+			$pwd=$username;
+		$conn = pg_connect("host=$host dbname=$dbname user=$username password=$pwd port=$port");
+		//计时开始
+		$time_start =$this-> getmicrotime();
+		@$query = pg_query($conn,$text);
+		//计时结束.
+		$time_end= $this->getmicrotime();
+		$times = $time_end - $time_start;
+		//插入/更新语句
+		$q=pg_result_status($query);
+		if(!$query) {
+			$data['code']=500;
+			$data['error'] = pg_last_error($conn);
+			return $data;
+		}else {
+			if ($q == 1) {
+				$res['q'] = $q;
+				$res['times'] = $times;
+				$res['code']=200;
+				return $res;
+			} else {
+				//查询语句
+				//获取字段的参数名pg_field_name
+				$num = pg_num_fields($query);
+				$th = array();
+				$td = array();
+				for ($j = 0; $j < $num; ++$j) {
+					$colname[$j] = pg_field_name($query, $j);
+					$th[] = $colname[$j];
+				}
+				$tdn = pg_num_rows($query);
+				for ($i = 0; $i < $tdn; ++$i) {
+					$td[] = pg_fetch_object($query, $i);
+				}
+
+				if (is_object($td)) {
+					$td = (array)$td;
+				} else {
+					$td = $this->toArray($td);
+				}
+				$data['title'] = $th;
+				$data['arr'] = $td;
+				$data['times'] = $times;
+				$data['q'] = $q;
+				$data['code']=200;
+				return $data;
+			}
+			pg_close($conn);
+		}
+	}
+	public  function toArray($td){
+		if(is_array($td)) {
+			foreach($td as $key=>$value) {
+				$td[$key] = (array)$value;
+			}
+		}
+		return $td;
 	}
 }
 

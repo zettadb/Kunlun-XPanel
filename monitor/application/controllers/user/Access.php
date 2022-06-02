@@ -7,7 +7,7 @@ class Access extends CI_Controller {
 		header('Access-Control-Allow-Origin:*'); // *代表允许任何网址请求
 		header('Access-Control-Allow-Headers: Content-Type,Content-Length,Accept-Encoding,X-Requested-with, Origin'); // 设置允许自定义请求头的字段
 		header('Access-Control-Allow-Methods:POST,GET,OPTIONS,DELETE'); // 允许请求的类型
-		header('Access-Control-Allow-Headers:x-requested-with,content-type,accessToken');//允许接受token
+		header('Access-Control-Allow-Headers:x-requested-with,content-type,Token');//允许接受token
 		header('Content-Type: application/json;charset=utf-8');
 		$this->key=$this->config->item('key');
 	}
@@ -22,12 +22,22 @@ class Access extends CI_Controller {
 		$pageNo=$arr['pageNo'];
 		$pageSize=$arr['pageSize'];
 		$start=($pageNo - 1) * $pageSize;
+		$user_name=$arr['user_name'];
 		//获取用户数据
 		$this->load->model('Login_model');
-		$sql="select * from kunlun_role_assign";
-		$sql .=" order by update_time desc limit ".$pageSize." offset ".$start;
+		if($user_name=='super_dba'){
+			$sql="select * from kunlun_role_assign";
+			$sql .=" order by update_time desc limit ".$pageSize." offset ".$start;
+		}else{
+			$sql="select a.* from kunlun_role_assign as a left join kunlun_user as u on a.user_id=u.id where u.name='$user_name'";
+			$sql .=" order by a.update_time desc limit ".$pageSize." offset ".$start;
+		}
 		$res=$this->Login_model->getList($sql);
-		$total_sql="select count(id) as count from kunlun_role_privilege ";
+		if($user_name=='super_dba') {
+			$total_sql = "select count(user_id) as count from kunlun_role_assign ";
+		}else{
+			$total_sql = "select count(a.user_id) as count from kunlun_role_assign as a left join kunlun_user as u on a.user_id=u.id where u.name='$user_name'";
+		}
 		$res_total=$this->Login_model->getList($total_sql);
 		if($res===false){
 			$res=array();
@@ -79,7 +89,7 @@ class Access extends CI_Controller {
 	public function getCluster(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -98,7 +108,7 @@ class Access extends CI_Controller {
 					print_r(json_encode($data));
 				} else {
 					//获取集群数据
-					$sql="select id,name from db_clusters";
+					$sql="select id,name,nick_name from db_clusters";
 					$this->load->model('Cluster_model');
 					$res=$this->Cluster_model->getList($sql);
 					$data['code'] = 200;
@@ -112,7 +122,7 @@ class Access extends CI_Controller {
 	public function add(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -197,7 +207,7 @@ class Access extends CI_Controller {
 	public function edit(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -273,7 +283,7 @@ class Access extends CI_Controller {
 	public function delete(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -333,7 +343,7 @@ class Access extends CI_Controller {
 	public function queryall(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -367,7 +377,7 @@ class Access extends CI_Controller {
 	public function getAllUser(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -406,8 +416,14 @@ class Access extends CI_Controller {
 		//获取角色数据
 		$this->load->model('Login_model');
 		$sql="select role_name from kunlun_role_privilege where id='$id'";
+		//print_r($sql);exit;
 		$res=$this->Login_model->getList($sql);
-		return $res[0]['role_name'];
+		if(empty($res)){
+			$role_name='';
+		}else{
+			$role_name=$res[0]['role_name'];
+		}
+		return $role_name;
 	}
 	public function getEffectedCluser($arr){
 		//获取集群数据
@@ -419,7 +435,7 @@ class Access extends CI_Controller {
 	public function getPremisson(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -460,7 +476,7 @@ class Access extends CI_Controller {
 	public function getUserPremisson(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -501,7 +517,7 @@ class Access extends CI_Controller {
 	public function getRolePremisson(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';

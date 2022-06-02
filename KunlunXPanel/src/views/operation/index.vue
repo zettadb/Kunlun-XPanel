@@ -15,9 +15,16 @@
         width="50">
       </el-table-column>
       <el-table-column
-            prop="job_type"
             align="center"
-            label="任务名称" >
+            label="任务名称"  >
+             <template slot-scope="{row}">
+          <span class="link-type" @click="handleDetail(row)">{{ row.job_type }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+            prop="object"
+            align="center"
+            label="操作对象">
       </el-table-column>
       <el-table-column
             prop="when_started"
@@ -37,8 +44,9 @@
             label="状态">
       </el-table-column>
        <el-table-column
-            prop="job_info"
+            prop="info"
             align="center"
+            :show-overflow-tooltip="true"
             label="结果信息">
       </el-table-column>
        <el-table-column
@@ -48,7 +56,7 @@
              v-if="user_name==='super_dba'"
             >
       </el-table-column>
-      <el-table-column
+      <!-- <el-table-column
         label="查看信息"
         align="center"
         width="230"
@@ -57,7 +65,7 @@
         <template slot-scope="{row}">
           <el-button type="primary" size="mini" @click="handleDetail(row)">查看</el-button>
         </template>
-      </el-table-column>
+      </el-table-column> -->
     </el-table>
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" :page-sizes="[10, 20, 30, 40, 50]" />
   
@@ -98,7 +106,6 @@ export default {
     this.getList()
   },
   methods: {
-  
     handleFilter() {
       this.listQuery.pageNo = 1
       this.getList()
@@ -109,17 +116,17 @@ export default {
       this.getList()
     },
     getList() {
-        this.listLoading = true
-        let queryParam = Object.assign({}, this.listQuery)
-        queryParam.username=sessionStorage.getItem('login_username');
-        //模糊搜索
-        getOperationList(queryParam).then(response => {
-          this.list = response.list;
-          this.total = response.total;
-          setTimeout(() => {
-            this.listLoading = false
-          }, 0.5 * 1000)
-        });
+      this.listLoading = true
+      let queryParam = Object.assign({}, this.listQuery)
+      queryParam.username=sessionStorage.getItem('login_username');
+      //模糊搜索
+      getOperationList(queryParam).then(response => {
+        this.list = response.list;
+        this.total = response.total;
+        setTimeout(() => {
+          this.listLoading = false
+        }, 0.5 * 1000)
+      });
     },
     handleDetail(row){
         this.$alert(row.list, '详细信息', {

@@ -5,8 +5,13 @@
     <breadcrumb class="breadcrumb-container" />
 
     <div class="right-menu">
-
-      <a class="right-menu-item" @click="showMachine"><i class="el-icon-monitor"></i></a>
+      <el-tooltip class="item" effect="dark" content="查看功能简介" >
+        <a class="right-menu-item" @click="showDocument"><i class="el-icon-question"></i></a>
+      </el-tooltip>
+      <span class="right-menu-item" v-if="!login_auth">|</span>
+      <el-tooltip class="item" effect="dark" content="查看机器监控信息">
+        <a class="right-menu-item" @click="showMachine"><i class="el-icon-monitor"></i></a>
+      </el-tooltip>
       <span class="right-menu-item" v-if="!login_auth">|</span>
       <a @click="changePaasword" class="right-menu-item right-border">当前账户：{{name}}</a>
       <span class="right-menu-item" v-if="!login_auth">|</span>
@@ -62,8 +67,11 @@ export default {
       this.$router.push(`/alteration`)
     },
     showMachine(){
-      window.open(ip_arr[0].ip+'/d/c8W2b01Zz/node-exporter-for-prometheus-dashboard-zhong-wen-jian-rong-ban?orgId=1');
+      window.open('http://'+ip_arr[0].ip+'/d/c8W2b01Zz/node-exporter-for-prometheus-dashboard-zhong-wen-jian-rong-ban?orgId=1');
     },
+    showDocument(){
+       window.open('http://zettadb.com:8181/docs/kunlundb/kunlundb-1do3t7csai5a4#28uu2b');
+    }
   }
 }
 </script>

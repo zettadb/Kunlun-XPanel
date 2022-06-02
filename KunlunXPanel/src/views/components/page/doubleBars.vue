@@ -3,13 +3,31 @@
 </template>
 
 <script>
+import { getNodeList} from '@/api/machine/list'
 export default {
     name: '',
+    props:{
+		hostAddrList:{typeof:Object,default:[]}
+    },
     data() {
-        return {}
+        return {
+            comp:[],
+            storage:[],
+        }
+    },
+    created(){
+        this.getNodes();
     },
     methods: {
-        setChart() {
+        getNodes(){
+            let queryParam={hostAddrList:this.hostAddrList};
+            getNodeList(queryParam).then(response => {
+            this.comp =response.comp;
+            this.storage =response.storage;
+            this.setChart(this.comp, this.storage)
+            });
+        },
+        setChart(comp,storage) {
             let option = {
                 legend: {
                     left: "8%",
@@ -91,7 +109,7 @@ export default {
                             showMaxLabel: true,
                             interval: 0
                         },
-                        data: ["192.168.0.127", "192.168.0.129", "192.168.0.126", "192.168.0.113", "192.168.0.125", "192.168.0.134", "192.168.0.136", "192.168.0.110", "192.168.40.127", '192.168.40.128', "192.168.40.113"]
+                        data: this.hostAddrList
                     },
                     //右边的标尺
                     {
@@ -131,7 +149,7 @@ export default {
                             show: false
                         }
                     },
-                    data: [320, 302, 341, 374, 390, 450, 420, 374, 390, 450, 420]
+                    data:comp
                 }, {
                     name: '存储节点',
                     type: 'bar',
@@ -161,7 +179,7 @@ export default {
                             show: false
                         }
                     },
-                    data: [320, 302, 341, 374, 390, 450, 420, 374, 390, 450, 420]
+                    data: storage
                 }]
             };
 
@@ -173,7 +191,7 @@ export default {
         }
     },
     mounted() {
-        this.setChart()
+        //this.setChart(this.comp, this.storage)
     },
 }
 </script>
