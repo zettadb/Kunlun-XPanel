@@ -27,7 +27,7 @@ module.exports = {
   publicPath: './',
   outputDir: 'dist',
   assetsDir: 'static',
-  lintOnSave: process.env.NODE_ENV === 'development',
+  lintOnSave: false,
   productionSourceMap: false,
   devServer: {
     port: port,
@@ -38,7 +38,7 @@ module.exports = {
     },
     proxy:{
       '/api': {
-        target: 'http://192.168.0.127:57000',  //真实的后台接口
+        target: process.env.VUE_APP_INTERFACE_API,  //真实的后台接口
         changOrigin: true,  //允许跨域
         logLevel:'debug',
         pathRewrite: {

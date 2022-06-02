@@ -120,22 +120,24 @@ export default {
       }
     };
     const validatePassword = (rule, value, callback) => {
-      var passwordreg = /(?=.*\d)(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]).{8,12}/;
+      //var passwordreg = /(?=.*\d)(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]).{8,12}/;
+       var passwordreg = /^(?!.*\s)(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[0-9])(?=.*?[-!@#$%^&*()_+|~=`{}\[\]:";'<>?,.\/]).{8,12}$/;
       if(!value){
         callback(new Error("请输入密码"));
       }
       else if (!passwordreg.test(value)){
-        callback(new Error("密码必须是大写字母，小写字母，数字，特殊字符组成，且长度为8到12位"));
+        callback(new Error("密码必须由大小写字母,数字,特殊字符(不含空格)组成,且长度为8到12位"));
       } else {
         callback();
       }
     };
     const validateConfirmPassword = (rule, value, callback) => {
-      var passwordreg = /(?=.*\d)(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]).{8,12}/;
+      //var passwordreg = /(?=.*\d)(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]).{8,12}/;
+      var passwordreg = /^(?!.*\s)(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[0-9])(?=.*?[-!@#$%^&*()_+|~=`{}\[\]:";'<>?,.\/]).{8,12}$/;
       if (!value) {
         callback(new Error("请再次输入密码"));
       }else if (!passwordreg.test(value)){
-        callback(new Error("密码必须是大写字母，小写字母，数字，特殊字符组成，且长度为8到12位"));
+        callback(new Error("密码必须由大小写字母,数字,特殊字符(不含空格)组成,且长度为8到12位"));
       } else if(value!==this.loginForm.password) {
          callback(new Error("密码不一致!")); 
       } 

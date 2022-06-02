@@ -202,7 +202,7 @@ export function delStorage(data) {
 export function getMetaPrimary(data) {
   return request({
     url: '/Meta/getMetaPrimary',
-    method: 'post',
+    method: 'POST',
     data
   })
 }
@@ -210,6 +210,13 @@ export function getClusterDetail(data) {
   return request({
     url: '/Meta/getClusterDetail',
     method: 'post',
+    data
+  })
+}
+export function switchShard(data){
+  return request({
+    url:'/Meta/switchShard',
+    method:'post',
     data
   })
 }

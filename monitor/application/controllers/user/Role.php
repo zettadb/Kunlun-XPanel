@@ -11,10 +11,11 @@ class Role extends CI_Controller {
 		header('Access-Control-Allow-Origin:*'); // *代表允许任何网址请求
 		header('Access-Control-Allow-Headers: Content-Type,Content-Length,Accept-Encoding,X-Requested-with, Origin'); // 设置允许自定义请求头的字段
 		header('Access-Control-Allow-Methods:POST,GET,OPTIONS,DELETE'); // 允许请求的类型
-		header('Access-Control-Allow-Headers:x-requested-with,content-type,accessToken');//允许接受token
+		header('Access-Control-Allow-Headers:x-requested-with,content-type,Token');//允许接受token
 		header('Content-Type: application/json;charset=utf-8');
 		//header('Access-Control-Allow-Credentials: true'); // 设置是否允许发送 cookies
 		$this->key=$this->config->item('key');
+		$this->db=$this->load->database('role',true);
 	}
 	public function roleList(){
 		//GET请求
@@ -27,12 +28,54 @@ class Role extends CI_Controller {
 		$pageNo=$arr['pageNo'];
 		$pageSize=$arr['pageSize'];
 		$start=($pageNo - 1) * $pageSize;
+		$user_name=$arr['user_name'];
 		//获取用户数据
 		$this->load->model('Login_model');
-		$sql="select * from kunlun_role_privilege";
+		if($user_name=='super_dba'){
+			$sql="select * from kunlun_role_privilege";
+			$total_sql="select count(id) as count from kunlun_role_privilege ";
+		}else{
+			//先通过用户名获取id
+			$sql_userid="select id from kunlun_user where name='$user_name'";
+			$res_userid=$this->Login_model->getList($sql_userid);
+			$user_id='';
+			$userid_count=count($res_userid);
+			if($userid_count>1){
+				foreach ($res_userid as $row){
+					$user_id.=$row['id'].',';
+				}
+				$user_id=substr($user_id,0,strlen($user_id)-1);
+			}else if($userid_count==1){
+				$user_id=$res_userid[0]['id'];
+			}else{
+				$data['code'] = 200;
+				$data['list'] =array();
+				$data['total'] =  0;
+				print_r(json_encode($data));
+			}
+			//再获取role_id
+			$sql_roleid="select role_id from kunlun_role_assign where user_id in ($user_id)";
+			$res_roleid=$this->Login_model->getList($sql_roleid);
+			$role_id='';
+			$roleid_count=count($res_roleid);
+			if($roleid_count>1){
+				foreach ($res_roleid as $row){
+					$role_id.=$row['role_id'].',';
+				}
+				$role_id=substr($role_id,0,strlen($role_id)-1);
+			}else if($roleid_count==1){
+				$role_id=$res_roleid[0]['role_id'];
+			}else{
+				$data['code'] = 200;
+				$data['list'] =array();
+				$data['total'] = 0;
+				print_r(json_encode($data));
+			}
+			$sql="select * from kunlun_role_privilege where id in($role_id) ";
+			$total_sql="select count(id) as count from kunlun_role_privilege where id in($role_id)";
+		}
 		$sql .=" order by id desc limit ".$pageSize." offset ".$start;
 		$res=$this->Login_model->getList($sql);
-		$total_sql="select count(id) as count from kunlun_role_privilege ";
 		$res_total=$this->Login_model->getList($total_sql);
 		if($res===false){
 			$res=array();
@@ -45,7 +88,7 @@ class Role extends CI_Controller {
 	public function add(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -268,7 +311,7 @@ class Role extends CI_Controller {
 	public function edit(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -452,7 +495,7 @@ class Role extends CI_Controller {
 	public function delete(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -490,14 +533,35 @@ class Role extends CI_Controller {
 						$data['message'] = '该账户不具备删除角色权限';
 						print_r(json_encode($data));return;
 					}
-					$sql_update="delete from kunlun_role_privilege where id='$id';";
-					$res_update=$this->Login_model->updateList($sql_update);
-					if($res_update==1){
-						$data['code'] = 200;
-						$data['message'] = '删除成功';
+					//先查授权信息
+					$select_sql="select count(*) as count from kunlun_role_assign where role_id='$id';";
+					$res_select=$this->Login_model->updateList($select_sql);
+					$this->db->trans_start();
+					if($res_select>0) {
+						$sql_update="delete from kunlun_role_privilege where id='$id';";
+						$res_update=$this->Login_model->updateList($sql_update);
+						if($res_update==1){
+							$data['code'] = 200;
+							$data['message'] = '删除成功';
+							//删除授权信息
+							$sql_assign="delete from kunlun_role_assign where role_id='$id';";
+							$res_assign=$this->Login_model->updateList($sql_assign);
+							$this->db->trans_complete();
+						}else{
+							$data['code'] = 501;
+							$data['message'] = '删除失败';
+						}
 					}else{
-						$data['code'] = 501;
-						$data['message'] = '删除失败';
+						$sql_update="delete from kunlun_role_privilege where id='$id';";
+						$res_update=$this->Login_model->updateList($sql_update);
+						if($res_update==1){
+							$data['code'] = 200;
+							$data['message'] = '删除成功';
+							$this->db->trans_complete();
+						}else{
+							$data['code'] = 501;
+							$data['message'] = '删除失败';
+						}
 					}
 					print_r(json_encode($data));
 				}
@@ -511,7 +575,7 @@ class Role extends CI_Controller {
 	public function queryall(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -545,7 +609,7 @@ class Role extends CI_Controller {
 	public function getAllUser(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -716,7 +780,7 @@ class Role extends CI_Controller {
 //	public function grantAuth(){
 //		//获取token
 //		$arr = apache_request_headers();//获取请求头数组
-//		$token=$arr["accessToken"];
+//		$token=$arr["Token"];
 //		if (empty($token)) {
 //			$data['code'] = 201;
 //			$data['message'] = 'token不能为空';

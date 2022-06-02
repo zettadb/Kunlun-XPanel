@@ -7,16 +7,19 @@ class Cluster extends CI_Controller {
 		header('Access-Control-Allow-Origin:*'); // *代表允许任何网址请求
 		header('Access-Control-Allow-Headers: Content-Type,Content-Length, Origin'); // 设置允许自定义请求头的字段
 		header('Access-Control-Allow-Methods:POST,GET,OPTIONS,DELETE'); // 允许请求的类型
-		header('Access-Control-Allow-Headers:x-requested-with,content-type,accessToken');//允许接受token
+		header('Access-Control-Allow-Headers:x-requested-with,content-type,Token');//允许接受token
 		header('Content-Type: application/json;charset=utf-8');
 		$this->key=$this->config->item('key');
 		$this->ver=$this->config->item('ver');
 		$this->post_url=$this->config->item('post_url');
+		$this->default_username=$this->config->item('default_username');
+		$this->pg_username=$this->config->item('pg_username');
+		$this->db_prefix=$this->config->item('db_prefix');
 	}
 	public function createCluster(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -99,7 +102,7 @@ class Cluster extends CI_Controller {
 		//获取用户数据
 		if($apply_all_cluster==1){
 			if(empty($effectCluster)){
-				$sql="select id,name,when_created,nick_name from db_clusters ";
+				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters ";
 				if(!empty($username)){
 					$sql .=" where nick_name like '%$username%'";
 				}
@@ -110,15 +113,16 @@ class Cluster extends CI_Controller {
 				$effectCluster='NULL';
 			}
 			if(strpos($effectCluster,',')==false){
-				$sql="select id,name,when_created,nick_name from db_clusters where id=$effectCluster";
+				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters where id=$effectCluster";
 			}else{
-				$sql="select id,name,when_created,nick_name from db_clusters where id in ($effectCluster) ";
+				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters where id in ($effectCluster) ";
 			}
 			if(!empty($username)){
 				$sql .=" and nick_name like '%$username%'";
 			}
 		}
 		$sql .=" order by id desc limit ".$pageSize." offset ".$start;
+		//print_r($sql);exit;
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		//total
@@ -151,10 +155,36 @@ class Cluster extends CI_Controller {
 						if(!empty($value2)) {
 							$shardtotal = $this->getThisShards($value2);
 							$comptotal= $this->getThisComps($value2);
+							$first_backup= $this->getLastBackup($value2);
 							//$nodetotal= $this->getThisNodes($value2);
 							$res[$row]['shardtotal'] = $shardtotal['nodedetail'];
 							$res[$row]['comptotal'] = $comptotal;
-							//$res[$row]['nodetotal'] = $nodetotal;
+							$res[$row]['first_backup'] = $first_backup;
+
+						}
+					}
+					if($key2 == 'memo'){
+						$sitrng=json_decode($res[$row]['memo'],true);
+						if(!empty($sitrng)){
+							if(!empty($string['nodes'])){
+								$res[$row]['snode_count'] = $string['nodes'];
+							}else{
+								$res[$row]['snode_count'] = '';
+							}
+							if(!empty($string['innodb_size'])){
+								$res[$row]['buffer_pool'] = $string['innodb_size'];
+							}else{
+								$res[$row]['buffer_pool'] = '';
+							}
+							if(!empty($string['machinelist'])){
+								$res[$row]['machinelist'] = $string['machinelist'];
+							}else{
+								$res[$row]['machinelist'] = '';
+							}
+						}else{
+							$res[$row]['snode_count'] = '';
+							$res[$row]['buffer_pool'] = '';
+							$res[$row]['machinelist'] = '';
 						}
 					}
 				}
@@ -168,7 +198,7 @@ class Cluster extends CI_Controller {
 	public function delCluster(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -211,7 +241,7 @@ class Cluster extends CI_Controller {
 	public function backUpCluster(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -277,7 +307,7 @@ class Cluster extends CI_Controller {
 					if ($key2 == 'cluster_id') {
 						if(!empty($value2)) {
 							$name = $this->getClusterName($value2);
-							$res[$row]['cluster_name'] = $name;
+							$res[$row]['cluster_name'] = $name[0]['nick_name'];
 						}else{
 							$res[$row]['cluster_name'] = '';
 						}
@@ -293,10 +323,10 @@ class Cluster extends CI_Controller {
 		print_r(json_encode($data));
 	}
 	public function getClusterName($id){
-		$sql="select name from db_clusters where id='$id'";
+		$sql="select name,nick_name from db_clusters where id='$id'";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
-		return $res[0]['name'];
+		return $res;
 	}
 	public function getShardName($db_cluster_id,$id){
 		$sql="select name from shards where id='$id' and db_cluster_id='$db_cluster_id'";
@@ -307,7 +337,7 @@ class Cluster extends CI_Controller {
 	public function ifBackUp(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -331,7 +361,7 @@ class Cluster extends CI_Controller {
 	public function restoreCluster(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -378,7 +408,7 @@ class Cluster extends CI_Controller {
 	public function getAllMachine(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -395,7 +425,7 @@ class Cluster extends CI_Controller {
 	public function getShards(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -414,7 +444,7 @@ class Cluster extends CI_Controller {
 	public  function addShards(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -463,7 +493,7 @@ class Cluster extends CI_Controller {
 	public  function addComps(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -512,7 +542,7 @@ class Cluster extends CI_Controller {
 	public  function addNodes(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -566,6 +596,7 @@ class Cluster extends CI_Controller {
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		$count=count($res);
+		$data['shards_count']=$count;
 		if($count==1){
 			$resnode=$this->getThisNodes($id,$res[0]['id']);
 			$data['nodedetail']=$count.'个shard，'.$res[0]['name'].'('.$resnode.'个存储节点)';
@@ -595,10 +626,23 @@ class Cluster extends CI_Controller {
 		$res=$this->Cluster_model->getList($sql);
 		return $res[0]['count'];
 	}
+	public function getLastBackup($id){
+		$sql="select end_ts from cluster_backups where cluster_id='$id' order by end_ts desc limit 1";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		$time='';
+		if($res==false){
+			$time='';
+		}else{
+			$end_ts=explode(".",$res[0]['end_ts']);
+			$time=$end_ts[0];
+		}
+		return $time;
+	}
 	public  function getClusterNodesList(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -609,18 +653,19 @@ class Cluster extends CI_Controller {
 		$id= $string['id'];
 		//获取cluster的name
 		$this->load->model('Cluster_model');
-		$sql="select name,nick_name from db_clusters where id='$id'";
+		$sql="select name,nick_name,ha_mode from db_clusters where id='$id'";
 		$res_name=$this->Cluster_model->getList($sql);
 		$cluster_id='cluster';
 		$cluster_name=$res_name[0]['name'];
 		$cluster_text=$res_name[0]['nick_name'];
+		$ha_mode=$res_name[0]['ha_mode'];
 		$shards_id='shards';
 		$shards_text='shards';
 		$comp_id='comps';
 		$comp_text='计算节点';
 		$arr=array();
 		//$nodes=array(array('id'=>$cluster_id, 'text'=>$cluster_text),array('id'=>$shards_id, 'text'=>$shards_text),array('id'=>$comp_id, 'text'=>$comp_text));
-		$nodes=array(array('id'=>$cluster_id, 'text'=>$cluster_text,'data'=>array('cluster_name'=>$cluster_name)));
+		$nodes=array(array('id'=>$cluster_id, 'text'=>$cluster_text,'data'=>array('cluster_name'=>$cluster_name,'ha_mode'=>$ha_mode)));
 		$links=array();
 //		$links=array(array('from'=>$cluster_id, 'to'=>$shards_id),array('from'=>$cluster_id, 'to'=>$comp_id));
 		//获取存储节点数据
@@ -633,7 +678,7 @@ class Cluster extends CI_Controller {
 					if ($key2 == 'name') {
 						if (!empty($value2)) {
 							$shard_node_id='shard'.$res[$row]['id'];
-							$shard_node=array('id'=>$shard_node_id, 'text'=>$value2,'data'=>array('name'=>'shard','cluster_name'=>$cluster_name,'nick_name'=>$cluster_text,'cluster_id'=>$id,'shard_id'=>$res[$row]['id']));
+							$shard_node=array('id'=>$shard_node_id, 'text'=>$value2,'data'=>array('name'=>'shard','cluster_name'=>$cluster_name,'nick_name'=>$cluster_text,'cluster_id'=>$id,'shard_id'=>$res[$row]['id'],'ha_mode'=>$ha_mode));
 							$shard_link=array('from'=>$cluster_id, 'to'=>$shard_node_id);
 							array_push($nodes,$shard_node);
 							array_push($links,$shard_link);
@@ -664,7 +709,7 @@ class Cluster extends CI_Controller {
 			//array_unique($nodes);
 		}
 		//获取计算节点数据
-		$sql="select id,name,port,hostaddr,cpu_cores,max_mem_MB,max_conns from comp_nodes where db_cluster_id='$id'";
+		$sql="select id,name,port,hostaddr,cpu_cores,max_mem_MB,max_conns,status from comp_nodes where db_cluster_id='$id'";
 		$this->load->model('Cluster_model');
 		$res_comp=$this->Cluster_model->getList($sql);
 		if($res_comp!==false){
@@ -680,7 +725,7 @@ class Cluster extends CI_Controller {
 							$shard_link1=array('from'=>$comp_id, 'to'=>$shard_node_id);
 							array_push($nodes,$shard_node1);
 							array_push($links,$shard_link1);*/
-							$shard_node=array('id'=>$shard_node_id, 'text'=>$value2,'data'=>array('cluster_name'=>$cluster_name,'nick_name'=>$cluster_text,'port'=>$value2,'hostaddr'=>$res_comp[$row]['hostaddr'],'cpu_cores'=>$res_comp[$row]['cpu_cores'],'max_mem_MB'=>$res_comp[$row]['max_mem_MB'],'max_conns'=>$res_comp[$row]['max_conns'],'name'=>'pgsql','comp'=>$res_comp[$row]['name']));
+							$shard_node=array('id'=>$shard_node_id, 'text'=>$value2,'data'=>array('cluster_name'=>$cluster_name,'nick_name'=>$cluster_text,'port'=>$value2,'hostaddr'=>$res_comp[$row]['hostaddr'],'cpu_cores'=>$res_comp[$row]['cpu_cores'],'max_mem_MB'=>$res_comp[$row]['max_mem_MB'],'max_conns'=>$res_comp[$row]['max_conns'],'name'=>'pgsql','comp'=>$res_comp[$row]['name'],'status'=>$res_comp[$row]['status']));
 							$shard_link=array('from'=>$cluster_id, 'to'=>$shard_node_id,'text'=>$res_comp[$row]['hostaddr']);
 							array_push($nodes,$shard_node);
 							array_push($links,$shard_link);
@@ -705,7 +750,7 @@ class Cluster extends CI_Controller {
 	public  function postgresEnable(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -752,7 +797,7 @@ class Cluster extends CI_Controller {
 	public  function prometheusEnable(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -794,7 +839,7 @@ class Cluster extends CI_Controller {
 	public  function mysqlEnable(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -840,7 +885,7 @@ class Cluster extends CI_Controller {
 	public  function delShard(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -900,7 +945,7 @@ class Cluster extends CI_Controller {
 	public  function delComp(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -960,7 +1005,7 @@ class Cluster extends CI_Controller {
 	public  function delSnode(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -1024,7 +1069,7 @@ class Cluster extends CI_Controller {
 	public  function controlInstance(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -1150,7 +1195,7 @@ class Cluster extends CI_Controller {
 	public function getEffectCluster(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -1200,7 +1245,7 @@ class Cluster extends CI_Controller {
 	public function updateAssign(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -1252,6 +1297,7 @@ class Cluster extends CI_Controller {
 						}
 						//更新授权表
 						$sql_update="update kunlun_role_assign set affected_clusters='$affected_clusters',update_time=now() where user_id='$user_id' and role_id='$role_id' and apply_all_cluster=2";
+						//print_r($sql_update);exit;
 						$res_update=$this->Login_model->updateList($sql_update);
 						if($res_update==1){
 							$data['code'] = 200;
@@ -1298,7 +1344,7 @@ class Cluster extends CI_Controller {
 	public function delAssign(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -1422,7 +1468,7 @@ class Cluster extends CI_Controller {
 	public function getNode(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -1474,10 +1520,12 @@ class Cluster extends CI_Controller {
 //							}
 							$shard_n_id='snode'.$shard_arr_id;
 							//获取集群的名称
-							$cluster_name=$this->getClusterName($cluster_id);
+							$c_name=$this->getClusterName($cluster_id);
+							$cluster_name=$c_name[0]['name'];
+							$nick_name=$c_name[0]['nick_name'];
 							//获取shard名称
 							$shard_name=$this->getShardName($cluster_id,$shard_id);
-							$shard_node=array('id'=>$shard_n_id, 'text'=>$shard_arr_name,'data'=>array('cluster_id'=>$cluster_id,'hostaddr'=>$key['hostaddr'],'port'=>$key['port'],'cpu_cores'=>$key['cpu_cores'],'initial_storage_GB'=>$key['initial_storage_GB'],'max_storage_GB'=>$key['max_storage_GB'],'innodb_buffer_pool_MB'=>$key['innodb_buffer_pool_MB'],'rocksdb_buffer_pool_MB'=>$key['rocksdb_buffer_pool_MB'],'name'=>'mysql','shard_id'=>$shard_id,'cluster_name'=>$cluster_name,'shard_name'=>$shard_name));
+							$shard_node=array('id'=>$shard_n_id, 'text'=>$shard_arr_name,'data'=>array('cluster_id'=>$cluster_id,'hostaddr'=>$key['hostaddr'],'port'=>$key['port'],'cpu_cores'=>$key['cpu_cores'],'initial_storage_GB'=>$key['initial_storage_GB'],'max_storage_GB'=>$key['max_storage_GB'],'innodb_buffer_pool_MB'=>$key['innodb_buffer_pool_MB'],'rocksdb_buffer_pool_MB'=>$key['rocksdb_buffer_pool_MB'],'name'=>'mysql','shard_id'=>$shard_id,'cluster_name'=>$cluster_name,'nick_name'=>$nick_name,'shard_name'=>$shard_name));
 							$shard_link=array('from'=>$tree_id, 'to'=>$shard_n_id,'text'=>$key['hostaddr']);
 							array_push($nodes,$shard_node);
 							array_push($links,$shard_link);
@@ -1497,7 +1545,7 @@ class Cluster extends CI_Controller {
 	public function getShardCount(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -1531,7 +1579,59 @@ class Cluster extends CI_Controller {
 	public function getStandbyNode(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["accessToken"];
+		$token=$arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));return;
+		}
+		//判断参数
+		$string=json_decode(@file_get_contents('php://input'),true);
+		//print_r($string);exit;
+		$cluster_id = $string['cluster_id'];
+		$shard_id = $string['shard_id'];
+		$ha_mode = $string['ha_mode'];
+		if($ha_mode=='mgr'){
+			$sql="select hostaddr,port,user_name,passwd from shard_nodes where db_cluster_id='$cluster_id' and shard_id='$shard_id'";
+			$this->load->model('Cluster_model');
+			$res=$this->Cluster_model->getList($sql);
+			$arr=array();
+			if(!empty($res)){
+				foreach ($res as $row) {
+					$ip=$row['hostaddr'];
+					$port=$row['port'];
+					$username=$row['user_name'];
+					$pwd=$row['passwd'];
+					$per_dbname='performance_schema';
+					$sql_main="select MEMBER_ROLE from replication_group_members where MEMBER_HOST='$ip' and MEMBER_PORT='$port';";
+					$res_main=$this->Cluster_model->getMysql($ip,$port,$username,$pwd,$per_dbname,$sql_main);
+					if(isset($res_main[0])){
+						if($res_main[0]=='SECONDARY'){
+							$ip_arr=array('ip'=>$ip, 'port'=>$port,'status'=>$res_main[0]);
+							array_push($arr,$ip_arr);
+						}
+					}else{
+						$type='OFFLINE';
+						$ip_arr=array('ip'=>$ip, 'port'=>$port,'status'=>$type);
+						array_push($arr,$ip_arr);
+					}
+				}
+			}
+		}
+		if($ha_mode=='rbr') {
+			$sql="select hostaddr as ip,port from shard_nodes where db_cluster_id='$cluster_id' and shard_id='$shard_id' and member_state='replica' and status!='inactive'";
+			$this->load->model('Cluster_model');
+			$res=$this->Cluster_model->getList($sql);
+			$arr=$res;
+		}
+		$data['code'] = 200;
+		$data['list'] = $arr;
+		print_r(json_encode($data));
+	}
+	public function getShardPrimary(){
+		//获取token
+		$arr = apache_request_headers();//获取请求头数组
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';
@@ -1541,33 +1641,456 @@ class Cluster extends CI_Controller {
 		$string=json_decode(@file_get_contents('php://input'),true);
 		$cluster_id = $string['cluster_id'];
 		$shard_id = $string['shard_id'];
-		$sql="select hostaddr,port,user_name,passwd from shard_nodes where db_cluster_id='$cluster_id' and shard_id='$shard_id'";
-		$this->load->model('Cluster_model');
-		$res=$this->Cluster_model->getList($sql);
-		$arr=array();
-		if(!empty($res)){
-			foreach ($res as $row) {
-				$ip=$row['hostaddr'];
-				$port=$row['port'];
-				$username=$row['user_name'];
-				$pwd=$row['passwd'];
-				$per_dbname='performance_schema';
-				$sql_main="select MEMBER_ROLE from replication_group_members where MEMBER_HOST='$ip' and MEMBER_PORT='$port';";
-				$res_main=$this->Cluster_model->getMysql($ip,$port,$username,$pwd,$per_dbname,$sql_main);
-				if(isset($res_main[0])){
-					if($res_main[0]=='SECONDARY'){
-						$ip_arr=array('ip'=>$ip, 'port'=>$port,'status'=>$res_main[0]);
+		$ha_mode = $string['ha_mode'];
+		if($ha_mode=='mgr'){
+			$sql="select hostaddr,port,user_name,passwd from shard_nodes where db_cluster_id='$cluster_id' and shard_id='$shard_id'";
+			$this->load->model('Cluster_model');
+			$res=$this->Cluster_model->getList($sql);
+			$arr=array();
+			if(!empty($res)){
+				foreach ($res as $row) {
+					$ip=$row['hostaddr'];
+					$port=$row['port'];
+					$username=$row['user_name'];
+					$pwd=$row['passwd'];
+					$per_dbname='performance_schema';
+					$sql_main="select MEMBER_ROLE from replication_group_members where MEMBER_HOST='$ip' and MEMBER_PORT='$port';";
+					$res_main=$this->Cluster_model->getMysql($ip,$port,$username,$pwd,$per_dbname,$sql_main);
+					if(isset($res_main[0])){
+						if($res_main[0]=='PRIMARY'){
+							$ip_arr=array('ip'=>$ip, 'port'=>$port,'status'=>$res_main[0]);
+							array_push($arr,$ip_arr);
+						}
+					}else{
+						$type='OFFLINE';
+						$ip_arr=array('ip'=>$ip, 'port'=>$port,'status'=>$type);
 						array_push($arr,$ip_arr);
 					}
-				}else{
-					$type='OFFLINE';
-					$ip_arr=array('ip'=>$ip, 'port'=>$port,'status'=>$type);
-					array_push($arr,$ip_arr);
 				}
 			}
 		}
+		if($ha_mode=='rbr') {
+			$sql = "select hostaddr as ip,port from shard_nodes where db_cluster_id='$cluster_id' and shard_id='$shard_id' and member_state='source' ";
+			$this->load->model('Cluster_model');
+			$res = $this->Cluster_model->getList($sql);
+			$arr=$res;
+		}
 		$data['code'] = 200;
 		$data['list'] = $arr;
+		print_r(json_encode($data));
+	}
+	function getUnixTimestamp (){
+		list($s1, $s2) = explode(' ', microtime());
+		return (float)sprintf('%.0f',(floatval($s1) + floatval($s2)) * 1000);
+	}
+	public function getEffectComp(){
+		//判断参数
+		$string=json_decode(@file_get_contents('php://input'),true);
+		$effectCluster = $string['effectCluster'];
+		$user_name = $string['user_name'];
+		$this->load->model('Cluster_model');
+		if(empty($effectCluster)){
+			$sql = "select hostaddr,port from comp_nodes  ORDER BY id desc;";
+		}else{
+			$s = explode(",", $effectCluster);
+			$effect = "'".implode("','",$s)."'";
+			$sql = "select hostaddr,port from comp_nodes where db_cluster_id in ($effect)  ORDER BY id desc;";
+		}
+		$res = $this->Cluster_model->getList($sql);
+		if(!empty($res)){
+			$host=$res[0]['hostaddr'];
+			$port= $res[0]['port'];
+			//先创建用户
+			$username=$this->default_username;
+			$pgusername=$this->pg_username;
+			$db_prefix=$this->db_prefix;
+			//$user="DO \$body$ BEGIN IF NOT EXISTS (SELECT * FROM   pg_catalog.pg_user WHERE  usename = '$username') THEN CREATE ROLE $username LOGIN PASSWORD '$username'; END IF;END \$body$;";
+			$user="SELECT usename FROM  pg_catalog.pg_user WHERE  usename = '$username'";
+			$res_usename=$this->Cluster_model->DB($user,$host,$port,$pgusername);
+			/*if($res_usename['code']==500){
+				$data['message'] = $res_usename['error'];
+				$data['code'] = $res_usename['code'];
+				print_r(json_encode($data));return;
+			}else{
+				if(empty($res_usename['arr'])){*/
+				if(empty($res_usename)){
+					$createuser="CREATE ROLE $username LOGIN PASSWORD '$username';";
+					$res_cuser=$this->Cluster_model->DB($createuser,$host,$port,$pgusername);
+					if($res_cuser['code']==500){
+						$data['message'] = $res_cuser['error'];
+						$data['code'] = $res_cuser['code'];
+						print_r(json_encode($data));return;
+					}
+				}
+//			}
+			//创建数据库
+			$db_name=$db_prefix.$user_name;
+			//var_dump($db_name);exit;
+			//$sqls="DO \$body$ BEGIN IF NOT EXISTS (select 1 from pg_database where datname ='$db_name' ) THEN CREATE DATABASE $db_name; END IF;END \$body$;";
+			$selectdb="select 1 from pg_database where datname ='$db_name';";
+			$res_user=$this->Cluster_model->DB($selectdb,$host,$port,$pgusername);
+			if(empty($res_user)){
+				$createdb="CREATE DATABASE  $db_name;";
+				$res_cdb=$this->Cluster_model->DB($createdb,$host,$port,$pgusername);
+				if($res_cdb['code']==500){
+					$data['message'] = $res_cdb['error'];
+					$data['code'] = $res_cdb['code'];
+					print_r(json_encode($data));return;
+				}
+				$this->Cluster_model->DB("DROP DATABASE  $db_prefix;",$host,$port,$pgusername);
+				$command="/var/www/html/sysbench-tpcc/prepare.sh $host $port $db_name $username $username 2>&1";
+				exec($command,$array, $state);
+			}
+			$node=array();
+			//获取表信息
+			$tablesql="select tablename from pg_tables where schemaname='public';";
+			$res_table=$this->Cluster_model->getResult($tablesql,$host,$port,$username,$db_name);
+			if($res_table!==false){
+				foreach($res_table as $key => $value) {
+					if($key=='arr'){
+						foreach ($value as $key2 => $value2) {
+							if(is_object($value2)) {
+								$value2 = (array)$value2;
+							}
+							if(is_array($value2)) {
+								$table=$value2['tablename'];
+								//print_r($table);exit;
+								//获取表的shard
+								$sql1="select t1.name from pg_shard t1 join pg_class t2 on t2.relshardid=t1.id and t2.relname='$table';";
+								$res1=$this->Cluster_model->getResult($sql1,$host,$port,$username,$db_name);
+								if(!empty($res1['arr'])){
+									$shard=(array)$res1['arr'][0];
+									$tablename=$table.'('.$shard['name'].')';
+								}else{
+									$tablename=$table.'()';
+								}
+								//获取表字段
+								$field="select a.attname AS column_name,concat_ws('',t.typname,SUBSTRING(format_type(a.atttypid,a.atttypmod) from '\(.*\)')) as udt_name from pg_class c, pg_attribute a , pg_type t where  c.relname = '$table' and a.attnum>0 and a.attrelid = c.oid and a.atttypid = t.oid ;";
+								$res_field=$this->Cluster_model->getResult($field,$host,$port,$username,$db_name);
+								$field_arr=array();
+								foreach ($res_field['arr'] as $key3 => $value3) {
+									$field_one=$value3['column_name'].'----'.$value3['udt_name'];
+									$list = array('id' => $key3,'label' => $field_one);
+									array_push($field_arr,$list);
+
+								}
+								$arr = array('id' => $key2,'label' => $tablename,'children'=>$field_arr);
+								array_push($node,$arr);
+							}
+						}
+					}
+				}
+			}
+			$nodes=array('id'=>0, 'label'=>$db_name,'children'=>$node);
+			$data['code']=200;
+			$data['res']=$nodes;
+			$data['ip']=$host;
+			$data['port']=$port;
+			$data['db']=$db_name;
+			print_r(json_encode($data));
+		}else{
+			$data['code']=501;
+			$data['message']='请先创建集群再体验!';
+			print_r(json_encode($data));
+		}
+	}
+	public  function countStr($str){
+		$search_char="'";
+		$count=0;
+		for($x=0; $x< strlen($str); $x++) {
+			if(substr($str,$x,1)==$search_char){
+				$count=$count+1;
+			}
+		}
+		return $count;
+	}
+	public function getExperience(){
+		//判断参数
+		$string=json_decode(@file_get_contents('php://input'),true);
+		$text = $string['text'];
+		$ip = $string['ip'];
+		$port = $string['port'];
+		$db= $string['db'];
+		$username=$this->default_username;
+		$this->load->model("Cluster_model");
+		//判断字符串的长度不能超过2000
+		$len = strlen($text);
+		if($len>2000){
+			$data['message']='请输入2000字节以内的sql语句！';
+		}else{
+			//请求时控制重复执行不能小于1秒
+			if(!isset($_SESSION['last_time'])){
+				//先获取时间戳
+				$time = $this->getUnixTimestamp();
+				$_SESSION['last_time']=$time;
+			}else{
+				$last_time=$_SESSION['last_time'];
+				$current_time=$this->getUnixTimestamp();
+				$min=$current_time-$last_time;
+				$_SESSION['last_time']=$current_time;
+				if($min<=1000){
+					$data['message']='操作太频繁，请1秒后重试！';
+					$data['code']=200;
+					print_r(json_encode($data));return;
+				}
+			}
+			//如果多条语句一起执行时，需要增加影响行数总数：affected rows和rows
+			//按分号分割字符串，引号内的分号不做处理
+			//$matches = preg_split('/(?<!\d)(;)/', $text);
+//			$arr = str_getcsv($text,';');
+			//引号内多个分号todo
+			$matches=preg_split("/;(?=[^'(.*?)'])/",$text);
+			//preg_match_all("#([^;]+;'[^(]+'[')])#isU",$text,$matches);
+			//preg_match_all("/;(?=[^'(.*?)[^;*]'])/",$text,$matches);
+//			$matches=array();
+//			for ($i=0;$i<count($arr);$i++){
+//				$count=$this->countStr($arr[$i]);
+//				if($count%2==0){
+//					array_push($matches,$arr[$i]);
+//				}else{
+//					$next=$arr[$i].';'.$arr[$i+1];
+//					$next_count=$this->countStr($next);
+//					if($next_count%2!==0){
+//					}else{
+//						if((strpos($next,'insert') !== false||strpos($next,'INSERT') !== false)&&(strpos($next,'values') !== false||strpos($next,'VALUES') !== false)&&strpos($next,'(') !== false&&strpos($next,')') !== false){
+//							array_push($matches,$next);
+//						}
+//					}
+//				}
+//			}
+
+			//print_r($matches);;exit;
+			$length=count($matches);
+			//print_r($matches);;exit;
+			$all=$matches[$length-1]?$length-1:$length-2;
+			$count=0;$len='';$time=0;$history=array();$res_date=array();
+			$now = date('Y-m-d H:i:s',time());
+			$res_date1='';
+			for($i=0;$i<=$all;$i++){
+				$len1='';$time1='';$count1=0;$result='';
+				//语句添加分号处理
+				if($all==$length-2){
+					$sql=$matches[$i].';';
+				}else{
+					if($all==$i){
+						$sql=$matches[$i];
+					}else{
+						$sql=$matches[$i].';';
+					}
+				}
+				//查询
+				if(stripos($sql,'select')!==false){
+					$res_count=$this->Cluster_model->getResult($sql,$ip,$port,$username,$db);
+					if($res_count['code']==200){
+						$select_count=count($res_count['arr']);
+						//执行时间
+						$time1=$res_count['times'];
+						//影响的行数
+						//$len1='<p><span class="e">===Success===</span><span class="e">[SQL]:'.$sql.'</span><span class="e">影响行数：'.$select_count.'</span><span class="e">时间：'.$time1.'ms</span></p>';
+						$len1='<p><span class="e">===Success===</span><span class="e">[SQL]:'.$sql.'</span><span class="e">影响行数：'.$select_count.'</span><span class="e">时间：'.$time1.'ms</span></p>';
+						//执行历史表格里的行数
+						$count1=$select_count;
+						$data['list']=$res_count;
+						$result='执行成功';
+						$data['code']=$res_count['code'];
+						//查询列表
+						$res_date1=$res_count;
+					}else{
+						//$len1='<p><span class="r">===Error===</span><span class="e">[SQL]:'.$sql.'</span><span class="e">[Err]：'.$res_count['error'].'</span></p>';
+						$len1='<p><span class="r">===Error===</span><span class="e">[SQL]:'.$sql.'</span><span class="e">[Err]：'.$res_count['error'].'</span></p>';
+						$data['code']=$res_count['code'];
+						$data['error']=$res_count['error'];
+						$result=$res_count['error'];
+						$res_date1='';
+					}
+				}else{
+					//其他sql
+					$res_q=$this->Cluster_model->getResult($sql,$ip,$port,$username,$db);
+					if($res_q['code']==200){
+						$time1=$res_q['times'];
+						$len1='<p><span class="e">===Success===</span><span class="e">[SQL]:'.$sql.'</span><span class="e">影响行数：'.$res_q['q'].'</span><span style="display: block">时间：'.$time1.'ms</span></p>';
+						$count1=1;
+						$data['result']='执行成功';
+						$data['code']=$res_q['code'];
+						$result='执行成功';
+						$res_date1='';
+					}else{
+						$len1='<p><span class="r">===Error===</span><span class="e">[SQL]:'.$sql.'</span><span class="e">[Err]：'.$res_q['error'].'</span></p>';
+						$data['code']=$res_q['code'];
+						$data['error']=$res_q['error'];
+						$result=$res_q['error'];
+						$res_date1='';
+					}
+				}
+				$arr=array('sql'=>$sql,'result'=>$result,'time'=>$now,'ms'=>$time1,'lines'=>$count1);
+				array_push($history,$arr);
+				if(!empty($res_date1)){
+					array_push($res_date,$res_date1);
+				}
+				$len.=$len1;
+				//$time+=$time1;
+				$count=$count1;
+				$time=$time1;
+			}
+			$data['count']=$count;
+			$data['len']=$len;
+			$data['times']=$time;
+			$data['history']=$history;
+			$data['res_date']=$res_date;
+			$data['code']=200;
+		}
+		print_r(json_encode($data));
+	}
+	public function getClusterShards(){
+		//获取token
+		$arr = apache_request_headers();//获取请求头数组
+		$token=$arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));return;
+		}
+		//判断参数
+		$string=json_decode(@file_get_contents('php://input'),true);
+		$cluster_id=$string['id'];
+		$this->load->model('Cluster_model');
+		//nodes
+		$sql_nodes="select count(id) as count from shard_nodes where db_cluster_id='$cluster_id'";
+		$nodes=$this->Cluster_model->getList($sql_nodes);
+		//shard
+		$sql_shard="select count(id) as count from shards where db_cluster_id='$cluster_id'";
+		$shards=$this->Cluster_model->getList($sql_shard);
+		//comp
+		$sql_comp="select count(id) as count from comp_nodes where db_cluster_id='$cluster_id'";
+		$comp=$this->Cluster_model->getList($sql_comp);
+		$data['code'] = 200;
+		$data['shard'] = (int)$shards[0]['count'];
+		$data['nodes'] =(int) $nodes[0]['count'];
+		$data['comp'] = (int)$comp[0]['count'];
+		print_r(json_encode($data));
+	}
+	public function timediff($begin_time,$end_time)
+	{
+		if($begin_time < $end_time){
+			$starttime = $begin_time;
+			$endtime = $end_time;
+		}else{
+			$starttime = $end_time;
+			$endtime = $begin_time;
+		}
+		//计算天数
+		$timediff = $endtime-$starttime;
+		$days = intval($timediff/86400);
+		//计算小时数
+		$remain = $timediff%86400;
+		$hours = intval($remain/3600);
+		//计算分钟数
+		$remain = $remain%3600;
+		$mins = intval($remain/60);
+		//计算秒数
+		$secs = $remain%60;
+		//$res = array("day" => $days,"hour" => $hours,"min" => $mins,"sec" => $secs);
+		if(empty($days)&&empty($hours)&&empty($mins)&&!empty($secs)){
+			$res=$secs.'秒';
+		}elseif (empty($days)&&empty($hours)&&!empty($mins)){
+			$res=$mins.'分钟'.$secs.'秒';
+		}elseif (empty($days)&&!empty($hours)){
+			$res=$hours.'小时'.$mins.'分钟'.$secs.'秒';
+		}else {$res=$days.'天'.$hours.'小时'.$mins.'分钟'.$secs.'秒';}
+		return $res;
+	}
+	public function getSwitcheOverList()
+	{
+		//GET请求
+		$serve=$_SERVER['QUERY_STRING'];
+		$string=preg_split('/[=&]/',$serve);
+		$arr=array();
+		for($i=0;$i<count($string);$i+=2) {
+			$arr[$string[$i]] = $string[$i + 1];
+		}
+		$pageNo=$arr['pageNo'];
+		$pageSize=$arr['pageSize'];
+		$username=$arr['hostaddr'];
+		$startTime=$arr['startTime'];
+		$endTime=$arr['endTime'];
+		$id=$arr['id'];
+		$start=$pageNo-1;
+		//获取用户数据
+		$this->load->model('Cluster_model');
+		$sql="select id,host,taskid,timestamp from rbr_consfailover where taskid is not null and cluster_id='$id'";
+		if(!empty($username)){
+			$sql .=" and host like '%$username%'";
+		}
+		if(!empty($startTime)){
+			$sql .=" and timestamp between '$startTime' and '$endTime' ";
+		}
+		$sql .=" group by taskid order by id desc limit ".$pageSize." offset ".$start;
+		//echo $sql;exit;
+		$res=$this->Cluster_model->getList($sql);
+		if($res===false){
+			$res=array();
+		}else{
+			foreach ($res as $row=>$value){
+				foreach ($value as $key2 => $value2) {
+					//开始时间
+					if ($key2 == 'timestamp') {
+						if(!empty($value2)) {
+							$res[$row]['start_time'] = $value2;
+						}
+					}
+					if($key2 == 'taskid'){
+						if(!empty($value2)) {
+							$arr = $this->getNewHost($value2);
+							$res[$row]['end_time'] =$arr[0]['timestamp'];
+							$res[$row]['new_master_host'] =$arr[0]['new_master_host'];
+							$res[$row]['err_code'] =$arr[0]['err_code'];
+							if($arr[0]['err_code']=='0'){
+								$res[$row]['status'] ='成功';
+							}else{
+								$res[$row]['status'] ='失败';
+							}
+							$res[$row]['err_msg'] =$arr[0]['err_msg'];
+							//耗时
+							$res[$row]["count_time"] =$this->timediff(strtotime($arr[0]['timestamp']), strtotime($res[$row]["timestamp"]));
+						}
+					}
+				}
+			}
+		}
+		$total_sql="select count(id) as count from (select id from rbr_consfailover  where taskid is not null ";
+		if(!empty($username)){
+			$total_sql .=" and host like '%$username%'";
+		}
+		if(!empty($startTime)){
+			$total_sql .=" and timestamp between '$startTime' and '$endTime' ";
+		}
+		$total_sql.=" group by taskid) a";
+		$res_total=$this->Cluster_model->getList($total_sql);
+		$data['code'] = 200;
+		$data['list'] = $res;
+		$data['total'] =  $res_total ? (int)$res_total[0]['count'] : 0;
+		print_r(json_encode($data));
+	}
+	public function getNewHost($id){
+		$sql="select new_master_host,timestamp,err_code,err_msg from rbr_consfailover where taskid='$id' order by id desc limit 1";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		return $res;
+	}
+	public function getTaskList(){
+		//GET请求
+		$serve=$_SERVER['QUERY_STRING'];
+		$string=preg_split('/[=&]/',$serve);
+		$arr=array();
+		for($i=0;$i<count($string);$i+=2) {
+			$arr[$string[$i]] = $string[$i + 1];
+		}
+		$taskid=$arr['taskid'];
+		$this->load->model('Cluster_model');
+		$sql="select * from rbr_consfailover where taskid ='$taskid'";
+		$res=$this->Cluster_model->getList($sql);
+		$data['code'] = 200;
+		$data['list'] = $res;
 		print_r(json_encode($data));
 	}
 }

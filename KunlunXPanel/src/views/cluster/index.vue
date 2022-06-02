@@ -1,11 +1,11 @@
 <template>
   <div class="icons-container">
-    <el-tabs type="border-card">
-      <el-tab-pane label="集群展示">
-        <Cshow/> 
+    <el-tabs type="border-card" v-model="activeName" @tab-click="handleClick">
+      <el-tab-pane label="集群展示" name="first">
+        <Cshow v-if="tabs.first"/> 
       </el-tab-pane>
-      <el-tab-pane label="集群列表信息">
-          <List/>
+      <el-tab-pane label="集群列表信息" name="second">
+          <List v-if="tabs.second"/>
           <!-- <Cshow/>  -->
       </el-tab-pane>
     </el-tabs>
@@ -14,15 +14,41 @@
 
 <script>
 import List from '../cluster/list.vue'
-import Cshow from '../cluster/cshow2.vue'
+import Cshow from './cshow.vue'
 export default {
    components: {List,Cshow},
   data() {
     return {
+      activeName: "first",
+      tabs: {
+        first: true,
+        second: false,
+      },
     }
   },
   methods: {
-  
+     handleClick(tab) {
+      this.activeName = tab.name;
+      switch (this.activeName) {
+        case "first":
+          this.switchTab("first");
+          break;
+        case "second":
+          this.switchTab("second");
+          break;
+      }
+
+    },
+
+    switchTab(tab) {
+      for (let key in this.tabs) {
+        if (key === tab) {
+         this.tabs[key] = true;
+        } else {
+          this.tabs[key] = false;
+        }
+      }
+    },
   }
 }
 </script>

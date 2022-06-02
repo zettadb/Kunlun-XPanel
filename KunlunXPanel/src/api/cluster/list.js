@@ -7,7 +7,20 @@ export function getClusterList(query) {
         params:query
     });
 }
-
+export function getEffectComp(data) {
+    return request({
+      url: '/user/Cluster/getEffectComp',
+      method: 'post',
+      data
+    })
+}
+export function getExperience(data) {
+  return request({
+    url: '/user/Cluster/getExperience',
+    method: 'post',
+    data
+  })
+}
 // export function createCluster(data) {
 //     return request({
 //       url: '/user/Cluster/createCluster',
@@ -239,6 +252,34 @@ export function getSnodeTotal(data) {
 export function getStandbyNode(data) {
   return request({
     url: `/user/Cluster/getStandbyNode`,
+    method: 'post',
+    data
+  })
+}
+export function getClusterShards(id) {
+  return request({
+    url: '/user/Cluster/getClusterShards',
+    method: 'post',
+    data:{id:id}
+  })
+}
+export function getSwitcheOverList(query) {
+  return request({
+      url: '/user/Cluster/getSwitcheOverList',
+      method: 'get',
+      params:query
+  });
+}
+export function getTaskList(query) {
+  return request({
+      url: '/user/Cluster/getTaskList',
+      method: 'get',
+      params:query
+  });
+}
+export function getShardPrimary(data) {
+  return request({
+    url: `/user/Cluster/getShardPrimary`,
     method: 'post',
     data
   })

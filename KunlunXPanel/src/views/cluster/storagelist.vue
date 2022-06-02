@@ -19,6 +19,7 @@
           type="primary"
           icon="el-icon-plus"
           @click="handleCreate"
+          v-if="user_name=='super_dba'"
         >新增</el-button>
         <div v-text="info" v-show="installStatus===true" class="info"></div>
       </div>
@@ -69,13 +70,15 @@
         align="center"
         width="300"
         class-name="small-padding fixed-width"
+        v-if="user_name=='super_dba'"
       >
         <template slot-scope="{row,$index}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)" >编辑</el-button>
+          <el-button type="primary" size="mini" @click="handleUpdate(row)" v-if="user_name=='super_dba'">编辑</el-button>
           <el-button
             size="mini"
             type="danger"
             @click="handleDelete(row,$index)"
+            v-if="user_name=='super_dba'"
           >删除</el-button>
           <div v-text="info" v-show="installStatus===true" class="info"></div>
         </template>
@@ -131,9 +134,10 @@
 //  import { getMachineList,getNodes} from '@/api/machine/list'
  import {getStorageList,addStorage,updateStorage,delStorage} from '@/api/cluster/listInterface'
  //import {pEnable} from '@/api/cluster/list'
- import {version_arr,storage_type_arr} from "@/utils/global_variable"
+ import {version_arr,storage_type_arr, timestamp_arr} from "@/utils/global_variable"
  import Pagination from '@/components/Pagination' 
  import { v4 as uuidv4 } from 'uuid';
+ import {getEvStatus} from '@/api/cluster/listInterface'
 
 
 export default {
@@ -216,6 +220,7 @@ export default {
       info:'',
       row:{},
       stypelist:storage_type_arr,
+      user_name:sessionStorage.getItem('login_username'),
       rules: {
         hostaddr: [
           { required: true, trigger: "blur",validator: validateIPAddress },
@@ -251,13 +256,19 @@ export default {
         let queryParam = Object.assign({}, this.listQuery)
         const temp={};
         temp.version=version_arr[0].ver;
-        temp.job_id=uuidv4();
+        temp.job_id='';
         temp.job_type='get_backup_storage';
+        temp.timestamp=timestamp_arr[0].time+'';
+        temp.paras={};
         //模糊搜索
         getStorageList(temp).then(response => {
-          //console.log(response);return;
-          this.list = response;
-          this.total = response.length;
+          if(response.attachment.list_backup_storage!==null){
+            this.list = response.attachment.list_backup_storage;
+            this.total = response.attachment.list_backup_storage.length;
+          }else{
+            this.list =[];
+            this.total=[];
+          }
           setTimeout(() => {
             this.listLoading = false
           }, 0.5 * 1000)
@@ -283,21 +294,30 @@ export default {
     createData() {
       this.$refs["dataForm"].validate((valid) => {
         if (valid) {
-          const tempData = Object.assign({}, this.temp);
-          tempData.job_id =uuidv4();
+          const tempData = {};
+          tempData.job_id ='';
           tempData.job_type ='create_backup_storage';
           tempData.version=version_arr[0].ver;
+          tempData.timestamp=timestamp_arr[0].time+'';
+          tempData.user_name=sessionStorage.getItem('login_username');
+          tempData.paras=Object.assign({}, this.temp);
           //发送接口
           addStorage(tempData).then(response=>{
             let res = response;
-            if(res.result=='done'){
+            if(res.status=='accept'){
               this.dialogFormVisible = false;
-              this.message_tips = res.info;
+              this.message_tips = '正在新增备份存储目标...';
               this.message_type = 'success';
-              this.getList();
-            }
-            else{
-              this.message_tips = res.info;
+              //调获取状态接口
+              let i=0;
+              let timer = setInterval(() => {
+                this.getStatus(timer,res.job_id,i++)
+              }, 1000)
+            }else if(res.status=='ongoing'){
+              this.message_tips = '系统正在操作中，请等待一会！';
+              this.message_type = 'error';
+            }else{
+              this.message_tips = res.error_info;
               this.message_type = 'error';
             }
             messageTip(this.message_tips,this.message_type);
@@ -323,20 +343,29 @@ export default {
     updateData() {
       this.$refs["dataForm"].validate((valid) => {
         if (valid) {
-          const tempData = Object.assign({}, this.temp);
-          tempData.job_id =uuidv4();
+          const tempData = {};
+          tempData.job_id ='';
           tempData.job_type ='update_backup_storage';
           tempData.version=version_arr[0].ver;
+          tempData.timestamp=timestamp_arr[0].time+'';
+          tempData.user_name=sessionStorage.getItem('login_username');
+          tempData.paras=Object.assign({}, this.temp);
           updateStorage(tempData).then((response) => {
             let res = response;
-            if(res.result=='done'){
+            if(res.status=='accept'){
               this.dialogFormVisible = false;
-              this.message_tips = res.info;
+              this.message_tips = '正在编辑备份存储目标...';
               this.message_type = 'success';
-              this.getList();
-            }
-            else{
-              this.message_tips = res.info;
+              //调获取状态接口
+              let i=0;
+              let timer = setInterval(() => {
+                this.getStatus(timer,res.job_id,i++)
+              }, 1000)
+            }else if(res.status=='ongoing'){
+              this.message_tips = '系统正在操作中，请等待一会！';
+              this.message_type = 'error';
+            }else{
+              this.message_tips = res.error_info;
               this.message_type = 'error';
             }
             messageTip(this.message_tips,this.message_type);
@@ -348,20 +377,28 @@ export default {
     handleDelete(row) {
       handleCofirm("此操作将永久删除该数据, 是否继续?").then( () =>{
          const tempData = {};
-          tempData.job_id =uuidv4();
+          tempData.job_id ='';
           tempData.job_type ='delete_backup_storage';
           tempData.version=version_arr[0].ver;
-          tempData.name=row.name;
+          tempData.timestamp=timestamp_arr[0].time+'';
+          tempData.user_name=sessionStorage.getItem('login_username');
+          tempData.paras={'name':row.name};
           delStorage(tempData).then((response)=>{
             let res = response;
-            if(res.result=='done'){
+            if(res.status=='accept'){
               this.dialogFormVisible = false;
-              this.message_tips = res.info;
+              this.message_tips = '正在删除备份存储目标...';
               this.message_type = 'success';
-              this.getList();
-            }
-            else{
-              this.message_tips = res.info;
+              //调获取状态接口
+              let i=0;
+              let timer = setInterval(() => {
+                this.getStatus(timer,res.job_id,i++)
+              }, 1000)
+            }else if(res.status=='ongoing'){
+              this.message_tips = '系统正在操作中，请等待一会！';
+              this.message_type = 'error';
+            }else{
+              this.message_tips = res.error_info;
               this.message_type = 'error';
             }
             messageTip(this.message_tips,this.message_type);
@@ -371,6 +408,34 @@ export default {
           messageTip('已取消删除','info');
       }); 
     },
+    getStatus (timer,data,i) {
+      setTimeout(()=>{
+        const postarr={};
+        postarr.job_type='get_status';
+        postarr.version=version_arr[0].ver;
+        postarr.job_id=data;
+        postarr.timestamp=timestamp_arr[0].time+'';
+        postarr.paras={};
+        getEvStatus(postarr).then((res) => {
+        if(res.status=='done'||res.status=='failed'){
+          clearInterval(timer);
+          this.info=res.error_info;
+          if(res.status=='done'){
+            this.getList();
+          }else{
+            this.installStatus = true;
+          }
+        }else{
+          this.info=res.error_info;
+          this.installStatus = true;
+        }
+      });
+        if(i>=86400){
+            clearInterval(timer);
+        }
+      }, 0)
+    }
+
   },
 };
 </script>

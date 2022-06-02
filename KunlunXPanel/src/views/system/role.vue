@@ -1,7 +1,6 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      
       <div class="table-list-wrap" v-show="role_add_priv==='Y'">
         <el-button
           class="filter-item"
@@ -31,6 +30,12 @@
         <template slot-scope="{row}">
           <span class="link-type" @click="handleDetail(row)">{{ row.role_name }}</span>
         </template>
+      </el-table-column>
+      <el-table-column
+            prop="priv"
+            align="center"
+            :show-overflow-tooltip="true"
+            label="拥有权限">
       </el-table-column>
       <el-table-column
             prop="update_time"
@@ -152,16 +157,98 @@ export default {
   },
   created() {
     this.getList()
-    
   },
   methods: {
     getList() {
         this.listLoading = true
         let queryParam = Object.assign({}, this.listQuery)
+        queryParam.user_name=sessionStorage.getItem('login_username');
         //模糊搜索
         queryParam.roleName = `*${this.listQuery.roleName}*`
         rolelist(queryParam).then(response => {
-          this.list = response.list;
+          //this.list = response.list;
+          const arr=response.list;
+          for (let i = 0; i < arr.length; i++) {
+            let priv=''
+            if(arr[i].backup_priv=='Y'){
+              priv+='备份集群,';
+            }
+            if(arr[i].cluster_creata_priv=='Y'){
+              priv+='新增集群,';
+            }
+            if(arr[i].cluster_drop_priv=='Y'){
+              priv+='删除集群,';
+            }
+            if(arr[i].compute_disable_priv=='Y'&&arr[i].compute_enable_priv=='Y'){
+              priv+='启/禁用计算节点,';
+            }
+            if(arr[i].compute_node_create_priv=='Y'){
+              priv+='新增计算节点,';
+            }
+            if(arr[i].compute_node_drop_priv=='Y'){
+              priv+='删除计算节点,';
+            }
+            if(arr[i].machine_add_priv=='Y'){
+              priv+='新增计算机,';
+            }
+            if(arr[i].machine_drop_priv=='Y'){
+              priv+='删除计算机,';
+            }
+            if(arr[i].machine_priv=='Y'){
+              priv+='编辑计算机,';
+            }
+            if(arr[i].restore_priv=='Y'){
+              priv+='恢复集群,';
+            }
+            if(arr[i].role_add_priv=='Y'){
+              priv+='新增角色,';
+            }
+            if(arr[i].role_drop_priv=='Y'){
+              priv+='删除角色,';
+            }
+            if(arr[i].role_edit_priv=='Y'){
+              priv+='编辑角色,';
+            }
+            if(arr[i].shard_create_priv=='Y'){
+              priv+='新增存储shard,';
+            }
+            if(arr[i].shard_drop_priv=='Y'){
+              priv+='删除存储shard,';
+            }
+            if(arr[i].shrink_cluster_priv=='Y'){
+              priv+='集群缩容,';
+            }
+            if(arr[i].expand_cluster_priv=='Y'){
+              priv+='集群扩容,';
+            }
+            if(arr[i].backup_service_disable_priv=='Y'&&arr[i].backup_service_enable_priv=='Y'){
+              priv+='启/禁用备份服务,';
+            }
+            if(arr[i].storage_disable_priv=='Y'&&arr[i].storage_enable_priv=='Y'){
+              priv+='启/禁用存储节点,';
+            }
+            if(arr[i].storage_node_create_priv=='Y'){
+              priv+='新增存储节点,';
+            }
+            if(arr[i].storage_node_drop_priv=='Y'){
+              priv+='删除存储节点,';
+            }
+            if(arr[i].user_add_priv=='Y'){
+              priv+='新增用户,';
+            }
+            if(arr[i].user_drop_priv=='Y'){
+              priv+='删除用户,';
+            }
+            if(arr[i].user_edit_priv=='Y'){
+              priv+='编辑用户,';
+            }
+            if(arr[i].user_grant_priv=='Y'){
+              priv+='用户授权,';
+            }
+            priv=priv.substring(0,priv.length-1);
+            this.$set(arr[i], 'priv', priv)
+          }
+          this.list =arr;
           this.total = response.total;
           setTimeout(() => {
             this.listLoading = false
@@ -181,6 +268,7 @@ export default {
       this.dialogDetail = false;
       this.$nextTick(() => {
         this.$refs.dataForm.clearValidate();
+        this.$refs.tree.setCheckedKeys([])
       });
     },
     createData() {
@@ -212,13 +300,21 @@ export default {
       this.dialogFormVisible = true
       this.temp = Object.assign({}, row);
       this.dialogDetail = true
+      rolePermission(row.id).then(res => {
+        this.checkkeys = res.list[0].checkkeys;
+        this.$nextTick(()=>{
+          this.$refs.tree.setCheckedKeys(this.checkkeys)
+        })
+      });
     },
     handleUpdate(row) {
       //设置默认选中节点(即当前角色所拥有的菜单权限)
       rolePermission(row.id).then(res => {
           this.checkkeys = res.list[0].checkkeys;
           this.dialogEditVisible = true;
-          console.log( this.checkkeys);
+          this.$nextTick(()=>{
+            this.$refs.tree.setCheckedKeys(this.checkkeys)
+          })
       });
       this.temp = Object.assign({}, row); // copy obj,***很重要,不需要一步步赋值了***
       this.temp.id = row.id;

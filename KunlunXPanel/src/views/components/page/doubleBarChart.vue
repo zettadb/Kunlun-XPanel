@@ -3,13 +3,31 @@
 </template>
 
 <script>
+import {getUsedList} from '@/api/machine/list'
 export default {
     name: '',
+    props:{
+        selectResult:{typeof:String,default:''}
+    },
     data() {
-        return {}
+        return {
+            used:[],
+            avail:[]
+        }
+    },
+    created(){
+        this.getUsedResult();
     },
     methods: {
-        setChart() {
+        getUsedResult(){
+            let queryParam={hostAddrList:this.selectResult};
+            getUsedList(queryParam).then(response => {
+            this.used =response.used;
+            this.avail =response.avail;
+            this.setChart(this.used, this.avail)
+            });
+        },
+        setChart(used,avail) {
             let option = {
                 tooltip: {
                     trigger: 'axis',
@@ -58,14 +76,14 @@ export default {
                             }
                         },
                         axisTick: {show: false},
-                        data: ['127', '128', '129', '123', '122', '22', '33', '01', '15', '10']
+                        data: ['计算节点数据目录', '存储节点数据目录', 'wal日志目录', '日志目录']
                     },
                 ],
                 yAxis:
                     {
                         type: 'value',
                         min: 0,
-                        max: 300,
+                        max: 500,
                         axisLabel: {
                             color: '#61B9C8',
                             fontSize: 9,
@@ -118,7 +136,7 @@ export default {
                             }, //背景渐变色
                             barBorderRadius: [3.5, 3.5, 0, 0],
                         },
-                        data: [120, 102, 101, 134, 190, 130, 120, 190, 130, 120]
+                        data: used
                     },
                     {
                         name: '未使用',
@@ -129,7 +147,7 @@ export default {
                             color: '#8C14EA',
                             barBorderRadius: [3.5, 3.5, 0, 0,],
                         },
-                        data: [120, 132, 101, 134, 90, 130, 110, 90, 130, 120]
+                        data: avail
                     },
 
                 ]
@@ -148,7 +166,8 @@ export default {
 
 <style lang="less" scoped>
 .doubleBarChart {
-    width: 500px;
-    height: 200px;
+    width: 450px;
+    height: 180px;
 }
+
 </style>

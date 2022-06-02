@@ -10,7 +10,7 @@ class Login extends CI_Controller {
 		header('Access-Control-Allow-Origin:*'); // *代表允许任何网址请求
 		header('Access-Control-Allow-Headers: Content-Type,Content-Length,Accept-Encoding,X-Requested-with, Origin'); // 设置允许自定义请求头的字段
 		header('Access-Control-Allow-Methods:POST,GET,OPTIONS,DELETE'); // 允许请求的类型
-		header('Access-Control-Allow-Headers:x-requested-with,content-type,accessToken');//允许接受token
+		header('Access-Control-Allow-Headers:x-requested-with,content-type,Token');//允许接受token
 		//header('Content-Type: text/html;charset=utf-8');
 		//header('Access-Control-Allow-Credentials: true'); // 设置是否允许发送 cookies
 		$this->key=$this->config->item('key');
@@ -31,7 +31,7 @@ class Login extends CI_Controller {
 			$res_super=$this->Login_model->getList($sql_super);
 		   if($res_super[0]['count']==1){
 			   $token=$this->Login_model->getToken($user_name,'E',$this->key);
-			   $data['accessToken'] =$token;
+			   $data['Token'] =$token;
 			   $data['num'] = 2;
 			   $data['code'] = 200;
 			   $data['userName'] = $user_name;
@@ -44,7 +44,7 @@ class Login extends CI_Controller {
 		if(!empty($res)){
 			if($res[0]['count']>1){
 				$token=$this->Login_model->getToken($user_name,'E',$this->key);
-				$data['accessToken'] =$token;
+				$data['Token'] =$token;
 				$data['num'] = $res[0]['count'];
 				$data['code'] = 200;
 				$data['message'] = '用户重复';
@@ -314,7 +314,7 @@ class Login extends CI_Controller {
 					$affected_clusters=rtrim($affected_clusters, ',');
 					//字符串去重
 					$affected_clusters=$this->unique($affected_clusters);
-					$data['accessToken'] =$token;
+					$data['Token'] =$token;
 					$data['code'] = 200;
 					$data['num'] = 1;
 					$data['userName'] = $user_name;
@@ -340,10 +340,11 @@ class Login extends CI_Controller {
 	}
 	public function changePassword()
 	{
+		header('content-type: application/json; charset=utf-8');
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
-		//echo $arr["accessToken"];//输出Token
-		$token=$arr["accessToken"];
+		//print_r($arr) ;exit;//输出Token
+		$token=$arr["Token"];
 		if (empty($token)) {
 			$data['code'] = 201;
 			$data['message'] = 'token不能为空';

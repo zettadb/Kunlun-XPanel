@@ -22,6 +22,7 @@ import './assets/less/index.less';
 import * as echarts from 'echarts'
 import img from './lib/img'
 import utils from "./lib/utils";
+import sqlFormatter from 'sql-formatter'
 Vue.prototype.$echarts = function (el) {
   return echarts.init(el, null, {renderer: 'svg'})
 }
@@ -31,6 +32,10 @@ Vue.use(iView);
 Vue.use(utils)
 //uuid
 import { v4 as uuidv4 } from 'uuid';
+//导入无缝滚动插件
+import scroll from 'vue-seamless-scroll'
+Vue.use(scroll)
+// import "../public/config.json"
 
 /**
  * If you don't want to use mock-server
@@ -51,10 +56,10 @@ if (process.env.NODE_ENV === 'production') {
  Vue.use(ElementUI)
 
 Vue.config.productionTip = false
-
 new Vue({
   //el: '#app',
   router,
   store,
   render: h => h(App)
 }).$mount('#app')
+
