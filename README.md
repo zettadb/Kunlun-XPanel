@@ -1,7 +1,5 @@
 # Kunlun-XPanel
 The fantastic tools used to manager 
-# Kunlun-XPanel
-The fantastic tools used to manager 
 ## 说明
 开发环境 Windows 10 nodejs 14.14.0 Apache 2.4.48 x64 PHP Version 7.3.30
 
