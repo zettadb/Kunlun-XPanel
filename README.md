@@ -15,5 +15,4 @@ http://ip:8081/KunlunXPanel
 2.遇到Permission denied的问题：   
 (1).docker exec -it 容器id /bin/bash   
 (2).cd /var/www/html/monitor/application/config   
-(3).chmod 777 database.php  
-)  
+(3).chmod 777 database.php  )  
