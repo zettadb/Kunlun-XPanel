@@ -38,7 +38,7 @@ http://ip:port/KunlunXPanel访问即可
 
 
 # docker安装  
-docker pull registry.cn-hangzhou.aliyuncs.com/kunlundb/xpanel 
+docker pull registry.cn-hangzhou.aliyuncs.com/kunlundb/xpanel   
 git clone -b 0.9.2.1 https://github.com/zettadb/Kunlun-XPanel.git  
 unzip platform  
 cd Kunlun-XPanel/platform/KunlunXPanel目录下找到config.js文件，修改配置文件config.js为相应的环境地址  
