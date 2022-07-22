@@ -1,5 +1,5 @@
 //docker环境
-//const ip = JSON.parse(sessionStorage.getItem("response")).BASE_URL.split(':')[1].slice(2);
+// const ip = JSON.parse(sessionStorage.getItem("response")).BASE_URL.split(':')[1].slice(2);
 //普通环境
 const ip=process.env.VUE_APP_INTERFACE_API.split(':')[1].slice(2);
 const role_type_arr = [{value:'super_dba_role',label:'超级DBA'},{value:'ordinary_dba',label:'普通DBA'},{value:'ordinary_user',label:'普通用户'},{value:'role_user',label:'角色'}];
@@ -18,6 +18,7 @@ const version_arr=[{ver:'1.0'}];
 const storage_type_arr=[{id:'HDFS',name:'HDFS'}];
 const ip_arr=[{ip:ip+':3000'}];
 const timestamp_arr=[{time:new Date().getTime()}];
+const policy_arr=[{id:'top_hit',label:'按热点排序'},{id:'top_size',label:'按数据量排序'}];
 export {
   role_type_arr,
   valid_period,
@@ -32,5 +33,6 @@ export {
   ip_arr,
   storage_type_arr,
   timestamp_arr,
-  machine_type_arr
+  machine_type_arr,
+  policy_arr
 }

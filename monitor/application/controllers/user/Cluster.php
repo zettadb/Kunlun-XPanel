@@ -221,14 +221,51 @@ class Cluster extends CI_Controller {
 		$pageNo=$arr['pageNo'];
 		$pageSize=$arr['pageSize'];
 		$username=$arr['username'];
+		$status=$arr['status'];
+		$backup_type=$arr['backup_type'];
 		$start=($pageNo - 1) * $pageSize;
-
-		//获取集群信息
-		$sql="select cluster_id,start_ts,end_ts from cluster_coldbackups ";
-		$sql .=" order by id desc limit ".$pageSize." offset ".$start;
 		$this->load->model('Cluster_model');
+		//查cluster_id
+		$sql_clusterid="select id from db_clusters where memo!='' and memo is not null";
+		$res_clusterid=$this->Cluster_model->getList($sql_clusterid);
+		$cluster_id='';
+		if(!empty($res_clusterid)){
+			$clusterid_count=count($res_clusterid);
+		}else{
+			$clusterid_count=0;
+		}
+		if($clusterid_count>1){
+			foreach ($res_clusterid as $row){
+				$cluster_id.=$row['id'].',';
+			}
+			$cluster_id=substr($cluster_id,0,strlen($cluster_id)-1);
+		}else if($clusterid_count==1){
+			$cluster_id=$res_clusterid[0]['id'];
+		}else{
+			$data['code'] = 200;
+			$data['list'] =array();
+			$data['total'] =  0;
+			print_r(json_encode($data));return;
+		}
+		//获取集群信息
+		$sql="select cluster_id,shard_id,comp_id,start_ts,end_ts,backup_type,status,memo from cluster_coldbackups where cluster_id in ($cluster_id)";
+		//print_r($sql);exit;
+		if(!empty($status)) {
+			$sql .= " and  status='$status'";
+		}
+		if(!empty($backup_type)) {
+			$sql .= " and  backup_type='$backup_type'";
+		}
+		$sql .=" order by id desc limit ".$pageSize." offset ".$start;
+		//echo $sql;exit;
 		$res=$this->Cluster_model->getList($sql);
-		$total_sql="select count(id) as count from cluster_coldbackups ";
+		$total_sql="select count(id) as count from cluster_coldbackups  where cluster_id in ($cluster_id)";
+		if(!empty($status)) {
+			$total_sql .= " and  status='$status'";
+		}
+		if(!empty($backup_type)) {
+			$total_sql .= " and  backup_type='$backup_type'";
+		}
 		$res_total=$this->Cluster_model->getList($total_sql);
 		if(!empty($res)){
 			foreach ($res as $row=>$value){
@@ -237,9 +274,45 @@ class Cluster extends CI_Controller {
 					if ($key2 == 'cluster_id') {
 						if(!empty($value2)) {
 							$name = $this->getClusterName($value2);
-							$res[$row]['cluster_name'] = $name[0]['nick_name'];
+							if(!empty($name)) {
+								$res[$row]['cluster_name'] = $name[0]['name'];
+								$res[$row]['nick_name'] = $name[0]['nick_name'];
+							}else{
+								$res[$row]['cluster_name'] = '';
+								$res[$row]['nick_name'] = '';
+							}
 						}else{
 							$res[$row]['cluster_name'] = '';
+							$res[$row]['nick_name'] ='';
+						}
+					}
+					//shar名称
+					if ($key2 == 'shard_id') {
+						if(!empty($value2)) {
+							$name = $this->getShardName($res[$row]['cluster_id'],$value2);
+							$res[$row]['shard_name'] = $name;
+						}else{
+							$res[$row]['shard_name'] = '';
+						}
+					}
+					//comp名称
+					if ($key2 == 'comp_id') {
+						if(!empty($value2)) {
+							$name = $this->getCompName($res[$row]['cluster_id'],$value2);
+							$res[$row]['comp_name'] = $name;
+						}else{
+							$res[$row]['comp_name'] = '';
+						}
+					}
+					//结果信息
+					if ($key2 == 'memo') {
+						if(!empty($value2)) {
+							$newline = array("\r\n","\n","\r");
+							$value2 = str_replace($newline,'',$value2);
+							$value3=json_decode($value2,true);
+							$res[$row]['info'] = $value3['response_array'][0]['info']['info'];
+						}else{
+							$res[$row]['info']='';
 						}
 					}
 				}
@@ -260,6 +333,16 @@ class Cluster extends CI_Controller {
 	}
 	public function getShardName($db_cluster_id,$id){
 		$sql="select name from shards where id='$id' and db_cluster_id='$db_cluster_id'";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		if(!empty($res)) {
+			return $res[0]['name'];
+		}else{
+			return '';
+		}
+	}
+	public function getCompName($db_cluster_id,$id){
+		$sql="select name from comp_nodes where id='$id' and db_cluster_id='$db_cluster_id'";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		return $res[0]['name'];
@@ -489,9 +572,11 @@ class Cluster extends CI_Controller {
 			$data['message'] = 'token不能为空';
 			print_r(json_encode($data));return;
 		}
+
 		//判断参数
 		$string=json_decode(@file_get_contents('php://input'),true);
 		$id= $string['id'];
+		$this->load->model('Login_model');
 		//获取cluster的name
 		$this->load->model('Cluster_model');
 		$sql="select name,nick_name,ha_mode from db_clusters where id='$id'";
@@ -584,10 +669,76 @@ class Cluster extends CI_Controller {
 		print_r(json_encode($data));
 	}
 	public function getShardNode($cluster_id,$id){
-		$sql="select id,hostaddr,port,user_name,passwd,cpu_cores,initial_storage_GB,max_storage_GB,innodb_buffer_pool_MB,rocksdb_buffer_pool_MB from shard_nodes where shard_id='$id' and db_cluster_id='$cluster_id'";
+		$sql="select id,hostaddr,port,user_name,passwd,cpu_cores,initial_storage_GB,max_storage_GB,innodb_buffer_pool_MB,rocksdb_buffer_pool_MB,sync_state,replica_delay from shard_nodes where shard_id='$id' and db_cluster_id='$cluster_id'";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		return $res;
+	}
+	//获取当前元数据的集群信息
+	public function getMetaCluster(){
+		//GET请求
+		$serve=$_SERVER['QUERY_STRING'];
+		$string=preg_split('/[=&]/',$serve);
+		$arr=array();
+		for($i=0;$i<count($string);$i+=2) {
+			$arr[$string[$i]] = $string[$i + 1];
+		}
+		$user_name=$arr['user_name'];
+		//查user_id
+		$this->load->model('Login_model');
+		$user_sql="select id from kunlun_user where name='$user_name';";
+		$res_user=$this->Login_model->getList($user_sql);
+		if(!empty($res_user)){
+			$user_id=$res_user[0]['id'];
+		}else{
+			$data['code']=500;
+			$data['message']='该用户不存在';
+			print_r(json_encode($data));return;
+		}
+		$sql="select db_cluster_id,shard_id from shard_nodes ;";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		$error_list=array();
+		foreach ($res as $row){
+			$res_cluster=$this->getClusterName($row['db_cluster_id']);
+			if(!empty($res_cluster)){
+				$cluster_name=$res_cluster[0]['nick_name'];
+			}else{
+				$cluster_name='';
+			}
+			$shard_name=$this->getShardName($row['db_cluster_id'],$row['shard_id']);
+			$error_msg=array();
+			if(!empty($cluster_name)&&$shard_name){
+				$error=$this->shardError($row['db_cluster_id'],$row['shard_id'],$user_id,$shard_name,$cluster_name);
+				$error_list=array_merge($error_msg,$error);
+			}
+		}
+		print_r(json_encode($error_list));
+
+	}
+	public function shardError($cluster_id,$id,$user_id,$shard_name,$cluster_name){
+		//查是否存在最大延迟值
+		$this->load->model('Login_model');
+		//如不存在创建表
+		$sql_table="CREATE TABLE IF NOT EXISTS shard_max_dalay (id int unsigned NOT NULL AUTO_INCREMENT,shard_id int unsigned NOT NULL,db_cluster_id int unsigned NOT NULL,user_id int unsigned NOT NULL,max_delay_time int NOT NULL DEFAULT '100',when_created timestamp NULL DEFAULT CURRENT_TIMESTAMP,update_time timestamp NULL DEFAULT CURRENT_TIMESTAMP,PRIMARY KEY (id)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3;";
+		$this->Login_model->updateList($sql_table);
+		$select_sql="select max_delay_time from shard_max_dalay where shard_id='$id' and db_cluster_id='$cluster_id' and user_id='$user_id'";
+		$res_select=$this->Login_model->getList($select_sql);
+		if(!empty($res_select)){
+			$maxtime=$res_select[0]['max_delay_time'];
+		}else{
+			$maxtime='100';
+		}
+		$sql="select hostaddr,port,replica_delay from shard_nodes where shard_id='$id' and db_cluster_id='$cluster_id' and replica_delay>'$maxtime'";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		$error=array();
+		if(!empty($res)){
+			foreach ($res as $row){
+				array_push($error,$cluster_name.'('.$cluster_id.')集群的'.$shard_name.'中,'.$row['hostaddr'].'('.$row['port'].')'.'当前延迟为'.$row['replica_delay'].'s,超过延迟最大值'.$maxtime.'s');
+			}
+		}
+		return $error;
 	}
 	public  function postgresEnable(){
 		//获取token
@@ -1078,6 +1229,7 @@ class Cluster extends CI_Controller {
 		$this->load->model('Cluster_model');
 		$post_data=str_replace("\\/", "/", json_encode($string));
 		$post_arr = $this->Cluster_model->postData($post_data,$this->post_url);
+		//print_r($post_arr);exit;
 		$post_arr = json_decode($post_arr, TRUE);
 		$data=$post_arr;
 		print_r(json_encode($data));
@@ -1210,7 +1362,7 @@ class Cluster extends CI_Controller {
 							$nick_name=$c_name[0]['nick_name'];
 							//获取shard名称
 							$shard_name=$this->getShardName($cluster_id,$shard_id);
-							$shard_node=array('id'=>$shard_n_id, 'text'=>$shard_arr_name,'data'=>array('cluster_id'=>$cluster_id,'hostaddr'=>$key['hostaddr'],'port'=>$key['port'],'cpu_cores'=>$key['cpu_cores'],'initial_storage_GB'=>$key['initial_storage_GB'],'max_storage_GB'=>$key['max_storage_GB'],'innodb_buffer_pool_MB'=>$key['innodb_buffer_pool_MB'],'rocksdb_buffer_pool_MB'=>$key['rocksdb_buffer_pool_MB'],'name'=>'mysql','shard_id'=>$shard_id,'cluster_name'=>$cluster_name,'nick_name'=>$nick_name,'shard_name'=>$shard_name,'status'=>$status,'master'=>$master));
+							$shard_node=array('id'=>$shard_n_id, 'text'=>$shard_arr_name,'data'=>array('cluster_id'=>$cluster_id,'hostaddr'=>$key['hostaddr'],'port'=>$key['port'],'cpu_cores'=>$key['cpu_cores'],'initial_storage_GB'=>$key['initial_storage_GB'],'max_storage_GB'=>$key['max_storage_GB'],'innodb_buffer_pool_MB'=>$key['innodb_buffer_pool_MB'],'rocksdb_buffer_pool_MB'=>$key['rocksdb_buffer_pool_MB'],'name'=>'mysql','shard_id'=>$shard_id,'cluster_name'=>$cluster_name,'nick_name'=>$nick_name,'shard_name'=>$shard_name,'status'=>$status,'master'=>$master,'delay'=>$key['replica_delay'],'sync_status'=>$key['sync_state']));
 							$shard_link=array('from'=>$tree_id, 'to'=>$shard_n_id,'text'=>$key['hostaddr']);
 							array_push($nodes,$shard_node);
 							array_push($links,$shard_link);
@@ -2071,12 +2223,315 @@ class Cluster extends CI_Controller {
 			$arr[$string[$i]] = $string[$i + 1];
 		}
 		$cluster_id=$arr['cluster_id'];
-		$sql ="select id,name,nick_name	 from db_clusters where id!='$cluster_id'";
+		$sql ="select id,name,nick_name	 from db_clusters where id!='$cluster_id' and memo!='' and memo is not null";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		//print_r($res);exit;
 		$data['code'] = 200;
 		$data['list'] = $res ;
 		print_r(json_encode($data));
+	}
+	public  function getBackupStorageList(){
+		//GET请求
+//		$serve=$_SERVER['QUERY_STRING'];
+//		$string=preg_split('/[=&]/',$serve);
+//		$arr=array();
+//		for($i=0;$i<count($string);$i+=2) {
+//			$arr[$string[$i]] = $string[$i + 1];
+//		}
+//		$cluster_id=$arr['cluster_id'];
+		$sql ="select id,hostaddr,port from backup_storage GROUP BY hostaddr,port";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		//print_r($res);exit;
+		$data['code'] = 200;
+		$data['list'] = $res ;
+		print_r(json_encode($data));
+	}
+	//异常集群列表
+	public function clusterListError(){
+		//GET请求
+		$serve=$_SERVER['QUERY_STRING'];
+		$string=preg_split('/[=&]/',$serve);
+		$arr=array();
+		for($i=0;$i<count($string);$i+=2) {
+			$arr[$string[$i]] = $string[$i + 1];
+		}
+		$pageNo=$arr['pageNo'];
+		$pageSize=$arr['pageSize'];
+		$username=$arr['name'];
+		$effectCluster=$arr['effectCluster'];
+		$apply_all_cluster=$arr['apply_all_cluster'];
+		$start=($pageNo - 1) * $pageSize;
+		//获取用户数据
+		if($apply_all_cluster==1){
+			if(empty($effectCluster)){
+				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters where memo='' or memo is  null ";
+				if(!empty($username)){
+					$sql .=" and nick_name like '%$username%'";
+				}
+			}
+		}
+		if($apply_all_cluster==2){
+			if(empty($effectCluster)){
+				$effectCluster='NULL';
+			}
+			if(strpos($effectCluster,',')==false){
+				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters where id=$effectCluster and memo='' or memo is  null ";
+			}else{
+				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters where id in ($effectCluster) and memo='' or memo is  null ";
+			}
+			if(!empty($username)){
+				$sql .=" and nick_name like '%$username%'";
+			}
+		}
+		$sql .=" order by id desc limit ".$pageSize." offset ".$start;
+		//print_r($sql);exit;
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		//total
+		if($apply_all_cluster==1){
+			if(empty($effectCluster)){
+				$total_sql="select count(id) as count from db_clusters where memo='' or memo is null ";
+				if(!empty($username)){
+					$total_sql .=" and name like '%$username%'";
+				}
+			}
+		}
+		if($apply_all_cluster==2){
+			if(strpos($effectCluster,',')==false){
+				$total_sql="select count(id) as count from db_clusters where id=$effectCluster  and memo='' or memo is  null ";
+			}else{
+				$total_sql="select count(id) as count from db_clusters where id in ($effectCluster) and memo='' or memo is null ";
+			}
+			if(!empty($username)){
+				$total_sql .=" and nick_name like '%$username%'";
+			}
+		}
+		$res_total=$this->Cluster_model->getList($total_sql);
+		if($res===false){
+			$res=array();
+		}else{
+			foreach ($res as $row=>$value){
+				foreach ($value as $key2 => $value2) {
+					//shard数
+					if ($key2 == 'id') {
+						if(!empty($value2)) {
+							$shardtotal = $this->getThisShards($value2);
+							$comptotal= $this->getThisComps($value2);
+							$first_backup= $this->getLastBackup($value2);
+							//$nodetotal= $this->getThisNodes($value2);
+							$res[$row]['shardtotal'] = $shardtotal['nodedetail'];
+							$res[$row]['comptotal'] = $comptotal;
+							$res[$row]['first_backup'] = $first_backup;
+
+						}
+					}
+					if($key2 == 'memo'){
+						$sitrng=json_decode($res[$row]['memo'],true);
+						if(!empty($sitrng)){
+							if(!empty($string['nodes'])){
+								$res[$row]['snode_count'] = $string['nodes'];
+							}else{
+								$res[$row]['snode_count'] = '';
+							}
+							if(!empty($string['innodb_size'])){
+								$res[$row]['buffer_pool'] = $string['innodb_size'];
+							}else{
+								$res[$row]['buffer_pool'] = '';
+							}
+							if(!empty($string['machinelist'])){
+								$res[$row]['machinelist'] = $string['machinelist'];
+							}else{
+								$res[$row]['machinelist'] = '';
+							}
+						}else{
+							$res[$row]['snode_count'] = '';
+							$res[$row]['buffer_pool'] = '';
+							$res[$row]['machinelist'] = '';
+						}
+					}
+				}
+			}
+		}
+		$data['code'] = 200;
+		$data['list'] = $res;
+		$data['total'] = $res_total ? (int)$res_total[0]['count'] : 0;
+		print_r(json_encode($data));
+	}
+	public function getShardsName(){
+		//GET请求
+		$serve=$_SERVER['QUERY_STRING'];
+		$string=preg_split('/[=&]/',$serve);
+		$arr=array();
+		for($i=0;$i<count($string);$i+=2) {
+			$arr[$string[$i]] = $string[$i + 1];
+		}
+		$cluster_id=$arr['id'];
+		$sql="select id,name,db_cluster_id as cluster_id from shards where  db_cluster_id='$cluster_id'";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		$data['code'] = 200;
+		$data['list'] = $res ;
+		print_r(json_encode($data));
+	}
+	public function getShardTable(){
+		//GET请求
+		$serve=$_SERVER['QUERY_STRING'];
+		$string=preg_split('/[=&]/',$serve);
+		$arr=array();
+		for($i=0;$i<count($string);$i+=2) {
+			$arr[$string[$i]] = $string[$i + 1];
+		}
+		$shard_id=$arr['id'];
+		$cluster_id=$arr['cluster_id'];
+		$sql="select hostaddr,port,user_name,passwd from shard_nodes where  db_cluster_id='$cluster_id' and shard_id='$shard_id' and status!='inactive' and member_state='source' ";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		//print_r($res);exit;
+		if(!empty($res)){
+			$sql_main="select TABLE_SCHEMA,TABLE_NAME from TABLES WHERE TABLE_SCHEMA NOT IN('mysql','information_schema','kunlun_dba_tools_db','kunlun_metadata_db','kunlun_sysdb','sys','performance_schema');";
+			$res_main=$this->Cluster_model->getMysql($res[0]['hostaddr'],$res[0]['port'],$res[0]['user_name'],$res[0]['passwd'],'information_schema',$sql_main);
+			//print_r($res_main);exit;
+			if($res_main['code']==200){
+				if(isset($res_main['list'])) {
+					$tablelist=$res_main['list'];
+				}else{
+					$tablelist=false;
+				}
+				$data['code'] = 200;
+				$data['list'] = $tablelist ;
+			}else{
+				$data['code'] = 500;
+				$data['message'] = $res_main[0];
+			}
+		}else{
+			$data['code'] = 500;
+			$data['message'] ='该shard没有主节点';
+		}
+		print_r(json_encode($data));
+	}
+	public function getOtherShards(){
+		//GET请求
+		$serve=$_SERVER['QUERY_STRING'];
+		$string=preg_split('/[=&]/',$serve);
+		$arr=array();
+		for($i=0;$i<count($string);$i+=2) {
+			$arr[$string[$i]] = $string[$i + 1];
+		}
+		$cluster_id=$arr['cluster_id'];
+		$shard_id=$arr['shard_id'];
+		$sql="select id,name from shards where  db_cluster_id='$cluster_id' and id!='$shard_id'";
+		//echo $sql;exit;
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		$data['code'] = 200;
+		$data['list'] = $res ;
+		print_r(json_encode($data));
+	}
+	public function expandCluster(){
+		//获取token
+		$arr = apache_request_headers();//获取请求头数组
+		$token=$arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));return;
+		}
+		//判断参数
+		$string=json_decode(@file_get_contents('php://input'),true);
+		//验证该账户是否有恢复集群的权限
+		$this->load->model('Login_model');
+		$res_priv=$this->Login_model->authority($string['user_name'],'expand_cluster_priv');
+		if($res_priv==true){
+			//调接口
+			$this->load->model('Cluster_model');
+			$post_data=str_replace("\\/", "/", json_encode($string));
+			$post_arr = $this->Cluster_model->postData($post_data,$this->post_url);
+			$post_arr = json_decode($post_arr, TRUE);
+			$data=$post_arr;
+		}else{
+			$data['error_info'] = '该帐户不具备集群扩容权限';
+		}
+		print_r(json_encode($data));
+	}
+	public function getExpandTableList(){//无判断权限
+		//获取token
+		$arr = apache_request_headers();//获取请求头数组
+		$token=$arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));return;
+		}
+		//判断参数
+		$string=json_decode(@file_get_contents('php://input'),true);
+		//调接口
+		$this->load->model('Cluster_model');
+		$post_data=str_replace("\\/", "/", json_encode($string));
+		$post_arr = $this->Cluster_model->postData($post_data,$this->post_url);
+		$post_arr = json_decode($post_arr, TRUE);
+		$data=$post_arr;
+		print_r(json_encode($data));
+	}
+	public function setMaxDalay(){//无判断权限
+		//获取token
+		$arr = apache_request_headers();//获取请求头数组
+		$token=$arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));return;
+		}
+		//判断参数
+		$string=json_decode(@file_get_contents('php://input'),true);
+		$cluster_id=$string['cluster_id'];
+		$shard_id=$string['shard_id'];
+		$maxtime=$string['maxtime'];
+		$user_name=$string['user_name'];
+		$this->load->model('Login_model');
+		//查user_id
+		$user_sql="select id from kunlun_user where name='$user_name';";
+		$res_user=$this->Login_model->getList($user_sql);
+		if(!empty($res_user)){
+			$user_id=$res_user[0]['id'];
+		}else{
+			$data['code']=500;
+			$data['message']='该用户不存在';
+			print_r(json_encode($data));
+		}
+		//如不存在创建表
+		$sql="CREATE TABLE IF NOT EXISTS shard_max_dalay (id int unsigned NOT NULL AUTO_INCREMENT,shard_id int unsigned NOT NULL,db_cluster_id int unsigned NOT NULL,user_id int unsigned NOT NULL,max_delay_time int NOT NULL DEFAULT '100',when_created timestamp NULL DEFAULT CURRENT_TIMESTAMP,update_time timestamp NULL DEFAULT CURRENT_TIMESTAMP,PRIMARY KEY (id)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3;";
+		$res=$this->Login_model->updateList($sql);
+		if($res==0){
+			//先查是否存在此条数据，存在更新 不存在insert
+			$select_sql="select id from shard_max_dalay where shard_id='$shard_id' and db_cluster_id='$cluster_id' and user_id='$user_id'";
+			$res_select=$this->Login_model->getList($select_sql);
+			if(!empty($res_select)){
+				$update_sql="update shard_max_dalay set max_delay_time='$maxtime',update_time=now() where  shard_id='$shard_id' and db_cluster_id='$cluster_id' and user_id='$user_id'; ";
+				$res_update=$this->Login_model->updateList($update_sql);
+				if($res_update==1){
+					$data['code']=200;
+					$data['message']='设置成功';
+				}else{
+					$data['code']=500;
+					$data['message']='该shard的最大延迟时间已经存在，无需重复设置';
+				}
+				print_r(json_encode($data));
+			}else{
+				$insert_sql="insert into shard_max_dalay(shard_id,db_cluster_id,user_id,max_delay_time) values ('$shard_id','$cluster_id','$user_id','$maxtime'); ";
+				$res_insert=$this->Login_model->updateList($insert_sql);
+				if($res_insert==1){
+					$data['code']=200;
+					$data['message']='设置成功';
+				}else{
+					$data['code']=500;
+					$data['message']='设置失败';
+				}
+				print_r(json_encode($data));
+			}
+		}else{
+			print_r(json_encode($res));
+		}
 	}
 }

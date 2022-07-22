@@ -8,6 +8,9 @@
           <List v-if="tabs.second"/>
           <!-- <Cshow/>  -->
       </el-tab-pane>
+      <el-tab-pane label="异常集群列表" name="three">
+          <ErrorList v-if="tabs.three"/>
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
@@ -15,14 +18,16 @@
 <script>
 import List from '../cluster/list.vue'
 import Cshow from './cshow.vue'
+import ErrorList from '../cluster/errorlist.vue'
 export default {
-   components: {List,Cshow},
+   components: {List,Cshow,ErrorList},
   data() {
     return {
       activeName: "first",
       tabs: {
         first: true,
         second: false,
+        three:false
       },
     }
   },
@@ -35,6 +40,9 @@ export default {
           break;
         case "second":
           this.switchTab("second");
+          break;
+        case "three":
+          this.switchTab("three");
           break;
       }
 

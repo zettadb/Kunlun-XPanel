@@ -437,11 +437,12 @@ class Login extends CI_Controller {
 	\$config['default_username'] = 'player';
 	\$config['pg_database'] = 'postgres';
 	\$config['db_prefix'] = 'kunlundb_';
-	\$config['job_type'] = array(array('code'=>'create_cluster','name'=>'新增集群'),array('code'=>'delete_cluster','name'=>'删除集群'),array('code'=>'add_shards','name'=>'新增shard'),array('code'=>'delete_shard','name'=>'删除shard'),array('code'=>'backup_cluster','name'=>'备份集群'),array('code'=>'restore_new_cluster','name'=>'恢复集群'),array('code'=>'add_comps','name'=>'增加计算节点'),array('code'=>'delete_comp','name'=>'删除计算节点'),array('code'=>'add_nodes','name'=>'增加存储节点'),array('code'=>'delete_node','name'=>'删除存储节点'),array('code'=>'mysqld_exporter','name'=>'监控存储节点'),array('code'=>'postgres_exporter','name'=>'监控计算节点'),array('code'=>'update_prometheus','name'=>'重置prometheus'),array('code'=>'update_machine','name'=>'编辑计算机'),array('code'=>'delete_machine','name'=>'删除计算机'),array('code'=>'control_instance','name'=>'控制实例'),array('code'=>'delete_backup_storage','name'=>'删除备份存储目标'),array('code'=>'create_backup_storage','name'=>'新增备份存储目标'),array('code'=>'update_backup_storage','name'=>'编辑备份存储目标'),array('code'=>'manual_switch','name'=>'主备切换'),array('code'=>'rebuild_node','name'=>'重做备机节点'),array('code'=>'create_machine','name'=>'新增计算机'));";
+	\$config['job_type'] = array(array('code'=>'create_cluster','name'=>'新增集群'),array('code'=>'delete_cluster','name'=>'删除集群'),array('code'=>'add_shards','name'=>'新增shard'),array('code'=>'delete_shard','name'=>'删除shard'),array('code'=>'backup_cluster','name'=>'备份集群'),array('code'=>'restore_new_cluster','name'=>'恢复集群'),array('code'=>'add_comps','name'=>'增加计算节点'),array('code'=>'delete_comp','name'=>'删除计算节点'),array('code'=>'add_nodes','name'=>'增加存储节点'),array('code'=>'delete_node','name'=>'删除存储节点'),array('code'=>'mysqld_exporter','name'=>'监控存储节点'),array('code'=>'postgres_exporter','name'=>'监控计算节点'),array('code'=>'update_prometheus','name'=>'重置prometheus'),array('code'=>'update_machine','name'=>'编辑计算机'),array('code'=>'delete_machine','name'=>'删除计算机'),array('code'=>'control_instance','name'=>'控制实例'),array('code'=>'delete_backup_storage','name'=>'删除备份存储目标'),array('code'=>'create_backup_storage','name'=>'新增备份存储目标'),array('code'=>'update_backup_storage','name'=>'编辑备份存储目标'),array('code'=>'manual_switch','name'=>'主备切换'),array('code'=>'rebuild_node','name'=>'重做备机节点'),array('code'=>'create_machine','name'=>'新增计算机'),array('code'=>'cluster_restore','name'=>'回档集群'),array('code'=>'expand_cluster','name'=>'集群扩容'));";
 				fwrite($f_p, $file_p);
 				fgets($f_p);
 				//获取元数据的主节点
-				$sql_main="select hostaddr,port from meta_db_nodes where member_state='source'";
+				//$sql_main="select hostaddr,port from meta_db_nodes where member_state='source'";
+				$sql_main="select MEMBER_HOST,MEMBER_PORT from performance_schema.replication_group_members where MEMBER_ROLE = 'PRIMARY' and MEMBER_STATE = 'ONLINE'";
 				$this->load->model('Change_model');
 				$res_main=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_main);
 				//print_r($res_main);exit;
@@ -462,7 +463,7 @@ class Login extends CI_Controller {
 			'dbdriver' => 'mysqli',
 			'dbprefix' => '',
 			'pconnect' => FALSE,
-			'db_debug' => TRUE,
+			'db_debug' => FALSE,
 			'cache_on' => FALSE,
 			'cachedir' => '',
 			'char_set' => 'utf8',

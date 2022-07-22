@@ -19,7 +19,7 @@ class Change_model extends CI_Model {
 			$arr['code']=200;
 			return $arr;
 		} catch( Exception $e ) {
-			$arr[0]=iconv('gbk', 'utf-8',  $e->getMessage());
+			$arr[0]=iconv('gbk',   'utf-8',  $e->getMessage());
 			$arr['code']=500;
 			return $arr;
 		}

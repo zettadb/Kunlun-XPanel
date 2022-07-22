@@ -205,7 +205,23 @@ export const constantRoutes = [
       // }
     ]
   },
-    {
+  {
+    path: '/ClusterMgr',
+    component: Layout,
+    children: [
+      {
+        path: 'node',
+        name: 'ClusterMgr',
+        component: () => import('@/views/cluster_mgr/node'),
+        meta: { 
+          title: 'cluster_mgr状态',
+          requiresAuth:true, 
+          icon: 'el-icon-aim'
+        }
+      }
+    ]
+  },
+  {
     path: '/operation',
     component: Layout,
     children: [

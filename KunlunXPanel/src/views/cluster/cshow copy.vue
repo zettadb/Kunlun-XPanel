@@ -12,7 +12,7 @@
         :on-node-click="onNodeClick"
         :on-line-click="onLineClick" :on-node-expand="onNodeExpand" :on-node-collapse="onNodeCollapse">
         <!-- @click="showNodeMenus(node, $event)" @contextmenu.prevent.stop="hideNodeTips(node, $event)"  -->
-        <div slot="node" slot-scope="{node}"   @click="showNodeMenus(node, $event)">
+        <div slot="node" slot-scope="{node}"   @click="showNodeMenus(node, $event)" @contextmenu.prevent.stop="hideNodeTips(node, $event)">
           <div>
             <i :style="{ color: node.data.color, fontSize: 40 + 'px' }" :class="node.data.icon"/>
             <p v-text="node.text" style="word-wrap: break-word;word-break: break-all;"></p>
@@ -22,13 +22,11 @@
     </div>
     <div v-show="isShowNodeMenuPanel&&g_loading" :style="{left: nodeMenuPanelPosition.x + 'px', top: nodeMenuPanelPosition.y + 'px' }" style="z-index: 999;padding:10px;background-color: #ffffff;border:#eeeeee solid 1px;box-shadow: 0px 0px 8px #cccccc;position: absolute;">
       <div style="line-height: 25px;padding-left: 10px;color: #888888;font-size: 10px;">对{{nodeName}}进行操作：</div>
-      <!-- <div class="c-node-menu-item" v-if="type==='shard'&& (storage_node_create_priv==='Y')" @click.stop="doAction('新增存储节点')">新增存储节点</div>--> 
+      <!-- <div class="c-node-menu-item" v-if="type==='shard'&& (storage_node_create_priv==='Y')" @click.stop="doAction('新增存储节点')">新增存储节点</div>-->
+      <div class="c-node-menu-item" v-if="type==='shard'&&ha_mode==='rbr'&& (storage_node_create_priv==='Y')" @click.stop="doAction('重做备机节点')">重做备机节点</div> 
       <div class="c-node-menu-item" v-if="type==='shard'&&ha_mode==='rbr'" @click.stop="doAction('主备切换')">主备切换</div>
-      <div class="c-node-menu-item" v-if="type==='shard'&&ha_mode==='rbr'&& (storage_node_create_priv==='Y')" @click.stop="doAction('重做备机节点')">重做备机节点</div>
-      <div class="c-node-menu-item" v-if="type==='shard'&&ha_mode==='rbr'" @click.stop="doAction('设置延迟告警时间')">设置延迟告警时间</div>
       <div class="c-node-menu-item" v-if="type==='cluster'&& (shard_create_priv==='Y')" @click.stop="doAction('新增存储集群')">新增存储集群</div>
       <div class="c-node-menu-item" v-if="type==='cluster'&& (compute_node_create_priv==='Y')" @click.stop="doAction('新增计算节点')">新增计算节点</div>
-      <div class="c-node-menu-item"  v-if="type==='snode'" @click.stop="doAction('详情')">详情</div>
       <div class="c-node-menu-item" v-if="(type==='cnode'||type==='snode')&& (user_name=='super_dba')" @click.stop="doAction('启用')">启用</div>
       <div class="c-node-menu-item"  v-if="(type==='cnode'||type==='snode')&& (user_name=='super_dba'&&ha_mode==='mgr')" @click.stop="doAction('禁用')">禁用</div>
       <div class="c-node-menu-item"  v-if="(type==='cnode'||type==='snode')&& (user_name=='super_dba')" @click.stop="doAction('重启')">重启</div>
@@ -216,97 +214,6 @@
           <el-button type="primary" @click="switchData(switchtemp)">确认</el-button>
         </div>
     </el-dialog>
-    <!--设置延迟告警时间-->
-    <el-dialog title="设置延迟告警时间" :visible.sync="dialogDalayVisible" custom-class="single_dal_view">
-      <el-form
-        ref="dalayForm"
-        :model="dalaytemp"
-        :rules="rules"
-        label-position="left"
-        label-width="120px"
-      >
-      <el-form-item label="shard名称:" prop="shard_name">
-        <span>{{dalaytemp.shard_name}}</span>
-      </el-form-item>
-      <el-form-item label="最大延迟时间:" prop="maxtime" >
-         <el-input  v-model="dalaytemp.maxtime" placeholder="请输入最大延迟时间">
-         <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">s</i>
-         </el-input>
-      </el-form-item>
-      </el-form>
-        <div slot="footer" class="dialog-footer">
-          <el-button @click="dialogDalayVisible = false">关闭</el-button>
-          <el-button type="primary" @click="dalayData(dalaytemp)">确认</el-button>
-        </div>
-    </el-dialog>
-    <!--查看节点详情-->
-    <el-dialog title="存储节点详情" :visible.sync="dialogDetailVisible" custom-class="single_dal_view">
-      <div class="box">
-        <div title="左" >
-          <el-form
-          ref="detailForm"
-          :model="detailtemp"
-          :rules="rules"
-          label-position="left"
-          label-width="120px"
-          >
-            <el-form-item label="集群id:" prop="cluster_id">
-              <span>{{detailtemp.cluster_id}}</span>
-            </el-form-item>
-            <el-form-item label="shard_id:" prop="shard_id">
-              <span>{{detailtemp.shard_id}}</span>
-            </el-form-item>
-            <el-form-item label="shard名称:" prop="shard_name">
-              <span>{{detailtemp.shard_name}}</span>
-            </el-form-item>
-            <el-form-item label="ip:" prop="ip">
-              <span>{{detailtemp.ip}}</span>
-            </el-form-item>
-            <el-form-item label="port:" prop="port">
-              <span>{{detailtemp.port}}</span>
-            </el-form-item>
-            <el-form-item label="状态:" prop="master">
-              <span v-if="detailtemp.master=='true'">{{'主节点('+detailtemp.status+')'}}</span>
-              <span v-else-if="detailtemp.master=='false'">{{'备节点('+detailtemp.status+')'}}</span>
-            </el-form-item>
-            <el-form-item label="同步状态:" prop="sync_state">
-              <span v-if="detailtemp.sync_state=='async'">异步</span>
-              <span v-else>同步</span>
-            </el-form-item>
-          </el-form>
-        </div>
-        <div title="右">
-          <el-form
-          ref="detailForm"
-          :model="detailtemp"
-          :rules="rules"
-          label-position="left"
-          label-width="150px"
-          >
-            <el-form-item label="延迟时间:" prop="replica_delay">
-              <span>{{detailtemp.replica_delay+'s'}}</span>
-            </el-form-item>
-            <el-form-item label="cpu核数:" prop="cpu_cores">
-              <span>{{detailtemp.cpu_cores}}</span>
-            </el-form-item>
-            <el-form-item label="初始化存储值:" prop="initial_storage_GB">
-              <span>{{detailtemp.initial_storage_GB+'GB'}}</span>
-            </el-form-item>
-            <el-form-item label="最大存储值:" prop="max_storage_GB">
-              <span>{{detailtemp.max_storage_GB+'GB'}}</span>
-            </el-form-item>
-            <el-form-item label="innodb缓冲池大小:" prop="innodb_buffer_pool_MB">
-              <span>{{detailtemp.innodb_buffer_pool_MB+'MB'}}</span>
-            </el-form-item>
-            <el-form-item label="rocksdb缓冲池大小:" prop="rocksdb_buffer_pool_MB">
-              <span>{{detailtemp.rocksdb_buffer_pool_MB+'MB'}}</span>
-            </el-form-item>
-          </el-form>
-        </div>
-      </div>
-      
-    </el-dialog>
-
     <!--  状态框 -->
     <el-dialog :visible.sync="dialogStatusVisible" custom-class="single_dal_view" width="400px">
       <div class="block">
@@ -374,7 +281,7 @@
       </div>
     </el-dialog>
     <!-- 删除状态框 -->
-    <el-dialog :title="job_id" :visible.sync="dialogStatusShowVisible" custom-class="single_dal_view" :close-on-click-modal="false" :before-close="beforeDelDestory">
+    <el-dialog :title="job_id" :visible.sync="dialogStatusShowVisible" custom-class="single_dal_view" :close-on-click-modal="false" :before-close="beforeDestory">
       <div style="width: 100%;background: #fff;padding:0 20px;">
         <el-steps direction="vertical" :active="init_active">
           <el-step :title="init_title" icon="el-icon-more" v-if="init_show"></el-step>
@@ -429,7 +336,7 @@
 </template>
 <script>
 import { messageTip,handleCofirm,getNowDate,createCode,gotoCofirm} from "@/utils";
-import {getClusterNodesList,getEffectCluster,getNodes,getAllMachine, getShards,getSnodeTotal,getStandbyNode,getShardPrimary,pgEnable,myEnable,delShard,delComp,delSnode,startComp,startSnode,stopComp,stopSnode,restartComp,restartSnode,getClusterDetail,switchShard,getStorageList,rebuildNode,getEvStatus,getShardsCount,getCompsCount,getNodesCount,getBackupStorageList,setMaxDalay,getMetaCluster} from '@/api/cluster/list'
+import {getClusterNodesList,getEffectCluster,getNodes,getAllMachine, getShards,getSnodeTotal,getStandbyNode,getShardPrimary,pgEnable,myEnable,delShard,delComp,delSnode,startComp,startSnode,stopComp,stopSnode,restartComp,restartSnode,getClusterDetail,switchShard,getStorageList,rebuildNode,getEvStatus,getShardsCount,getCompsCount,getNodesCount,getBackupStorageList} from '@/api/cluster/list'
 import SeeksRelationGraph from 'relation-graph'
 //import {v4 as uuidv4 } from 'uuid';
 import {version_arr,ip_arr,timestamp_arr} from "@/utils/global_variable"
@@ -463,16 +370,6 @@ export default {
     const validatehdfshost = (rule, value, callback) => {
       if(value.length === 0){
         callback(new Error("请选择备份存储目标"));
-      }
-      else {
-        callback();
-      }
-    };
-    const validatemaxtime = (rule, value, callback) => {
-     if(!value){
-        callback(new Error("最大延迟时间不能为空"));
-      }else if(!(/^[0-9]+$/.test(value))){
-        callback(new Error("最大延迟时间只能输入数字"));
       }
       else {
         callback();
@@ -514,8 +411,6 @@ export default {
       dialogRedoVisible:false,
       dialogSwitchOVisible:false,
       dialogStatusFVisible:false,
-      dialogDalayVisible:false,
-      dialogDetailVisible:false,
       shardtemp:{
         old_cluster_name:'',
         cluster_name:'',
@@ -540,38 +435,10 @@ export default {
         hdfs_host:''   
       },
       switchtemp:{
-        replica:'',
-        primary_node:'',
-        shard_id:'',
-        cluster_id:'',
-      },
-      dalaytemp:{
-        shard_name:'',
-        maxtime:'100',
-        shard_id:'',
-        cluster_id:'',
-      },
-      dalaytemp:{
-        shard_name:'',
-        maxtime:'100',
-        shard_id:'',
-        cluster_id:'',
-      },
-      detailtemp:{
-        shard_name:'',
-        ip:'',
-        port:'',
-        shard_id:'',
-        cluster_id:'',
-        sync_state:'',
-        status:'',
-        master:'',
-        replica_delay:'',
-        cpu_cores:'',
-        initial_storage_GB:'',
-        max_storage_GB:'',
-        innodb_buffer_pool_MB:'',
-        rocksdb_buffer_pool_MB:''
+          replica:'',
+          primary_node:'',
+          shard_id:'',
+          cluster_id:'',
       },
       machinelist:[],
       machines:[],
@@ -743,7 +610,6 @@ export default {
       shardInfo:'',
       dialogShardInfo:false,
 
-
       demoname: '---',
       range_horizontal: [ 100, 300 ],
       range_vertical: [ 20, 100 ],
@@ -790,7 +656,6 @@ export default {
         //defaultJunctionPoint: 'border'
         // 这里可以参考"Graph 图谱"中的参数进行设置
       },
-      // avltimer:null,
       rules: {
         redolist: [
           { required: true, trigger: "blur",validator: validateredolist },
@@ -801,59 +666,13 @@ export default {
         hdfs_host: [
           { required: true, trigger: "blur",validator: validatehdfshost },
         ],
-        maxtime:[
-          { required: true, trigger: "blur",validator: validatemaxtime },
-        ],
       },
     }
   },
   created(){
     this.getCluster();
   },
-  mounted(){
-   const timer = setInterval(()=>{
-     this.getAllMetaCluster();
-    },20000)
-    this.$once('hook:beforeDestroy', () => {                     
-      clearInterval(timer);                                     
-    })
-  },
   methods: {
-    getAllMetaCluster(){
-      let queryParam = {user_name:sessionStorage.getItem('login_username')}
-      //模糊搜索
-      getMetaCluster(queryParam).then(response => {
-       if(response.length>0){
-        for (let j = 0; j < response.length; j++) {
-          this.open4(response[j]);
-        }
-       }
-      });
-    },
-     dalayData(row) {
-      this.$refs["dalayForm"].validate((valid) => {
-        if (valid) {
-          let tempData=row;
-          tempData.user_name = sessionStorage.getItem('login_username');
-          //console.log(tempData);return;
-          //发送接口
-          setMaxDalay(tempData).then(response=>{
-            let res = response;
-            if(res.code==200){
-              this.dialogDalayVisible = false;
-              this.message_tips = res.message;
-              this.message_type = 'success';
-              messageTip(this.message_tips,this.message_type);
-            }
-            else{
-              this.message_tips = res.message;
-              this.message_type = 'error';
-              messageTip(this.message_tips,this.message_type);
-            }
-          })
-        }
-      });
-    },
     change(){
       if(this.options.length==this.redotemp.redolist.length){
         this.redotemp.allow_pull_from_master='1'; 
@@ -865,21 +684,13 @@ export default {
       //console.log('00:00');
       clearInterval(this.timer)
       this.dialogStatusFVisible=false;
-      this.timer = null;
-
     },
     //清除定时器
-    beforeDelDestory(){
+    beforeDestory(){
       //console.log('10:00');
       clearInterval(this.timer)
       this.dialogStatusShowVisible=false;
     },
-    // beforeDestory(){
-    //   clearInterval(this.avltimer)
-    // },
-    // destroyed(){
-    //    clearInterval(this.avltimer)
-    // },
     resetredotemp(){
       this.redotemp={
         redolist:[],
@@ -1132,8 +943,7 @@ export default {
       if(res.total>0){
         this.currentCase=res.list[0].id
         this.clusters = res.list;
-        let temp={id:res.list[0].id}
-        this.getOneCluster(temp);
+        this.getOneCluster(this.currentCase);
         this.nodataShow=false;
         this.g_loading=true;
       }else{
@@ -1156,12 +966,7 @@ export default {
               this.$set(param.data, 'childrenLoaded', false)
               this.$set(param.data, 'icon', 'iconfont icon-shard')
               this.$set(param.data, 'color', '#e98f36')
-              // if(param.data.error.length>0){
-              //   //console.log(param.data.error.length);
-              //   for (let j = 0; j < param.data.error.length; j++) {
-              //     this.open4(param.data.error[j]);
-              //   }
-              // }
+
               //this.$set(param, 'data', {'icon':'iconfont icon-shard','color':'#e98f36'})
             }
             if(param.id.indexOf('cnode')!=-1){
@@ -1182,14 +987,6 @@ export default {
           setTimeout(() => {
             this.listLoading = false
           }, 0.5 * 1000)
-      });
-    },
-    open4(message) {
-      this.$notify({
-        title: '告警',
-        message: message,
-        // duration: 0,
-        type: 'warning'
       });
     },
     showSeeksGraph(query) {
@@ -1238,7 +1035,7 @@ export default {
       this.nodeMenuPanelPosition.y = $event.clientY - _base_position.y + 10
     },
     hideNodeTips(nodeObject, $event) {
-      this.isShowNodeMenuPanel = false
+      this.isShowNodeTipsPanel = false
     },
     showNodeMenus(nodeObject, $event) {
       this.currentNode = nodeObject
@@ -1251,9 +1048,9 @@ export default {
           }else if(this.currentNode.id.indexOf('snode') !=-1){
             this.type='snode'
           }
+          this.nodeMenuPanelPosition.x = $event.clientX - _base_position.x
+          this.nodeMenuPanelPosition.y = $event.clientY - _base_position.y
        }
-       this.nodeMenuPanelPosition.x = $event.clientX - _base_position.x
-       this.nodeMenuPanelPosition.y = $event.clientY - _base_position.y
     },
     doAction(actionName) {
       if(actionName==='进入'){
@@ -2160,32 +1957,6 @@ export default {
           }
         });
       }
-      if(actionName==='设置延迟告警时间'){
-        this.dalaytemp.shard_name=this.currentNode.text;
-        this.dalaytemp.cluster_id=this.currentNode.data.cluster_id;
-        this.dalaytemp.shard_id=this.currentNode.data.shard_id;
-        this.isShowNodeTipsPanel=true;
-      }
-      if(actionName==='详情'){
-        // this.isShowNodeTipsPanel=true;
-        this.isShowNodeMenuPanel=false;
-        this.detailtemp.cluster_id=this.currentNode.data.cluster_id;
-        this.detailtemp.cpu_cores=this.currentNode.data.cpu_cores;
-        this.detailtemp.replica_delay=this.currentNode.data.delay;
-        this.detailtemp.ip=this.currentNode.data.hostaddr;
-        this.detailtemp.port=this.currentNode.data.port;
-        this.detailtemp.initial_storage_GB=this.currentNode.data.initial_storage_GB;
-        this.detailtemp.innodb_buffer_pool_MB=this.currentNode.data.innodb_buffer_pool_MB;
-        this.detailtemp.master=this.currentNode.data.master;
-        this.detailtemp.max_storage_GB=this.currentNode.data.max_storage_GB;
-        this.detailtemp.rocksdb_buffer_pool_MB=this.currentNode.data.rocksdb_buffer_pool_MB;
-        this.detailtemp.shard_id=this.currentNode.data.shard_id;
-        this.detailtemp.shard_name=this.currentNode.data.shard_name;
-        this.detailtemp.sync_status=this.currentNode.data.sync_status;
-        this.detailtemp.status=this.currentNode.data.status;
-        this.dialogDetailVisible=true;
-      }
-      
       
       // this.$notify({
       //   title: '提示',
@@ -3210,17 +2981,5 @@ export default {
   border-radius: 5px;
   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
   background-color: rgba(0,0,0,0.1);
-}
-</style>
-<style lang='postcss'>
-.box {
-  width: 100%;
-  /* height: 22px; */
-  display: flex;
-  flex-direction: row;
-}
-.box > div {
-  /* height: 22px; */
-  flex: 1;
 }
 </style>
