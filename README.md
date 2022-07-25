@@ -16,3 +16,7 @@ http://ip:8081/KunlunXPanel
 (1).docker exec -it 容器id /bin/bash   
 (2).cd /var/www/html/monitor/application/config   
 (3).chmod 777 database.php和chmod 777 myconfig.php)  
+
+#安装grafana  
+docker pull grafana/grafana  
+docker run -d -p 3000:3000 --name=grafana  grafana/grafana  
