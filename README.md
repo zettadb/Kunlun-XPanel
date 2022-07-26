@@ -26,4 +26,4 @@ docker exec -it grafana的镜像id /bin/bash
 vi /etc/grafana/grafaba.ini   
 找到 [auth.anonymous],enabled 设置为 true   
 (5).绑定cluster_mgr数据源：  
-页面上左边框找到设置-》Data sources-》搜Prometheus，然后点击-》url改成自己的cluster_mgr上的prometheus地址即可。  
+页面上左边框找到设置-》Data sources-》搜Prometheus，然后点击-》url改成自己的cluster_mgr上的prometheus地址-》Save&test保存即可。  
