@@ -59,10 +59,6 @@ docker pull grafana/grafana
 docker run -d -p 3000:3000 --name=grafana  grafana/grafana  
 (1).docker pull grafana/grafana  
 (2).docker run -d -p 3000:3000 --name=grafana  grafana/grafana  
-(3).初始账号和密码均是admin  
-(4).grafana设置免密登录：  
-docker exec -it grafana的镜像id /bin/bash  
-vi /etc/grafana/grafaba.ini   
-找到 [auth.anonymous],enabled 设置为 true   
-(5).绑定cluster_mgr数据源：  
+(3).初始账号和密码均是admin    
+(4).绑定cluster_mgr数据源：  
 页面上左边框找到设置-》Data sources-》搜Prometheus，然后点击-》url改成自己的cluster_mgr上的prometheus地址-》Save&test保存即可。 
