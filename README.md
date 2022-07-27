@@ -16,3 +16,10 @@ http://ip:8081/KunlunXPanel
 (1).docker exec -it 容器id /bin/bash   
 (2).cd /var/www/html/monitor/application/config   
 (3).chmod 777 database.php和chmod 777 myconfig.php)  
+
+#安装grafana  
+(1).docker pull grafana/grafana  
+(2).docker run -d -p 3000:3000 --name=grafana  grafana/grafana  
+(3).初始账号和密码均是admin    
+(4).绑定cluster_mgr数据源：  
+页面上左边框找到设置-》Data sources-》搜Prometheus，然后点击-》url改成自己的cluster_mgr上的prometheus地址-》Save&test保存即可。  
