@@ -41,8 +41,6 @@ http://ip:port/KunlunXPanel访问即可
 docker pull registry.cn-hangzhou.aliyuncs.com/kunlundb/xpanel   
 git clone -b 0.9.3.1 https://github.com/zettadb/Kunlun-XPanel.git  
 unzip platform  
-cd Kunlun-XPanel/platform/KunlunXPanel目录下找到config.js文件，修改配置文件config.js为相应的环境地址  
-（注意：BASE_URL：放xpanel的ip和docker映射的端口）   
 cd platform    
 docker run -id --name xpanel -v $PWD:/var/www/html -p 8081:80 -d registry.cn-hangzhou.aliyuncs.com/kunlundb/xpanel    
 http://ip:8081/KunlunXPanel 
@@ -61,4 +59,5 @@ docker run -d -p 3000:3000 --name=grafana  grafana/grafana
 (2).docker run -d -p 3000:3000 --name=grafana  grafana/grafana  
 (3).初始账号和密码均是admin    
 (4).绑定cluster_mgr数据源：  
-页面上左边框找到设置-》Data sources-》搜Prometheus，然后点击-》url改成自己的cluster_mgr上的prometheus地址-》Save&test保存即可。 
+页面上左边框找到设置-》Data sources-》搜Prometheus，然后点击-》url改成自己的cluster_mgr上的prometheus地址（例如：http://127.0.0.1:1000）-》Save&test保存即可。 
+
