@@ -9,10 +9,9 @@ docker run -id --name xpanel -v  $PWD:/var/www/html -p 8081:80  -d registry.cn-h
 http://ip:8081/KunlunXPanel  
 
 （注意：  
-1.遇到404报错时，登录元数据查看是否有dba_tools_db数据库，没有则导入该数据库：https://github.com/zettadb/Kunlun-XPanel/blob/0.9.2/dba_tools_db.sql  
-2.遇到Permission denied的问题：   
+1.遇到Permission denied的问题：   
 (1).docker exec -it 容器id /bin/bash   
-(2).cd /var/www/html/monitor/application/config   
+(2).cd /var/www/html/KunlunMonitor/application/config   
 (3).chmod 777 database.php和chmod 777 myconfig.php)  
 
 #安装grafana  
