@@ -1,8 +1,8 @@
 # docker安装  
-选择一台机器安装XPanel，并确定给XPanel使用的端口， 本处假设该机器为192.168.0.113，给XPanel的端口为17000:  
+(1).在可使用docker的linux机器（比如机器ip为：192.168.0.111）上执行如下语句：
 sudo docker run --pull always -itd --name xpanel1 -p 17000:80 \  
   registry.cn-hangzhou.aliyuncs.com/kunlundb/kunlun-xpanel bash -c '/bin/bash /kunlun/start.sh'  
-一分钟后，使用浏览器打开XPanel网站: ​http://192.168.0.113:17000/KunlunXPanel  
+(2).使用谷歌浏览器打开XPanel网站: http://192.168.0.111:17000/KunlunXPanel  
 
 #grafana  
 (1).初始账号和密码均是admin    
