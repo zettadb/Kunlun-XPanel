@@ -2,7 +2,7 @@
 The fantastic tools used to manager 
 # docker安装  
 docker pull registry.cn-hangzhou.aliyuncs.com/kunlundb/xpanel  
-git clone -b 0.9.3.1 https://github.com/zettadb/Kunlun-XPanel.git     
+git clone -b 0.9.3.2 https://github.com/zettadb/Kunlun-XPanel.git     
 unzip platform   
 cd platform  
 docker run -id --name xpanel -v  $PWD:/var/www/html -p 8081:80  -d registry.cn-hangzhou.aliyuncs.com/kunlundb/xpanel   
