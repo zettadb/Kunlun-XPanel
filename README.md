@@ -14,7 +14,7 @@ http://ip:8081/KunlunXPanel
 (2).cd /var/www/html/KunlunMonitor/application/config   
 (3).chmod 777 database.php和chmod 777 myconfig.php)  
 
-#安装grafana  
+# 安装grafana  
 (1).docker pull grafana/grafana  
 (2).docker run -d -p 3000:3000 --name=grafana  grafana/grafana  
 (3).初始账号和密码均是admin    
