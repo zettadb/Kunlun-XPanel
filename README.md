@@ -9,4 +9,5 @@ sudo docker run --pull always -itd --name xpanel1 -p 17000:80 \
 (2).绑定cluster_mgr数据源：  
 页面上左边框找到设置-》Data sources-》搜Prometheus，然后点击-》url改成自己的cluster_mgr上的prometheus地址（例如：http://127.0.0.1:1000）-》Save&test保存即可。    
 (3).导入json模板  
-在文件的json目录下有三个json模板分别导入到grafana中。进入到grafana下，点+号-》点import-》Upload Json file-》import即可（下载模板：https://gitee.com/zettadb/Kunlun-XPanel/tree/0.9.3.3）
+在文件的json目录下有三个json模板分别导入到grafana中。进入到grafana下，点+号-》点import-》Upload Json file-》import即可
+（json模板下载：git clone -b 0.9.3.3 https://github.com/zettadb/Kunlun-XPanel.git）
