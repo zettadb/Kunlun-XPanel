@@ -13,6 +13,11 @@ vue2 + vuex + vue-router + webpack + ES6/7 + less + element-ui+PHP
 (3)、PHP(7.3及以上版本)。使用细节，请参考：[PHP的下载及安装](https://www.php.net/downloads.php)。  
 (4)、安装PHP的mysql和pgsql扩展。请参考：[PHP官方的扩展库](http://pecl.php.net/)。  
 注意：安装完成PHP后，记得重启Apache。
+(5).安装grafana。请参考[grafana官网下载](https://grafana.com/grafana/download)。  
+    或者docker安装grafana：     
+    (i).docker pull grafana/grafana    
+    (j).docker run -d -p 3000:3000 --name=grafana  grafana/grafana 。  
+    注意：grafana的端口统一为3000。     
 
 ## 项目运行
 #克隆到本地   
@@ -36,13 +41,11 @@ mv dist KunlunXPanel
 http://ip:port/KunlunXPanel访问即可  
 默认账号密码均为super_dba 
 
-#安装grafana  
-(1).docker pull grafana/grafana  
-(2).docker run -d -p 3000:3000 --name=grafana  grafana/grafana  
-(3).初始账号和密码均是admin    
-(4).绑定cluster_mgr数据源：  
+#grafana的使用
+(1).初始账号和密码均是admin    
+(2).绑定cluster_mgr数据源：  
 页面上左边框找到设置-》Data sources-》搜Prometheus，然后点击-》url改成自己的cluster_mgr上的prometheus地址（例如：http://127.0.0.1:1000）-》Save&test保存即可。     
-(5).导入json模板  
+(3).导入json模板  
 在文件的json目录下有三个json模板分别导入到grafana中。进入到grafana下，点+号-》点import-》Upload Json file-》import即可   
 （json模板，从github上获取，执行语句：git clone -b 0.9.3.3 https://github.com/zettadb/Kunlun-XPanel.git）
 
