@@ -97,5 +97,4 @@ class ClusterMgr extends CI_Controller {
 		print_r(json_encode($data));
 	}
 
-	
 }

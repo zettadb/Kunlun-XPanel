@@ -29,9 +29,9 @@
       <div class="c-node-menu-item" v-if="type==='cluster'&& (shard_create_priv==='Y')" @click.stop="doAction('新增存储集群')">新增存储集群</div>
       <div class="c-node-menu-item" v-if="type==='cluster'&& (compute_node_create_priv==='Y')" @click.stop="doAction('新增计算节点')">新增计算节点</div>
       <div class="c-node-menu-item"  v-if="type==='snode'" @click.stop="doAction('详情')">详情</div>
-      <div class="c-node-menu-item" v-if="(type==='cnode'||type==='snode')&& (user_name=='super_dba')" @click.stop="doAction('启用')">启用</div>
+      <!-- <div class="c-node-menu-item" v-if="(type==='cnode'||type==='snode')&& (user_name=='super_dba')" @click.stop="doAction('启用')">启用</div>
       <div class="c-node-menu-item"  v-if="(type==='cnode'||type==='snode')&& (user_name=='super_dba'&&ha_mode==='mgr')" @click.stop="doAction('禁用')">禁用</div>
-      <div class="c-node-menu-item"  v-if="(type==='cnode'||type==='snode')&& (user_name=='super_dba')" @click.stop="doAction('重启')">重启</div>
+      <div class="c-node-menu-item"  v-if="(type==='cnode'||type==='snode')&& (user_name=='super_dba')" @click.stop="doAction('重启')">重启</div> -->
       <!-- <div class="c-node-menu-item"  v-if="(type==='shard'&& shard_drop_priv==='Y')&&(type==='cnode'&& compute_node_drop_priv==='Y')&&(type==='snode'&& storage_node_drop_priv==='Y')" @click.stop="doAction('删除')">删除</div> -->
       <div class="c-node-menu-item"  v-if="type==='shard'&& shard_drop_priv==='Y'" @click.stop="doAction('删除')">删除</div>
       <div class="c-node-menu-item"  v-if="type==='cnode'&& compute_node_drop_priv==='Y'" @click.stop="doAction('删除')">删除</div>
@@ -430,6 +430,7 @@
 <script>
 import { messageTip,handleCofirm,getNowDate,createCode,gotoCofirm} from "@/utils";
 import {getClusterNodesList,getEffectCluster,getNodes,getAllMachine, getShards,getSnodeTotal,getStandbyNode,getShardPrimary,pgEnable,myEnable,delShard,delComp,delSnode,startComp,startSnode,stopComp,stopSnode,restartComp,restartSnode,getClusterDetail,switchShard,getStorageList,rebuildNode,getEvStatus,getShardsCount,getCompsCount,getNodesCount,getBackupStorageList,setMaxDalay,getMetaCluster} from '@/api/cluster/list'
+import {mysqlDashboard,pgsqlDashboard} from '@/api/grafana/list'
 import SeeksRelationGraph from 'relation-graph'
 //import {v4 as uuidv4 } from 'uuid';
 import {version_arr,ip_arr,timestamp_arr} from "@/utils/global_variable"
@@ -1122,7 +1123,9 @@ export default {
       })
     },
     agreeChange:function(val){
-      this.getOneCluster(val);
+      //console.log(val);
+      let temp={id:val}
+      this.getOneCluster(temp);
     },
     async getCluster() {
       const temp={};
@@ -1257,154 +1260,33 @@ export default {
     },
     doAction(actionName) {
       if(actionName==='进入'){
-          const tempData = {};//pgsql
-          tempData['job_id'] = '';
-          tempData['job_type'] ='postgres_exporter';
-          tempData['version']=version_arr[0].ver;
-          tempData['timestamp']=timestamp_arr[0].time+'';
-          tempData['user_name']=sessionStorage.getItem('login_username');
-          const paras={};
-          paras['hostaddr']=this.currentNode.data.hostaddr;
-          paras['port']=this.currentNode.data.port;
-          tempData['paras']=paras;
-          const mysqlData = {};//mysql
-          mysqlData['job_id'] = '';
-          mysqlData['job_type'] ='mysqld_exporter';
-          mysqlData['version']=version_arr[0].ver;
-          mysqlData['timestamp']=timestamp_arr[0].time+'';
-          mysqlData['user_name']=sessionStorage.getItem('login_username');
-          const mparas={};
-          mparas['hostaddr']=this.currentNode.data.hostaddr;
-          mparas['port']=this.currentNode.data.port;
-          mysqlData['paras'] =mparas;
-          const prometheus = {};//prometheus
-          prometheus['job_id'] = '';
-          prometheus['job_type']='update_prometheus';
-          prometheus['version']=version_arr[0].ver;
-          prometheus['timestamp']=timestamp_arr[0].time+'';
-          prometheus['user_name']=sessionStorage.getItem('login_username');
-          prometheus['paras']={};
 
           if(this.currentNode.data.name==='pgsql'){
-            pgEnable(tempData).then((pgres) => {
-              if(pgres.status=='accept'){
-                 //调获取状态接口
-                  let i=0;
-                  let timer = setInterval(() => {
-                      setTimeout(()=>{
-                        const postarr={};
-                        postarr.job_type='get_status';
-                        postarr.version=version_arr[0].ver;
-                        postarr.job_id=pgres.job_id;
-                        postarr.timestamp=timestamp_arr[0].time+'';
-                        postarr.paras={};
-                        getEvStatus(postarr).then((res) => {
-                        if(res.status=='done'||res.status=='failed'){
-                          clearInterval(timer);
-                          this.dialogStatusVisible=true;
-                          this.activities=[];
-                          //this.info=res.error_info;
-                          if(res.status=='done'){
-                            const newArr={
-                              content:res.error_info,
-                              timestamp: getNowDate(),
-                              color: '#0bbd87',
-                              icon: 'el-icon-circle-check'
-                            };
-                            this.activities.push(newArr);
-                            this.dialogStatusVisible=false;
-                            //跳转新页面pgsql
-                            window.open('http://'+ip_arr[0].ip+'/d/postgresql/postgresql?orgId=1&refresh=5s');
-                          }else{
-                             const newArr={
-                              content:res.error_info,
-                              timestamp: getNowDate(),
-                              color: 'red',
-                              icon: 'el-icon-circle-close'
-                            };
-                            this.activities.push(newArr);
-                            //this.installStatus = true;
-                          }
-                        }else{
-                          const newArrgoing={
-                            content:res.error_info,
-                            timestamp: getNowDate(),
-                            color: '#0bbd87'
-                          };
-                          this.activities.push(newArrgoing)
-                          //this.info=res.error_info;
-                          //this.installStatus = true;
-                        }
-                      });
-                        if(i>=86400){
-                            clearInterval(timer);
-                        }
-                        i++;
-                      }, 0)
-                  }, 1000)
-              
+            const pparas={};
+            pparas['cluster_id']=this.currentNode.data.cluster_id;
+            pparas['hostaddr']=this.currentNode.data.hostaddr;
+            pparas['port']=this.currentNode.data.port;
+            pparas['user_name']=sessionStorage.getItem('login_username');
+            pgsqlDashboard(pparas).then((pyres) => {
+              if(pyres.code=='200'){
+                window.open(ip_arr[0].ip+pyres.url+'?orgId=1&refresh=5s');
               }
             })
+            
+          //  window.open(ip_arr[0].ip+'/d/postgresql/postgresql?orgId=1&refresh=5s');
           }else if(this.currentNode.data.name==='mysql'){
-            myEnable(mysqlData).then((myres) => {
-              if(myres.status='accept'){
-                 //调获取状态接口
-                  let i=0;
-                  let timer = setInterval(() => {
-                     setTimeout(()=>{
-                        const postarr={};
-                        postarr.job_type='get_status';
-                        postarr.version=version_arr[0].ver;
-                        postarr.job_id=myres.job_id;
-                        postarr.timestamp=timestamp_arr[0].time+'';
-                        postarr.paras={};
-                        getEvStatus(postarr).then((res) => {
-                        if(res.status=='done'||res.status=='failed'){
-                          clearInterval(timer);
-                          this.dialogStatusVisible=true;
-                          this.activities=[];
-                          //this.info=res.error_info;
-                          if(res.status=='done'){
-                            const newArr={
-                              content:res.error_info,
-                              timestamp: getNowDate(),
-                              color: '#0bbd87',
-                              icon: 'el-icon-circle-check'
-                            };
-                            this.activities.push(newArr);
-                            this.dialogStatusVisible=false;
-                            //跳转新页面mysql
-                            window.open('http://'+ip_arr[0].ip+'/d/mysql/mysql?orgId=1&refresh=5s');
-                          }else{
-                            const newArr={
-                              content:res.error_info,
-                              timestamp: getNowDate(),
-                              color: 'red',
-                              icon: 'el-icon-circle-close'
-                            };
-                            this.activities.push(newArr);
-                            //this.installStatus = true;
-                          }
-                        }else{
-                          const newArrgoing={
-                            content:res.error_info,
-                            timestamp: getNowDate(),
-                            color: '#0bbd87'
-                          };
-                          this.activities.push(newArrgoing)
-                          //this.info=res.error_info;
-                          //this.installStatus = true;
-                        }
-                      });
-                        if(i>=86400){
-                            clearInterval(timer);
-                        }
-                        i++;
-                      }, 0)
-                  }, 1000)
-                
+            const mparas={};
+            mparas['cluster_id']=this.currentNode.data.cluster_id;
+            mparas['hostaddr']=this.currentNode.data.hostaddr;
+            mparas['port']=this.currentNode.data.port;
+            mparas['user_name']=sessionStorage.getItem('login_username');
+            mysqlDashboard(mparas).then((myres) => {
+              if(myres.code=='200'){
+                window.open(ip_arr[0].ip+myres.url+'?orgId=1&refresh=5s');
               }
             })
+            //跳转新页面mysql
+            // window.open(ip_arr[0].ip+'/d/mysql/mysql?orgId=1&refresh=5s');
           }
       }
       if(actionName==='删除'){
@@ -1424,7 +1306,7 @@ export default {
                   this.message_type = 'error';
                   messageTip(this.message_tips,this.message_type);
                 }else if(res.value==code){
-              //handleCofirm("此操作将永久删除"+this.currentNode.text+", 是否继续?").then( () =>{
+                //handleCofirm("此操作将永久删除"+this.currentNode.text+", 是否继续?").then( () =>{
                   const tempData = {};
                   tempData.user_name = sessionStorage.getItem('login_username');
                   tempData.job_id ='';
@@ -2164,7 +2046,7 @@ export default {
         this.dalaytemp.shard_name=this.currentNode.text;
         this.dalaytemp.cluster_id=this.currentNode.data.cluster_id;
         this.dalaytemp.shard_id=this.currentNode.data.shard_id;
-        this.isShowNodeTipsPanel=true;
+        this.dialogDalayVisible=true;
       }
       if(actionName==='详情'){
         // this.isShowNodeTipsPanel=true;

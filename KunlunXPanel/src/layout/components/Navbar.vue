@@ -27,6 +27,7 @@ import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
 import {ip_arr} from "@/utils/global_variable"
+import {nodeDashboard} from '@/api/grafana/list'
 export default {
   components: {
     Breadcrumb,
@@ -67,7 +68,13 @@ export default {
       this.$router.push(`/alteration`)
     },
     showMachine(){
-      window.open('http://'+ip_arr[0].ip+'/d/c8W2b01Zz/node-exporter-for-prometheus-dashboard-zhong-wen-jian-rong-ban?orgId=1');
+      nodeDashboard().then((pyres) => {
+        if(pyres.code=='200'){
+          window.open(ip_arr[0].ip+pyres.url+'?orgId=1&refresh=5s');
+        }
+      })
+      //window.open('http://'+ip_arr[0].ip+'/d/c8W2b01Zz/node-exporter-for-prometheus-dashboard-zhong-wen-jian-rong-ban?orgId=1');
+      //window.open(ip_arr[0].ip+'/d/c8W2b01Zz/node-exporter-for-prometheus-dashboard-zhong-wen-jian-rong-ban?orgId=1');
     },
     showDocument(){
        window.open('http://zettadb.com:8181/docs/kunlundb/kunlundb-1do3t7csai5a4#28uu2b');

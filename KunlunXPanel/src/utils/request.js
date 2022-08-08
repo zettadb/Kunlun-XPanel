@@ -12,8 +12,11 @@ import { getCookie } from '@/utils/auth'
 // baseURL:process.env.VUE_APP_BASE_API
 
 // create an axios instance
+var host = window.document.location.href.substring(0, window.document.location.href.indexOf(window.document.location.pathname));
+//host+'/monitor/index.php'
+//host+'/KunlunMonitor/index.php'
 const service = axios.create({
-  baseURL:process.env.VUE_APP_BASE_API,
+  baseURL:host+'/KunlunMonitor/index.php',
   timeout: 60000
 })
 

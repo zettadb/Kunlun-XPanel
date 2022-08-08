@@ -1945,7 +1945,7 @@ class Cluster extends CI_Controller {
 		$res=$this->Cluster_model->getList($sql);
 		$data['code'] = 200;
 		$data['list'] = $res;
-		$data['total'] = count($res);
+		$data['total'] = $res ? count($res) : 0;
 		print_r(json_encode($data));
 	}
 	public function getCompMachine(){
@@ -2232,20 +2232,45 @@ class Cluster extends CI_Controller {
 		print_r(json_encode($data));
 	}
 	public  function getBackupStorageList(){
-		//GET请求
-//		$serve=$_SERVER['QUERY_STRING'];
-//		$string=preg_split('/[=&]/',$serve);
-//		$arr=array();
-//		for($i=0;$i<count($string);$i+=2) {
-//			$arr[$string[$i]] = $string[$i + 1];
-//		}
-//		$cluster_id=$arr['cluster_id'];
 		$sql ="select id,hostaddr,port from backup_storage GROUP BY hostaddr,port";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		//print_r($res);exit;
 		$data['code'] = 200;
 		$data['list'] = $res ;
+		print_r(json_encode($data));
+	}
+	public  function getBackStorageList(){
+		//GET请求
+		$serve=$_SERVER['QUERY_STRING'];
+		$string=preg_split('/[=&]/',$serve);
+		$arr=array();
+		for($i=0;$i<count($string);$i+=2) {
+			$arr[$string[$i]] = $string[$i + 1];
+		}
+		$pageNo=$arr['pageNo'];
+		$pageSize=$arr['pageSize'];
+		$name=$arr['name'];
+		$start=($pageNo - 1) * $pageSize;
+
+		$this->load->model('Cluster_model');
+		$sql ="select id,hostaddr,port,name,stype from backup_storage ";
+		if(!empty($name)){
+			$sql .=" where name like '%$name%'";
+		}
+		$sql .=" GROUP BY hostaddr,port order by id desc limit ".$pageSize." offset ".$start;
+		//echo $sql;exit;
+		$res=$this->Cluster_model->getList($sql);
+		$total_sql ="select count(id) as count from backup_storage ";
+		if(!empty($name)){
+			$total_sql .=" where name like '%$name%'";
+		}
+		$total_sql .=" GROUP BY hostaddr,port";
+		$res_total=$this->Cluster_model->getList($total_sql);
+		//print_r($res);exit;
+		$data['code'] = 200;
+		$data['list'] = $res ;
+		$data['total'] = $res_total ? (int)$res_total[0]['count'] : 0;
 		print_r(json_encode($data));
 	}
 	//异常集群列表

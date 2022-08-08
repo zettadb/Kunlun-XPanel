@@ -384,6 +384,7 @@ export default {
       this.dialogDetail = true
     },
     handleUpdate(row) {
+      this.resetTemp();
       this.temp = Object.assign({}, row); 
       this.dialogStatus = "update";
       this.dialogFormVisible = true;

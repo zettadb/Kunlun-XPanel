@@ -392,15 +392,17 @@ class Machine extends CI_Controller {
 			}
 			$sql_storage="SELECT comp_datadir_used,comp_datadir_avail,datadir_used,datadir_avail,wal_log_dir_used,wal_log_dir_avail,log_dir_used,log_dir_avail from server_nodes_stats where id='$id' ";
 			$res_storage=$this->Cluster_model->getList($sql_storage);
-			array_push($used,($res_storage[0]['comp_datadir_used']/1024));
-			array_push($used,($res_storage[0]['datadir_used']/1024));
-			array_push($used,($res_storage[0]['wal_log_dir_used']/1024));
-			array_push($used,($res_storage[0]['log_dir_used']/1024));
+			if(!empty($res_storage)) {
+				array_push($used,($res_storage[0]['comp_datadir_used']/1024));
+				array_push($used,($res_storage[0]['datadir_used']/1024));
+				array_push($used,($res_storage[0]['wal_log_dir_used']/1024));
+				array_push($used,($res_storage[0]['log_dir_used']/1024));
 
-			array_push($avail,($res_storage[0]['comp_datadir_avail']/1024));
-			array_push($avail,($res_storage[0]['datadir_avail']/1024));
-			array_push($avail,($res_storage[0]['wal_log_dir_avail']/1024));
-			array_push($avail,($res_storage[0]['log_dir_avail']/1024));
+				array_push($avail,($res_storage[0]['comp_datadir_avail']/1024));
+				array_push($avail,($res_storage[0]['datadir_avail']/1024));
+				array_push($avail,($res_storage[0]['wal_log_dir_avail']/1024));
+				array_push($avail,($res_storage[0]['log_dir_avail']/1024));
+			}
 		}
 
 		$data['used']=$used;

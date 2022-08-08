@@ -24,13 +24,13 @@
         <!-- <el-button style="padding:0px;">
           <Upload/> 
         </el-button> -->
-        <el-button
+        <!-- <el-button
           class="filter-item"
           type="primary"
           icon="el-icon-upload2"
           @click="handleUpload"
           v-if="machine_add_priv==='Y'"
-        >批量导入</el-button>
+        >批量导入</el-button> -->
         <div v-text="info" v-show="installStatus===true" class="info"></div>
       </div>
       <div class="table-list-wrap"></div>
@@ -188,7 +188,7 @@
         <el-button type="primary" @click="dialogStatus==='create'?createData():updateData(row)"  v-show="!dialogDetail">确认</el-button>
       </div>
     </el-dialog>
-  <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogUploadVisible" custom-class="single_dal_view">
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogUploadVisible" custom-class="single_dal_view">
       <el-form
         ref="dataForm"
         :rules="rules"
@@ -227,12 +227,43 @@
         <el-button type="primary" @click="uploadDate()"  v-show="!dialogDetail">上传</el-button>
       </div>
     </el-dialog>
+     <!--状态框 -->
+    <el-dialog :visible.sync="dialogStatusVisible" custom-class="single_dal_view" width="400px"  :close-on-click-modal="false">
+      <div class="block">
+        <el-timeline>
+          <el-timeline-item
+            v-for="(activity, index) in activities"
+            :key="index"
+            :icon="activity.icon"
+            :type="activity.type"
+            :color="activity.color"
+            :size="activity.size"
+            :timestamp="activity.timestamp">
+            {{activity.content}}
+          </el-timeline-item>
+        </el-timeline>
+      </div>
+    </el-dialog>
 
-
+  <el-dialog :title="job_id" :visible.sync="dialogStatusVisible" custom-class="single_dal_view" :close-on-click-modal="false" :before-close="beforeDestory">
+      <div style="width: 100%;background: #fff;padding:0 20px;">
+        <el-steps direction="vertical" :active="comp_active" >
+          <el-step
+              v-for="(item,index) of activities"
+              :key="index"
+              :title="item.title"
+              :icon="item.icon"
+              :status="item.status"
+              :description="item.description"
+          >
+          </el-step>
+        </el-steps>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
- import { messageTip,handleCofirm } from "@/utils";
+ import { messageTip,handleCofirm,getNowDate } from "@/utils";
  import { getMachineList,getNodes,addMachine,delMachine,importData} from '@/api/machine/list'
  import { pgEnable,getEvStatus } from '@/api/cluster/list'
  //import {addMachine,delMachine,getEvStatus,pEnable,update} from '@/api/machine/listInterface'
@@ -402,6 +433,8 @@ export default {
       machine_priv:JSON.parse(sessionStorage.getItem('priv')).machine_priv,
       storage_status:false,
       comp_status:false,
+      comp_active:1,
+      job_id:null,
 
       file: {},
       files: {
@@ -410,7 +443,9 @@ export default {
       },
       fileName: "",
       fileList: [],
-
+      activities: [],
+      dialogStatusVisible:false,
+      timer:null,
       rules: {
         hostaddr: [
           { required: true, trigger: "blur",validator: validateIPAddress },
@@ -452,6 +487,11 @@ export default {
     this.getList()
   },
   methods:{
+  //清除定时器
+  beforeDestory(){
+    clearInterval(this.timer)
+    this.dialogStatusVisible=false;
+  },
   beforeUpload(file){
       console.log(file, "文件");
       this.files = file;
@@ -600,50 +640,63 @@ export default {
           this.temp.port_range=this.temp.start_port+'-'+this.temp.end_port;
           if(!this.temp.rack_id){
             this.temp.rack_id='0'
-           //his.$delete(this.temp,'rack_id');
           }
           this.$delete(this.temp,'start_port');
           this.$delete(this.temp,'end_port');
           tempData.paras=Object.assign({}, this.temp);
-          //console.log(tempData);return;
           //发送接口
           addMachine(tempData).then(response=>{
             let res = response;
-            this.message_tips = '正在新增计算机...';
-            this.message_type = 'success';
-            if(res.error_code=='0'){
+            //同步接口
+            // this.message_tips = '正在新增计算机...';
+            // this.message_type = 'success';
+            // if(res.error_code=='0'){
+            //   this.dialogFormVisible = false;
+            //   this.message_tips = '新增计算机成功';
+            //   this.message_type = 'success';
+            //   this.dialogFormVisible = false;
+            //   this.getList();
+            if(res.status=='accept'){
               this.dialogFormVisible = false;
-              this.message_tips = '新增计算机成功';
-              this.message_type = 'success';
-              // let i=0;
-              // let timer = setInterval(() => {
-              //   this.getStatus(timer,res.job_id,i++)
-              // }, 1000)
+              this.job_id='新增计算机('+res.job_id+')';
+              this.dialogStatusVisible=true;
+              this.activities=[];
+              const newArr={
+                title:'正在新增计算机',
+                status: 'process',
+                icon: 'el-icon-loading',
+                description:''
+              };
+              this.activities.push(newArr)
+              let i=0;
+              let info='新增';
+              let timer = setInterval(() => {
+                this.getStatus(timer,res.job_id,i++,info)
+              }, 1000)
 
               //重启promentheus
-              const prometheus = {};
-              prometheus['job_id'] = '';
-              prometheus['job_type']='update_prometheus';
-              prometheus['version']=version_arr[0].ver;
-              prometheus['timestamp']=timestamp_arr[0].time+'';
-              prometheus['user_name']=sessionStorage.getItem('login_username');
-              prometheus['paras']={};
-              pgEnable(prometheus).then((resp) => {
-                // if(res.result=='accept'){
-                //   let j=0;
-                //   let timerp = setInterval(() => {
-                //   this.getStatus(timerp,prometheus['job_id'],j++)
-                //   }, 1000)
-                // }
-              })
-              this.dialogFormVisible = false;
-              this.getList();
+              // const prometheus = {};
+              // prometheus['job_id'] = '';
+              // prometheus['job_type']='update_prometheus';
+              // prometheus['version']=version_arr[0].ver;
+              // prometheus['timestamp']=timestamp_arr[0].time+'';
+              // prometheus['user_name']=sessionStorage.getItem('login_username');
+              // prometheus['paras']={};
+              // pgEnable(prometheus).then((resp) => {
+              //   // if(res.result=='accept'){
+              //   //   let j=0;
+              //   //   let timerp = setInterval(() => {
+              //   //   this.getStatus(timerp,prometheus['job_id'],j++)
+              //   //   }, 1000)
+              //   // }
+              // })
             }
             else{
               this.message_tips = res.error_info;
               this.message_type = 'error';
+              messageTip(this.message_tips,this.message_type);
             }
-            messageTip(this.message_tips,this.message_type);
+            //messageTip(this.message_tips,this.message_type);
           })
         }
       });
@@ -694,29 +747,30 @@ export default {
               //   this.getStatus(timer,res.job_id,i++)
               // }, 1000)
               //重启promentheus
-              const prometheus = {};
-              prometheus['job_id'] = '';
-              prometheus['job_type']='update_prometheus';
-              prometheus['version']=version_arr[0].ver;
-              prometheus['timestamp']=timestamp_arr[0].time+'';
-              prometheus['user_name']=sessionStorage.getItem('login_username');
-              prometheus['paras']={};
-              pgEnable(prometheus).then((resp) => {
-                // if(resp.code==200){
-                //   let j=0;
-                //   let timerp = setInterval(() => {
-                //   this.getStatus(timerp,prometheus['job_id'],j++)
-                //   }, 1000)
-                // }
-              })
-              this.dialogFormVisible = false
-              this.getList();
+              // const prometheus = {};
+              // prometheus['job_id'] = '';
+              // prometheus['job_type']='update_prometheus';
+              // prometheus['version']=version_arr[0].ver;
+              // prometheus['timestamp']=timestamp_arr[0].time+'';
+              // prometheus['user_name']=sessionStorage.getItem('login_username');
+              // prometheus['paras']={};
+              // pgEnable(prometheus).then((resp) => {
+              //   // if(resp.code==200){
+              //   //   let j=0;
+              //   //   let timerp = setInterval(() => {
+              //   //   this.getStatus(timerp,prometheus['job_id'],j++)
+              //   //   }, 1000)
+              //   // }
+              // })
+
+              //this.dialogFormVisible = false
+              //this.getList();
             }
             else{
               this.message_tips = res.error_info;
               this.message_type = 'error';
+              messageTip(this.message_tips,this.message_type);
             }
-            messageTip(this.message_tips,this.message_type);
 
           });
         }
@@ -735,34 +789,55 @@ export default {
           //console.log(tempData);return;
           delMachine(tempData).then((response)=>{
             let res = response;
-            this.message_tips = '正在删除计算机...';
-            this.message_type = 'success';
-            if(res.error_code=='0'){
+            //同步接口
+            // this.message_tips = '正在删除计算机...';
+            // this.message_type = 'success';
+            // if(res.error_code=='0'){
+            //   this.dialogFormVisible = false;
+            //   this.message_tips = '删除计算机成功';
+            //   this.message_type = 'success';
+            //   this.getList();
+            //异步接口
+            if(res.status=='accept'){
               this.dialogFormVisible = false;
-              this.message_tips = '删除计算机成功';
-              this.message_type = 'success';
+              this.job_id='删除计算机('+res.job_id+')';
+              this.dialogStatusVisible=true;
+              this.activities=[];
+             const newArr={
+                title:'正在删除计算机',
+                status: 'process',
+                icon: 'el-icon-loading',
+                description:''
+              };
+              this.activities.push(newArr)
+              let info='删除';
+              let i=0;
+              let timer = setInterval(() => {
+                this.getStatus(timer,res.job_id,i++,info)
+              }, 1000)
                 //重启promentheus
-              const prometheus = {};
-              prometheus['job_id'] = '';
-              prometheus['job_type']='update_prometheus';
-              prometheus['version']=version_arr[0].ver;
-              prometheus['timestamp']=timestamp_arr[0].time+'';
-              prometheus['user_name']=sessionStorage.getItem('login_username');
-              prometheus['paras']={};
-              pgEnable(prometheus).then((resp) => {
-                // if(resp.code==200){
-                //   let j=0;
-                //   let timerp = setInterval(() => {
-                //   this.getStatus(timerp,prometheus['job_id'],j++)
-                //   }, 1000)
-                // }
-              })
-              this.getList();
+              // const prometheus = {};
+              // prometheus['job_id'] = '';
+              // prometheus['job_type']='update_prometheus';
+              // prometheus['version']=version_arr[0].ver;
+              // prometheus['timestamp']=timestamp_arr[0].time+'';
+              // prometheus['user_name']=sessionStorage.getItem('login_username');
+              // prometheus['paras']={};
+              // pgEnable(prometheus).then((resp) => {
+              //   // if(resp.code==200){
+              //   //   let j=0;
+              //   //   let timerp = setInterval(() => {
+              //   //   this.getStatus(timerp,prometheus['job_id'],j++)
+              //   //   }, 1000)
+              //   // }
+              // })
+              
             }else{
               this.message_tips = res.error_info;
               this.message_type = 'error';
+              messageTip(this.message_tips,this.message_type);
             }
-            messageTip(this.message_tips,this.message_type);
+            //messageTip(this.message_tips,this.message_type);
         })
         }).catch(() => {
             console.log('quxiao')
@@ -799,7 +874,7 @@ export default {
         this.$refs.dataForm.clearValidate();
       });
     },
-    getStatus (timer,data,i) {
+    getStatus (timer,data,i,info) {
       setTimeout(()=>{
         const postarr={};
         postarr.job_type='get_status';
@@ -810,15 +885,16 @@ export default {
         getEvStatus(postarr).then((res) => {
         if(res.status=='done'||res.status=='failed'){
           clearInterval(timer);
-          this.info=res.error_info;
           if(res.status=='done'){
+            this.activities[0].title=info+'计算机成功'
+            this.activities[0].icon='el-icon-circle-check'
+            this.activities[0].status='success'
             this.getList();
           }else{
-            this.installStatus = true;
+            this.activities[0].title=info+'计算机失败'
+            this.activities[0].icon='el-icon-circle-close'
+            this.activities[0].status='error'
           }
-        }else{
-          this.info=res.error_info;
-          this.installStatus = true;
         }
       });
         if(i>=86400){

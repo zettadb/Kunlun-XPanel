@@ -459,3 +459,10 @@ export function getMetaCluster(query) {
       params:query
   });
 }
+export function getBackStorageList(query){
+  return request({
+    url: '/user/Cluster/getBackStorageList',
+    method: 'get',
+    params:query
+  });
+}
