@@ -18,7 +18,7 @@ vue2 + vuex + vue-router + webpack + ES6/7 + less + element-ui+PHP
 #克隆到本地   
 git clone -b 0.9.3 https://github.com/zettadb/Kunlun-XPanel.git  
 #进入文件夹  
-cd Kunlun-XPanel/KunlunXPanel  
+cd Kunlun-XPanel/KunlunXPanel
 #安装依赖  
 npm install  
 #修改成自己的ip，port  
@@ -31,31 +31,28 @@ npm run dev
 #发布生产环境  
 npm run build:prod  
 #生产环境部署  
-把monitor、dist(dist文件在Kunlun-XPanel/KunlunXPanel目录下)和index.php文件都放到apache的/var/www/html/路径下  
+把KunlunMonitor、dist(dist文件在Kunlun-XPanel/KunlunXPanel目录下)和index.php文件都放到apache的/var/www/html/路径下  
 mv dist KunlunXPanel  
 http://ip:port/KunlunXPanel访问即可  
 默认账号密码均为super_dba 
-
-
-# docker安装  
-docker pull registry.cn-hangzhou.aliyuncs.com/kunlundb/xpanel  
-git clone -b 0.9.3.1 https://github.com/zettadb/Kunlun-XPanel.git     
-unzip platform   
-cd platform  
-docker run -id --name xpanel -v  $PWD:/var/www/html -p 8081:80  -d registry.cn-hangzhou.aliyuncs.com/kunlundb/xpanel   
-http://ip:8081/KunlunXPanel  
-
-（注意：  
-1.遇到Permission denied的问题：   
-(1).docker exec -it 容器id /bin/bash   
-(2).cd /var/www/html/KunlunMonitor/application/config   
-(3).chmod 777 database.php和chmod 777 myconfig.php)  
 
 #安装grafana  
 (1).docker pull grafana/grafana  
 (2).docker run -d -p 3000:3000 --name=grafana  grafana/grafana  
 (3).初始账号和密码均是admin    
 (4).绑定cluster_mgr数据源：  
-页面上左边框找到设置-》Data sources-》搜Prometheus，然后点击-》url改成自己的cluster_mgr上的prometheus地址（例如：http://127.0.0.1:1000）-》Save&test保存即可。  
+页面上左边框找到设置-》Data sources-》搜Prometheus，然后点击-》url改成自己的cluster_mgr上的prometheus地址（例如：http://127.0.0.1:1000）-》Save&test保存即可。 
+(5).导入json模板  
+在文件的json目录下有三个json模板分别导入到grafana中。进入到grafana下，点+号-》点import-》Upload Json file-》import即可   
+（json模板，从github上获取，执行语句：git clone -b 0.9.3.3 https://github.com/zettadb/Kunlun-XPanel.git）
+
+
+# docker安装  
+(1).sudo docker run --pull always -itd --name xpanel1 -p 17000:80 \
+registry.cn-hangzhou.aliyuncs.com/kunlundb/kunlun-xpanel bash -c '/bin/bash /kunlun/start.sh'
+(2).使用谷歌浏览器打开XPanel网站: http://192.168.0.111:17000/KunlunXPanel
+(3).XPanel的初始账号密码均为：super_dba
+
+ 
 
 
