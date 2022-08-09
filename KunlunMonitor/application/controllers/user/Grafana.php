@@ -240,7 +240,7 @@ class Grafana extends CI_Controller {
 					$getdb_arr=json_decode($getdb_result,true);
 					if(count($getdb_arr)!==0){
 						foreach ($getdb_arr as $dbrow){
-							if($dbrow['title']=='postgresql'){
+							if($dbrow['title']=='pgsql'){
 								$db_id=$dbrow['id'];
 								$db_uid=$dbrow['uid'];
 								$db_title=$dbrow['title'];
@@ -260,8 +260,10 @@ class Grafana extends CI_Controller {
 							}
 							//更新
 							$update_mysqld_data=$this->PGsql_model->updatePGsqlJSON($host,$db_id,$db_uid,$db_title,$db_version);
+							//$update_mysqld_data = file_get_contents('./json/pgsql.json');
 							$update_postdb_url="http://admin:admin@127.0.0.1:3000/api/dashboards/db";
 							$update_postdb_result= $this->Grafana_model->postData($update_mysqld_data,$update_postdb_url);
+							//print_r($update_mysqld_data);exit;
 							$update_postdb_result=json_decode($update_postdb_result,true);
 							//print_r($update_postdb_result);exit;
 							if($update_postdb_result['status']=='success'){

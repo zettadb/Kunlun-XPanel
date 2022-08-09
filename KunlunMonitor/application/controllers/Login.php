@@ -465,12 +465,89 @@ class Login extends CI_Controller {
 	\$config['job_type'] = array(array('code'=>'create_cluster','name'=>'新增集群'),array('code'=>'delete_cluster','name'=>'删除集群'),array('code'=>'add_shards','name'=>'新增shard'),array('code'=>'delete_shard','name'=>'删除shard'),array('code'=>'backup_cluster','name'=>'备份集群'),array('code'=>'restore_new_cluster','name'=>'恢复集群'),array('code'=>'add_comps','name'=>'增加计算节点'),array('code'=>'delete_comp','name'=>'删除计算节点'),array('code'=>'add_nodes','name'=>'增加存储节点'),array('code'=>'delete_node','name'=>'删除存储节点'),array('code'=>'mysqld_exporter','name'=>'监控存储节点'),array('code'=>'postgres_exporter','name'=>'监控计算节点'),array('code'=>'update_prometheus','name'=>'重置prometheus'),array('code'=>'update_machine','name'=>'编辑计算机'),array('code'=>'delete_machine','name'=>'删除计算机'),array('code'=>'control_instance','name'=>'控制实例'),array('code'=>'delete_backup_storage','name'=>'删除备份存储目标'),array('code'=>'create_backup_storage','name'=>'新增备份存储目标'),array('code'=>'update_backup_storage','name'=>'编辑备份存储目标'),array('code'=>'manual_switch','name'=>'主备切换'),array('code'=>'rebuild_node','name'=>'重做备机节点'),array('code'=>'create_machine','name'=>'新增计算机'),array('code'=>'cluster_restore','name'=>'回档集群'),array('code'=>'expand_cluster','name'=>'集群扩容'));";
 				fwrite($f_p, $file_p);
 				fgets($f_p);
-				//获取元数据的主节点
-				//$sql_main="select hostaddr,port from meta_db_nodes where member_state='source'";
-				$sql_main="select MEMBER_HOST,MEMBER_PORT from performance_schema.replication_group_members where MEMBER_ROLE = 'PRIMARY' and MEMBER_STATE = 'ONLINE'";
-				$this->load->model('Change_model');
-				$res_main=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_main);
-				//print_r($res_main);exit;
+				//先查元数据是mgr还是rbr
+				$dbha_mode='';
+				$sql_dbha="select value from global_configuration";
+				$res_dbha=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_dbha);
+				if($res_dbha['code']==200){
+					$dbha_mode=$res_dbha[0];
+				}else{
+					//连不上报错
+					$data['code']=500;
+					$data['message']=$res_dbha[0];
+					print_r(json_encode($data));return;
+				}
+				if($dbha_mode=='rbr'){
+					//获取元数据的主节点
+					$sql_main="select HOST, PORT from performance_schema.replication_connection_configuration where channel_name='kunlun_repl';";
+					$res_main=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_main);
+					$res_count=count($res_main);
+					if($res_count==1){
+						$sql_change="select hostaddr,port from meta_db_nodes where hostaddr!='$ip' and port!='$port';";
+						$res_change=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_change);
+						$change_count=count($res_change);
+						if($change_count==3){
+							$res_change_one=$this->Change_model->getMysql($res_change[0],$res_change[1],'pgx','pgx_pwd','kunlun_metadata_db',$sql_main);
+							$change_count_one=count($res_change_one);
+							if($change_count_one==1){
+								$sql_change_two="select hostaddr,port from meta_db_nodes where hostaddr!='$ip' and port!='$port' and hostaddr!='$res_change[0]' and port!='$res_change[1]';";
+								$res_change_two=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_change_two);
+								$change_count_two=count($res_change_two);
+								if($change_count_two==3){
+									$res_change_three=$this->Change_model->getMysql($res_change_two[0],$res_change_two[1],'pgx','pgx_pwd','kunlun_metadata_db',$sql_main);
+									$change_count_three=count($res_change_three);
+									if($change_count_three==3){
+										$res_main=$res_change_three;
+									}else if($change_count_three==1){
+										//连不上报错
+										$data['code']=500;
+										$data['message']='rbr元数据找不到主节点';
+										print_r(json_encode($data));return;
+									}else{
+										//连不上报错
+										$data['code']=500;
+										$data['message']=$res_change_three[0];
+										print_r(json_encode($data));return;
+									}
+								}else if($change_count_two==1){
+									//连不上报错
+									$data['code']=500;
+									$data['message']='rbr元数据找不到主节点';
+									print_r(json_encode($data));return;
+								}else{
+									//连不上报错
+									$data['code']=500;
+									$data['message']=$res_change_two[0];
+									print_r(json_encode($data));return;
+								}
+							}else if($change_count_one==3){
+								$res_main=$res_change_one;
+							}else{
+								//连不上报错
+								$data['code']=500;
+								$data['message']=$res_change_one[0];
+								print_r(json_encode($data));return;
+							}
+						}else if($change_count==1){
+							//连不上报错
+							$data['code']=500;
+							$data['message']='rbr元数据找不到主节点';
+							print_r(json_encode($data));return;
+						}else{
+							//连不上报错
+							$data['code']=500;
+							$data['message']=$res_change[0];
+							print_r(json_encode($data));return;
+						}
+					}
+				}else if($dbha_mode=='mgr'){
+					//获取元数据的主节点
+					//$sql_main="select hostaddr,port from meta_db_nodes where member_state='source'";
+					$sql_main="select MEMBER_HOST,MEMBER_PORT from performance_schema.replication_group_members where MEMBER_ROLE = 'PRIMARY' and MEMBER_STATE = 'ONLINE'";
+					$this->load->model('Change_model');
+					$res_main=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_main);
+					//print_r($res_main);exit;
+				}
 				if($res_main['code']==200){
 					$f = fopen('./application/config/database.php', 'w+');
 					$file="<?php

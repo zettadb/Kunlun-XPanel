@@ -358,7 +358,7 @@ class Mysql_model extends CI_Model {
 "type": "stat"
 },
 {
-	"datasource": null,
+	"datasource": "Prometheus",
 "fieldConfig": {
 	"defaults": {
 		"color": {
@@ -772,7 +772,7 @@ class Mysql_model extends CI_Model {
 "type": "stat"
 },
 {
-	"datasource": null,
+	"datasource": "Prometheus",
 "description": "show thread pool status",
 "fieldConfig": {
 	"defaults": {
@@ -950,7 +950,7 @@ class Mysql_model extends CI_Model {
 "bars": false,
 "dashLength": 10,
 "dashes": false,
-"datasource": null,
+"datasource": "Prometheus",
 "fieldConfig": {
 	"defaults": {
 		"unit": "short"
@@ -6144,7 +6144,7 @@ class Mysql_model extends CI_Model {
 "type": "stat"
 },
 {
-	"datasource": null,
+	"datasource": "Prometheus",
 "fieldConfig": {
 	"defaults": {
 		"color": {
@@ -6558,7 +6558,7 @@ class Mysql_model extends CI_Model {
 "type": "stat"
 },
 {
-	"datasource": null,
+	"datasource": "Prometheus",
 "description": "show thread pool status",
 "fieldConfig": {
 	"defaults": {
@@ -6736,7 +6736,7 @@ class Mysql_model extends CI_Model {
 "bars": false,
 "dashLength": 10,
 "dashes": false,
-"datasource": null,
+"datasource": "Prometheus",
 "fieldConfig": {
 	"defaults": {
 		"unit": "short"

@@ -3691,20 +3691,23 @@ export default {
               this.init_active=1;
               if(this.computer.length==0||this.shard.length==0){
                 if(this.computer.length==0){
-                  let newArrgoing={}
                   if(ress.attachment.hasOwnProperty('computer_hosts')){
                     const arr=ress.attachment.computer_hosts.substr(0,ress.attachment.computer_hosts.length-1);
                     const computer_hosts=arr.split(';');
-                    for(let e=0;e<computer_hosts.length;e++){
-                      if(ress.attachment.computer_state=='done'){
-                        newArrgoing.title=ress.attachment.hasOwnProperty('computer_hosts')===true?computer_hosts[e]:'正在'+info;
+                    if(ress.attachment.computer_state=='done'){
+                      for(let e=0;e<computer_hosts.length;e++){
+                        let newArrgoing={}
+                        newArrgoing.title=computer_hosts[e];
                         newArrgoing.icon='el-icon-circle-check';
                         newArrgoing.status= 'success';
                         newArrgoing.description='';
                         newArrgoing.computer_id=ress.attachment.computer_id;
                         this.computer.push(newArrgoing)
-                      }else{
-                        newArrgoing.title=ress.attachment.hasOwnProperty('computer_hosts')===true?computer_hosts[e]:'正在'+info;
+                      }
+                    }else{
+                      for(let e=0;e<computer_hosts.length;e++){
+                        let newArrgoing={}
+                        newArrgoing.title=computer_hosts[e];
                         newArrgoing.icon='el-icon-loading';
                         newArrgoing.status= 'process';
                         newArrgoing.description='';
@@ -3722,9 +3725,9 @@ export default {
                     }else{
                       shard_ids=ress.attachment.shard_hosts;
                     }
-                    let shardgoing={}
                     for(let e=0;e<shard_ids.length;e++){
                       for(var item in shard_ids[e]){
+                         let shardgoing={}
                         var shard_idsValue=shard_ids[e][item];
                         console.log(shard_idsValue);
                         const shard_text=item+':'+shard_idsValue;

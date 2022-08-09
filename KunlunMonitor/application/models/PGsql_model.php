@@ -5,12 +5,13 @@ class PGsql_model extends CI_Model
 	{
 		parent::__construct();
 	}
-	public function pgsqlJSON($host){
+	public function pgsqlJSON($host)
+	{
 		$res='{
 	"dashboard": {
 	"id": null,
 	"uid": null,
-	"title": "postgresql",
+	"title": "pgsql",
 	"tags": [],
 	"timezone": "browser",
 	"schemaVersion": 16,
@@ -187,6 +188,1215 @@ class PGsql_model extends CI_Model
         "tagsQuery": "",
         "type": "query",
         "useTags": false
+      },
+	  {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "version",
+        "options": [],
+        "query": {
+          "query": "label_values(pg_static{instance=~\"'.$host.'\"},version)",
+          "refId": "Prometheus-version-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 2,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "max_connections",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_max_connections{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-max_connections-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "shared_buffers",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_shared_buffers_bytes{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-shared_buffers-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "work_mem",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_work_mem_bytes{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-work_mem-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "wal_buffers",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_wal_buffers_bytes{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-wal_buffers-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "wal_segment_size",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_wal_segment_size_bytes{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-wal_segment_size-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "maintenance_work_mem",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_maintenance_work_mem_bytes{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-maintenance_work_mem-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "block_size",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_block_size{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-block_size-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "checkpoint_segments",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_checkpoint_segments{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-checkpoint_segments-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "checkpoint_timeout",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_checkpoint_timeout_seconds{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-checkpoint_timeout-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "default_statistics_target",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_default_statistics_target{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-default_statistics_target-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "seq_page_cost",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_seq_page_cost{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-seq_page_cost-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "random_page_cost",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_random_page_cost{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-random_page_cost-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "effective_cache_size",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_effective_cache_size_bytes{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-effective_cache_size-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "effective_io_concurrency",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_effective_io_concurrency{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-effective_io_concurrency-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "fsync",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_fsync{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-fsync-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_analyze_scale_factor",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_analyze_scale_factor{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_analyze_scale_factor-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_analyze_threshold",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_analyze_threshold{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_analyze_threshold-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_vacuum_scale_factor",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_vacuum_scale_factor{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_vacuum_scale_factor-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_vacuum_threshold",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_vacuum_threshold{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_vacuum_threshold-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_vacuum_cost_limit",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_vacuum_cost_limit{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_vacuum_cost_limit-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_vacuum_cost_delay",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_vacuum_cost_delay_seconds{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_vacuum_cost_delay-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_max_workers",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_max_workers{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_max_workers-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_naptime",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_naptime_seconds{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_naptime-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_freeze_max_age",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_freeze_max_age{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_freeze_max_age-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "logging_collector",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_logging_collector{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-logging_collector-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "log_min_duration_statement",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_log_min_duration_statement_seconds{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-log_min_duration_statement-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "log_duration",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_log_duration{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-log_duration-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "log_lock_waits",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_log_lock_waits{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-log_lock_waits-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "max_wal_senders",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_max_wal_senders{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-max_wal_senders-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "max_wal_size",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_max_wal_size_bytes{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-max_wal_size-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "min_wal_size",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_min_wal_size_bytes{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-min_wal_size-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "wal_compression",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_wal_compression{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-wal_compression-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "max_worker_processes",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_max_worker_processes{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-max_worker_processes-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "max_parallel_workers_per_gather",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_max_parallel_workers_per_gather{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-max_parallel_workers_per_gather-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "max_parallel_workers",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_max_parallel_workers_per_gather{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-max_parallel_workers-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_work_mem",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_work_mem_bytes{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_work_mem-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_multixact_freeze_max_age",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_multixact_freeze_max_age{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_multixact_freeze_max_age-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
       }
 	]
 	},
@@ -282,7 +1492,7 @@ class PGsql_model extends CI_Model
 		  "pluginVersion": "8.2.1",
 		  "targets": [
 			{
-			  "expr": "pg_up{instance=~\"'.$host.'\",job=\"postgresql\"}",
+			  "expr": "pg_up{instance=~\"'.$host.'\",job=\"postgres\"}",
 			  "format": "time_series",
 			  "interval": "$interval",
 			  "intervalFactor": 1,
@@ -1629,7 +2839,7 @@ class PGsql_model extends CI_Model
 		  "steppedLine": false,
 		  "targets": [
 			{
-				"expr": "max_over_time(pg_stat_activity_max_tx_duration{instance='.$host.'}[$interval]) or\nmax_over_time(pg_stat_activity_max_tx_duration{instance='.$host.'}[5m])",
+				"expr": "max_over_time(pg_stat_activity_max_tx_duration{instance=\"'.$host.'\"}[$interval]) or\nmax_over_time(pg_stat_activity_max_tx_duration{instance=\"'.$host.'\"}[5m])",
 			  "format": "time_series",
 			  "interval": "$interval",
 			  "intervalFactor": 1,
@@ -2453,7 +3663,7 @@ class PGsql_model extends CI_Model
 			{
 				"alias": "Buffers Allocated",
 			  "dsType": "prometheus",
-			  "expr": "rate(pg_stat_bgwriter_buffers_alloc{instance='.$host.'}[$interval]) or \nirate(pg_stat_bgwriter_buffers_alloc{instance='.$host.'}[5m])",
+			  "expr": "rate(pg_stat_bgwriter_buffers_alloc{instance=\"'.$host.'\"}[$interval]) or \nirate(pg_stat_bgwriter_buffers_alloc{instance=\"'.$host.'\"}[5m])",
 			  "format": "time_series",
 			  "groupBy": [
 				{
@@ -2506,7 +3716,7 @@ class PGsql_model extends CI_Model
 			{
 				"alias": "Buffers Allocated",
 			  "dsType": "prometheus",
-			  "expr": "rate(pg_stat_bgwriter_buffers_backend_fsync{instance='.$host.'}[$interval]) or\nirate(pg_stat_bgwriter_buffers_backend_fsync{instance='.$host.'}[5m])",
+			  "expr": "rate(pg_stat_bgwriter_buffers_backend_fsync{instance=\"'.$host.'\"}[$interval]) or\nirate(pg_stat_bgwriter_buffers_backend_fsync{instance=\"'.$host.'\"}[5m])",
 			  "format": "time_series",
 			  "groupBy": [
 				{
@@ -2559,7 +3769,7 @@ class PGsql_model extends CI_Model
 			{
 				"alias": "Buffers Allocated",
 			  "dsType": "prometheus",
-			  "expr": "rate(pg_stat_bgwriter_buffers_backend{instance='.$host.'}[$interval]) or\nirate(pg_stat_bgwriter_buffers_backend{instance='.$host.'}[5m])",
+			  "expr": "rate(pg_stat_bgwriter_buffers_backend{instance=\"'.$host.'\"}[$interval]) or\nirate(pg_stat_bgwriter_buffers_backend{instance=\"'.$host.'\"}[5m])",
 			  "format": "time_series",
 			  "groupBy": [
 				{
@@ -2612,7 +3822,7 @@ class PGsql_model extends CI_Model
 			{
 				"alias": "Buffers Allocated",
 			  "dsType": "prometheus",
-			  "expr": "rate(pg_stat_bgwriter_buffers_clean{instance='.$host.'}[$interval]) or \nirate(pg_stat_bgwriter_buffers_clean{instance='.$host.'}[5m])",
+			  "expr": "rate(pg_stat_bgwriter_buffers_clean{instance=\"'.$host.'\"}[$interval]) or \nirate(pg_stat_bgwriter_buffers_clean{instance=\"'.$host.'\"}[5m])",
 			  "format": "time_series",
 			  "groupBy": [
 				{
@@ -2665,7 +3875,7 @@ class PGsql_model extends CI_Model
 			{
 				"alias": "Buffers Allocated",
 			  "dsType": "prometheus",
-			  "expr": "rate(pg_stat_bgwriter_buffers_checkpoint{instance='.$host.'}[5m]) or\nirate(pg_stat_bgwriter_buffers_checkpoint{instance='.$host.'}[5m])",
+			  "expr": "rate(pg_stat_bgwriter_buffers_checkpoint{instance=\"'.$host.'\"}[5m]) or\nirate(pg_stat_bgwriter_buffers_checkpoint{instance=\"'.$host.'\"}[5m])",
 			  "format": "time_series",
 			  "groupBy": [
 				{
@@ -3062,7 +4272,7 @@ class PGsql_model extends CI_Model
 		  "steppedLine": false,
 		  "targets": [
 			{
-				"expr": "rate(pg_stat_bgwriter_checkpoint_sync_time{instance='.$host.'}[$interval]) or\nirate(pg_stat_bgwriter_checkpoint_sync_time{instance='.$host.'}[5m])",
+				"expr": "rate(pg_stat_bgwriter_checkpoint_sync_time{instance=\"'.$host.'\"}[$interval]) or\nirate(pg_stat_bgwriter_checkpoint_sync_time{instance=\"'.$host.'\"}[5m])",
 			  "format": "time_series",
 			  "hide": false,
 			  "interval": "$interval",
@@ -3073,7 +4283,7 @@ class PGsql_model extends CI_Model
 			  "step": 2
 			},
 			{
-				"expr": "rate(pg_stat_bgwriter_checkpoint_write_time{instance='.$host.'}[$interval]) or\nirate(pg_stat_bgwriter_checkpoint_write_time{instance='.$host.'}[5m])",
+				"expr": "rate(pg_stat_bgwriter_checkpoint_write_time{instance=\"'.$host.'\"}[$interval]) or\nirate(pg_stat_bgwriter_checkpoint_write_time{instance=\"'.$host.'\"}[5m])",
 			  "format": "time_series",
 			  "hide": false,
 			  "interval": "$interval",
@@ -3674,8 +4884,7 @@ class PGsql_model extends CI_Model
 	},
 	"folderId": 0,
 	"overwrite": false
-}
-';
+}';
 		return $res;
 	}
 
@@ -3779,7 +4988,7 @@ class PGsql_model extends CI_Model
 		  "pluginVersion": "8.2.1",
 		  "targets": [
 			{
-			  "expr": "pg_up{instance=~\"'.$host.'\",job=\"postgresql\"}",
+			  "expr": "pg_up{instance=~\"'.$host.'\",job=\"postgres\"}",
 			  "format": "time_series",
 			  "interval": "$interval",
 			  "intervalFactor": 1,
@@ -5126,7 +6335,7 @@ class PGsql_model extends CI_Model
 		  "steppedLine": false,
 		  "targets": [
 			{
-				"expr": "max_over_time(pg_stat_activity_max_tx_duration{instance='.$host.'}[$interval]) or\nmax_over_time(pg_stat_activity_max_tx_duration{instance='.$host.'}[5m])",
+				"expr": "max_over_time(pg_stat_activity_max_tx_duration{instance=\"'.$host.'\"}[$interval]) or\nmax_over_time(pg_stat_activity_max_tx_duration{instance=\"'.$host.'\"}[5m])",
 			  "format": "time_series",
 			  "interval": "$interval",
 			  "intervalFactor": 1,
@@ -5950,7 +7159,7 @@ class PGsql_model extends CI_Model
 			{
 				"alias": "Buffers Allocated",
 			  "dsType": "prometheus",
-			  "expr": "rate(pg_stat_bgwriter_buffers_alloc{instance='.$host.'}[$interval]) or \nirate(pg_stat_bgwriter_buffers_alloc{instance='.$host.'}[5m])",
+			  "expr": "rate(pg_stat_bgwriter_buffers_alloc{instance=\"'.$host.'\"}[$interval]) or \nirate(pg_stat_bgwriter_buffers_alloc{instance=\"'.$host.'\"}[5m])",
 			  "format": "time_series",
 			  "groupBy": [
 				{
@@ -6003,7 +7212,7 @@ class PGsql_model extends CI_Model
 			{
 				"alias": "Buffers Allocated",
 			  "dsType": "prometheus",
-			  "expr": "rate(pg_stat_bgwriter_buffers_backend_fsync{instance='.$host.'}[$interval]) or\nirate(pg_stat_bgwriter_buffers_backend_fsync{instance='.$host.'}[5m])",
+			  "expr": "rate(pg_stat_bgwriter_buffers_backend_fsync{instance=\"'.$host.'\"}[$interval]) or\nirate(pg_stat_bgwriter_buffers_backend_fsync{instance=\"'.$host.'\"}[5m])",
 			  "format": "time_series",
 			  "groupBy": [
 				{
@@ -6056,7 +7265,7 @@ class PGsql_model extends CI_Model
 			{
 				"alias": "Buffers Allocated",
 			  "dsType": "prometheus",
-			  "expr": "rate(pg_stat_bgwriter_buffers_backend{instance='.$host.'}[$interval]) or\nirate(pg_stat_bgwriter_buffers_backend{instance='.$host.'}[5m])",
+			  "expr": "rate(pg_stat_bgwriter_buffers_backend{instance=\"'.$host.'\"}[$interval]) or\nirate(pg_stat_bgwriter_buffers_backend{instance=\"'.$host.'\"}[5m])",
 			  "format": "time_series",
 			  "groupBy": [
 				{
@@ -6109,7 +7318,7 @@ class PGsql_model extends CI_Model
 			{
 				"alias": "Buffers Allocated",
 			  "dsType": "prometheus",
-			  "expr": "rate(pg_stat_bgwriter_buffers_clean{instance='.$host.'}[$interval]) or \nirate(pg_stat_bgwriter_buffers_clean{instance='.$host.'}[5m])",
+			  "expr": "rate(pg_stat_bgwriter_buffers_clean{instance=\"'.$host.'\"}[$interval]) or \nirate(pg_stat_bgwriter_buffers_clean{instance=\"'.$host.'\"}[5m])",
 			  "format": "time_series",
 			  "groupBy": [
 				{
@@ -6162,7 +7371,7 @@ class PGsql_model extends CI_Model
 			{
 				"alias": "Buffers Allocated",
 			  "dsType": "prometheus",
-			  "expr": "rate(pg_stat_bgwriter_buffers_checkpoint{instance='.$host.'}[5m]) or\nirate(pg_stat_bgwriter_buffers_checkpoint{instance='.$host.'}[5m])",
+			  "expr": "rate(pg_stat_bgwriter_buffers_checkpoint{instance=\"'.$host.'\"}[5m]) or\nirate(pg_stat_bgwriter_buffers_checkpoint{instance=\"'.$host.'\"}[5m])",
 			  "format": "time_series",
 			  "groupBy": [
 				{
@@ -6559,7 +7768,7 @@ class PGsql_model extends CI_Model
 		  "steppedLine": false,
 		  "targets": [
 			{
-				"expr": "rate(pg_stat_bgwriter_checkpoint_sync_time{instance='.$host.'}[$interval]) or\nirate(pg_stat_bgwriter_checkpoint_sync_time{instance='.$host.'}[5m])",
+				"expr": "rate(pg_stat_bgwriter_checkpoint_sync_time{instance=\"'.$host.'\"}[$interval]) or\nirate(pg_stat_bgwriter_checkpoint_sync_time{instance=\"'.$host.'\"}[5m])",
 			  "format": "time_series",
 			  "hide": false,
 			  "interval": "$interval",
@@ -6570,7 +7779,7 @@ class PGsql_model extends CI_Model
 			  "step": 2
 			},
 			{
-				"expr": "rate(pg_stat_bgwriter_checkpoint_write_time{instance='.$host.'}[$interval]) or\nirate(pg_stat_bgwriter_checkpoint_write_time{instance='.$host.'}[5m])",
+				"expr": "rate(pg_stat_bgwriter_checkpoint_write_time{instance=\"'.$host.'\"}[$interval]) or\nirate(pg_stat_bgwriter_checkpoint_write_time{instance=\"'.$host.'\"}[5m])",
 			  "format": "time_series",
 			  "hide": false,
 			  "interval": "$interval",
@@ -7332,6 +8541,1215 @@ class PGsql_model extends CI_Model
         },
         "refresh": 2,
         "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+	  {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "version",
+        "options": [],
+        "query": {
+          "query": "label_values(pg_static{instance=~\"'.$host.'\"},version)",
+          "refId": "Prometheus-version-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 2,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "max_connections",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_max_connections{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-max_connections-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "shared_buffers",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_shared_buffers_bytes{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-shared_buffers-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "work_mem",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_work_mem_bytes{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-work_mem-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "wal_buffers",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_wal_buffers_bytes{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-wal_buffers-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "wal_segment_size",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_wal_segment_size_bytes{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-wal_segment_size-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "maintenance_work_mem",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_maintenance_work_mem_bytes{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-maintenance_work_mem-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "block_size",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_block_size{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-block_size-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "checkpoint_segments",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_checkpoint_segments{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-checkpoint_segments-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "checkpoint_timeout",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_checkpoint_timeout_seconds{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-checkpoint_timeout-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "default_statistics_target",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_default_statistics_target{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-default_statistics_target-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "seq_page_cost",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_seq_page_cost{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-seq_page_cost-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "random_page_cost",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_random_page_cost{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-random_page_cost-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "effective_cache_size",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_effective_cache_size_bytes{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-effective_cache_size-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "effective_io_concurrency",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_effective_io_concurrency{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-effective_io_concurrency-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "fsync",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_fsync{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-fsync-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_analyze_scale_factor",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_analyze_scale_factor{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_analyze_scale_factor-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_analyze_threshold",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_analyze_threshold{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_analyze_threshold-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_vacuum_scale_factor",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_vacuum_scale_factor{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_vacuum_scale_factor-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_vacuum_threshold",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_vacuum_threshold{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_vacuum_threshold-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_vacuum_cost_limit",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_vacuum_cost_limit{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_vacuum_cost_limit-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_vacuum_cost_delay",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_vacuum_cost_delay_seconds{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_vacuum_cost_delay-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_max_workers",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_max_workers{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_max_workers-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_naptime",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_naptime_seconds{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_naptime-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_freeze_max_age",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_freeze_max_age{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_freeze_max_age-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "logging_collector",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_logging_collector{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-logging_collector-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "log_min_duration_statement",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_log_min_duration_statement_seconds{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-log_min_duration_statement-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "log_duration",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_log_duration{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-log_duration-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "log_lock_waits",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_log_lock_waits{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-log_lock_waits-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "max_wal_senders",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_max_wal_senders{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-max_wal_senders-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "max_wal_size",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_max_wal_size_bytes{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-max_wal_size-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "min_wal_size",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_min_wal_size_bytes{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-min_wal_size-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "wal_compression",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_wal_compression{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-wal_compression-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "max_worker_processes",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_max_worker_processes{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-max_worker_processes-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "max_parallel_workers_per_gather",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_max_parallel_workers_per_gather{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-max_parallel_workers_per_gather-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "max_parallel_workers",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_max_parallel_workers_per_gather{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-max_parallel_workers-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_work_mem",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_work_mem_bytes{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_work_mem-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": "Prometheus",
+        "definition": "",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "autovacuum_multixact_freeze_max_age",
+        "options": [],
+        "query": {
+          "query": "query_result(pg_settings_autovacuum_multixact_freeze_max_age{instance=~\"'.$host.'\",job=\"postgresql\"})",
+          "refId": "Prometheus-autovacuum_multixact_freeze_max_age-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "/ ([0-9\\\.]+)/",
         "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
