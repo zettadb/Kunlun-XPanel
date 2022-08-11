@@ -6,7 +6,7 @@
 		$db['role']=array(
 			'dsn'	=> '',
 			'hostname' => '',
-			'port' => 1000,
+			'port' => 6001,
 			'username' => 'pgx',
 			'password' => 'pgx_pwd',
 			'database' => 'kunlun_dba_tools_db',
@@ -29,7 +29,7 @@
 		$db['default']=array(
 			'dsn'	=> '',
 			'hostname' => '',
-			'port' => 1000,
+			'port' => 6001,
 			'username' => 'pgx',
 			'password' => 'pgx_pwd',
 			'database' => 'kunlun_metadata_db',

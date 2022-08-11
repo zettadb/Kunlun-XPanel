@@ -50,6 +50,21 @@
           <span class="link-type" @click="handleDetail(row)">{{ row.taskid }}</span>
         </template>
       </el-table-column>
+      <el-table-column
+        prop="cluster_id"
+        align="center"
+        label="cluster_id">
+      </el-table-column>
+      <el-table-column
+        prop="shard_id"
+        align="center"
+        label="shard_id">
+      </el-table-column>
+      <el-table-column
+        prop="shard_name"
+        align="center"
+        label="shard_name">
+      </el-table-column>
 
       <el-table-column
         prop="host"

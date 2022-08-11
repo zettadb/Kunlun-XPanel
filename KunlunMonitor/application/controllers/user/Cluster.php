@@ -591,8 +591,9 @@ class Cluster extends CI_Controller {
 		$comp_id='comps';
 		$comp_text='计算节点';
 		$arr=array();
+		//nodes'下加文本宽度表示超出省略：width'=>120；form下的text是显示线条文字;'disableDrag'=>true，为禁止拖动
 		//$nodes=array(array('id'=>$cluster_id, 'text'=>$cluster_text),array('id'=>$shards_id, 'text'=>$shards_text),array('id'=>$comp_id, 'text'=>$comp_text));
-		$nodes=array(array('id'=>$cluster_id, 'text'=>$cluster_text,'data'=>array('cluster_name'=>$cluster_name,'ha_mode'=>$ha_mode)));
+		$nodes=array(array('id'=>$cluster_id, 'text'=>$cluster_text,'disableDrag'=>true,'data'=>array('cluster_name'=>$cluster_name,'ha_mode'=>$ha_mode)));
 		$links=array();
 //		$links=array(array('from'=>$cluster_id, 'to'=>$shards_id),array('from'=>$cluster_id, 'to'=>$comp_id));
 		//获取存储节点数据
@@ -653,7 +654,7 @@ class Cluster extends CI_Controller {
 							array_push($nodes,$shard_node1);
 							array_push($links,$shard_link1);*/
 							$shard_node=array('id'=>$shard_node_id, 'text'=>$value2,'data'=>array('cluster_name'=>$cluster_name,'nick_name'=>$cluster_text,'port'=>$value2,'hostaddr'=>$res_comp[$row]['hostaddr'],'cpu_cores'=>$res_comp[$row]['cpu_cores'],'max_mem_MB'=>$res_comp[$row]['max_mem_MB'],'max_conns'=>$res_comp[$row]['max_conns'],'name'=>'pgsql','comp'=>$res_comp[$row]['name'],'status'=>$res_comp[$row]['status'],'cluster_id'=>$clusterID,'comp_id'=>$res_comp[$row]['id']));
-							$shard_link=array('from'=>$cluster_id, 'to'=>$shard_node_id,'text'=>$res_comp[$row]['hostaddr']);
+							$shard_link=array('from'=>$cluster_id, 'to'=>$shard_node_id,'text'=>$res_comp[$row]['hostaddr'].'(计算节点)');
 							array_push($nodes,$shard_node);
 							array_push($links,$shard_link);
 						}
@@ -1363,7 +1364,7 @@ class Cluster extends CI_Controller {
 							//获取shard名称
 							$shard_name=$this->getShardName($cluster_id,$shard_id);
 							$shard_node=array('id'=>$shard_n_id, 'text'=>$shard_arr_name,'data'=>array('cluster_id'=>$cluster_id,'hostaddr'=>$key['hostaddr'],'port'=>$key['port'],'cpu_cores'=>$key['cpu_cores'],'initial_storage_GB'=>$key['initial_storage_GB'],'max_storage_GB'=>$key['max_storage_GB'],'innodb_buffer_pool_MB'=>$key['innodb_buffer_pool_MB'],'rocksdb_buffer_pool_MB'=>$key['rocksdb_buffer_pool_MB'],'name'=>'mysql','shard_id'=>$shard_id,'cluster_name'=>$cluster_name,'nick_name'=>$nick_name,'shard_name'=>$shard_name,'status'=>$status,'master'=>$master,'delay'=>$key['replica_delay'],'sync_status'=>$key['sync_state']));
-							$shard_link=array('from'=>$tree_id, 'to'=>$shard_n_id,'text'=>$key['hostaddr']);
+							$shard_link=array('from'=>$tree_id, 'to'=>$shard_n_id,'text'=>$key['hostaddr'].'(存储节点)');
 							array_push($nodes,$shard_node);
 							array_push($links,$shard_link);
 						}
@@ -1881,6 +1882,9 @@ class Cluster extends CI_Controller {
 							$arr = $this->getNewHost($value2);
 							$res[$row]['end_time'] =$arr[0]['timestamp'];
 							$res[$row]['new_master_host'] =$arr[0]['new_master_host'];
+							$res[$row]['cluster_id'] =$arr[0]['cluster_id'];
+							$res[$row]['shard_id'] =$arr[0]['shard_id'];
+							$res[$row]['shard_name'] =$this->getShardName($arr[0]['cluster_id'],$arr[0]['shard_id']);
 							$res[$row]['err_code'] =$arr[0]['err_code'];
 							if($arr[0]['err_code']=='0'){
 								$res[$row]['status'] ='成功';
@@ -1910,7 +1914,7 @@ class Cluster extends CI_Controller {
 		print_r(json_encode($data));
 	}
 	public function getNewHost($id){
-		$sql="select new_master_host,timestamp,err_code,err_msg from rbr_consfailover where taskid='$id' order by id desc limit 1";
+		$sql="select new_master_host,timestamp,err_code,err_msg,shard_id,cluster_id from rbr_consfailover where taskid='$id' order by id desc limit 1";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		return $res;

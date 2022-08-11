@@ -5,12 +5,14 @@
     </el-radio-group>
     <div v-text="info" v-show="installStatus===true" class="info"></div>
     <div class="nodata" v-show="nodataShow">暂无数据</div>
-    <div ref="myPage" style="margin-top:0px;width: calc(100(100% - 10px);height:calc(100vh - 160px);" v-show="g_loading" @click="isShowNodeMenuPanel = false">
+    <!-- style="margin-top:0px;width: calc(100(100% - 10px);height:calc(100vh - 160px);" -->
+    <div ref="myPage" style="margin-top:0px;width: calc(100(100% - 10px);height:calc(100vh - 10px);" v-show="g_loading" @click="isShowNodeMenuPanel = false">
       <SeeksRelationGraph
         ref="seeksRelationGraph"
         :options="graphOptions"
         :on-node-click="onNodeClick"
-        :on-line-click="onLineClick" :on-node-expand="onNodeExpand" :on-node-collapse="onNodeCollapse">
+        :on-line-click="onLineClick" :on-node-expand="onNodeExpand" :on-node-collapse="onNodeCollapse"
+      >
         <!-- @click="showNodeMenus(node, $event)" @contextmenu.prevent.stop="hideNodeTips(node, $event)"  -->
         <div slot="node" slot-scope="{node}"   @click="showNodeMenus(node, $event)">
           <div>
@@ -750,21 +752,25 @@ export default {
       range_vertical: [ 20, 100 ],
       activities:[],
       graphOptions: {
-         debug: true,
+        debug: true,
+        'disableDragNode':true,//是否禁用图谱中节点的拖动
         'backgrounImageNoRepeat': true,
+        'allowShowZoomMenu':true,//是否在右侧菜单栏显示放大缩小的按钮
+        // 'allowShowMiniView':true,//是否显示缩略图
           'layouts': [
             {
-              'label': '树',
+              'label': '中心',
               'layoutName': 'tree',
               'layoutClassName': 'seeks-layout-center',
+              'defaultJunctionPoint': 'border',
               'defaultNodeShape': 0,
               'defaultLineShape': 1,
               'from': 'left',
               // 通过这4个属性来调整 tree-层级距离&节点距离
-              'min_per_width': undefined,
-              'max_per_width': '300',
-              'min_per_height': '40',
-              'max_per_height': undefined,
+              'min_per_width': '300',
+              'max_per_width': '320',
+              'min_per_height': '120',
+              'max_per_height': '140',
               'levelDistance': '' // 如果此选项有值，则优先级高于上面那4个选项
             }
           ],
@@ -1044,8 +1050,7 @@ export default {
         this.$refs.seeksRelationGraph.refresh()
         return
       }
-      node.data.childrenLoaded = true
-      //console.log(node.data);return;
+      node.data.childrenLoaded = true;
       const tempData = {};
       tempData.shard_id =node.data.shard_id;
       tempData.cluster_id =node.data.cluster_id;

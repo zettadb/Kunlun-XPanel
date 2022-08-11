@@ -477,77 +477,77 @@ class Login extends CI_Controller {
 					$data['message']=$res_dbha[0];
 					print_r(json_encode($data));return;
 				}
-				if($dbha_mode=='rbr'){
-					//获取元数据的主节点
-					$sql_main="select HOST, PORT from performance_schema.replication_connection_configuration where channel_name='kunlun_repl';";
-					$res_main=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_main);
-					$res_count=count($res_main);
-					if($res_count==1){
-						$sql_change="select hostaddr,port from meta_db_nodes where hostaddr!='$ip' and port!='$port';";
-						$res_change=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_change);
-						$change_count=count($res_change);
-						if($change_count==3){
-							$res_change_one=$this->Change_model->getMysql($res_change[0],$res_change[1],'pgx','pgx_pwd','kunlun_metadata_db',$sql_main);
-							$change_count_one=count($res_change_one);
-							if($change_count_one==1){
-								$sql_change_two="select hostaddr,port from meta_db_nodes where hostaddr!='$ip' and port!='$port' and hostaddr!='$res_change[0]' and port!='$res_change[1]';";
-								$res_change_two=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_change_two);
-								$change_count_two=count($res_change_two);
-								if($change_count_two==3){
-									$res_change_three=$this->Change_model->getMysql($res_change_two[0],$res_change_two[1],'pgx','pgx_pwd','kunlun_metadata_db',$sql_main);
-									$change_count_three=count($res_change_three);
-									if($change_count_three==3){
-										$res_main=$res_change_three;
-									}else if($change_count_three==1){
-										//连不上报错
-										$data['code']=500;
-										$data['message']='rbr元数据找不到主节点';
-										print_r(json_encode($data));return;
-									}else{
-										//连不上报错
-										$data['code']=500;
-										$data['message']=$res_change_three[0];
-										print_r(json_encode($data));return;
-									}
-								}else if($change_count_two==1){
-									//连不上报错
-									$data['code']=500;
-									$data['message']='rbr元数据找不到主节点';
-									print_r(json_encode($data));return;
-								}else{
-									//连不上报错
-									$data['code']=500;
-									$data['message']=$res_change_two[0];
-									print_r(json_encode($data));return;
-								}
-							}else if($change_count_one==3){
-								$res_main=$res_change_one;
-							}else{
-								//连不上报错
-								$data['code']=500;
-								$data['message']=$res_change_one[0];
-								print_r(json_encode($data));return;
-							}
-						}else if($change_count==1){
-							//连不上报错
-							$data['code']=500;
-							$data['message']='rbr元数据找不到主节点';
-							print_r(json_encode($data));return;
-						}else{
-							//连不上报错
-							$data['code']=500;
-							$data['message']=$res_change[0];
-							print_r(json_encode($data));return;
-						}
-					}
-				}else if($dbha_mode=='mgr'){
+//				if($dbha_mode=='rbr'){
+//					//获取元数据的主节点
+//					$sql_main="select HOST, PORT from performance_schema.replication_connection_configuration where channel_name='kunlun_repl';";
+//					$res_main=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_main);
+//					$res_count=count($res_main);
+//					if($res_count==1){
+//						$sql_change="select hostaddr,port from meta_db_nodes where hostaddr!='$ip' and port!='$port';";
+//						$res_change=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_change);
+//						$change_count=count($res_change);
+//						if($change_count==3){
+//							$res_change_one=$this->Change_model->getMysql($res_change[0],$res_change[1],'pgx','pgx_pwd','kunlun_metadata_db',$sql_main);
+//							$change_count_one=count($res_change_one);
+//							if($change_count_one==1){
+//								$sql_change_two="select hostaddr,port from meta_db_nodes where hostaddr!='$ip' and port!='$port' and hostaddr!='$res_change[0]' and port!='$res_change[1]';";
+//								$res_change_two=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_change_two);
+//								$change_count_two=count($res_change_two);
+//								if($change_count_two==3){
+//									$res_change_three=$this->Change_model->getMysql($res_change_two[0],$res_change_two[1],'pgx','pgx_pwd','kunlun_metadata_db',$sql_main);
+//									$change_count_three=count($res_change_three);
+//									if($change_count_three==3){
+//										$res_main=$res_change_three;
+//									}else if($change_count_three==1){
+//										//连不上报错
+//										$data['code']=500;
+//										$data['message']='rbr元数据找不到主节点';
+//										print_r(json_encode($data));return;
+//									}else{
+//										//连不上报错
+//										$data['code']=500;
+//										$data['message']=$res_change_three[0];
+//										print_r(json_encode($data));return;
+//									}
+//								}else if($change_count_two==1){
+//									//连不上报错
+//									$data['code']=500;
+//									$data['message']='rbr元数据找不到主节点';
+//									print_r(json_encode($data));return;
+//								}else{
+//									//连不上报错
+//									$data['code']=500;
+//									$data['message']=$res_change_two[0];
+//									print_r(json_encode($data));return;
+//								}
+//							}else if($change_count_one==3){
+//								$res_main=$res_change_one;
+//							}else{
+//								//连不上报错
+//								$data['code']=500;
+//								$data['message']=$res_change_one[0];
+//								print_r(json_encode($data));return;
+//							}
+//						}else if($change_count==1){
+//							//连不上报错
+//							$data['code']=500;
+//							$data['message']='rbr元数据找不到主节点';
+//							print_r(json_encode($data));return;
+//						}else{
+//							//连不上报错
+//							$data['code']=500;
+//							$data['message']=$res_change[0];
+//							print_r(json_encode($data));return;
+//						}
+//					}
+//				}else if($dbha_mode=='mgr'){
 					//获取元数据的主节点
 					//$sql_main="select hostaddr,port from meta_db_nodes where member_state='source'";
 					$sql_main="select MEMBER_HOST,MEMBER_PORT from performance_schema.replication_group_members where MEMBER_ROLE = 'PRIMARY' and MEMBER_STATE = 'ONLINE'";
 					$this->load->model('Change_model');
 					$res_main=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_main);
 					//print_r($res_main);exit;
-				}
+//				}
 				if($res_main['code']==200){
 					$f = fopen('./application/config/database.php', 'w+');
 					$file="<?php
