@@ -1,26 +1,20 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <!-- <div class="table-list-search-wrap">
-        <el-input
-          class="list_search_keyword"
-          v-model="listQuery.username"
-          placeholder="可输入用户账号搜索"
-          @keyup.enter.native="handleFilter"
-        />
-        <el-button  icon="el-icon-search" @click="handleFilter">
-          查询
-        </el-button>
-        <el-button  icon="el-icon-refresh-right" @click="handleClear">
-          重置
-        </el-button>
-        <el-button
-          class="filter-item"
-          type="primary"
-          icon="el-icon-plus"
-          @click="handleCreate"
-        >新增</el-button>
-      </div> -->
+      <div class="table-list-search-wrap">
+        <el-select v-model="listQuery.backup_type" placeholder="请选择备份类型" class="list_search_select">
+          <el-option label="存储" value="storage"></el-option>
+          <el-option label="计算" value="compute"></el-option>
+        </el-select>
+        <el-select v-model="listQuery.status" placeholder="请选择状态" class="list_search_select">
+          <el-option label="not_started" value="not_started"></el-option>
+          <el-option label="ongoing" value="ongoing"></el-option>
+          <el-option label="done" value="done"></el-option>
+          <el-option label="failed" value="failed"></el-option>
+        </el-select>
+        <el-button  icon="el-icon-search" @click="handleFilter">查询</el-button>
+        <el-button  icon="el-icon-refresh-right" @click="handleClear">重置</el-button>
+      </div> 
       <!-- <div class="table-list-wrap" v-show="user_add_priv==='Y'">
         <el-button
           class="filter-item"
@@ -52,6 +46,46 @@
         </template>
       </el-table-column>
 
+      <el-table-column
+            prop="nick_name"
+            align="center"
+            label="业务名称">
+      </el-table-column>
+      <el-table-column
+            prop="shard_name"
+            align="center"
+            label="shard名称">
+      </el-table-column>
+      <el-table-column
+            prop="comp_name"
+            align="center"
+            label="计算节点名称">
+      </el-table-column>
+      <el-table-column
+            prop="backup_type"
+            align="center"
+            label="备份类型">
+            <template slot-scope="scope">
+              <span v-if="scope.row.backup_type==='storage'">存储</span>
+              <span v-else-if="scope.row.backup_type==='compute'">计算</span>
+              <span v-else></span>
+            </template>
+      </el-table-column>
+       <el-table-column
+            prop="status"
+            align="center"
+            label="状态">
+            <template slot-scope="scope">
+              <span v-if="scope.row.status==='failed'" style="color:red">{{scope.row.status}}</span>
+              <span v-else>{{scope.row.status}}</span>
+            </template>
+      </el-table-column>
+      <el-table-column
+            prop="info"
+            align="center"
+            :show-overflow-tooltip="true"
+            label="结果信息">
+      </el-table-column>
       <el-table-column
             prop="start_ts"
             align="center"
@@ -88,6 +122,8 @@ export default {
         pageNo: 1,
         pageSize: 10,
         username: '',
+        backup_type:'',
+        status:''
       },
       dialogFormVisible: false,
       dialogEditVisible:false,
@@ -111,6 +147,8 @@ export default {
     },
     handleClear(){
       this.listQuery.username = ''
+      this.listQuery.backup_type = ''
+      this.listQuery.status = ''
       this.listQuery.pageNo = 1
       this.getList()
     },

@@ -5,15 +5,15 @@
 		$db_debug=TRUE;
 		$db['role']=array(
 			'dsn'	=> '',
-			'hostname' => '192.168.0.125',
-			'port' => 6006,
+			'hostname' => '192.168.0.128',
+			'port' => 6001,
 			'username' => 'pgx',
 			'password' => 'pgx_pwd',
 			'database' => 'kunlun_dba_tools_db',
 			'dbdriver' => 'mysqli',
 			'dbprefix' => '',
 			'pconnect' => FALSE,
-			'db_debug' => TRUE,
+			'db_debug' => FALSE,
 			'cache_on' => FALSE,
 			'cachedir' => '',
 			'char_set' => 'utf8',
@@ -28,8 +28,8 @@
 		);
 		$db['default']=array(
 			'dsn'	=> '',
-			'hostname' => '192.168.0.125',
-			'port' => 6006,
+			'hostname' => '192.168.0.128',
+			'port' => 6001,
 			'username' => 'pgx',
 			'password' => 'pgx_pwd',
 			'database' => 'kunlun_metadata_db',

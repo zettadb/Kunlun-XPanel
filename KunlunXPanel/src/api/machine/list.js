@@ -75,3 +75,10 @@ export function importData(data) {
     data: data
   })
 }
+export function setMachineStatus(data){
+  return request({
+    url: `/user/Machine/setMachineStatus`,
+    method: 'post',
+    data
+  })
+}

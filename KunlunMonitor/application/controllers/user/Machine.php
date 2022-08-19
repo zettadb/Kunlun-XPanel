@@ -43,6 +43,26 @@ class Machine extends CI_Controller {
 		$res=$this->Cluster_model->getList($sql);
 		if($res===false){
 			$res=array();
+		}else{
+			foreach ($res as $row=>$value){
+				foreach ($value as $key2 => $value2) {
+					//shard数
+					$color='';
+					if ($key2 == 'node_stats') {
+						if(!empty($value2)) {
+							if($value2=='idle'){
+								$color='#c7c9d1';
+							}else if($value2=='running'){
+								$color='#00ed37';
+							}else if($value2=='dead'){
+								$color='red';
+							}
+							$res[$row]['node_stats_color'] = $color;
+
+						}
+					}
+				}
+			}
 		}
 		$data['code'] = 200;
 		$data['list'] = $res;
@@ -392,15 +412,17 @@ class Machine extends CI_Controller {
 			}
 			$sql_storage="SELECT comp_datadir_used,comp_datadir_avail,datadir_used,datadir_avail,wal_log_dir_used,wal_log_dir_avail,log_dir_used,log_dir_avail from server_nodes_stats where id='$id' ";
 			$res_storage=$this->Cluster_model->getList($sql_storage);
-			array_push($used,($res_storage[0]['comp_datadir_used']/1024));
-			array_push($used,($res_storage[0]['datadir_used']/1024));
-			array_push($used,($res_storage[0]['wal_log_dir_used']/1024));
-			array_push($used,($res_storage[0]['log_dir_used']/1024));
+			if(!empty($res_storage)) {
+				array_push($used,($res_storage[0]['comp_datadir_used']/1024));
+				array_push($used,($res_storage[0]['datadir_used']/1024));
+				array_push($used,($res_storage[0]['wal_log_dir_used']/1024));
+				array_push($used,($res_storage[0]['log_dir_used']/1024));
 
-			array_push($avail,($res_storage[0]['comp_datadir_avail']/1024));
-			array_push($avail,($res_storage[0]['datadir_avail']/1024));
-			array_push($avail,($res_storage[0]['wal_log_dir_avail']/1024));
-			array_push($avail,($res_storage[0]['log_dir_avail']/1024));
+				array_push($avail,($res_storage[0]['comp_datadir_avail']/1024));
+				array_push($avail,($res_storage[0]['datadir_avail']/1024));
+				array_push($avail,($res_storage[0]['wal_log_dir_avail']/1024));
+				array_push($avail,($res_storage[0]['log_dir_avail']/1024));
+			}
 		}
 
 		$data['used']=$used;
@@ -410,7 +432,7 @@ class Machine extends CI_Controller {
 	//获取集群信息
 	public function getAllMachineStatus(){
 		//获取集群数据
-		$sql="select hostaddr,node_stats as status from server_nodes where hostaddr!='pseudo_server_useless'";
+		$sql="select hostaddr,node_stats as status from server_nodes where hostaddr!='pseudo_server_useless' group by hostaddr";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		$data['code'] = 200;
@@ -431,5 +453,31 @@ class Machine extends CI_Controller {
 		//$string=json_decode(@file_get_contents('php://input'),true);
 		//$fileInfo = $_FILES["upFile"];
 		print_r($_FILES);exit;
+	}
+	public function setMachineStatus(){
+		//获取token
+		$arr = apache_request_headers();//获取请求头数组
+		$token=$arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));return;
+		}
+		//判断参数
+		$string=json_decode(@file_get_contents('php://input'),true);
+//		//验证该账户是否有删除机器的权限
+//		$this->load->model('Login_model');
+//		$res_priv=$this->Login_model->authority($string['user_name'],'machine_drop_priv');
+//		if($res_priv==true){
+			//调接口
+			$this->load->model('Cluster_model');
+			$post_data=str_replace("\\/", "/", json_encode($string));
+			$post_arr = $this->Cluster_model->postData($post_data,$this->post_url);
+			$post_arr = json_decode($post_arr, TRUE);
+			$data=$post_arr;
+//		}else{
+//			$data['error_info'] = '该帐户不具备删除计算机权限';
+//		}
+		print_r(json_encode($data));
 	}
 }

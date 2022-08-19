@@ -24,23 +24,25 @@
         <!-- <el-button style="padding:0px;">
           <Upload/> 
         </el-button> -->
-        <el-button
+        <!-- <el-button
           class="filter-item"
           type="primary"
           icon="el-icon-upload2"
           @click="handleUpload"
           v-if="machine_add_priv==='Y'"
-        >批量导入</el-button>
+        >批量导入</el-button> -->
         <div v-text="info" v-show="installStatus===true" class="info"></div>
       </div>
       <div class="table-list-wrap"></div>
     </div>
     <el-table
+    ref="multipleTable"
       :key="tableKey"
       v-loading="listLoading"
       :data="list"
       border
       highlight-current-row
+      :row-class-name="colorStyle"
       style="width: 100%;margin-bottom: 20px;">
       <el-table-column
         type="index"
@@ -85,8 +87,13 @@
       <el-table-column
         prop="node_stats"
         align="center"
-        label="状态">
+        label="状态" width="170">
         <template slot-scope="scope">
+          <!-- @focus="getDatalist(scope.row.node_stats)" -->
+          <!-- <el-select  ref="node_stats" v-model="scope.row.node_stats"  placeholder="请选择"  @change="chageTextColor($event,'node_stats',scope.row,scope.$index)">
+            <el-option v-for="item in nodeStatsList" :key="item.id" :label="item.label" :value="item.id" v-html="'<span style=color:'+item.color+'>'+item.label+'</span>'">
+            </el-option>
+          </el-select> -->
           <span v-if="scope.row.node_stats==='running'" style="color: #00ed37">在线</span>
           <span v-else-if="scope.row.node_stats==='idle'" style="color: #c7c9d1;">不允许再装实例</span>
           <span v-else-if="scope.row.node_stats==='dead'" style="color: red">离线</span>
@@ -188,7 +195,7 @@
         <el-button type="primary" @click="dialogStatus==='create'?createData():updateData(row)"  v-show="!dialogDetail">确认</el-button>
       </div>
     </el-dialog>
-  <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogUploadVisible" custom-class="single_dal_view">
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogUploadVisible" custom-class="single_dal_view">
       <el-form
         ref="dataForm"
         :rules="rules"
@@ -227,17 +234,48 @@
         <el-button type="primary" @click="uploadDate()"  v-show="!dialogDetail">上传</el-button>
       </div>
     </el-dialog>
+     <!--状态框 -->
+    <el-dialog :visible.sync="dialogStatusVisible" custom-class="single_dal_view" width="400px"  :close-on-click-modal="false">
+      <div class="block">
+        <el-timeline>
+          <el-timeline-item
+            v-for="(activity, index) in activities"
+            :key="index"
+            :icon="activity.icon"
+            :type="activity.type"
+            :color="activity.color"
+            :size="activity.size"
+            :timestamp="activity.timestamp">
+            {{activity.content}}
+          </el-timeline-item>
+        </el-timeline>
+      </div>
+    </el-dialog>
 
-
+  <el-dialog :title="job_id" :visible.sync="dialogStatusVisible" custom-class="single_dal_view" :close-on-click-modal="false" :before-close="beforeDestory">
+      <div style="width: 100%;background: #fff;padding:0 20px;">
+        <el-steps direction="vertical" :active="comp_active" >
+          <el-step
+              v-for="(item,index) of activities"
+              :key="index"
+              :title="item.title"
+              :icon="item.icon"
+              :status="item.status"
+              :description="item.description"
+          >
+          </el-step>
+        </el-steps>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
- import { messageTip,handleCofirm } from "@/utils";
- import { getMachineList,getNodes,addMachine,delMachine,importData} from '@/api/machine/list'
+ import { messageTip,handleCofirm,getNowDate } from "@/utils";
+ import { getMachineList,getNodes,addMachine,delMachine,importData,setMachineStatus} from '@/api/machine/list'
  import { pgEnable,getEvStatus } from '@/api/cluster/list'
  //import {addMachine,delMachine,getEvStatus,pEnable,update} from '@/api/machine/listInterface'
  import {getAllMachineStatus} from '@/api/cluster/listInterface'
- import {version_arr,timestamp_arr,machine_type_arr} from "@/utils/global_variable"
+ import {version_arr,timestamp_arr,machine_type_arr,node_stats_arr} from "@/utils/global_variable"
  import Pagination from '@/components/Pagination' 
  //import { v4 as uuidv4 } from 'uuid';
  // { color } from 'echarts/lib/export';
@@ -367,6 +405,7 @@ export default {
         hostaddr: '',
       },
       machine_types:machine_type_arr,
+      nodeStatsList:node_stats_arr,
       temp: {
         hostaddr: '',
         rack_id:'',
@@ -402,6 +441,8 @@ export default {
       machine_priv:JSON.parse(sessionStorage.getItem('priv')).machine_priv,
       storage_status:false,
       comp_status:false,
+      comp_active:1,
+      job_id:null,
 
       file: {},
       files: {
@@ -410,7 +451,9 @@ export default {
       },
       fileName: "",
       fileList: [],
-
+      activities: [],
+      dialogStatusVisible:false,
+      timer:null,
       rules: {
         hostaddr: [
           { required: true, trigger: "blur",validator: validateIPAddress },
@@ -452,6 +495,60 @@ export default {
     this.getList()
   },
   methods:{
+    colorStyle({row,rowIndex}){
+      this.$nextTick(()=>{ 
+        // this.$refs.multipleTable.$el.children[2].children[0].children[1].children[rowIndex].children[6].children[0].children[0].children[0].children[0].style.color=''+ row.node_stats_color+'';
+      });
+    },
+    chageTextColor($event, selectedRef,row,index) {
+       //设置机器的状态
+        // const temp={};
+        // const paras={};
+        // temp.user_name=sessionStorage.getItem('login_username');
+        // temp.job_id='';
+        // temp.version=version_arr[0].ver;
+        // temp.timestamp=timestamp_arr[0].time+'';
+        // temp.job_type='set_machine';
+        // //必填项
+        // paras.hostaddr=row.hostaddr;
+        // paras.node_stats=row.node_stats;
+        // temp.paras=paras;
+        // setMachineStatus(temp).then(response=>{
+        //   let res = response;
+        //   if(res.status=='accept'){
+        //   }else if(res.status=='ongoing'){
+        //     this.message_tips = '系统正在操作中，请等待一会！';
+        //     this.message_type = 'error';
+        //     messageTip(this.message_tips,this.message_type);
+        //   }else{
+        //     this.message_tips = res.error_info;
+        //     this.message_type = 'error';
+        //     messageTip(this.message_tips,this.message_type);
+        //   }
+        // })
+      let color = this.getColor($event)
+      // 改变下拉框颜色值
+      //console.log(this.$refs.multipleTable.$el.children[2].children[0].children[1].children[index].children[6].children[0].children[0].children[0].children[0].style.color)
+      //this.$refs[selectedRef].$el.children[0].children[0].style.color = '' + color + ''
+      //this.$nextTick(()=>{ 
+        //console.log(this.$refs.multipleTable.$el.children[2].children[0].children[1].children[index].children[6].children[0].children[0].children[0].children[0].style.color);
+        this.$refs.multipleTable.$el.children[2].children[0].children[1].children[index].children[6].children[0].children[0].children[0].children[0].style.color=''+color+'';
+        //console.log(this.$refs.multipleTable.$el.children[2].children[0].children[1].children[index].children[6].children[0].children[0].children[0].children[0].style.color);
+      //});
+      
+    },
+    getColor(value) {
+      for (const i in this.nodeStatsList) {
+        if (this.nodeStatsList[i].id === value) {
+          return this.nodeStatsList[i].color
+        }
+      }
+    },
+  //清除定时器
+  beforeDestory(){
+    clearInterval(this.timer)
+    this.dialogStatusVisible=false;
+  },
   beforeUpload(file){
       console.log(file, "文件");
       this.files = file;
@@ -600,50 +697,63 @@ export default {
           this.temp.port_range=this.temp.start_port+'-'+this.temp.end_port;
           if(!this.temp.rack_id){
             this.temp.rack_id='0'
-           //his.$delete(this.temp,'rack_id');
           }
           this.$delete(this.temp,'start_port');
           this.$delete(this.temp,'end_port');
           tempData.paras=Object.assign({}, this.temp);
-          //console.log(tempData);return;
           //发送接口
           addMachine(tempData).then(response=>{
             let res = response;
-            this.message_tips = '正在新增计算机...';
-            this.message_type = 'success';
-            if(res.error_code=='0'){
+            //同步接口
+            // this.message_tips = '正在新增计算机...';
+            // this.message_type = 'success';
+            // if(res.error_code=='0'){
+            //   this.dialogFormVisible = false;
+            //   this.message_tips = '新增计算机成功';
+            //   this.message_type = 'success';
+            //   this.dialogFormVisible = false;
+            //   this.getList();
+            if(res.status=='accept'){
               this.dialogFormVisible = false;
-              this.message_tips = '新增计算机成功';
-              this.message_type = 'success';
-              // let i=0;
-              // let timer = setInterval(() => {
-              //   this.getStatus(timer,res.job_id,i++)
-              // }, 1000)
+              this.job_id='新增计算机('+res.job_id+')';
+              this.dialogStatusVisible=true;
+              this.activities=[];
+              const newArr={
+                title:'正在新增计算机',
+                status: 'process',
+                icon: 'el-icon-loading',
+                description:''
+              };
+              this.activities.push(newArr)
+              let i=0;
+              let info='新增';
+              let timer = setInterval(() => {
+                this.getStatus(timer,res.job_id,i++,info)
+              }, 1000)
 
               //重启promentheus
-              const prometheus = {};
-              prometheus['job_id'] = '';
-              prometheus['job_type']='update_prometheus';
-              prometheus['version']=version_arr[0].ver;
-              prometheus['timestamp']=timestamp_arr[0].time+'';
-              prometheus['user_name']=sessionStorage.getItem('login_username');
-              prometheus['paras']={};
-              pgEnable(prometheus).then((resp) => {
-                // if(res.result=='accept'){
-                //   let j=0;
-                //   let timerp = setInterval(() => {
-                //   this.getStatus(timerp,prometheus['job_id'],j++)
-                //   }, 1000)
-                // }
-              })
-              this.dialogFormVisible = false;
-              this.getList();
+              // const prometheus = {};
+              // prometheus['job_id'] = '';
+              // prometheus['job_type']='update_prometheus';
+              // prometheus['version']=version_arr[0].ver;
+              // prometheus['timestamp']=timestamp_arr[0].time+'';
+              // prometheus['user_name']=sessionStorage.getItem('login_username');
+              // prometheus['paras']={};
+              // pgEnable(prometheus).then((resp) => {
+              //   // if(res.result=='accept'){
+              //   //   let j=0;
+              //   //   let timerp = setInterval(() => {
+              //   //   this.getStatus(timerp,prometheus['job_id'],j++)
+              //   //   }, 1000)
+              //   // }
+              // })
             }
             else{
               this.message_tips = res.error_info;
               this.message_type = 'error';
+              messageTip(this.message_tips,this.message_type);
             }
-            messageTip(this.message_tips,this.message_type);
+            //messageTip(this.message_tips,this.message_type);
           })
         }
       });
@@ -694,29 +804,30 @@ export default {
               //   this.getStatus(timer,res.job_id,i++)
               // }, 1000)
               //重启promentheus
-              const prometheus = {};
-              prometheus['job_id'] = '';
-              prometheus['job_type']='update_prometheus';
-              prometheus['version']=version_arr[0].ver;
-              prometheus['timestamp']=timestamp_arr[0].time+'';
-              prometheus['user_name']=sessionStorage.getItem('login_username');
-              prometheus['paras']={};
-              pgEnable(prometheus).then((resp) => {
-                // if(resp.code==200){
-                //   let j=0;
-                //   let timerp = setInterval(() => {
-                //   this.getStatus(timerp,prometheus['job_id'],j++)
-                //   }, 1000)
-                // }
-              })
-              this.dialogFormVisible = false
-              this.getList();
+              // const prometheus = {};
+              // prometheus['job_id'] = '';
+              // prometheus['job_type']='update_prometheus';
+              // prometheus['version']=version_arr[0].ver;
+              // prometheus['timestamp']=timestamp_arr[0].time+'';
+              // prometheus['user_name']=sessionStorage.getItem('login_username');
+              // prometheus['paras']={};
+              // pgEnable(prometheus).then((resp) => {
+              //   // if(resp.code==200){
+              //   //   let j=0;
+              //   //   let timerp = setInterval(() => {
+              //   //   this.getStatus(timerp,prometheus['job_id'],j++)
+              //   //   }, 1000)
+              //   // }
+              // })
+
+              //this.dialogFormVisible = false
+              //this.getList();
             }
             else{
               this.message_tips = res.error_info;
               this.message_type = 'error';
+              messageTip(this.message_tips,this.message_type);
             }
-            messageTip(this.message_tips,this.message_type);
 
           });
         }
@@ -735,34 +846,55 @@ export default {
           //console.log(tempData);return;
           delMachine(tempData).then((response)=>{
             let res = response;
-            this.message_tips = '正在删除计算机...';
-            this.message_type = 'success';
-            if(res.error_code=='0'){
+            //同步接口
+            // this.message_tips = '正在删除计算机...';
+            // this.message_type = 'success';
+            // if(res.error_code=='0'){
+            //   this.dialogFormVisible = false;
+            //   this.message_tips = '删除计算机成功';
+            //   this.message_type = 'success';
+            //   this.getList();
+            //异步接口
+            if(res.status=='accept'){
               this.dialogFormVisible = false;
-              this.message_tips = '删除计算机成功';
-              this.message_type = 'success';
+              this.job_id='删除计算机('+res.job_id+')';
+              this.dialogStatusVisible=true;
+              this.activities=[];
+             const newArr={
+                title:'正在删除计算机',
+                status: 'process',
+                icon: 'el-icon-loading',
+                description:''
+              };
+              this.activities.push(newArr)
+              let info='删除';
+              let i=0;
+              let timer = setInterval(() => {
+                this.getStatus(timer,res.job_id,i++,info)
+              }, 1000)
                 //重启promentheus
-              const prometheus = {};
-              prometheus['job_id'] = '';
-              prometheus['job_type']='update_prometheus';
-              prometheus['version']=version_arr[0].ver;
-              prometheus['timestamp']=timestamp_arr[0].time+'';
-              prometheus['user_name']=sessionStorage.getItem('login_username');
-              prometheus['paras']={};
-              pgEnable(prometheus).then((resp) => {
-                // if(resp.code==200){
-                //   let j=0;
-                //   let timerp = setInterval(() => {
-                //   this.getStatus(timerp,prometheus['job_id'],j++)
-                //   }, 1000)
-                // }
-              })
-              this.getList();
+              // const prometheus = {};
+              // prometheus['job_id'] = '';
+              // prometheus['job_type']='update_prometheus';
+              // prometheus['version']=version_arr[0].ver;
+              // prometheus['timestamp']=timestamp_arr[0].time+'';
+              // prometheus['user_name']=sessionStorage.getItem('login_username');
+              // prometheus['paras']={};
+              // pgEnable(prometheus).then((resp) => {
+              //   // if(resp.code==200){
+              //   //   let j=0;
+              //   //   let timerp = setInterval(() => {
+              //   //   this.getStatus(timerp,prometheus['job_id'],j++)
+              //   //   }, 1000)
+              //   // }
+              // })
+              
             }else{
               this.message_tips = res.error_info;
               this.message_type = 'error';
+              messageTip(this.message_tips,this.message_type);
             }
-            messageTip(this.message_tips,this.message_type);
+            //messageTip(this.message_tips,this.message_type);
         })
         }).catch(() => {
             console.log('quxiao')
@@ -799,7 +931,7 @@ export default {
         this.$refs.dataForm.clearValidate();
       });
     },
-    getStatus (timer,data,i) {
+    getStatus (timer,data,i,info) {
       setTimeout(()=>{
         const postarr={};
         postarr.job_type='get_status';
@@ -810,15 +942,16 @@ export default {
         getEvStatus(postarr).then((res) => {
         if(res.status=='done'||res.status=='failed'){
           clearInterval(timer);
-          this.info=res.error_info;
           if(res.status=='done'){
+            this.activities[0].title=info+'计算机成功'
+            this.activities[0].icon='el-icon-circle-check'
+            this.activities[0].status='success'
             this.getList();
           }else{
-            this.installStatus = true;
+            this.activities[0].title=info+'计算机失败'
+            this.activities[0].icon='el-icon-circle-close'
+            this.activities[0].status='error'
           }
-        }else{
-          this.info=res.error_info;
-          this.installStatus = true;
         }
       });
         if(i>=86400){
@@ -830,8 +963,20 @@ export default {
   },
 };
 </script>
-<style scoped>
+<style >
 .right_input_min{
   width:25%;
 }
+/* .el-table .el-input__inner{
+  color: #00ed37;
+} */
+/* .el-table .el-input__inner .cell-green{
+  color: #00ed37;
+}
+ .el-table .el-input__inner .cell-red{
+  color: red;
+}
+ .el-table .el-input__inner .cell-grey{
+  color: #c7c9d1;
+} */
 </style>

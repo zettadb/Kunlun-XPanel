@@ -192,8 +192,8 @@
           </el-input>
         </el-form-item>
         <el-form-item label="缓冲池大小:" prop="buffer_pool"  v-show="dialogStatus==='create'||'detail'">
-          <el-input  v-model="temp.buffer_pool" class="right_input"  placeholder="缓冲池大小单位为MB" :disabled="dialogStatus==='detail'">
-            <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">MB</i>
+          <el-input  v-model="temp.buffer_pool" class="right_input"  placeholder="缓冲池大小单位为GB" :disabled="dialogStatus==='detail'">
+            <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">GB</i>
           </el-input>
         </el-form-item>
         <el-form-item label="每shard中强同步备机应当个数:" prop="fullsync_level"  v-show="dialogStatus==='create'||'detail'">
@@ -225,11 +225,11 @@
           <el-form-item label="每个存储节点的cpu核数:" prop="per_storage_node_cpu_cores">
             <el-input  v-model="temp.per_storage_node_cpu_cores" class="right_input"  placeholder="请输入每个存储节点的cpu核数"/>
           </el-form-item>
-          <!-- <el-form-item label="每个存储节点innodb缓冲池大小:" prop="per_storage_node_innodb_buffer_pool_size">
+          <el-form-item label="每个存储节点innodb缓冲池大小:" prop="per_storage_node_innodb_buffer_pool_size">
             <el-input  v-model="temp.per_storage_node_innodb_buffer_pool_size" class="right_input"  placeholder="请输入每个存储节点innodb缓冲池大小">
               <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">MB</i>
             </el-input>
-          </el-form-item> -->
+          </el-form-item>
           <el-form-item label="每个存储节点rocksdb缓冲池大小:" prop="per_storage_node_rocksdb_buffer_pool_size">
             <el-input  v-model="temp.per_storage_node_rocksdb_buffer_pool_size" class="right_input"  placeholder="请输入每个存储节点rocksdb缓冲池大小">
               <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">MB</i>
@@ -253,6 +253,7 @@
         <el-button type="primary" @click="dialogStatus==='create'?createData():updateData(row)"  v-show="!dialogDetail">确认</el-button>
       </div>
     </el-dialog>
+
     <!-- 添加 -->
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogNodeVisible" custom-class="single_dal_view"  :close-on-click-modal="false">
       <el-form
@@ -611,119 +612,34 @@
         </el-timeline>
       </div>
     </el-dialog>
-    <el-dialog :title="job_id" :visible.sync="dialogStatusShowVisible" custom-class="single_dal_view" :close-on-click-modal="false" :before-close="beforeDestory">
-      <!-- <div style="height: 400px;">
-        <el-steps direction="vertical" :active="active" finish-status="success">
-          <el-step
-              v-for="(item,index) of stepParams"
-              :key="index"
-              :title="item.title"
-              :icon="item.icon"
-              :status="item.status"
-              :description="item.description"
-              :class="stepSuc.includes(index) ? 'stepSuc':'stepErr'"
-              @click.native="handleStep(index)"
-          />
-        </el-steps>
-      </div> -->
-     <!-- <div class="stepComponent" >
-    <div class="approvalProcess" >
-        <el-steps :active="active" finish-status="success" direction="vertical" >
-           <el-step :title="item.label"  v-for="item in approvalProcessProject" :id="item.id">
-            <template slot="description" >
-             <div class="step-row" v-for="item in approvalProcessProject">
-               <table width="100%" border="0" cellspacing="0" cellpadding="0" class="processing_content">
-                         <tr>
-                            <td style="color:#98A6BE">
-                                <div class="processing_content_detail" style="float:left;width:70%"><span >192.168.0.136_47001</span></div> 
-                              <div class="processing_content_detail" style="float:right;"><span ><i class="el-icon-time"></i>&nbsp;&nbsp;昨天12:24</span> </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                                <div class="processing_content_detail" style="float:left;width:70%">
-                                <div style="float:left;width: 2px;height: 20px; background:#C7D4E9;margin-left:10px;margin-right:10px"></div> 
-                                <span style="color:#919FB8">ongoing</span></div> 
-                            </td>
-                          </tr>
-                </table>
-           </div>
-         </template>
- 
-           </el-step>
-        </el-steps>
-         <el-button style="margin-top: 12px;" @click="next">下一步</el-button>
- 
-  </div>
- 
-</div> -->
-      
-      <!-- <div style="width: 100%;background: #fff;padding:20px; ">
-      <el-steps class="hoverSteps" direction="vertical" :space="80" :active="2">
-        <el-step v-for="(value, key) in lists" :key="key">
-          <template slot="description">
-              <div @mouseover="mouseOver(key)"
-                   @mouseleave="mouseLeave(key)" :id="key">
-                   <div class="stepNoBtn" :class="current===key? 'stepBtn':''">
-                      <div class="step-title-font">{{ value.title }}</div>
-                    <div>{{value.description}}</div>
-                    <div class="btnPosition">
-                      <el-button v-if="current===key" size="mini" type="primary">详情</el-button>
-                    </div>
-                   </div>
-            </div>
-          </template>
-        </el-step>
-      </el-steps>
-    </div> -->
-
-      <div style="width: 100%;background: #fff;padding:0 20px;">
+    <!-- 重做备机状态框 -->
+     <el-dialog :title="job_id" :visible.sync="dialogStatusShowVisible" custom-class="single_dal_view" :close-on-click-modal="false">
+      <div style="width: 100%;background: #fff;padding:0 20px;" class="block">
         <el-steps direction="vertical" :active="init_active">
-          <el-step :title="init_title" icon="el-icon-more" v-if="init_show"></el-step>
-          <el-step :title="computer_title" :status="computer_state" :icon="computer_icon" :description="computer_description" v-if="computer_show">
+          <el-step 
+          :title="items.title"  
+          v-for="(items, key) in statusList" 
+          :key="key" 
+          :icon="items.icon" 
+          :status="items.status"
+          :description="items.description">
             <template slot="description">
-              <span>{{computer_description}}</span>
+              <span>{{items.description}}</span>
             <div style="padding:20px;">
-              <el-steps direction="vertical" :active="comp_active" >
+              <el-steps direction="vertical" :active="second_active" >
                 <el-step
-                    v-for="(item,index) of computer"
+                    v-for="(item,index) of statusList[key].second"
                     :key="index"
                     :title="item.title"
                     :icon="item.icon"
                     :status="item.status"
                     :description="item.description"
                 >
-                <!-- <template slot="description">
-                  <el-button size="mini" type="primary"  @click="thisDetail(item.computer_id)">详情</el-button>
-                </template> -->
                 </el-step>
               </el-steps>
             </div>
             </template>
           </el-step>
-          <el-step :title="shard_title"  :status="storage_state" :icon="shard_icon" :description="shard_description" v-if="shard_show">
-            <template slot="description">
-              <span>{{shard_description}}</span>
-            <div style="padding:20px;">
-              <el-steps direction="vertical" :active="shard_active" >
-                <el-step
-                    v-for="(item,index) of shard"
-                    :key="index"
-                    :title="item.title"
-                    :icon="item.icon"
-                    :status="item.status"
-                    :description="item.description"
-                    @click.native="thisDetail(item.shard_id)"
-                >
-                <!-- <template slot="description">
-                  <el-button size="mini" type="primary" @click="thisDetail(item.shard_id)">详情</el-button>
-                </template> -->
-                </el-step>
-              </el-steps>
-            </div>
-            </template>
-          </el-step>
-          <!-- <el-step :title="finish_title" :icon="finish_icon" :description="finish_description" color='red'></el-step> -->
         </el-steps>
       </div>
     </el-dialog>
@@ -962,7 +878,7 @@ export default {
         shards_count:'1',
         snode_count: '3',
         comp_count:'1',
-        buffer_pool:'1024',
+        buffer_pool:'1',
         max_connections:'6',
         per_computing_node_cpu_cores:'8',
         per_computing_node_max_mem_size:'',
@@ -1194,6 +1110,62 @@ export default {
       expondResult:false,
       outoExpandInfoVisible:false,
       policys:policy_arr,
+      statusList:[
+        // {
+        //   title: '192.168.0.136_47001;',
+        //   icon: 'el-icon-loading',
+        //   status: 'process',
+        //   description:'11',
+        //   second:[
+        //     {
+        //     title: '1',
+        //     icon: 'el-icon-loading',
+        //     status: 'process',
+        //     description:''
+        //     },
+        //     {
+        //     title: '2',
+        //     icon: 'el-icon-loading',
+        //     status: 'process',
+        //     description:''
+        //     },
+        //     {
+        //     title: '3',
+        //     icon: 'el-icon-loading',
+        //     status: 'process',
+        //     description:''
+        //     },
+        //     {
+        //     title: '4',
+        //     icon: 'el-icon-loading',
+        //     status: 'process',
+        //     description:''
+        //     },
+        //     {
+        //     title: '5',
+        //     icon: 'el-icon-loading',
+        //     status: 'process',
+        //     description:''
+        //     },
+        
+        // ]
+        // },
+        // {
+        //   title: '192.168.0.136_37001;',
+        //   icon: 'el-icon-loading',
+        //   status: 'process',
+        //   computer_id:'101',
+        //   description:'22'
+        // },
+        // {
+        //   title: '192.168.0.125_37001;',
+        //   icon: 'el-icon-loading',
+        //   status: 'process',
+        //   computer_id:'101',
+        //   description:''
+        // },
+      ],
+      second_active:2,
       // active: 0,
       //  approvalProcessProject:[
       //      {id:'0',label: "computer_step"},
@@ -1590,7 +1562,7 @@ export default {
         shards_count:'1',
         snode_count: '3',
         comp_count:'1',
-        buffer_pool:'1024',
+        buffer_pool:'1',
         max_connections:'6',
         per_computing_node_cpu_cores:'8',
         per_computing_node_max_mem_size:'',
@@ -1643,32 +1615,20 @@ export default {
         this.machines = res.list;
         this.minMachine=0;
         this.machineTotal=res.total;
-        let if_machines=false;
-        let if_comp_machine=false;
-        if(this.machines==null||this.machines.length==0||this.machines==false){
-          messageTip('请先添加计算机再新增集群!','error');
-        }else{
-          if_machines=true;
-          getCompMachine().then((res) => {
-            this.comp_machines = res.list;
-            this.comp_minMachine=0;
-            this.comp_machineTotal=res.total;
-            if(this.comp_machines==null||this.comp_machines.length==0||this.comp_machines==false){
-            messageTip('请先添加计算机再新增集群!','error');
-            }else{
-              if_comp_machine=true;
-              if(if_machines===true&&if_comp_machine===true){
-                this.dialogFormVisible = true;
-                this.dialogDetail = false;
-              }else{
-                this.dialogFormVisible = false;
-                this.dialogDetail = false;
-              }
-            }
-          });
+        if(this.machines==null||this.machines.length==0){
+          messageTip('请先添加存储类型的计算机!','error');
         }
       });
-     
+      getCompMachine().then((res) => {
+        this.comp_machines = res.list;
+        this.comp_minMachine=0;
+        this.comp_machineTotal=res.total;
+        if(this.comp_machines==null||this.comp_machines.length==0){
+         messageTip('请先添加计算类型的计算机!','error');
+        }
+      });
+      this.dialogFormVisible = true;
+      this.dialogDetail = false;
       // const temp={};
       // temp.job_type='get_meta_mode';
       // temp.version=version_arr[0].ver;
@@ -1681,9 +1641,9 @@ export default {
       //     this.hamodeData=ha_mode;
       //   };
       // });
-      // this.$nextTick(() => {
-      //   this.$refs.dataForm.clearValidate();
-      // });
+      this.$nextTick(() => {
+        this.$refs.dataForm.clearValidate();
+      });
     },
     createData() {
       this.$refs["dataForm"].validate((valid) => {
@@ -1737,9 +1697,15 @@ export default {
              paras.computer_password=tempData.computer_password;
           }
           //0和没有该字段为正常模式，1为小内存模式
-          paras.dbcfg='0';
+          paras.dbcfg='1';
           clusterData.paras=paras;
-          //console.log(clusterData);return;
+
+          let i=0;
+          let info='新增'
+          this.dialogFormVisible = false;
+          this.dialogStatusShowVisible=true;
+          this.getFStatus(this.timer,'5148',i++,info)
+          console.log(clusterData);return;
           //发送接口
           createCluster(clusterData).then(response=>{
             let res = response;
@@ -1760,7 +1726,7 @@ export default {
               // this.message_type = 'success';
 
               //把之前的数据清空
-              this.computer=[];this.shard=[];this.computer_state='';this.storage_state='';this.computer_title='';this.computer_icon='';this.shard_icon='';this.shard_title='';this.comp_active=0;this.shard_active=0;this.strogemachines=[];this.init_title='';this.init_active=0;this.finish_title='';this.finish_icon='';this.finish_description='';this.computer_description='';this.shard_description='';this.job_id='';this.timer=null;
+              this.computer=[];this.shard=[];this.computer_state='';this.storage_state='';this.computer_title='';this.computer_icon='';this.shard_icon='';this.shard_title='';this.comp_active=0;this.shard_active=0;this.strogemachines=[];this.init_title='';this.init_active=0;this.finish_title='';this.finish_icon='';this.finish_description='';this.computer_description='';this.shard_description='';this.job_id='';this.timer=null;this.statusList=[];
               let info='新增'
               this.init_show=true;
               //调获取状态接口
@@ -2346,8 +2312,7 @@ export default {
               this.dialogFormVisible = false;
               this.dialogStatusShowVisible=true;
               //把之前的数据清空
-              this.computer=[];this.shard=[];this.computer_state='';this.storage_state='';this.computer_title='';this.computer_icon='';this.shard_icon='';this.shard_title='';this.comp_active=0;this.shard_active=0;this.strogemachines=[];this.init_title='';this.init_active=0;this.finish_title='';this.finish_icon='';this.finish_description='';this.computer_description='';this.shard_description='';this.job_id='';this.timer=null;this.shard_show=true;
-              this.computer_show=true;
+              this.computer=[];this.shard=[];this.computer_state='';this.storage_state='';this.computer_title='';this.computer_icon='';this.shard_icon='';this.shard_title='';this.comp_active=0;this.shard_active=0;this.strogemachines=[];this.init_title='';this.init_active=0;this.finish_title='';this.finish_icon='';this.finish_description='';this.computer_description='';this.shard_description='';this.job_id='';this.timer=null;this.statusList=[];
               let info='删除' ;
               this.init_show=true;
               //调获取状态接口
@@ -2616,11 +2581,11 @@ export default {
       restoreCluster(restoreData).then((response) => {
         let res = response;
         if(res.status=='accept'){
-          this.dialogRetreatedVisible = false;
+          this.dialogRestoreVisible = false;
           this.dialogStatusVisible=true;
           this.activities=[];
           const newArr={
-            content:'正在回档集群...',
+            content:'正在恢复集群...',
             timestamp: getNowDate(),
             size: 'large',
             type: 'primary',
@@ -2630,8 +2595,7 @@ export default {
           //this.message_tips = '正在恢复...';
           //this.message_type = 'success';
           //调获取状态接口
-          let i=0;this.timer=null;
-          this.getStatus(this.timer,res.job_id,i++)
+          let i=0;
           this.timer = setInterval(() => {
             this.getStatus(this.timer,res.job_id,i++)
           }, 5000)
@@ -2822,1312 +2786,505 @@ export default {
         postarr.timestamp=timestamp_arr[0].time+'';
         postarr.paras={};
         this.job_id='任务ID:'+data;
-        getEvStatus(postarr).then((ress) => {
+        getEvStatus(postarr).then((res) => {
           //新增集群、删除集群
           if(info=='新增'||info=='删除'){
-            if(ress.attachment!==null){
-              const steps=(ress.attachment.job_steps).split(',');
-              //计算
-              if(ress.attachment.computer_state=='ongoing'){
-                this.computer_state='process';
-                this.computer_icon='el-icon-loading'
-                this.computer_title='正在'+info+steps[1];
-              }else if(ress.attachment.computer_state=='done'){
-                this.computer_state='success';
-                this.computer_icon='el-icon-circle-check'
-                this.computer_title=info+steps[1]+'成功';
-                //遍历计算节点改状态
-                if(this.computer.length>0){
-                  for(let b=0;b<ress.attachment.computer_step.length;b++){
-                    if(ress.attachment.computer_step[b].computer_state=='done'){
-                      for(let c=0;c<this.computer.length;c++){
-                        const arr=ress.attachment.computer_step[b].computer_hosts.substr(0,ress.attachment.computer_step[b].computer_hosts.length-1);
-                        const computer_hosts=arr.split(';');
-                        for(let e=0;e<computer_hosts.length;e++){
-                          if(this.computer[c].title==computer_hosts[e]){
-                            this.computer[c].icon='el-icon-circle-check';
-                            this.computer[c].status='success';
-                          }
-                        }
-                      }
-                    }
+            if(res.attachment!==null){
+              if(this.statusList.length==0){
+                let statusgoing={}
+                if(res.status=='failed'){
+                  statusgoing={title:info+'失败',icon:'el-icon-circle-close',status:'error',description:res.error_code,second:[]}
+                  this.statusList.push(statusgoing)
+                  clearInterval(timer);
+                }else{
+                  const steps=(res.attachment.job_steps).split(',');
+                  let secondgoing={}
+                  let secondlist=[];
+                  for(let s=0;s<steps.length;s++){
+                    statusgoing={title:'正在'+info+steps[s],icon:'el-icon-loading',status:'process',description:'',second:secondlist}
+                    this.statusList.push(statusgoing)
+                    console.log(this.statusList);
                   }
-                }
-                //如果存储节点done，计算节点failed,ress.status='ongoing' 需要停止请求
-              }else if(ress.attachment.computer_state=='failed'){
-                this.computer_state='error';
-                this.computer_icon='el-icon-circle-close'
-                this.computer_title=info+steps[1]+'失败';
-                //遍历计算节点改状态
-                if(this.computer.length>0){
-                  for(let b=0;b<ress.attachment.computer_step.length;b++){
-                    if(ress.attachment.computer_step[b].computer_state=='failed'){
-                      for(let c=0;c<this.computer.length;c++){
-                        const arr=ress.attachment.computer_step[b].computer_hosts.substr(0,ress.attachment.computer_step[b].computer_hosts.length-1);
-                        const computer_hosts=arr.split(';');
-                        for(let e=0;e<computer_hosts.length;e++){
-                          if(this.computer[c].title==computer_hosts[e]){
-                            this.computer[c].icon='el-icon-circle-close';
-                            this.computer[c].status='error';
-                          }
-                        }
-                      }
-                      this.computer_description=ress.attachment.computer_step[b].error_info;
-                    }
-                  }
-                }
-              }else{
-                this.computer_state='process';
-                this.computer_icon='el-icon-loading'
-                this.computer_title='正在'+info+steps[1];
-              }
-              //存储
-              if(ress.attachment.storage_state=='ongoing'){
-                this.storage_state='process';
-                this.shard_icon='el-icon-loading'
-                this.shard_title='正在'+info+steps[0];
-              }else if(ress.attachment.storage_state=='done'){
-                this.storage_state='success';
-                this.shard_icon='el-icon-circle-check'
-                this.shard_title=info+steps[0]+'成功';
-                //遍历存储节点改状态
-                if(this.shard.length>0){
-                  for(let c=0;c<this.shard.length;c++){
-                    if(ress.attachment.hasOwnProperty('shard_step')){
-                      for(let b=0;b<ress.attachment.shard_step.length;b++){
-                        if(info=='新增'){
-                          const shard_ids=ress.attachment.shard_step[b].shard_ids;
-                          for(let e=0;e<shard_ids.length;e++){
-                            for(var item in shard_ids[e]){
-                              var shard_idsValue=shard_ids[e][item];
-                              if(this.shard[c].shard_id==shard_idsValue){
-                                this.shard[c].icon='el-icon-circle-check';
-                                this.shard[c].status='success';
+                  for(let a=0;a<this.statusList.length;a++){
+                    if(res.status=='ongoing'){
+                      if(steps[a]=='computer'){
+                        if(res.attachment.hasOwnProperty('computer_state')){
+                          if(res.attachment.computer_state=='done'){
+                            if(res.attachment.hasOwnProperty('computer_step')){
+                              let comp_status='process';
+                              let comp_icon='el-icon-loading';
+                              let comp_description='';
+                              if(res.attachment.computer_step[0].computer_state=='done'){
+                                comp_status='success';
+                                comp_icon='el-icon-circle-check';
+                              }else if(res.attachment.computer_step[0].computer_state=='failed'){
+                                comp_status='error';
+                                comp_icon='el-icon-circle-close';
+                                comp_description=res.attachment.computer_step[0].error_info;
                               }
-                            }
-                          }
-                        }else if(info=='删除'){
-                          const arr=ress.attachment.shard_step[b].storage_hosts.substr(0,ress.attachment.shard_step[b].storage_hosts.length-1);
-                          const shard_ids=arr.split(',');
-                          for(let e=0;e<shard_ids.length;e++){
-                            if(this.shard[c].shard_id==shard_ids[e]){
-                              this.shard[c].icon='el-icon-circle-check';
-                              this.shard[c].status='success';
-                            }
-                          }
-                          
-                        }
-                      }
-                    }else{
-                      this.shard[c].icon='el-icon-circle-check';
-                      this.shard[c].status='success';
-                    }
-                  }
-                }
-              }else if(ress.attachment.storage_state=='failed'){
-                this.storage_state='error';
-                this.shard_icon='el-icon-circle-close'
-                this.shard_title=info+steps[0]+'失败';
-                //遍历存储节点改状态
-                if(this.shard.length>0){
-                  for(let c=0;c<this.shard.length;c++){
-                    if(ress.attachment.hasOwnProperty('shard_step')){
-                      for(let b=0;b<ress.attachment.shard_step.length;b++){
-                        if(info=='新增'){
-                          const shard_ids=ress.attachment.shard_step[b].shard_ids;
-                          for(let e=0;e<shard_ids.length;e++){
-                            for(var item in shard_ids[e]){
-                              var shard_idsValue=shard_ids[e][item];
-                              if(this.shard[c].shard_id==shard_idsValue){
-                                this.shard[c].icon='el-icon-circle-close';
-                                this.shard[c].status='error';
+                              const arr=res.attachment.computer_step[0].computer_hosts.substr(0,res.attachment.computer_step[0].computer_hosts.length-1);
+                              const computer_hosts=arr.split(';');
+                              for(let b=0;b<computer_hosts.length;b++){//secondlist不为空的情况todo
+                                secondgoing={title:computer_hosts[b],icon:comp_icon,status: comp_status,description:comp_description}
+                                secondlist.push(secondgoing)
                               }
+                              this.statusList[a].second=secondlist;
                             }
-                          }
-                        }else if(info=='删除'){
-                          const arr=ress.attachment.shard_step[b].storage_hosts.substr(0,ress.attachment.shard_step[b].storage_hosts.length-1);
-                          const shard_ids=arr.split(',');
-                          for(let e=0;e<shard_ids.length;e++){
-                            if(this.shard[c].shard_id==shard_ids[e]){
-                              this.shard[c].icon='el-icon-circle-close';
-                              this.shard[c].status='error';
+                            //外层修改状态
+                            if(this.statusList[a].title=='正在'+info+steps[a]){
+                              //this.init_active=a+1;
+                              this.statusList[a].title=info+steps[a]+'成功';
+                              this.statusList[a].icon='el-icon-circle-check';
+                              this.statusList[a].status='success';
                             }
-                          }
-                        }
-                        this.shard_description=ress.attachment.shard_step[b].error_info;
-                      }
-                    }else{
-                      this.shard[c].icon='el-icon-circle-check';
-                      this.shard[c].status='success';
-                      this.shard_description=ress.error_info;
-                    }
-                  }
-                }
-              }else{
-                this.storage_state='process';
-                this.shard_icon='el-icon-loading'
-                this.shard_title='正在'+info+steps[0];
-              }
-              this.init_title='正在'+info+'集群';
-              //this.finish_title=info+'集群成功'
-              
-              this.init_active=3;
-              if(this.computer.length==0&&this.shard.length==0){
-                if(ress.attachment.hasOwnProperty('computer_step')){
-                  for(let a=0;a<ress.attachment.computer_step.length;a++){
-                    if(ress.attachment.computer_step[a].hasOwnProperty('computer_hosts')){
-                      const arr=ress.attachment.computer_step[a].computer_hosts.substr(0,ress.attachment.computer_step[a].computer_hosts.length-1);
-                      const computer_hosts=arr.split(';');
-                        //console.log(computer_hosts[e]);
-                        if(ress.attachment.computer_state=='done'){
-                          for(let e=0;e<computer_hosts.length;e++){
-                            let newArrgoing={}
-                            newArrgoing.title=computer_hosts[e];
-                            newArrgoing.icon='el-icon-circle-check';
-                            newArrgoing.status= 'success';
-                            newArrgoing.description='';
-                            newArrgoing.computer_id=ress.attachment.computer_step[a].computer_id;
-                            this.computer.push(newArrgoing)
-                          }
-                          //console.log(this.computer);
-                        }else if(ress.attachment.computer_state=='failed'){
-                          for(let e=0;e<computer_hosts.length;e++){
-                            let newArrgoing={}
-                            newArrgoing.title=computer_hosts[e];
-                            newArrgoing.icon='el-icon-circle-close';
-                            newArrgoing.status= 'error';
-                            newArrgoing.description=ress.attachment.comp_error_info;
-                            newArrgoing.computer_id=ress.attachment.computer_step[a].computer_id;
-                            this.computer.push(newArrgoing)
-                          }
-                        }else{
-                          //console.log(11);
-                          for(let e=0;e<computer_hosts.length;e++){
-                            let newArrgoing={}
-                            newArrgoing.title=computer_hosts[e];
-                            newArrgoing.icon='el-icon-loading';
-                            newArrgoing.status= 'process';
-                            newArrgoing.description='';
-                            newArrgoing.computer_id=ress.attachment.computer_step[a].computer_id;
-                            this.computer.push(newArrgoing)
-                          }
-                        }
-                      //}
-                      //console.log(this.computer);
-                    }
-                  }
-                }
-                if(ress.attachment.hasOwnProperty('shard_step')){
-                  for(let b=0;b<ress.attachment.shard_step.length;b++){
-                    if(ress.attachment.storage_state=='done'){
-                      if(info=='删除'){
-                        const arr=ress.attachment.shard_step[b].storage_hosts.substr(0,ress.attachment.shard_step[b].storage_hosts.length-1);
-                        const shard_ids=arr.split(';');
-                        for(let e=0;e<shard_ids.length;e++){
-                          let shardgoing={}
-                          shardgoing.title=shard_ids!==''?shard_ids[e]:'正在'+info+steps[0];
-                          shardgoing.icon='el-icon-circle-check';
-                          shardgoing.status= 'success';
-                          shardgoing.description='';
-                          shardgoing.shard_id=shard_ids[e];
-                          this.shard.push(shardgoing)
-                        }
-                      }
-                      if(info=='新增'){
-                        let shard_ids=ress.attachment.shard_step[b].shard_ids;
-                        for(let e=0;e<shard_ids.length;e++){
-                          for(var item in shard_ids[e]){
-                            let shardgoing={}
-                            var shard_idsValue=shard_ids[e][item];
-                            const shard_text=item+':'+shard_idsValue;
-                            shardgoing.title=shard_idsValue!==''?shard_text:'正在'+info+steps[0];
-                            shardgoing.icon='el-icon-circle-check';
-                            shardgoing.status= 'success';
-                            shardgoing.description='';
-                            shardgoing.shard_id=shard_idsValue;
-                            this.shard.push(shardgoing)
-                          }
-                        }
-                      }
-                    }else if(ress.attachment.storage_state=='failed'){
-                      if(info=='删除'){
-                        const arr=ress.attachment.shard_step[b].storage_hosts.substr(0,ress.attachment.shard_step[b].storage_hosts.length-1);
-                        const shard_ids=arr.split(';');
-                        for(let e=0;e<shard_ids.length;e++){
-                          let shardgoing={}
-                          shardgoing.title=shard_ids!==''?shard_ids[e]:'正在'+info+steps[0];
-                          shardgoing.icon='el-icon-circle-close';
-                          shardgoing.status= 'error';
-                          shardgoing.description=ress.attachment.shard_error_info;
-                          shardgoing.shard_id=shard_ids[e];
-                          this.shard.push(shardgoing)
-                        }
-                      }
-                      if(info=='新增'){
-                        let shard_ids=ress.attachment.shard_step[b].shard_ids;
-                        for(let e=0;e<shard_ids.length;e++){
-                          for(var item in shard_ids[e]){
-                            let shardgoing={}
-                            var shard_idsValue=shard_ids[e][item];
-                            const shard_text=item+':'+shard_idsValue;
-                            shardgoing.title=shard_idsValue!==''?shard_text:'正在'+info+steps[0];
-                            shardgoing.icon='el-icon-circle-close';
-                            shardgoing.status= 'error';
-                            shardgoing.description=ress.attachment.shard_error_info;
-                            shardgoing.shard_id=shard_idsValue;
-                            this.shard.push(shardgoing)
-                          }
-                        }
-                      }
-                    }else {
-                      if(info=='删除'){
-                        if(ress.attachment.shard_step[b].hasOwnProperty('storage_hosts')){
-                          const arr=ress.attachment.shard_step[b].storage_hosts.substr(0,ress.attachment.shard_step[b].storage_hosts.length-1);
-                          const shard_ids=arr.split(';');
-                          for(let e=0;e<shard_ids.length;e++){
-                            let shardgoing={}
-                            shardgoing.title=shard_ids!==''?shard_ids[e]:'正在'+info+steps[0];
-                            shardgoing.icon='el-icon-loading';
-                            shardgoing.status= 'process';
-                            shardgoing.description='';
-                            shardgoing.shard_id=shard_ids[e];
-                            this.shard.push(shardgoing)
-                          }
-                        }
-                      }
-                      if(info=='新增'){
-                        let shard_ids=ress.attachment.shard_step[b].shard_ids;
-                        for(let e=0;e<shard_ids.length;e++){
-                          for(var item in shard_ids[e]){
-                            let shardgoing={}
-                            var shard_idsValue=shard_ids[e][item];
-                            const shard_text=item+':'+shard_idsValue;
-                            shardgoing.title=shard_idsValue!==''?shard_text:'正在'+info+steps[0];
-                            shardgoing.icon='el-icon-loading';
-                            shardgoing.status= 'process';
-                            shardgoing.description='';
-                            shardgoing.shard_id=shard_idsValue;
-                            this.shard.push(shardgoing)
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-                if(ress.status=='failed'){
-                  this.storage_state='error';
-                  this.shard_icon='el-icon-circle-close'
-                  this.shard_title=info+steps[0]+'失败';
-                  this.init_show=false;
+                          }else if(res.attachment.computer_state=='failed'){
+                            if(res.attachment.hasOwnProperty('computer_step')){
+                              let comp_status='process';
+                              let comp_icon='el-icon-loading';
+                              let comp_description='';
+                              if(res.attachment.computer_step.computer_state=='done'){
+                                comp_status='success';
+                                comp_icon='el-icon-circle-check';
+                              }else if(res.attachment.computer_step.computer_state=='failed'){
+                                comp_status='error';
+                                comp_icon='el-icon-circle-close';
+                                comp_description=res.attachment.computer_step.error_info;
+                              }
+                              const arr=res.attachment.computer_step.computer_hosts.substr(0,res.attachment.computer_step.computer_hosts.length-1);
+                              const computer_hosts=arr.split(';');
+                              for(let b=0;b<computer_hosts.length;b++){//secondlist不为空的情况todo
+                                secondgoing={title:computer_hosts[b],icon:comp_icon,status: comp_status,description:comp_description}
+                                secondlist.push(secondgoing)
+                              }
+                              this.statusList[a].second=secondlist;
+                            }
+                            //外层修改状态
+                            if(this.statusList[a].title=='正在'+info+steps[a]){
+                              //this.init_active=a;
+                              this.statusList[a].title=info+steps[a]+'失败';
+                              this.statusList[a].icon='el-icon-circle-close';
+                              this.statusList[a].status='error';
+                              this.statusList[a].description=res.attachment.hasOwnProperty('comp_error_info')===true?res.attachment.comp_error_info:'';
+                            }
+                          }else{
 
-                  this.computer_state='error';
-                  this.computer_icon='el-icon-circle-close'
-                  this.computer_title=info+steps[1]+'失败';
+                          }
 
-                  this.finish_title=info+'集群失败'
-                  this.finish_icon='el-icon-circle-close'
-                  this.init_active=4
-                  this.finish_description=ress.error_info;
-                  //遍历计算节点改状态
-                  if(this.computer.length>0){
-                    for(let b=0;b<ress.attachment.computer_step.length;b++){
-                      if(ress.attachment.computer_step[b].computer_state=='failed'){
-                        for(let c=0;c<this.computer.length;c++){
-                          const arr=ress.attachment.computer_step[b].computer_hosts.substr(0,ress.attachment.computer_step[b].computer_hosts.length-1);
-                          const computer_hosts=arr.split(';');
-                          for(let e=0;e<computer_hosts.length;e++){
-                            if(this.computer[c].title==computer_hosts[e]){
-                              this.computer[c].icon='el-icon-circle-close';
-                              this.computer[c].status='error';
-                            }
-                          }
-                        }
-                        this.computer_description=ress.attachment.computer_step[b].error_info;
-                      }
-                    }
-                  }
-                  //遍历存储节点改状态
-                  if(this.shard.length>0){
-                    for(let b=0;b<ress.attachment.shard_step.length;b++){
-                      for(let c=0;c<this.shard.length;c++){
-                        if(info=='新增'){
-                          const shard_ids=ress.attachment.shard_step[b].shard_ids;
-                          for(let e=0;e<shard_ids.length;e++){
-                            for(var item in shard_ids[e]){
-                              var shard_idsValue=shard_ids[e][item];
-                              if(this.shard[c].shard_id==shard_idsValue){
-                                this.shard[c].icon='el-icon-circle-close';
-                                this.shard[c].status='error';
-                              }
-                            }
-                          }
-                        }else if(info=='删除'){
-                          const arr=ress.attachment.shard_step[b].storage_hosts.substr(0,ress.attachment.shard_step[b].storage_hosts.length-1);
-                          const shard_ids=arr.split(';');
-                          for(let e=0;e<shard_ids.length;e++){
-                            if(this.shard[c].shard_id==shard_ids[e]){
-                              this.shard[c].icon='el-icon-circle-close';
-                              this.shard[c].status='error';
-                            }
-                          }
                         }
                       }
-                      this.shard_description=ress.attachment.shard_step[b].error_info;
-                    }
-                  }
-                  clearInterval(timer);
-                }else if(ress.status=='done'){
-                  this.init_active=4;
-                  this.finish_icon='el-icon-circle-check'
-                  this.init_show=false;
-                  clearInterval(timer);
-                }
-              }else{
-                if(ress.status=='ongoing'){
-                  //计算
-                  //if(ress.attachment.computer_state=='ongoing'){
-                    for(let k=0;k<this.computer.length;k++){
-                      this.comp_active=k;
-                      for(let j=0;j<ress.attachment.computer_step.length;j++){
-                        if(ress.attachment.computer_step[j].computer_state=='ongoing'){
-                          //console.log(22);
-                          const arr=ress.attachment.computer_step[j].computer_hosts.substr(0,ress.attachment.computer_step[j].computer_hosts.length-1);
-                          const computer_hosts=arr.split(';');
-                          for(let e=0;e<computer_hosts.length;e++){
-                            console.log(22);
-                            if(computer_hosts[e]==this.computer[k].title){
-                              this.comp_active=k-1;
-                              this.computer[k].icon='el-icon-loading';
-                              this.computer[k].status='process';
-                              if(k>0&&k<(this.comp_active+1)){
-                                //小于k的情况
-                                for(let p=0;p<k;p++){
-                                  this.computer[p].icon='el-icon-circle-check';
-                                  this.computer[p].status='success';
-                                }
+                      if(steps[a]=='shard'){
+                         if(res.attachment.hasOwnProperty('storage_state')){
+                          if(res.attachment.storage_state=='done'){
+                            if(res.attachment.hasOwnProperty('shard_step')){
+                              let shard_status='process';
+                              let shard_icon='el-icon-loading';
+                              let shard_description='';
+                              if(res.attachment.shard_step[0].storage_state=='done'){
+                                shard_status='success';
+                                shard_icon='el-icon-circle-check';
+                              }else if(res.attachment.shard_step[0].storage_state=='failed'){
+                                shard_status='error';
+                                shard_icon='el-icon-circle-close';
+                                shard_description=res.attachment.shard_step[0].error_info;
                               }
-                            }
-                          }
-                        }else if(ress.attachment.computer_step[j].computer_state=='failed'){
-                          console.log(23);
-                          const arr=ress.attachment.computer_step[j].computer_hosts.substr(0,ress.attachment.computer_step[j].computer_hosts.length-1);
-                          const computer_hosts=arr.split(';');
-                          for(let e=0;e<computer_hosts.length;e++){
-                            if(computer_hosts[e]==this.computer[k].title){
-                              this.computer[k].icon='el-icon-circle-close';
-                              this.computer[k].status='error';
-                            }
-                          }
-                          this.computer_description=ress.attachment.computer_step[j].error_info;
-                        }else if(ress.attachment.computer_step[j].computer_state=='done'){
-                          console.log(24);
-                          const arr=ress.attachment.computer_step[j].computer_hosts.substr(0,ress.attachment.computer_step[j].computer_hosts.length-1);
-                          const computer_hosts=arr.split(';');
-                          for(let e=0;e<computer_hosts.length;e++){
-                            if(computer_hosts[e]==this.computer[k].title){
-                              //this.comp_active=k;
-                              this.computer[k].status='success';
-                              this.computer[k].icon='el-icon-circle-check';
-                            }
-                          }
-                        }
-                      }
-                    }
-                  //}
-                  //存储
-                  if(this.shard.length>0){
-                    for(let k=0;k<this.shard.length;k++){
-                      for(let j=0;j<ress.attachment.shard_step.length;j++){
-                        if(ress.attachment.shard_step[j].storage_state=='ongoing'){
-                          if(ress.attachment.shard_step[j].shard_hosts==this.shard[k].title){
-                            this.shard_active=k-1;
-                            this.shard[k].icon='el-icon-loading';
-                            this.shard[k].status='process';
-                            if(k>0&&k<(this.shard_active+1)){
-                              //小于k的情况
-                              for(let p=0;p<k;p++){
-                                this.shard[p].icon='el-icon-circle-check';
-                                this.shard[p].status='success';
-                              }
-                            }
-                          }
-                        }else if(ress.attachment.shard_step[j].storage_state=='failed'){
-                          this.shard_active=k;
-                          this.shard[k].icon='el-icon-circle-close';
-                          this.shard[k].status='error';
-                          this.shard_description=ress.attachment.shard_step[j].error_info;
-                        }else if(ress.attachment.shard_step[j].storage_state=='done'){
-                          this.shard_active=k;
-                          this.shard[k].status='success';
-                          this.shard[k].icon='el-icon-circle-check';
-                        }
-                      }
-                    }
-                  }else{
-                    if(ress.attachment.shard_step[0].hasOwnProperty('storage_hosts')){
-                      if(info=='删除'){
-                        if(ress.attachment.storage_state=='ongoing'){
-                          const arr=ress.attachment.shard_step[0].storage_hosts.substr(0,ress.attachment.shard_step[0].storage_hosts.length-1);
-                          const shard_ids=arr.split(';');
-                          for(let e=0;e<shard_ids.length;e++){
-                            let shardgoing={}
-                            shardgoing.title=shard_ids!==''?shard_ids[e]:'正在'+info+steps[0];
-                            shardgoing.icon='el-icon-loading';
-                            shardgoing.status= 'process';
-                            shardgoing.description='';
-                            shardgoing.shard_id=shard_ids[e];
-                            this.shard.push(shardgoing)
-                          }
-                        }else if(ress.attachment.storage_state=='failed'){
-                          const arr=ress.attachment.shard_step[0].storage_hosts.substr(0,ress.attachment.shard_step[0].storage_hosts.length-1);
-                          const shard_ids=arr.split(';');
-                          for(let e=0;e<shard_ids.length;e++){
-                            let shardgoing={}
-                            shardgoing.title=shard_ids!==''?shard_ids[e]:'正在'+info+steps[0];
-                            shardgoing.icon='el-icon-circle-close';
-                            shardgoing.status= 'error';
-                            shardgoing.description='';
-                            shardgoing.shard_id=shard_ids[e];
-                            this.shard.push(shardgoing)
-                          }
-                        }else if(ress.attachment.storage_state=='done'){
-                          const arr=ress.attachment.shard_step[0].storage_hosts.substr(0,ress.attachment.shard_step[0].storage_hosts.length-1);
-                          const shard_ids=arr.split(';');
-                          for(let e=0;e<shard_ids.length;e++){
-                            let shardgoing={}
-                            shardgoing.title=shard_ids!==''?shard_ids[e]:'正在'+info+steps[0];
-                            shardgoing.icon='el-icon-circle-check';
-                            shardgoing.status= 'success';
-                            shardgoing.description='';
-                            shardgoing.shard_id=shard_ids[e];
-                            this.shard.push(shardgoing)
-                          }
-                        }
-                      }
-                    }
-                  }
-                }else if(ress.status=='done'){
-                  //console.log(3);
-                  this.init_show=false;
-                  if(ress.attachment.computer_state=='done'){
-                    console.log(51)
-                    this.computer_title=info+steps[1]+'成功';
-                    this.computer_state='success';
-                    this.computer_icon='el-icon-circle-check'
-                    this.comp_active=this.computer.length-1;
-                  for(let d=0;d<this.computer.length;d++){
-                    //console.log(this.computer)
-                    this.computer[d].status='success';
-                    this.computer[d].icon='el-icon-circle-check';
-                  }
-                  }
-                  if(ress.attachment.storage_state=='done'){
-                    console.log(52)
-                    this.shard_title=info+steps[0]+'成功';
-                    this.storage_state='success';
-                    this.shard_icon='el-icon-circle-check'
-                    this.shard_active=this.shard.length-1;
-                    if(this.shard.length>0){
-                      for(let d=0;d<this.shard.length;d++){
-                        console.log(53)
-                        this.shard[d].status='success';
-                        this.shard[d].icon='el-icon-circle-check';
-                      }
-                    }else{
-                      if(ress.attachment.shard_step[b].hasOwnProperty('storage_hosts')){
-                        if(info=='删除'){
-                          const arr=ress.attachment.shard_step[b].storage_hosts.substr(0,ress.attachment.shard_step[b].storage_hosts.length-1);
-                          const shard_ids=arr.split(';');
-                          for(let e=0;e<shard_ids.length;e++){
-                            let shardgoing={}
-                            shardgoing.title=shard_ids!==''?shard_ids[e]:'正在'+info+steps[0];
-                            shardgoing.icon='el-icon-circle-check';
-                            shardgoing.status= 'success';
-                            shardgoing.description='';
-                            shardgoing.shard_id=shard_ids[e];
-                            this.shard.push(shardgoing)
-                          }
-                        }
-                      }
-                    }
-                  }
-                  
-                  this.init_active=4;
-                  this.finish_icon='el-icon-circle-check'
-                  clearInterval(timer);
-                  if(info=='新增'){
-                    const  apply_all_cluster=sessionStorage.getItem('apply_all_cluster');
-                    if(apply_all_cluster==2){
-                        const arrs= {};
-                        arrs.effectCluster=sessionStorage.getItem('affected_clusters');
-                        arrs.cluster_name=ress.attachment.cluster_name;
-                        arrs.username=sessionStorage.getItem('login_username');
-                        arrs.type='add';
-                        uAssign(arrs).then((responses) => {
-                          let res_update = responses;
-                          if(res_update.code==200){
-                            this.dialogFormVisible = false;
-                            sessionStorage.setItem('affected_clusters',res_update.effectCluster);
-                          }
-                        });
-                    }
-                    setTimeout(() => {
-                      this.getList();
-                      //this.dialogStatusShowVisible=false;
-                    }, 3000);
-                  }else{
-                    this.getList();
-                  }
-                }else if(ress.status=='failed'){
-                  this.finish_title=info+'集群失败'
-                  this.finish_icon='el-icon-circle-close'
-                  this.init_active=4
-                  this.finish_description=ress.error_info
-                  this.init_show=false;
-                  clearInterval(timer);
-                  if(ress.attachment.hasOwnProperty('computer_state')){
-                    if(ress.attachment.computer_state=='failed'){
-                      this.computer_state='error';
-                      this.computer_icon='el-icon-circle-close';
-                      for(let b=0;b<ress.attachment.computer_step.length;b++){
-                        const arr=ress.attachment.computer_step[b].computer_hosts.substr(0,ress.attachment.computer_step[b].computer_hosts.length-1);
-                        const computer_hosts=arr.split(';');
-                        if(ress.attachment.computer_step[b].computer_state=='done'){
-                          this.comp_active=b;
-                          for(let c=0;c<this.computer.length;c++){
-                            for(let e=0;e<computer_hosts.length;e++){
-                              if(this.computer[c].title==computer_hosts[e]){
-                                this.computer[c].icon='el-icon-circle-check';
-                                this.computer[c].status='success';
-                              }
-                            }
-                          }
-                        }else if(ress.attachment.computer_step[b].computer_state=='failed'){
-                            for(let c=0;c<this.computer.length;c++){
-                              for(let e=0;e<computer_hosts.length;e++){
-                                if(this.computer[c].title==computer_hosts[e]){
-                                  this.computer[c].icon='el-icon-circle-close';
-                                  this.computer[c].status='error';
-                                }
-                              }
-                          }
-                        }
-                        this.computer_description=ress.attachment.computer_step[b].error_info;
-                      }
-                    }else if(ress.attachment.computer_state=='done'){
-                      //let current_id=0;
-                      for(let b=0;b<ress.attachment.computer_step.length;b++){
-                        const arr=ress.attachment.computer_step[b].computer_hosts.substr(0,ress.attachment.computer_step[b].computer_hosts.length-1);
-                        const computer_hosts=arr.split(';');
-                        if(ress.attachment.computer_step[b].computer_state=='done'){
-                          this.comp_active=b;
-                          for(let c=0;c<this.computer.length;c++){
-                            for(let e=0;e<computer_hosts.length;e++){
-                              if(this.computer[c].title=computer_hosts[e]){
-                                this.computer[c].icon='el-icon-circle-check';
-                                this.computer[c].status='success';
-                                //current_id=c;
-                              }
-                            }
-                          }
-                        }else if(ress.attachment.computer_step[b].computer_state=='failed'){
-                          for(let c=0;c<this.computer.length;c++){
-                            for(let e=0;e<computer_hosts.length;e++){
-                              if(this.computer[c].title==computer_hosts[e]){
-                                this.computer[c].icon='el-icon-circle-close';
-                                this.computer[c].status='error';
-                                //current_id=c;
-                              }
-                            }
-                          }
-                          this.computer_description=ress.attachment.computer_step[b].error_info;
-                        }
-                      }
-                      //小于b的status为success
-                      // if(this.computer.length>1&&this.comp_active>0){
-                      //   if(current_id){
-
-                      //   }
-                      // }
-                    }
-                  }else{
-                    this.computer_state='error';
-                    this.computer_icon='el-icon-circle-close'
-                    this.computer_title=info+steps[0]+'失败';
-                  }
-                  if(ress.attachment.hasOwnProperty('storage_state')){
-                    if(ress.attachment.storage_state=='failed'){
-                      this.storage_state='error';
-                      this.shard_icon='el-icon-circle-close'
-                      for(let b=0;b<ress.attachment.shard_step.length;b++){
-                        if(ress.attachment.shard_step[b].storage_state=='done'){
-                          this.shard_active=b;
-                          for(let c=0;c<this.shard.length;c++){
-                            if(info=='新增'){
-                            const shard_ids=ress.attachment.shard_step[b].shard_ids;
-                            for(let e=0;e<shard_ids.length;e++){
-                              for(var item in shard_ids[e]){
-                                var shard_idsValue=shard_ids[e][item];
-                                if(this.shard[c].shard_id==shard_idsValue){
-                                  this.shard[c].icon='el-icon-circle-check';
-                                  this.shard[c].status='success';
-                                }
-                              }
-                            }
-                            }else if(info=='删除'){
-                              const arr=ress.attachment.shard_step[b].storage_hosts.substr(0,ress.attachment.shard_step[b].storage_hosts.length-1);
+                              const arr=res.attachment.shard_step[0].shard_ids.substr(0,res.attachment.shard_step[0].shard_ids.length-1);
                               const shard_ids=arr.split(',');
-                              for(let e=0;e<shard_ids.length;e++){
-                                if(this.shard[c].shard_id==shard_ids[e]){
-                                  this.shard[c].icon='el-icon-circle-check';
-                                  this.shard[c].status='success';
-                                }
+                              for(let b=0;b<shard_ids.length;b++){//secondlist不为空的情况todo
+                                secondgoing={title:shard_ids[b],icon:shard_icon,status: shard_status,description:shard_description}
+                                secondlist.push(secondgoing)
                               }
+                              this.statusList[a].second=secondlist;
                             }
-                          }
-                        }else if(ress.attachment.shard_step[b].storage_state=='failed'){
-                          for(let c=0;c<this.shard.length;c++){
-                            if(info=='新增'){
-                            const shard_ids=ress.attachment.shard_step[b].shard_ids;
-                              for(let e=0;e<shard_ids.length;e++){
-                                for(var item in shard_ids[e]){
-                                  var shard_idsValue=shard_ids[e][item];
-                                  if(this.shard[c].shard_id==shard_idsValue){
-                                    this.shard[c].icon='el-icon-circle-close';
-                                    this.shard[c].status='error';
-                                  }
-                                }
+                            //外层修改状态
+                            if(this.statusList[a].title=='正在'+info+steps[a]){
+                              //this.init_active=a+1;
+                              this.statusList[a].title=info+steps[a]+'成功';
+                              this.statusList[a].icon='el-icon-circle-check';
+                              this.statusList[a].status='success';
+                            }
+                          }else if(res.attachment.storage_state=='failed'){
+                            if(res.attachment.hasOwnProperty('shard_step')){
+                              let shard_status='process';
+                              let shard_icon='el-icon-loading';
+                              let shard_description='';
+                              if(res.attachment.shard_step.storage_state=='done'){
+                                shard_status='success';
+                                shard_icon='el-icon-circle-check';
+                              }else if(res.attachment.shard_step.storage_state=='failed'){
+                                shard_status='error';
+                                shard_icon='el-icon-circle-close';
+                                shard_description=res.attachment.shard_step.error_info;
                               }
-                            }else if(info=='删除'){
-                              const arr=ress.attachment.shard_step[b].storage_hosts.substr(0,ress.attachment.shard_step[b].storage_hosts.length-1);
+                               const arr=res.attachment.shard_step.shard_ids.substr(0,res.attachment.shard_step.shard_ids.length-1);
                               const shard_ids=arr.split(',');
-                              for(let e=0;e<shard_ids.length;e++){
-                                if(this.shard[c].shard_id==shard_ids[e]){
-                                  this.shard[c].icon='el-icon-circle-close';
-                                  this.shard[c].status='error';
-                                }
+                              for(let b=0;b<shard_ids.length;b++){//secondlist不为空的情况todo
+                                secondgoing={title:shard_ids[b],icon:shard_icon,status: shard_status,description:shard_description}
+                                secondlist.push(secondgoing)
                               }
+                              this.statusList[a].second=secondlist;
                             }
+                            //外层修改状态
+                            if(this.statusList[a].title=='正在'+info+steps[a]){
+                              //this.init_active=a;
+                              this.statusList[a].title=info+steps[a]+'失败';
+                              this.statusList[a].icon='el-icon-circle-close';
+                              this.statusList[a].status='error';
+                              this.statusList[a].description=res.attachment.hasOwnProperty('shard_error_info')===true?res.attachment.shard_error_info:'';
+                            }
+                          }else{
+
                           }
-                          this.shard_description=ress.attachment.shard_step[b].error_info;
+
                         }
                       }
-                    }else if(ress.attachment.storage_state=='done'){
-                      //let current_id=0;
-                      for(let b=0;b<ress.attachment.shard_step.length;b++){
-                        if(ress.attachment.shard_step[b].storage_state=='done'){
-                          this.shard_active=b;
-                          for(let c=0;c<this.shard.length;c++){
-                            if(this.shard[c].title==ress.attachment.shard_step[b].shard_hosts){
-                              this.shard[c].icon='el-icon-circle-check';
-                              this.shard[c].status='success';
-                              //current_id=c;
+                    }else if(res.status=='failed'){
+                      if(steps[a]=='computer'){
+                        if(res.attachment.hasOwnProperty('computer_state')){
+                          if(res.attachment.computer_state=='done'){
+                            if(res.attachment.hasOwnProperty('computer_step')){
+                              let comp_status='process';
+                              let comp_icon='el-icon-loading';
+                              let comp_description='';
+                              if(res.attachment.computer_step[0].computer_state=='done'){
+                                comp_status='success';
+                                comp_icon='el-icon-circle-check';
+                              }else if(res.attachment.computer_step[0].computer_state=='failed'){
+                                comp_status='error';
+                                comp_icon='el-icon-circle-close';
+                                comp_description=res.attachment.computer_step[0].error_info;
+                              }
+                              const arr=res.attachment.computer_step[0].computer_hosts.substr(0,res.attachment.computer_step[0].computer_hosts.length-1);
+                              const computer_hosts=arr.split(';');
+                              for(let b=0;b<computer_hosts.length;b++){//secondlist不为空的情况todo
+                                secondgoing={title:computer_hosts[b],icon:comp_icon,status: comp_status,description:comp_description}
+                                secondlist.push(secondgoing)
+                              }
+                              this.statusList[a].second=secondlist;
                             }
-                          }
-                        }else if(ress.attachment.shard_step[b].storage_state=='failed'){
-                            for(let c=0;c<this.shard.length;c++){
-                            if(this.shard[c].title==ress.attachment.shard_step[b].shard_hosts){
-                              this.shard[c].icon='el-icon-circle-close';
-                              this.shard[c].status='error';
-                              //current_id=c;
+                            //外层修改状态
+                            if(this.statusList[a].title=='正在'+info+steps[a]){
+                              //this.init_active=a+1;
+                              this.statusList[a].title=info+steps[a]+'成功';
+                              this.statusList[a].icon='el-icon-circle-check';
+                              this.statusList[a].status='success';
                             }
+                          }else if(res.attachment.computer_state=='failed'){
+                            if(res.attachment.hasOwnProperty('computer_step')){
+                              let comp_status='process';
+                              let comp_icon='el-icon-loading';
+                              let comp_description='';
+                              if(res.attachment.computer_step[0].computer_state=='done'){
+                                comp_status='success';
+                                comp_icon='el-icon-circle-check';
+                              }else if(res.attachment.computer_step[0].computer_state=='failed'){
+                                comp_status='error';
+                                comp_icon='el-icon-circle-close';
+                                comp_description=res.attachment.computer_step[0].error_info;
+                              }
+                              const arr=res.attachment.computer_step[0].computer_hosts.substr(0,res.attachment.computer_step[0].computer_hosts.length-1);
+                              const computer_hosts=arr.split(';');
+                              for(let b=0;b<computer_hosts.length;b++){//secondlist不为空的情况todo
+                                secondgoing={title:computer_hosts[b],icon:comp_icon,status: comp_status,description:comp_description}
+                                secondlist.push(secondgoing)
+                              }
+                              this.statusList[a].second=secondlist;
+                            }
+                            //外层修改状态
+                            if(this.statusList[a].title=='正在'+info+steps[a]){
+                              //this.init_active=a;
+                              this.statusList[a].title=info+steps[a]+'失败';
+                              this.statusList[a].icon='el-icon-circle-close';
+                              this.statusList[a].status='error';
+                              this.statusList[a].description=res.attachment.hasOwnProperty('comp_error_info')===true?res.attachment.comp_error_info:'';
+                            }
+                          }else{
+
                           }
+
+                        }
+                      }
+                      if(steps[a]=='shard'){
+                         if(res.attachment.hasOwnProperty('storage_state')){
+                          if(res.attachment.storage_state=='done'){
+                            if(res.attachment.hasOwnProperty('shard_step')){
+                              let shard_status='process';
+                              let shard_icon='el-icon-loading';
+                              let shard_description='';
+                              if(res.attachment.shard_step[0].storage_state=='done'){
+                                shard_status='success';
+                                shard_icon='el-icon-circle-check';
+                              }else if(res.attachment.shard_step[0].storage_state=='failed'){
+                                shard_status='error';
+                                shard_icon='el-icon-circle-close';
+                                shard_description=res.attachment.shard_step[0].error_info;
+                              }
+                              const arr=res.attachment.shard_step[0].shard_ids.substr(0,res.attachment.shard_step[0].shard_ids.length-1);
+                              const shard_ids=arr.split(',');
+                              for(let b=0;b<shard_ids.length;b++){//secondlist不为空的情况todo
+                                secondgoing={title:shard_ids[b],icon:shard_icon,status: shard_status,description:shard_description}
+                                secondlist.push(secondgoing)
+                              }
+                              this.statusList[a].second=secondlist;
+                            }
+                            //外层修改状态
+                            if(this.statusList[a].title=='正在'+info+steps[a]){
+                              //this.init_active=a+1;
+                              this.statusList[a].title=info+steps[a]+'成功';
+                              this.statusList[a].icon='el-icon-circle-check';
+                              this.statusList[a].status='success';
+                            }
+                          }else if(res.attachment.storage_state=='failed'){
+                            if(res.attachment.hasOwnProperty('shard_step')){
+                              let shard_status='process';
+                              let shard_icon='el-icon-loading';
+                              let shard_description='';
+                              if(res.attachment.shard_step[0].storage_state=='done'){
+                                shard_status='success';
+                                shard_icon='el-icon-circle-check';
+                              }else if(res.attachment.shard_step[0].storage_state=='failed'){
+                                shard_status='error';
+                                shard_icon='el-icon-circle-close';
+                                shard_description=res.attachment.shard_step[0].error_info;
+                              }
+                               const arr=res.attachment.shard_step[0].shard_ids.substr(0,res.attachment.shard_step[0].shard_ids.length-1);
+                              const shard_ids=arr.split(',');
+                              for(let b=0;b<shard_ids.length;b++){//secondlist不为空的情况todo
+                                secondgoing={title:shard_ids[b],icon:shard_icon,status: shard_status,description:shard_description}
+                                secondlist.push(secondgoing)
+                              }
+                              this.statusList[a].second=secondlist;
+                            }
+                            //外层修改状态
+                            if(this.statusList[a].title=='正在'+info+steps[a]){
+                              //this.init_active=a;
+                              this.statusList[a].title=info+steps[a]+'失败';
+                              this.statusList[a].icon='el-icon-circle-close';
+                              this.statusList[a].status='error';
+                              this.statusList[a].description=res.attachment.hasOwnProperty('shard_error_info')===true?res.attachment.shard_error_info:'';
+                            }
+                          }else{
+
+                          }
+
+                        }
+                      }
+                    }else if(res.status=='done'){
+                      if(this.statusList[a].title=='正在'+info+'computer'){
+                        if(res.attachment.hasOwnProperty('computer_state')){
+                          if(res.attachment.computer_state=='done'){
+                            if(res.attachment.hasOwnProperty('computer_step')){
+                              let comp_status='process';
+                              let comp_icon='el-icon-loading';
+                              let comp_description='';
+                              if(res.attachment.computer_step[0].computer_state=='done'){
+                                comp_status='success';
+                                comp_icon='el-icon-circle-check';
+                              }else if(res.attachment.computer_step[0].computer_state=='failed'){
+                                comp_status='error';
+                                comp_icon='el-icon-circle-close';
+                                comp_description=res.attachment.computer_step[0].error_info;
+                              }
+                              const arr=res.attachment.computer_step[0].computer_hosts.substr(0,res.attachment.computer_step[0].computer_hosts.length-1);
+                              const computer_hosts=arr.split(';');
+                              for(let b=0;b<computer_hosts.length;b++){//secondlist不为空的情况todo
+                                secondgoing={title:computer_hosts[b],icon:comp_icon,status: comp_status,description:comp_description}
+                                secondlist.push(secondgoing)
+                              }
+                              //this.statusList[a].second=secondlist;
+                            }
+                            //外层修改状态
+                            if(this.statusList[a].title=='正在'+info+steps[a]){
+                              //this.init_active=a+1;
+                              this.statusList[a].title=info+steps[a]+'成功';
+                              this.statusList[a].icon='el-icon-circle-check';
+                              this.statusList[a].status='success';
+                            }
+                          }else if(res.attachment.computer_state=='failed'){
+                            if(res.attachment.hasOwnProperty('computer_step')){
+                              let comp_status='process';
+                              let comp_icon='el-icon-loading';
+                              let comp_description='';
+                              if(res.attachment.computer_step[0].computer_state=='done'){
+                                comp_status='success';
+                                comp_icon='el-icon-circle-check';
+                              }else if(res.attachment.computer_step[0].computer_state=='failed'){
+                                comp_status='error';
+                                comp_icon='el-icon-circle-close';
+                                comp_description=res.attachment.computer_step[0].error_info;
+                              }
+                              const arr=res.attachment.computer_step[0].computer_hosts.substr(0,res.attachment.computer_step[0].computer_hosts.length-1);
+                              const computer_hosts=arr.split(';');
+                              for(let b=0;b<computer_hosts.length;b++){//secondlist不为空的情况todo
+                                secondgoing={title:computer_hosts[b],icon:comp_icon,status: comp_status,description:comp_description}
+                                secondlist.push(secondgoing)
+                              }
+                              //this.statusList[a].second=secondlist;
+                            }
+                            this.statusList[a].second=secondlist;
+                            console.log(this.statusList[a].second);
+                            //外层修改状态
+                            if(this.statusList[a].title=='正在'+info+steps[a]){
+                              //this.init_active=a;
+                              this.statusList[a].title=info+steps[a]+'失败';
+                              this.statusList[a].icon='el-icon-circle-close';
+                              this.statusList[a].status='error';
+                              this.statusList[a].description=res.attachment.hasOwnProperty('comp_error_info')===true?res.attachment.comp_error_info:'';
+                            }
+                          }else{
+
+                          }
+
+                        }
+                      }
+                      if(this.statusList[a].title=='正在'+info+'shard'){
+                         if(res.attachment.hasOwnProperty('storage_state')){
+                          if(res.attachment.storage_state=='done'){
+                            if(res.attachment.hasOwnProperty('shard_step')){
+                              let shard_status='process';
+                              let shard_icon='el-icon-loading';
+                              let shard_description='';
+                              if(res.attachment.shard_step[0].storage_state=='done'){
+                                shard_status='success';
+                                shard_icon='el-icon-circle-check';
+                              }else if(res.attachment.shard_step[0].storage_state=='failed'){
+                                shard_status='error';
+                                shard_icon='el-icon-circle-close';
+                                shard_description=res.attachment.shard_step[0].error_info;
+                              }
+                              const shard_ids=res.attachment.shard_step[0].shard_ids;
+                              for(let b=0;b<shard_ids.length;b++){//secondlist不为空的情况todo
+                                secondgoing={title:shard_ids[b],icon:shard_icon,status: shard_status,description:shard_description}
+                                secondlist.push(secondgoing)
+                              }
+                              this.statusList[a].second=secondlist;
+                            }
+                            //外层修改状态
+                            if(this.statusList[a].title=='正在'+info+steps[a]){
+                              //this.init_active=a+1;
+                              this.statusList[a].title=info+steps[a]+'成功';
+                              this.statusList[a].icon='el-icon-circle-check';
+                              this.statusList[a].status='success';
+                            }
+                          }else if(res.attachment.storage_state=='failed'){
+                            if(res.attachment.hasOwnProperty('shard_step')){
+                              let shard_status='process';
+                              let shard_icon='el-icon-loading';
+                              let shard_description='';
+                              if(res.attachment.shard_step[0].storage_state=='done'){
+                                shard_status='success';
+                                shard_icon='el-icon-circle-check';
+                              }else if(res.attachment.shard_step[0].storage_state=='failed'){
+                                shard_status='error';
+                                shard_icon='el-icon-circle-close';
+                                shard_description=res.attachment.shard_step[0].error_info;
+                              }
+                               const arr=res.attachment.shard_step[0].shard_ids.substr(0,res.attachment.shard_step[0].shard_ids.length-1);
+                              const shard_ids=arr.split(',');
+                              for(let b=0;b<shard_ids.length;b++){//secondlist不为空的情况todo
+                                secondgoing={title:shard_ids[b],icon:shard_icon,status: shard_status,description:shard_description}
+                                secondlist.push(secondgoing)
+                              }
+                              this.statusList[a].second=secondlist;
+                            }
+                            //外层修改状态
+                            if(this.statusList[a].title=='正在'+info+steps[a]){
+                              //this.init_active=a;
+                              this.statusList[a].title=info+steps[a]+'失败';
+                              this.statusList[a].icon='el-icon-circle-close';
+                              this.statusList[a].status='error';
+                              this.statusList[a].description=res.attachment.hasOwnProperty('shard_error_info')===true?res.attachment.shard_error_info:'';
+                            }
+                          }else{
+
+                          }
+
                         }
                       }
                     }
-                    else{
-                      for(let c=0;c<this.shard.length;c++){
-                        if(info=='新增'){
-                          const shard_ids=ress.attachment.shard_step[b].shard_ids;
-                          for(let e=0;e<shard_ids.length;e++){
-                            for(var item in shard_ids[e]){
-                              var shard_idsValue=shard_ids[e][item];
-                              if(this.shard[c].shard_id==shard_idsValue){
-                                this.shard[c].icon='el-icon-circle-close';
-                                this.shard[c].status='error';
-                              }
-                            }
-                          }
-                        }else if(info=='删除'){
-                          const arr=ress.attachment.shard_step[b].storage_hosts.substr(0,ress.attachment.shard_step[b].storage_hosts.length-1);
-                          const shard_ids=arr.split(',');
-                          for(let e=0;e<shard_ids.length;e++){
-                            if(this.shard[c].shard_id==shard_ids[e]){
-                              this.shard[c].icon='el-icon-circle-close';
-                              this.shard[c].status='error';
-                            }
-                          }
-                        }
-                      }
-                      this.shard_description=ress.error_info;
-                    }
-                  }else{
-                    this.storage_state='error';
-                    this.shard_icon='el-icon-circle-close'
-                    this.shard_title=info+steps[0]+'失败';
                   }
-                  
+                  // if(this.init_active==0){
+                  //   statusgoing={title:iparr[a].title,icon:'',status:'wait',description:'',second:secondlist}
+                  //   this.statusList.push(statusgoing)
+                  // }else{
+                  //   statusgoing={title:iparr[a].title,icon:'el-icon-loading',status:'process',description:'',second:secondlist}
+                  //   this.statusList.push(statusgoing)
+                  // }
+                  // //第a个修改里边的状态
+                  // if(iparr[a].status=='done'){
+                  //   this.init_active=a+1;
+                  //   this.statusList[a].icon='el-icon-circle-check';
+                  //   this.statusList[a].status='success';
+                  //   for(let c=0;c<this.statusList[a].second.length;c++){
+                  //     this.statusList[a].second[c].icon='el-icon-circle-check';
+                  //     this.statusList[a].second[c].status='success';
+                  //   }
+                  // }else if(iparr[a].status=='ongoing'){
+                  //   this.init_active=a;
+                  //   this.statusList[a].icon='el-icon-loading';
+                  //   this.statusList[a].status='process';
+                  //   for(let c=0;c<this.statusList[a].second.length;c++){
+                  //     if(iparr[a].step==this.statusList[a].second[c].title){
+                  //       this.statusList[a].second[c].icon='el-icon-loading';
+                  //       this.statusList[a].second[c].status='process';
+                  //       for(let j=0;j<c;j++){
+                  //         this.statusList[a].second[j].icon='el-icon-circle-check';
+                  //         this.statusList[a].second[j].status='success';
+                  //       }
+                  //     }
+                  //   }
+                  // }else if(iparr[a].status=='failed'){
+                  //   this.statusList[a].icon='el-icon-circle-close';
+                  //   this.statusList[a].status='error';
+                  //   for(let c=0;c<this.statusList[a].second.length;c++){
+                  //     if(iparr[a].step==this.statusList[a].second[c].title){
+                  //       this.statusList[a].second[c].icon='el-icon-circle-close';
+                  //       this.statusList[a].second[c].status='error';
+                  //       for(let j=0;j<c;j++){
+                  //         this.statusList[a].second[j].icon='el-icon-circle-check';
+                  //         this.statusList[a].second[j].status='success';
+                  //       }
+                  //     }
+                  //   }
+                  //   this.statusList[a].description=iparr[a].error_info;
+                  // }
+
                 }
               }
-            }else if(ress.attachment==null&&ress.error_code=='70001'&&ress.status=='failed'){
-              this.init_title='正在'+info+'集群';
-              //计算节点
-              this.computer_state='process';
-              this.computer_icon='el-icon-loading'
-              this.computer_title='正在'+info+'computer';
-              //储存节点
-              this.storage_state='process';
-              this.shard_icon='el-icon-loading';
-              this.shard_title='正在'+info+'shard';
+            }else if(res.attachment==null&&res.error_code=='70001'&&res.status=='failed'){
+              // if(i==0){
+              //   this.statusList=[];
+              //   let statusgoing={}
+              //   statusgoing={title:'正在'+info,icon:'el-icon-loading',status:'process',description:'',second:[]}
+              //   this.statusList.push(statusgoing)
+              // }
               if(i>5){
-                this.init_show=false
-                //计算节点
-                this.computer_state='error';
-                this.computer_icon='el-icon-circle-close'
-                this.computer_title=info+'computer失败';
-                //储存节点
-                this.storage_state='error';
-                this.shard_icon='el-icon-circle-close';
-                this.shard_title=info+'shard失败';
+                let statusgoing={title:info+'失败',icon:'el-icon-circle-close',status:'error',description:res.error_code,second:[]}
+                this.statusList.push(statusgoing)
+                // this.statusList.title=info+'失败';
+                // this.statusList.icon='el-icon-circle-close';
+                // this.statusList.status='error';
+                // this.statusList.description=res.error_code;
                 clearInterval(timer);
               }
-            }else if(ress.attachment==null&&ress.status=='ongoing'){
-              this.init_title='正在'+info+'集群';
-              //计算节点
-              this.computer_state='process';
-              this.computer_icon='el-icon-loading'
-              this.computer_title='正在'+info+'computer';
-              //储存节点
-              this.storage_state='process';
-              this.shard_icon='el-icon-loading';
-              this.shard_title='正在'+info+'shard';
-            }else if(ress.attachment==null&&ress.status=='done'){
-              this.init_show=false
-              //计算节点
-              this.computer_state='success';
-              this.computer_icon='el-icon-circle-check'
-              this.computer_title=info+'computer成功';
-              //储存节点
-              this.storage_state='success';
-              this.shard_icon='el-icon-circle-check';
-              this.shard_title=info+'shard成功';
+            }else if(res.attachment==null&&res.status=='ongoing'){
+              this.statusList=[];
+              let statusgoing={}
+              statusgoing={title:'正在'+info,icon:'el-icon-loading',status:'process',description:'',second:[]}
+              this.statusList.push(statusgoing)
+            }else if(res.attachment==null&&res.status=='done'){
+              this.statusList=[];
+              let statusgoing={}
+              statusgoing={title:info+'成功',icon:'el-icon-circle-check',status:'success',description:'',second:[]}
+              this.statusList.push(statusgoing)
               clearInterval(timer);
             }else{
-              this.init_show=false
-              //计算节点
-              this.computer_state='error';
-              this.computer_icon='el-icon-circle-close'
-              this.computer_title=info+'computer失败';
-              //储存节点
-              this.storage_state='error';
-              this.shard_icon='el-icon-circle-close';
-              this.shard_title=info+'shard失败';
+              this.statusList=[];
+              let statusgoing={}
+              statusgoing={title:info+'失败',icon:'el-icon-circle-close',status:'error',description:res.error_code,second:[]}
+              this.statusList.push(statusgoing)
               clearInterval(timer);
             }
-          }else if(info=='添加shard'||info=='添加计算节点'||info=='添加存储节点'){
-            //新增shard,计算节点，存储节点
-            if(ress.attachment!==null){
-              if(info=='添加shard'||info=='添加存储节点'){
-                this.shard_show=true;
-                this.init_show=false;
-                this.computer_show=false;
-              }else if(info=='添加计算节点'){
-                this.shard_show=false;
-                this.init_show=false;
-                this.computer_show=true;
-              }
-              //计算
-              if(ress.attachment.hasOwnProperty('computer_state')){
-                if(ress.attachment.computer_state=='ongoing'){
-                  this.computer_state='process';
-                  this.computer_icon='el-icon-loading'
-                  this.computer_title='正在'+info;
-                }else if(ress.attachment.computer_state=='done'){
-                  this.computer_state='success';
-                  this.computer_icon='el-icon-circle-check'
-                  this.computer_title=info+'成功';
-                  //遍历计算节点改状态
-                  if(this.computer.length>0){
-                    for(let c=0;c<this.computer.length;c++){
-                      const arr=ress.attachment.computer_hosts.substr(0,ress.attachment.computer_hosts.length-1);
-                      const computer_hosts=arr.split(';');
-                      for(let e=0;e<computer_hosts.length;e++){
-                        if(this.computer[c].title==computer_hosts[e]){
-                          this.computer[c].icon='el-icon-circle-check';
-                          this.computer[c].status='success';
-                        }
-                      }
-                    }
-                  }
-                }else if(ress.attachment.computer_state=='failed'){
-                  this.computer_state='error';
-                  this.computer_icon='el-icon-circle-close'
-                  this.computer_title=info+'失败';
-                  //遍历计算节点改状态
-                  if(this.computer.length>0){
-                    for(let c=0;c<this.computer.length;c++){
-                      const arr=ress.attachment.computer_hosts.substr(0,ress.attachment.computer_hosts.length-1);
-                      const computer_hosts=arr.split(';');
-                      for(let e=0;e<computer_hosts.length;e++){
-                        if(this.computer[c].title==computer_hosts[e]){
-                          this.computer[c].icon='el-icon-circle-close';
-                          this.computer[c].status='error';
-                        }
-                      }
-                    }
-                  this.computer_description=ress.error_info;
-                  }
-                }else{
-                  this.computer_state='process';
-                  this.computer_icon='el-icon-loading'
-                  this.computer_title='正在'+info;
-                }
-              }
-              //存储
-              if(ress.attachment.hasOwnProperty('storage_state')){
-                if(ress.attachment.storage_state=='ongoing'){
-                  this.storage_state='process';
-                  this.shard_icon='el-icon-loading'
-                  this.shard_title='正在'+info;
-                }else if(ress.attachment.storage_state=='done'){
-                  this.storage_state='success';
-                  this.shard_icon='el-icon-circle-check'
-                  this.shard_title=info+'成功';
-                  //遍历存储节点改状态
-                  if(this.shard.length>0){
-                    for(let c=0;c<this.shard.length;c++){
-                      let shard_ids='';
-                      if(info=='添加shard'){
-                        shard_ids=ress.attachment.shard_ids;
-                      }else{
-                        shard_ids=ress.attachment.shard_hosts;
-                      }
-                      //const shard_ids=ress.attachment.shard_ids;
-                      for(let e=0;e<shard_ids.length;e++){
-                        for(var item in shard_ids[e]){
-                          var shard_idsValue=shard_ids[e][item];
-                          if(this.shard[c].shard_id==shard_idsValue){
-                            this.shard[c].icon='el-icon-circle-check';
-                            this.shard[c].status='success';
-                          }
-                        }
-                      }
-                    }
-                  }
-                }else if(ress.attachment.storage_state=='failed'){
-                  this.storage_state='error';
-                  this.shard_icon='el-icon-circle-close'
-                  this.shard_title=info+'失败';
-                  //遍历存储节点改状态
-                  if(this.shard.length>0){
-                    for(let c=0;c<this.shard.length;c++){
-                      let shard_ids='';
-                      if(info=='添加shard'){
-                        shard_ids=ress.attachment.shard_ids;
-                      }else{
-                        shard_ids=ress.attachment.shard_hosts;
-                      }
-                      for(let e=0;e<shard_ids.length;e++){
-                        for(var item in shard_ids[e]){
-                          var shard_idsValue=shard_ids[e][item];
-                          if(this.shard[c].shard_id==shard_idsValue){
-                            this.shard[c].icon='el-icon-circle-close';
-                            this.shard[c].status='error';
-                          }
-                        }
-                      }
-                    }
-                    this.shard_description=ress.error_info;
-                  }
-                  //clearInterval(timer);
-                }else{
-                  this.storage_state='process';
-                  this.shard_icon='el-icon-loading'
-                  this.shard_title='正在'+info;
-                }
-              }
-              this.init_title='正在'+info;
-              //this.finish_title=info+'集群成功'
-              this.init_active=1;
-              if(this.computer.length==0||this.shard.length==0){
-                if(info=='添加计算节点'){
-                  if(this.computer.length==0){
-                    if(ress.attachment.hasOwnProperty('computer_hosts')){
-                      const arr=ress.attachment.computer_hosts.substr(0,ress.attachment.computer_hosts.length-1);
-                      const computer_hosts=arr.split(';');
-                      if(ress.attachment.computer_state=='done'){
-                        for(let e=0;e<computer_hosts.length;e++){
-                          let newArrgoing={}
-                          newArrgoing.title=computer_hosts[e];
-                          newArrgoing.icon='el-icon-circle-check';
-                          newArrgoing.status= 'success';
-                          newArrgoing.description='';
-                          newArrgoing.computer_id=ress.attachment.computer_id;
-                          this.computer.push(newArrgoing)
-                        }
-                      }else{
-                        for(let e=0;e<computer_hosts.length;e++){
-                          let newArrgoing={}
-                          newArrgoing.title=computer_hosts[e];
-                          newArrgoing.icon='el-icon-loading';
-                          newArrgoing.status= 'process';
-                          newArrgoing.description='';
-                          newArrgoing.computer_id=ress.attachment.computer_id;
-                          this.computer.push(newArrgoing)
-                        }
-                      }
-                    }
-                  }else{
-                    if(ress.attachment.hasOwnProperty('computer_state')){
-                      if(ress.attachment.computer_state=='done'){
-                        this.computer_state='success';
-                        this.computer_icon='el-icon-circle-check'
-                        this.computer_title=info+'成功';
-                        //遍历计算节点改状态
-                        if(this.computer.length>0){
-                          for(let c=0;c<this.computer.length;c++){
-                            const arr=ress.attachment.computer_hosts.substr(0,ress.attachment.computer_hosts.length-1);
-                            const computer_hosts=arr.split(';');
-                            for(let e=0;e<computer_hosts.length;e++){
-                              if(this.computer[c].title==computer_hosts[e]){
-                                this.computer[c].icon='el-icon-circle-check';
-                                this.computer[c].status='success';
-                              }
-                            }
-                          }
-                        }
-                      }else if(ress.attachment.computer_state=='failed'){
-                        this.computer_state='error';
-                        this.computer_icon='el-icon-circle-close'
-                        this.computer_title=info+'失败';
-                        //遍历计算节点改状态
-                        if(this.computer.length>0){
-                          for(let c=0;c<this.computer.length;c++){
-                            const arr=ress.attachment.computer_hosts.substr(0,ress.attachment.computer_hosts.length-1);
-                            const computer_hosts=arr.split(';');
-                            for(let e=0;e<computer_hosts.length;e++){
-                              if(this.computer[c].title==computer_hosts[e]){
-                                this.computer[c].icon='el-icon-circle-close';
-                                this.computer[c].status='error';
-                              }
-                            }
-                          }
-                        this.computer_description=ress.error_info;
-                        }
-                      }else{
-                        this.computer_state='process';
-                        this.computer_icon='el-icon-loading'
-                        this.computer_title='正在'+info;
-                      }
-                    }
-                  }
-                }else{
-                  if(this.shard.length==0){
-                    if(ress.attachment.hasOwnProperty('shard_hosts')){
-                      let shard_ids='';
-                      if(info=='添加shard'){
-                        shard_ids=ress.attachment.shard_ids;
-                      }else{
-                        shard_ids=ress.attachment.shard_hosts;
-                      }
-                      for(let e=0;e<shard_ids.length;e++){
-                        for(var item in shard_ids[e]){
-                          let shardgoing={}
-                          var shard_idsValue=shard_ids[e][item];
-                          console.log(shard_idsValue);
-                          const shard_text=item+':'+shard_idsValue;
-                          console.log(shard_text);
-                          shardgoing.title=shard_idsValue!==''?shard_text:'正在'+info;
-                          shardgoing.icon='el-icon-loading';
-                          shardgoing.status= 'process';
-                          shardgoing.description='';
-                          shardgoing.shard_id=shard_idsValue;
-                          this.shard.push(shardgoing)
-                        }
-                      }
-                    }
-                  }else{
-                    if(ress.attachment.hasOwnProperty('storage_state')){
-                      if(ress.attachment.storage_state=='done'){
-                        this.storage_state='success';
-                        this.shard_icon='el-icon-circle-check'
-                        this.shard_title=info+'成功';
-                        //遍历存储节点改状态
-                        if(this.shard.length>0){
-                          for(let c=0;c<this.shard.length;c++){
-                            let shard_ids='';
-                            if(info=='添加shard'){
-                              shard_ids=ress.attachment.shard_ids;
-                            }else{
-                              shard_ids=ress.attachment.shard_hosts;
-                            }
-                            //const shard_ids=ress.attachment.shard_ids;
-                            for(let e=0;e<shard_ids.length;e++){
-                              for(var item in shard_ids[e]){
-                                var shard_idsValue=shard_ids[e][item];
-                                if(this.shard[c].shard_id==shard_idsValue){
-                                  this.shard[c].icon='el-icon-circle-check';
-                                  this.shard[c].status='success';
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }else if(ress.attachment.storage_state=='failed'){
-                        this.storage_state='error';
-                        this.shard_icon='el-icon-circle-close'
-                        this.shard_title=info+'失败';
-                        //遍历存储节点改状态
-                        if(this.shard.length>0){
-                          for(let c=0;c<this.shard.length;c++){
-                            let shard_ids='';
-                            if(info=='添加shard'){
-                              shard_ids=ress.attachment.shard_ids;
-                            }else{
-                              shard_ids=ress.attachment.shard_hosts;
-                            }
-                            for(let e=0;e<shard_ids.length;e++){
-                              for(var item in shard_ids[e]){
-                                var shard_idsValue=shard_ids[e][item];
-                                if(this.shard[c].shard_id==shard_idsValue){
-                                  this.shard[c].icon='el-icon-circle-close';
-                                  this.shard[c].status='error';
-                                }
-                              }
-                            }
-                          }
-                          this.shard_description=ress.error_info;
-                        }
-                        //clearInterval(timer);
-                      }else{
-                        this.storage_state='process';
-                        this.shard_icon='el-icon-loading'
-                        this.shard_title='正在'+info;
-                      }
-                    }
-                  }
-                }
-                if(ress.status=='failed'){
-                  this.storage_state='error';
-                  this.shard_icon='el-icon-circle-close'
-                  this.shard_title=info+'失败';
-                  this.init_show=false;
-
-                  this.computer_state='error';
-                  this.computer_icon='el-icon-circle-close'
-                  this.computer_title=info+'失败';
-
-                  this.finish_title=info+'失败'
-                  this.finish_icon='el-icon-circle-close'
-                  this.init_active=1
-                  this.finish_description=ress.error_info;
-                  //遍历计算节点改状态
-                  if(this.computer.length>0){
-                    for(let c=0;c<this.computer.length;c++){
-                      if(ress.attachment.hasOwnProperty('computer_hosts')){
-                        const arr=ress.attachment.computer_hosts.substr(0,ress.attachment.computer_hosts.length-1);
-                        const computer_hosts=arr.split(';');
-                        for(let e=0;e<computer_hosts.length;e++){
-                          if(this.computer[c].title==computer_hosts[e]){
-                            this.computer[c].icon='el-icon-circle-close';
-                            this.computer[c].status='error';
-                          }
-                        }
-                      }
-                    }
-                  this.computer_description=ress.error_info;
-                  }
-                  //遍历存储节点改状态
-                  if(this.shard.length>0){
-                    for(let c=0;c<this.shard.length;c++){
-                      let shard_ids='';
-                      if(ress.attachment.hasOwnProperty('shard_hosts')){
-                        if(info=='添加shard'){
-                          shard_ids=ress.attachment.shard_ids;
-                        }else{
-                          shard_ids=ress.attachment.shard_hosts;
-                        }
-                        for(let e=0;e<shard_ids.length;e++){
-                          for(var item in shard_ids[e]){
-                            var shard_idsValue=shard_ids[e][item];
-                            if(this.shard[c].shard_id==shard_idsValue){
-                              this.shard[c].icon='el-icon-circle-close';
-                              this.shard[c].status='error';
-                            }
-                          }
-                        }
-                      }
-                    }
-                    this.shard_description=ress.error_info;
-                  }
-                  clearInterval(timer);
-                }else if(ress.status=='done'){
-                  this.storage_state='success';
-                  this.shard_icon='el-icon-circle-check'
-                  this.shard_title=info+'成功';
-
-                  this.computer_state='success';
-                  this.computer_icon='el-icon-circle-check'
-                  this.computer_title=info+'成功';
-
-                  this.finish_title=info+'成功'
-                  this.finish_icon='el-icon-circle-check'
-                  this.init_active=1
-                  this.finish_description=ress.error_info;
-                  //遍历计算节点改状态
-                  if(this.computer.length>0){
-                    for(let c=0;c<this.computer.length;c++){
-                      if(ress.attachment.hasOwnProperty('computer_hosts')){
-                        const arr=ress.attachment.computer_hosts.substr(0,ress.attachment.computer_hosts.length-1);
-                        const computer_hosts=arr.split(';');
-                        for(let e=0;e<computer_hosts.length;e++){
-                          if(this.computer[c].title==computer_hosts[e]){
-                            this.computer[c].icon='el-icon-circle-check';
-                            this.computer[c].status='success';
-                          }
-                        }
-                      }
-                    }
-                  }
-                  //遍历存储节点改状态
-                  if(this.shard.length>0){
-                    for(let c=0;c<this.shard.length;c++){
-                      let shard_ids='';
-                      if(ress.attachment.hasOwnProperty('shard_hosts')){
-                        if(info=='添加shard'){
-                          shard_ids=ress.attachment.shard_ids;
-                        }else{
-                          shard_ids=ress.attachment.shard_hosts;
-                        }
-                        //const shard_ids=ress.attachment.shard_ids;
-                        for(let e=0;e<shard_ids.length;e++){
-                          for(var item in shard_ids[e]){
-                            var shard_idsValue=shard_ids[e][item];
-                            if(this.shard[c].shard_id==shard_idsValue){
-                              this.shard[c].icon='el-icon-circle-check';
-                              this.shard[c].status='success';
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                  clearInterval(timer);
-                  this.getList();
-                }
-              }
-            }else if(ress.attachment==null&&ress.error_code=='70001'&&ress.status=='failed'){
-              if(info=='添加shard'||info=='添加存储节点'){
-                this.shard_show=true;
-                this.init_show=false;
-                this.computer_show=false;
-                this.storage_state='process';
-                this.shard_icon='el-icon-loading'
-                this.shard_title='正在'+info;
-                if(i>5){
-                  this.storage_state='error';
-                  this.shard_icon='el-icon-circle-close'
-                  this.shard_title=info+'失败';
-                  clearInterval(timer);
-                }
-              }else if(info=='添加计算节点'){
-                this.shard_show=false;
-                this.init_show=false;
-                this.computer_show=true;
-                this.computer_state='process';
-                this.computer_icon='el-icon-loading'
-                this.computer_title='正在'+info;
-                if(i>5){
-                  this.computer_state='error';
-                  this.computer_icon='el-icon-circle-close'
-                  this.computer_title=info+'失败';
-                  clearInterval(timer);
-                }
-              }
-            }else if(ress.attachment==null&&ress.status=='ongoing'){
-               if(info=='添加shard'||info=='添加存储节点'){
-                this.shard_show=true;
-                this.init_show=false;
-                this.computer_show=false;
-                this.storage_state='process';
-                this.shard_icon='el-icon-loading'
-                this.shard_title='正在'+info;
-              }else if(info=='添加计算节点'){
-                this.shard_show=false;
-                this.init_show=false;
-                this.computer_show=true;
-                this.computer_state='process';
-                this.computer_icon='el-icon-loading'
-                this.computer_title='正在'+info;
-              }
-            }else if(ress.attachment==null&&ress.status=='done'){
-              if(info=='添加shard'||info=='添加存储节点'){
-                this.shard_show=true;
-                this.init_show=false;
-                this.computer_show=false;
-                this.storage_state='success';
-                this.shard_icon='el-icon-circle-check'
-                this.shard_title=info+'成功';
-              }else if(info=='添加计算节点'){
-                this.shard_show=false;
-                this.init_show=false;
-                this.computer_show=true;
-                this.computer_state='success';
-                this.computer_icon='el-icon-circle-check'
-                this.computer_title=info+'成功';
-              }
-              clearInterval(timer);
-            }else{
-              if(info=='添加shard'||info=='添加存储节点'){
-                this.shard_show=true;
-                this.init_show=false;
-                this.computer_show=false;
-                this.storage_state='error';
-                this.shard_icon='el-icon-circle-close'
-                this.shard_title=info+'失败';
-              }else if(info=='添加计算节点'){
-                this.shard_show=false;
-                this.init_show=false;
-                this.computer_show=true;
-                this.computer_state='error';
-                this.computer_icon='el-icon-circle-close'
-                this.computer_title=info+'失败';
-              }
-              clearInterval(timer);
-            }
-          }else if(info=='扩容'){
-            if(ress.attachment!==null){
-              if(ress.status=='failed'){
-                this.expand_end="集群扩容失败"
-                this.expondInit=false;
-                this.expondSatus=true;
-                this.expondResult=true;
-                this.expondInfo=ress.attachment.memo_info;
-                console.log(ress.attachment.memo_info);
-                clearInterval(timer);
-              }else if(ress.status=='done'){
-                this.expand_end="集群扩容成功"
-                this.expondInit=false;
-                this.expondSatus=true;
-                this.expondResult=true;
-                this.expondInfo=ress.attachment.memo_info;
-                //console.log(typeof ress.attachment.memo_info);
-                clearInterval(timer);
-              }else{
-                this.expand_init="正在进行集群扩容"
-                this.expondInit=true;
-                this.expondSatus=false;
-                this.expondResult=false;
-                this.expondInfo=ress.attachment.memo_info;
-              }
-            }else if(ress.attachment==null&&ress.status=='failed'){
-              this.expondInit=false;
-              this.expondSatus=false;
-              this.expondResult=true;
-              this.expand_end="集群扩容失败"
-              clearInterval(timer);
-            }
-          }  
+          }
         });
         if(i>=86400){
             clearInterval(timer);
@@ -4155,25 +3312,15 @@ export default {
           clearInterval(timer);
           //this.info=res.error_info;
           if(res.status=='done'){
-            // if(error_info){
-            //   const newArrdone={
-            //     content:error_info,
-            //     timestamp: getNowDate(),
-            //     color: '#0bbd87',
-            //     icon: 'el-icon-circle-check'
-            //   };
-            //   this.activities.push(newArrdone)
-            // }else{
-              const newArrdone={
-                content:'集群回档成功',
-                timestamp: getNowDate(),
-                color: '#0bbd87',
-                icon: 'el-icon-circle-check'
-              };
-              this.activities.push(newArrdone)
-            // }
+            const newArrdone={
+            content:error_info,
+              timestamp: getNowDate(),
+              color: '#0bbd87',
+              icon: 'el-icon-circle-check'
+            };
+            this.activities.push(newArrdone)
             this.getList();
-            //this.dialogStatusVisible=false;
+            this.dialogStatusVisible=false;
           }else{
             const newArr={
               content:error_info,
@@ -4185,14 +3332,12 @@ export default {
             //this.installStatus = true;
           }
         }else{
-          if(error_info){
-            const newArrgoing={
-              content:error_info,
-              timestamp: getNowDate(),
-              color: '#0bbd87'
-            };
-            this.activities.push(newArrgoing)
-          }
+          const newArrgoing={
+            content:error_info,
+            timestamp: getNowDate(),
+            color: '#0bbd87'
+          };
+          this.activities.push(newArrgoing)
           //this.info=res.error_info;
           //this.installStatus = true;
         }

@@ -139,6 +139,39 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/meta',
+    component: Layout,
+    redirect: '/meta',
+    name: 'Meta',
+    meta: {
+      title: '元数据集群管理',
+      requiresAuth:true, 
+      icon: 'el-icon-set-up' 
+    },
+    children: [
+      {
+        path: 'list',
+        name: 'list',
+        component: () => import('@/views/metacluster/list'),
+        meta: {
+          title: '元数据节点列表',
+          requiresAuth:true, 
+          // icon: 'table'
+        }
+      },
+      {
+        path: 'node',
+        name: 'Node',
+        component: () => import('@/views/machine/node'),
+        // meta: { 
+        //   title: '单台计算机节点列表',
+        //   requiresAuth:true, 
+        //   // icon: 'tree'
+        // }
+      }
+    ]
+  },
+  {
     path: '/cluster',
     component: Layout,
     redirect: '/cluster',
@@ -205,7 +238,23 @@ export const constantRoutes = [
       // }
     ]
   },
-    {
+  {
+    path: '/ClusterMgr',
+    component: Layout,
+    children: [
+      {
+        path: 'node',
+        name: 'ClusterMgr',
+        component: () => import('@/views/cluster_mgr/node'),
+        meta: { 
+          title: 'cluster_mgr状态',
+          requiresAuth:true, 
+          icon: 'el-icon-aim'
+        }
+      }
+    ]
+  },
+  {
     path: '/operation',
     component: Layout,
     children: [

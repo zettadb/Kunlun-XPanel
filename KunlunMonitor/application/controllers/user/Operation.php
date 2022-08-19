@@ -534,6 +534,10 @@ class Operation extends CI_Controller {
 								$res[$row]['list'] = '';
 								$res[$row]['object'] = '';
 							}
+							if($value2=='cluster_restore'){
+								$res[$row]['list'] = '';
+								$res[$row]['object'] = '';
+							}
 						}else{
 							$res[$row]['job_type'] = '';
 						}

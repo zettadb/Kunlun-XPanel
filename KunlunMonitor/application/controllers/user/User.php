@@ -137,7 +137,7 @@ class User extends CI_Controller {
 		$string=json_decode(@file_get_contents('php://input'),true);
 		$id = $string['id'];
 		$user_name = $string['username'];
-		$password = $string['password'];
+		//$password = $string['password'];
 		$phone_number = $string['phone_number'];
 		$email = $string['email'];
 		$wechat_number = $string['wechat_number'];
@@ -158,7 +158,7 @@ class User extends CI_Controller {
 					$data['message'] = 'token错误';
 					print_r(json_encode($data));
 				}else{
-					$sql_update="update kunlun_user set name='$user_name',password='$password',email='$email',phone_number='$phone_number',wechat_number='$wechat_number',update_time=now() where id='$id';";
+					$sql_update="update kunlun_user set name='$user_name',email='$email',phone_number='$phone_number',wechat_number='$wechat_number',update_time=now() where id='$id';";
 					$res_update=$this->Login_model->updateList($sql_update);
 					if($res_update==1){
 						$data['code'] = 200;

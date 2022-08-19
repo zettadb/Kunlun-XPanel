@@ -15,6 +15,7 @@ class Login extends CI_Controller {
 		//header('Access-Control-Allow-Credentials: true'); // 设置是否允许发送 cookies
 		$this->config->load('myconfig');
 		$this->key=$this->config->item('key');
+		$this->grafana_key=$this->config->item('grafana_key');
 	}
 	public function userCheck(){
 		$string=json_decode(@file_get_contents('php://input'),true);
@@ -423,9 +424,32 @@ class Login extends CI_Controller {
 		$sql="select hostaddr,port from cluster_mgr_nodes where member_state='source'";
 		$this->load->model('Change_model');
 		$res=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql);
-		//print_r($res);exit;
 		if($res['code']==200){
 			if(!empty($res[0]) && !empty($res[1])){
+				$key=$this->grafana_key;
+				//查grafana数据源
+				$get_url='http://admin:admin@127.0.0.1/api/datasources';
+				//调grafana的api查数据源
+				$this->load->model('Grafana_model');
+				$get_result= $this->Grafana_model->postDataSource($get_url);
+				if(!empty($get_result)){
+					$get_arr=json_decode($get_result,true);
+					if(count($get_arr)!==0){
+						if(array_key_exists('message',$get_arr)){
+							if($get_arr['message'] == 'invalid API key'||$get_arr['message'] == 'Unauthorized'){
+								//获取key
+								$post_keyDate='{"name":"apikeycurl", "role": "Admin"}';
+								$post_keyurl='http://admin:admin@127.0.0.1:3000/api/auth/keys';
+								$post_keyresult= $this->Grafana_model->getKey($post_keyDate,$post_keyurl);
+								$post_keyresult=json_decode($post_keyresult,true);
+								if(array_key_exists('key',$post_keyresult)){
+									$key='Bearer '.$post_keyresult['key'];
+								}
+							}
+						}
+					}
+				}
+
 				//修改配置文件myconfig.php
 				$post_url='http://'.$res[0].':'.$res[1].'/HttpService/Emit';
 				//print_r($post_url);exit;
@@ -437,14 +461,114 @@ class Login extends CI_Controller {
 	\$config['default_username'] = 'player';
 	\$config['pg_database'] = 'postgres';
 	\$config['db_prefix'] = 'kunlundb_';
-	\$config['job_type'] = array(array('code'=>'create_cluster','name'=>'新增集群'),array('code'=>'delete_cluster','name'=>'删除集群'),array('code'=>'add_shards','name'=>'新增shard'),array('code'=>'delete_shard','name'=>'删除shard'),array('code'=>'backup_cluster','name'=>'备份集群'),array('code'=>'restore_new_cluster','name'=>'恢复集群'),array('code'=>'add_comps','name'=>'增加计算节点'),array('code'=>'delete_comp','name'=>'删除计算节点'),array('code'=>'add_nodes','name'=>'增加存储节点'),array('code'=>'delete_node','name'=>'删除存储节点'),array('code'=>'mysqld_exporter','name'=>'监控存储节点'),array('code'=>'postgres_exporter','name'=>'监控计算节点'),array('code'=>'update_prometheus','name'=>'重置prometheus'),array('code'=>'update_machine','name'=>'编辑计算机'),array('code'=>'delete_machine','name'=>'删除计算机'),array('code'=>'control_instance','name'=>'控制实例'),array('code'=>'delete_backup_storage','name'=>'删除备份存储目标'),array('code'=>'create_backup_storage','name'=>'新增备份存储目标'),array('code'=>'update_backup_storage','name'=>'编辑备份存储目标'),array('code'=>'manual_switch','name'=>'主备切换'),array('code'=>'rebuild_node','name'=>'重做备机节点'),array('code'=>'create_machine','name'=>'新增计算机'));";
+	\$config['grafana_key'] = '$key';
+	\$config['job_type'] = array(array('code'=>'create_cluster','name'=>'新增集群'),array('code'=>'delete_cluster','name'=>'删除集群'),array('code'=>'add_shards','name'=>'新增shard'),array('code'=>'delete_shard','name'=>'删除shard'),array('code'=>'backup_cluster','name'=>'备份集群'),array('code'=>'restore_new_cluster','name'=>'恢复集群'),array('code'=>'add_comps','name'=>'增加计算节点'),array('code'=>'delete_comp','name'=>'删除计算节点'),array('code'=>'add_nodes','name'=>'增加存储节点'),array('code'=>'delete_node','name'=>'删除存储节点'),array('code'=>'mysqld_exporter','name'=>'监控存储节点'),array('code'=>'postgres_exporter','name'=>'监控计算节点'),array('code'=>'update_prometheus','name'=>'重置prometheus'),array('code'=>'update_machine','name'=>'编辑计算机'),array('code'=>'delete_machine','name'=>'删除计算机'),array('code'=>'control_instance','name'=>'控制实例'),array('code'=>'delete_backup_storage','name'=>'删除备份存储目标'),array('code'=>'create_backup_storage','name'=>'新增备份存储目标'),array('code'=>'update_backup_storage','name'=>'编辑备份存储目标'),array('code'=>'manual_switch','name'=>'主备切换'),array('code'=>'rebuild_node','name'=>'重做备机节点'),array('code'=>'create_machine','name'=>'新增计算机'),array('code'=>'cluster_restore','name'=>'回档集群'),array('code'=>'expand_cluster','name'=>'集群扩容'));";
 				fwrite($f_p, $file_p);
 				fgets($f_p);
-				//获取元数据的主节点
-				$sql_main="select hostaddr,port from meta_db_nodes where member_state='source'";
-				$this->load->model('Change_model');
-				$res_main=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_main);
-				//print_r($res_main);exit;
+				//先查元数据是mgr还是rbr
+				$dbha_mode='';
+				$sql_dbha="select value from global_configuration";
+				$res_dbha=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_dbha);
+				if($res_dbha['code']==200){
+					$dbha_mode=$res_dbha[0];
+				}else{
+					//连不上报错
+					$data['code']=500;
+					$data['message']=$res_dbha[0];
+					print_r(json_encode($data));return;
+				}
+				if($dbha_mode=='rbr'){
+					//获取元数据的主节点
+					$sql_main="select HOST, PORT from performance_schema.replication_connection_configuration where channel_name='kunlun_repl';";
+					$res_main=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_main);
+					$res_count=count($res_main);
+					if($res_count==1){
+						//$res_rbr_main=$this->getRbrMain($ip,$port);
+						$sql_change="select hostaddr,port from meta_db_nodes where hostaddr!='$ip' and port!='$port';";
+						$res_change=$this->Change_model->getAllMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_change);
+						$change_count=count($res_change['list']);
+						if($change_count>=1){
+							//遍历所有ip，分别连上去看是否找到主节点
+							foreach($res_change['list'] as $k2=>$v2) {
+								$res_rbr_main=$this->getRbrMain($v2['host'],$v2['port'],$sql_main);
+								if($res_rbr_main['count']==3){
+									$res_main=$res_rbr_main['list'];break;
+								}else if($change_count==($k2+1)){
+									if($res_rbr_main['count']==1){
+										$data['code']=500;
+										$data['message']='rbr元数据找不到主节点';
+										print_r(json_encode($data));return;
+									}else{
+										$data['code']=500;
+										$data['message']=$res_rbr_main['list'][0];
+										print_r(json_encode($data));return;
+									}
+								}else{
+									continue;
+								}
+							}
+							//exit;
+//							$res_change_one=$this->Change_model->getMysql($res_change[0],$res_change[1],'pgx','pgx_pwd','kunlun_metadata_db',$sql_main);
+//							$change_count_one=count($res_change_one);
+//							if($change_count_one==1){
+//								$sql_change_two="select hostaddr,port from meta_db_nodes where hostaddr!='$ip' and port!='$port' and hostaddr!='$res_change[0]' and port!='$res_change[1]';";
+//								$res_change_two=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_change_two);
+//								$change_count_two=count($res_change_two);
+//								if($change_count_two==3){
+//									$res_change_three=$this->Change_model->getMysql($res_change_two[0],$res_change_two[1],'pgx','pgx_pwd','kunlun_metadata_db',$sql_main);
+//									$change_count_three=count($res_change_three);
+//									if($change_count_three==3){
+//										$res_main=$res_change_three;
+//									}else if($change_count_three==1){
+//										//连不上报错
+//										$data['code']=500;
+//										$data['message']='rbr元数据找不到主节点';
+//										print_r(json_encode($data));return;
+//									}else{
+//										//连不上报错
+//										$data['code']=500;
+//										$data['message']=$res_change_three[0];
+//										print_r(json_encode($data));return;
+//									}
+//								}else if($change_count_two==1){
+//									//连不上报错
+//									$data['code']=500;
+//									$data['message']='rbr元数据找不到主节点';
+//									print_r(json_encode($data));return;
+//								}else{
+//									//连不上报错
+//									$data['code']=500;
+//									$data['message']=$res_change_two[0];
+//									print_r(json_encode($data));return;
+//								}
+//							}else if($change_count_one==3){
+//								$res_main=$res_change_one;
+//							}else{
+//								//连不上报错
+//								$data['code']=500;
+//								$data['message']=$res_change_one[0];
+//								print_r(json_encode($data));return;
+//							}
+						}else if($change_count==0){
+							//连不上报错
+							$data['code']=500;
+							$data['message']='rbr元数据找不到主节点';
+							print_r(json_encode($data));return;
+						}else{
+							//连不上报错
+							$data['code']=500;
+							$data['message']=$res_change[0];
+							print_r(json_encode($data));return;
+						}
+					}
+				}else if($dbha_mode=='mgr'){
+					//获取元数据的主节点
+					//$sql_main="select hostaddr,port from meta_db_nodes where member_state='source'";
+					$sql_main="select MEMBER_HOST,MEMBER_PORT from performance_schema.replication_group_members where MEMBER_ROLE = 'PRIMARY' and MEMBER_STATE = 'ONLINE'";
+					$this->load->model('Change_model');
+					$res_main=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_main);
+					//print_r($res_main);exit;
+				}
 				if($res_main['code']==200){
 					$f = fopen('./application/config/database.php', 'w+');
 					$file="<?php
@@ -462,7 +586,7 @@ class Login extends CI_Controller {
 			'dbdriver' => 'mysqli',
 			'dbprefix' => '',
 			'pconnect' => FALSE,
-			'db_debug' => TRUE,
+			'db_debug' => FALSE,
 			'cache_on' => FALSE,
 			'cachedir' => '',
 			'char_set' => 'utf8',
@@ -501,8 +625,10 @@ class Login extends CI_Controller {
 					fwrite($f, $file);
 					fgets($f);
 					$data['code'] = 200;
+					$data['meta_ha_mode']=$dbha_mode;
 					$data['message'] = 'success';
 					print_r(json_encode($data));
+
 				}else{
 					//连不上报错
 					$data['code']=500;
@@ -523,4 +649,13 @@ class Login extends CI_Controller {
 		}
 		//print_r($res['code']);exit;
 	}
+	public  function getRbrMain($ip,$port,$sql){
+		$this->load->model('Change_model');
+		$res=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql);
+		$res_count=count($res);
+		$data['list'] = $res;
+		$data['count'] = $res_count ;
+		return $data;
+	}
+
 }
