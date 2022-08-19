@@ -6,7 +6,7 @@
     <div v-text="info" v-show="installStatus===true" class="info"></div>
     <div class="nodata" v-show="nodataShow">暂无数据</div>
     <!-- style="margin-top:0px;width: calc(100(100% - 10px);height:calc(100vh - 160px);" -->
-    <div ref="myPage" style="margin-top:0px;width: calc(100(100% - 10px);height:calc(100vh - 10px);" v-show="g_loading" @click="isShowNodeMenuPanel = false">
+    <div ref="myPage" style="margin-top:0px;width: calc(100(100% - 10px);height:calc(100vh - 160px);" v-show="g_loading" @click="isShowNodeMenuPanel = false">
       <SeeksRelationGraph
         ref="seeksRelationGraph"
         :options="graphOptions"
@@ -244,7 +244,7 @@
     <!--查看节点详情-->
     <el-dialog title="存储节点详情" :visible.sync="dialogDetailVisible" custom-class="single_dal_view">
       <div class="box">
-        <div title="左" >
+        <div title="" >
           <el-form
           ref="detailForm"
           :model="detailtemp"
@@ -277,7 +277,7 @@
             </el-form-item>
           </el-form>
         </div>
-        <div title="右">
+        <div title="">
           <el-form
           ref="detailForm"
           :model="detailtemp"
