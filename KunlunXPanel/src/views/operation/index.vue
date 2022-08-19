@@ -47,6 +47,10 @@
             prop="status"
             align="center"
             label="状态">
+            <template slot-scope="scope">
+              <span v-if="scope.row.status==='failed'" style="color:red">{{scope.row.status}}</span>
+              <span v-else>{{scope.row.status}}</span>
+            </template>
       </el-table-column>
        <el-table-column
             prop="info"
@@ -151,8 +155,8 @@ export default {
     failedDetail(info){
       let info1=info.replace("\\", ""); 
       this.createClusterErr=  JSON.parse(info1.replace(/\r\n/g,'').replace(/\n/g,''));
+      //console.log(typeof this.createClusterErr);
       this.dialogFailedInfo=true;
-      //console.log(this.createClusterErr);
     },
     
   },

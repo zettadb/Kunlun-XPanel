@@ -108,11 +108,11 @@ export function getEvStatus(data) {
     data
   })
 } 
-export function getClusterNodesList(id) {
+export function getClusterNodesList(data) {
   return request({
     url: '/user/Cluster/getClusterNodesList',
     method: 'post',
-    data:{id:id}
+    data
   })
 }
 export function pgEnable(data) {
@@ -395,4 +395,88 @@ export function getOldCluster(query){
     method: 'get',
     params:query
   });
+}
+export function getBackupStorageList(){
+  return request({
+    url: '/user/Cluster/getBackupStorageList',
+    method: 'get',
+    params:''
+  });
+}
+export function clusterListError(query) {
+  return request({
+      url: '/user/Cluster/clusterListError',
+      method: 'get',
+      params:query
+  });
+}
+export function getShardsName(query) {
+  return request({
+      url: '/user/Cluster/getShardsName',
+      method: 'get',
+      params:query
+  });
+}
+export function getShardTable(query) {
+  return request({
+      url: '/user/Cluster/getShardTable',
+      method: 'get',
+      params:query
+  });
+}
+export function getOtherShards(query) {
+  return request({
+      url: '/user/Cluster/getOtherShards',
+      method: 'get',
+      params:query
+  });
+}
+export function expandCluster(data) {
+  return request({
+    url: '/user/Cluster/expandCluster',
+    method: 'post',
+    data
+  })
+}
+export function getExpandTableList(data) {
+  return request({
+    url: '/user/Cluster/getExpandTableList',
+    method: 'post',
+    data
+  })
+}
+export function setMaxDalay(data) {
+  return request({
+    url: '/user/Cluster/setMaxDalay',
+    method: 'post',
+    data
+  })
+} 
+export function getMetaCluster(query) {
+  return request({
+      url: '/user/Cluster/getMetaCluster',
+      method: 'get',
+      params:query
+  });
+}
+export function getBackStorageList(query){
+  return request({
+    url: '/user/Cluster/getBackStorageList',
+    method: 'get',
+    params:query
+  });
+}
+export function setVariable(data) {
+  return request({
+    url: '/user/Cluster/setVariable',
+    method: 'post',
+    data
+  })
+}
+export function getVariable(data) {
+  return request({
+    url: '/user/Cluster/getVariable',
+    method: 'post',
+    data
+  })
 }

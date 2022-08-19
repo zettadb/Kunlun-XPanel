@@ -39,7 +39,11 @@ class Role extends CI_Controller {
 			$sql_userid="select id from kunlun_user where name='$user_name'";
 			$res_userid=$this->Login_model->getList($sql_userid);
 			$user_id='';
-			$userid_count=count($res_userid);
+			if(!empty($res_userid)){
+				$userid_count=count($res_userid);
+			}else{
+				$userid_count=0;
+			}
 			if($userid_count>1){
 				foreach ($res_userid as $row){
 					$user_id.=$row['id'].',';
@@ -51,7 +55,7 @@ class Role extends CI_Controller {
 				$data['code'] = 200;
 				$data['list'] =array();
 				$data['total'] =  0;
-				print_r(json_encode($data));
+				print_r(json_encode($data));return;
 			}
 			//再获取role_id
 			$sql_roleid="select role_id from kunlun_role_assign where user_id in ($user_id)";

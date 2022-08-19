@@ -132,7 +132,7 @@
 <script>
  import { messageTip,handleCofirm } from "@/utils";
 //  import { getMachineList,getNodes} from '@/api/machine/list'
- import {getStorageList,addStorage,updateStorage,delStorage,getEvStatus} from '@/api/cluster/list'
+ import {getStorageList,addStorage,updateStorage,delStorage,getEvStatus,getBackStorageList} from '@/api/cluster/list'
  //import {getStorageList,addStorage,updateStorage,delStorage} from '@/api/cluster/listInterface'
  import {version_arr,storage_type_arr, timestamp_arr} from "@/utils/global_variable"
  import Pagination from '@/components/Pagination' 
@@ -246,7 +246,7 @@ export default {
       this.getList()
     },
     handleClear(){
-      this.listQuery.hostaddr = ''
+      this.listQuery.name = ''
       this.listQuery.pageNo = 1
       this.getList()
     },
@@ -254,25 +254,37 @@ export default {
         this.listLoading = true
         this.installStatus = false
         let queryParam = Object.assign({}, this.listQuery)
-        const temp={};
-        temp.version=version_arr[0].ver;
-        temp.job_id='';
-        temp.job_type='get_backup_storage';
-        temp.timestamp=timestamp_arr[0].time+'';
-        temp.paras={};
-        //模糊搜索
-        getStorageList(temp).then(response => {
-          if(response.attachment.list_backup_storage!==null){
-            this.list = response.attachment.list_backup_storage;
-            this.total = response.attachment.list_backup_storage.length;
-          }else{
-            this.list =[];
-            this.total=[];
-          }
-          setTimeout(() => {
-            this.listLoading = false
-          }, 0.5 * 1000)
-        });
+        // const temp={};
+        // temp.version=version_arr[0].ver;
+        // temp.job_id='';
+        // temp.job_type='get_backup_storage';
+        // temp.timestamp=timestamp_arr[0].time+'';
+        // temp.paras={};
+        // //模糊搜索
+        // getStorageList(temp).then(response => {
+        //   if(response.attachment.list_backup_storage!==null){
+        //     this.list = response.attachment.list_backup_storage;
+        //     this.total = response.attachment.list_backup_storage.length;
+        //   }else{
+        //     this.list =[];
+        //     this.total=[];
+        //   }
+        //   setTimeout(() => {
+        //     this.listLoading = false
+        //   }, 0.5 * 1000)
+        // });
+      getBackStorageList(queryParam).then(response => {
+        if(response.list!==null){
+          this.list = response.list;
+          this.total = response.total;
+        }else{
+          this.list =[];
+          this.total=[];
+        }
+        setTimeout(() => {
+          this.listLoading = false
+        }, 0.5 * 1000)
+      });
     },
     resetTemp() {
       this.temp = {
