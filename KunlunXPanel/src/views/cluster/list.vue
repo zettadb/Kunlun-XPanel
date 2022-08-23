@@ -91,10 +91,11 @@
             <span v-else-if="scope.row.first_backup!==''">{{scope.row.first_backup}}</span>
         </template>
       </el-table-column>
+      <!--  width="230" -->
       <el-table-column
         label="操作"
         align="center"
-        width="230"
+        width="450"
         fixed="right"
         class-name="small-padding fixed-width"
         v-if="storage_node_create_priv==='Y'||shard_create_priv==='Y'||compute_node_create_priv==='Y'||restore_priv==='Y'||backup_priv==='Y'||cluster_drop_priv==='Y'||row.ha_mode==='rbr'"
