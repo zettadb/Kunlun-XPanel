@@ -48,7 +48,7 @@ export const constantRoutes = [
           title: '首页',
           noCache: true,
           icon: 'el-icon-s-home',
-           requireAuth: true,//表示进入这个路由是需要登录的
+          requireAuth: true,//表示进入这个路由是需要登录的
         }
       }
     ]

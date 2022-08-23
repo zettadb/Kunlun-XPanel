@@ -3283,4 +3283,9 @@ export default {
   /* height: 22px; */
   flex: 1;
 }
+/* 全屏展示 */
+/* .el-tabs__content{
+		height: calc(100vh - 110px);
+		overflow-y: auto;
+	} */
 </style>

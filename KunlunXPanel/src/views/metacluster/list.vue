@@ -19,7 +19,7 @@
           type="primary"
           icon="el-icon-plus"
           @click="handleUpdate"
-          v-if="storage_node_create_priv==='Y'"
+          v-if="storage_node_create_priv==='Y'&&work_mode==''"
         >添加节点</el-button>
         <el-button
           class="filter-item"
@@ -484,6 +484,7 @@ export default {
       comp_machineTotal:0,
       node_types:node_type_arr,
       shardList:[],
+      work_mode:sessionStorage.getItem('work_mode'),
       meta_ha_mode:sessionStorage.getItem('meta_ha_mode'),
       cluster_drop_priv:JSON.parse(sessionStorage.getItem('priv')).cluster_drop_priv,
       storage_node_create_priv:JSON.parse(sessionStorage.getItem('priv')).storage_node_create_priv,
@@ -796,6 +797,7 @@ export default {
       this.getList()
     },
     getList() {
+        //console.log(this.work_mode);
         this.listLoading = true
         let queryParam = Object.assign({}, this.listQuery)
         //queryParam.effectCluster= sessionStorage.getItem('affected_clusters');
