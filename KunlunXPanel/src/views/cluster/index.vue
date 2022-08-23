@@ -4,12 +4,14 @@
       <el-tab-pane label="集群展示" name="first">
         <Cshow v-if="tabs.first"/> 
       </el-tab-pane>
-      <el-tab-pane label="集群列表信息" name="second">
-          <List v-if="tabs.second"/>
-          <!-- <Cshow/>  -->
+      <el-tab-pane label="集群列表信息" name="second" >
+          <List v-if="tabs.second" @updateActiveName="updateActiveName"/>
       </el-tab-pane>
       <el-tab-pane label="异常集群列表" name="three">
           <ErrorList v-if="tabs.three"/>
+      </el-tab-pane>
+      <el-tab-pane label="单集群设置" name="four" v-if="tabs.four">
+          <OneClusterList v-if="tabs.four" />
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -19,16 +21,19 @@
 import List from '../cluster/list.vue'
 import Cshow from './cshow.vue'
 import ErrorList from '../cluster/errorlist.vue'
+import OneClusterList from '../cluster/oneclusterlist.vue'
 export default {
-   components: {List,Cshow,ErrorList},
+   components: {List,Cshow,ErrorList,OneClusterList},
   data() {
     return {
       activeName: "first",
       tabs: {
         first: true,
-        second: false,
-        three:false
+        second:false,
+        three:false,
+        four:false
       },
+      serverInfoList:[]
     }
   },
   methods: {
@@ -44,10 +49,12 @@ export default {
         case "three":
           this.switchTab("three");
           break;
+        case "four":
+          this.switchTab("four");
+          break;
       }
 
     },
-
     switchTab(tab) {
       for (let key in this.tabs) {
         if (key === tab) {
@@ -55,6 +62,14 @@ export default {
         } else {
           this.tabs[key] = false;
         }
+      }
+    },
+    updateActiveName(data) {
+      // 修改activeName的名称
+      this.activeName = data
+      if(this.activeName=='four'){
+        this.tabs.four=true;
+        this.tabs.first=false;
       }
     },
   }

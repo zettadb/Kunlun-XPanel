@@ -480,3 +480,10 @@ export function getVariable(data) {
     data
   })
 }
+export function getWorkMode(data) {
+  return request({
+    url: '/user/Cluster/getWorkMode',
+    method: 'post',
+    data
+  })
+}

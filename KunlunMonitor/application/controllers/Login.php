@@ -428,27 +428,27 @@ class Login extends CI_Controller {
 			if(!empty($res[0]) && !empty($res[1])){
 				$key=$this->grafana_key;
 				//查grafana数据源
-				$get_url='http://admin:admin@127.0.0.1/api/datasources';
-				//调grafana的api查数据源
-				$this->load->model('Grafana_model');
-				$get_result= $this->Grafana_model->postDataSource($get_url);
-				if(!empty($get_result)){
-					$get_arr=json_decode($get_result,true);
-					if(count($get_arr)!==0){
-						if(array_key_exists('message',$get_arr)){
-							if($get_arr['message'] == 'invalid API key'||$get_arr['message'] == 'Unauthorized'){
-								//获取key
-								$post_keyDate='{"name":"apikeycurl", "role": "Admin"}';
-								$post_keyurl='http://admin:admin@127.0.0.1:3000/api/auth/keys';
-								$post_keyresult= $this->Grafana_model->getKey($post_keyDate,$post_keyurl);
-								$post_keyresult=json_decode($post_keyresult,true);
-								if(array_key_exists('key',$post_keyresult)){
-									$key='Bearer '.$post_keyresult['key'];
-								}
-							}
-						}
-					}
-				}
+				// $get_url='http://admin:admin@127.0.0.1/api/datasources';
+				// //调grafana的api查数据源
+				// $this->load->model('Grafana_model');
+				// $get_result= $this->Grafana_model->postDataSource($get_url);
+				// if(!empty($get_result)){
+				// 	$get_arr=json_decode($get_result,true);
+				// 	if(count($get_arr)!==0){
+				// 		if(array_key_exists('message',$get_arr)){
+				// 			if($get_arr['message'] == 'invalid API key'||$get_arr['message'] == 'Unauthorized'){
+				// 				//获取key
+				// 				$post_keyDate='{"name":"apikeycurl", "role": "Admin"}';
+				// 				$post_keyurl='http://admin:admin@127.0.0.1:3000/api/auth/keys';
+				// 				$post_keyresult= $this->Grafana_model->getKey($post_keyDate,$post_keyurl);
+				// 				$post_keyresult=json_decode($post_keyresult,true);
+				// 				if(array_key_exists('key',$post_keyresult)){
+				// 					$key='Bearer '.$post_keyresult['key'];
+				// 				}
+				// 			}
+				// 		}
+				// 	}
+				// }
 
 				//修改配置文件myconfig.php
 				$post_url='http://'.$res[0].':'.$res[1].'/HttpService/Emit';

@@ -105,7 +105,7 @@
 import {login,change} from "@/api/login/user";
 import Loginheader from '@/components/Loginheader';
 import { messageTip } from "@/utils";
-import { getMetaPrimary } from "@/api/cluster/list";
+import { getMetaPrimary,getWorkMode } from "@/api/cluster/list";
 //import { getMetaPrimary } from "@/api/cluster/listInterface";
 import { v4 as uuidv4 } from 'uuid';
 import {version_arr,timestamp_arr} from "@/utils/global_variable"
@@ -298,20 +298,50 @@ export default {
     },
     goto(loginRes,meta_ha_mode){
       this.loading = false;
-      console.log(loginRes);
+      //console.log(loginRes);
       if(!loginRes.Token){
         messageTip('登录接口没有返回token','error');return;
       }
-      sessionStorage.setItem('zettadb_vue_token',loginRes.Token);
-      sessionStorage.setItem('zettadb_vue_name',loginRes.userName);
-      sessionStorage.setItem('meta_ha_mode',meta_ha_mode);
+      // sessionStorage.setItem('zettadb_vue_token',loginRes.Token);
+       sessionStorage.setItem('zettadb_vue_name',loginRes.userName);
+      // sessionStorage.setItem('meta_ha_mode',meta_ha_mode);
       let num =loginRes.num;
       if(num==1){
-        sessionStorage.setItem('apply_all_cluster',loginRes.apply_all_cluster);
-        sessionStorage.setItem('affected_clusters',loginRes.affected_clusters);
-        sessionStorage.setItem('priv',JSON.stringify(loginRes.priv));
-        //console.log(JSON.parse(sessionStorage.getItem('priv')).backup_priv);
-        this.$router.push({ path: '/dashboard'})
+        // sessionStorage.setItem('apply_all_cluster',loginRes.apply_all_cluster);
+        // sessionStorage.setItem('affected_clusters',loginRes.affected_clusters);
+        // sessionStorage.setItem('priv',JSON.stringify(loginRes.priv));
+        //区分企业版还是社区版
+        let tempData = {};
+        tempData.user_name = sessionStorage.getItem('login_username');
+        tempData.job_id ='0';
+        tempData.job_type ='get_cluster_detail';
+        tempData.version=version_arr[0].ver;
+        tempData.timestamp=timestamp_arr[0].time+'';
+        let paras={}
+        tempData.paras=paras;
+        //console.log(tempData);return;
+        //发送接口
+        getWorkMode(tempData).then(response=>{
+          this.isShowNodeMenuPanel=false;
+          let res = response;
+           if(res.hasOwnProperty('attachment')){
+              if(res.attachment!==null){
+                sessionStorage.setItem('work_mode',res.attachment.work_mode);
+              }else if(res.attachment==null){
+                sessionStorage.setItem('work_mode','');
+              }
+              sessionStorage.setItem('zettadb_vue_token',loginRes.Token);
+              sessionStorage.setItem('meta_ha_mode',meta_ha_mode);
+              sessionStorage.setItem('apply_all_cluster',loginRes.apply_all_cluster);
+              sessionStorage.setItem('affected_clusters',loginRes.affected_clusters);
+              sessionStorage.setItem('priv',JSON.stringify(loginRes.priv));
+              this.$router.push({ path: '/dashboard'})
+            }else{
+              this.message_tips = res.error_info;
+              this.message_type = 'error';
+              messageTip(this.message_tips,this.message_type);
+            }
+        })
       }
       else{
         this.$router.push({ path:'/alteration'})
