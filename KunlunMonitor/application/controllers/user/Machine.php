@@ -30,7 +30,7 @@ class Machine extends CI_Controller {
 		$pageNo=$arr['pageNo'];
 		$pageSize=$arr['pageSize'];
 		$username=$arr['hostaddr'];
-		$start=$pageNo-1;
+		$start=($pageNo - 1) * $pageSize;
 		//print_r($pageSize);exit;
 		//获取用户数据
 		$this->load->model('Cluster_model');
@@ -44,9 +44,14 @@ class Machine extends CI_Controller {
 		if($res===false){
 			$res=array();
 		}
+		$sql_total="select count(id) as count from server_nodes where  machine_type is not null";
+		if(!empty($username)){
+			$sql_total .=" and  hostaddr like '%$username%'";
+		}
+		$res_total=$this->Cluster_model->getList($sql_total);
 		$data['code'] = 200;
 		$data['list'] = $res;
-		$data['total'] =  $res ? count($res) : 0;;
+		$data['total'] = $res_total ? (int)$res_total[0]['count'] : 0;
 		print_r(json_encode($data));
 	}
 	public function createMachine(){
