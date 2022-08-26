@@ -201,6 +201,16 @@ export const constantRoutes = [
         //   // icon: 'table' 
         // }
       },
+	  {
+        path: 'NoSwitch',
+        name: 'NoSwitch',
+        component: () => import('@/views/cluster/noswitch'),
+        meta: { 
+          title: '集群免切设置',
+          requiresAuth:true, 
+          //  icon: 'tree' 
+          }
+      },
       {
         path: 'backup',
         name: 'Backup',

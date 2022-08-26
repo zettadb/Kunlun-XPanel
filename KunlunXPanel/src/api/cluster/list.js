@@ -466,3 +466,24 @@ export function getBackStorageList(query){
     params:query
   });
 }
+export function getNoSwitchList(data){
+  return request({
+    url: '/user/Cluster/getNoSwitchList',
+    method: 'post',
+    data
+  });
+}
+export function setNoSwitch(data) {
+  return request({
+    url: '/user/Cluster/setNoSwitch',
+    method: 'post',
+    data
+  })
+} 
+export function delSwitch(data) {
+  return request({
+    url: '/user/Cluster/delSwitch',
+    method: 'post',
+    data
+  })
+}
