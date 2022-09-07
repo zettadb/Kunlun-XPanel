@@ -1,17 +1,17 @@
 <template>
   <div class="icons-container">
     <el-tabs type="border-card" v-model="activeName" @tab-click="handleClick">
-      <el-tab-pane label="集群展示" name="first">
-        <Cshow v-if="tabs.first"/> 
-      </el-tab-pane>
       <el-tab-pane label="集群列表信息" name="second" >
           <List v-if="tabs.second" @updateActiveName="updateActiveName"/>
+      </el-tab-pane>
+      <el-tab-pane label="集群展示" name="first">
+        <Cshow v-if="tabs.first"/> 
       </el-tab-pane>
       <el-tab-pane label="异常集群列表" name="three">
           <ErrorList v-if="tabs.three"/>
       </el-tab-pane>
-      <el-tab-pane label="单集群设置" name="four" v-if="tabs.four">
-          <OneClusterList v-if="tabs.four" />
+      <el-tab-pane :label="cluster_id" name="four" v-if="tabs.four">
+          <OneClusterList v-if="tabs.four" :oneList="InfoList"/>
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -26,14 +26,15 @@ export default {
    components: {List,Cshow,ErrorList,OneClusterList},
   data() {
     return {
-      activeName: "first",
+      activeName: "second",
       tabs: {
-        first: true,
-        second:false,
+        first: false,
+        second:true,
         three:false,
         four:false
       },
-      serverInfoList:[]
+      InfoList:[],
+      cluster_id:''
     }
   },
   methods: {
@@ -66,10 +67,12 @@ export default {
     },
     updateActiveName(data) {
       // 修改activeName的名称
-      this.activeName = data
+      this.activeName = data.activeName
+      this.InfoList= data.list;
+      this.cluster_id=data.list.id+'集群设置'
       if(this.activeName=='four'){
         this.tabs.four=true;
-        this.tabs.first=false;
+        this.tabs.second=false;
       }
     },
   }

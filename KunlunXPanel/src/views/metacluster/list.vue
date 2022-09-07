@@ -19,7 +19,7 @@
           type="primary"
           icon="el-icon-plus"
           @click="handleUpdate"
-          v-if="storage_node_create_priv==='Y'&&work_mode==''"
+          v-if="storage_node_create_priv==='Y'&&work_mode=='enterprise'"
         >添加节点</el-button>
         <el-button
           class="filter-item"

@@ -80,7 +80,7 @@
             @click="handleDelete(row,$index)"
             v-if="user_name=='super_dba'"
           >删除</el-button>
-          <div v-text="info" v-show="installStatus===true" class="info"></div>
+          <!-- <div v-text="info" v-show="installStatus===true" class="info"></div> -->
         </template>
       </el-table-column>
     </el-table>
@@ -125,19 +125,31 @@
         <el-button type="primary" @click="dialogStatus==='create'?createData():updateData(row)"  v-show="!dialogDetail">确认</el-button>
       </div>
     </el-dialog>
-
+    <!--  状态框 -->
+    <el-dialog :visible.sync="dialogStatusVisible" custom-class="single_dal_view" width="400px" :close-on-click-modal="false" :before-close="beforeSyncDestory">
+      <div class="block">
+        <el-timeline>
+          <el-timeline-item
+            v-for="(activity, index) in activities"
+            :key="index"
+            :icon="activity.icon"
+            :type="activity.type"
+            :color="activity.color"
+            :size="activity.size"
+            :timestamp="activity.timestamp">
+            {{activity.content}}
+          </el-timeline-item>
+        </el-timeline>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
- import { messageTip,handleCofirm } from "@/utils";
-//  import { getMachineList,getNodes} from '@/api/machine/list'
+ import { messageTip,handleCofirm,getNowDate } from "@/utils";
  import {getStorageList,addStorage,updateStorage,delStorage,getEvStatus,getBackStorageList} from '@/api/cluster/list'
- //import {getStorageList,addStorage,updateStorage,delStorage} from '@/api/cluster/listInterface'
  import {version_arr,storage_type_arr, timestamp_arr} from "@/utils/global_variable"
  import Pagination from '@/components/Pagination' 
- import { v4 as uuidv4 } from 'uuid';
- //import {getEvStatus} from '@/api/cluster/listInterface'
 
 
 export default {
@@ -221,6 +233,9 @@ export default {
       row:{},
       stypelist:storage_type_arr,
       user_name:sessionStorage.getItem('login_username'),
+      timer:null,
+      dialogStatusVisible:false,
+      activities:[],
       rules: {
         hostaddr: [
           { required: true, trigger: "blur",validator: validateIPAddress },
@@ -240,7 +255,16 @@ export default {
   created() {
     this.getList()
   },
+  destroyed() {
+    clearInterval(this.timer)
+    this.timer = null
+  },
   methods: {
+    beforeSyncDestory(){
+      clearInterval(this.timer)
+      this.dialogStatusVisible=false;
+      this.timer=null;
+    },
     handleFilter() {
       this.listQuery.pageNo = 1
       this.getList()
@@ -274,12 +298,12 @@ export default {
         //   }, 0.5 * 1000)
         // });
       getBackStorageList(queryParam).then(response => {
-        if(response.list!==null){
+        if(response.list!==false){
           this.list = response.list;
           this.total = response.total;
         }else{
           this.list =[];
-          this.total=[];
+          this.total=0;
         }
         setTimeout(() => {
           this.listLoading = false
@@ -318,21 +342,42 @@ export default {
             let res = response;
             if(res.status=='accept'){
               this.dialogFormVisible = false;
-              this.message_tips = '正在新增备份存储目标...';
-              this.message_type = 'success';
+            //   this.message_tips = '正在新增备份存储目标...';
+            //   this.message_type = 'success';
+            //   //调获取状态接口
+            //   let i=0;
+            //   this.timer = setInterval(() => {
+            //     this.getStatus(this.timer,res.job_id,i++)
+            //   }, 1000)
+            // }else if(res.status=='ongoing'){
+            //   this.message_tips = '系统正在操作中，请等待一会！';
+            //   this.message_type = 'error';
+            // }else{
+            //   this.message_tips = res.error_info;
+            //   this.message_type = 'error';
+            // }
+            // messageTip(this.message_tips,this.message_type);
+              this.dialogStatusVisible=true;
+              this.activities=[];
+              const newArr={
+                content:'正在新增备份存储目标',
+                timestamp: getNowDate(),
+                size: 'large',
+                type: 'primary',
+                icon: 'el-icon-more'
+              };
+              this.activities.push(newArr);
               //调获取状态接口
               let i=0;
-              let timer = setInterval(() => {
-                this.getStatus(timer,res.job_id,i++)
+              let action_name='新增备份存储目标';
+              this.timer = setInterval(() => {
+                this.getStatus(this.timer,res.job_id,i++,action_name)
               }, 1000)
-            }else if(res.status=='ongoing'){
-              this.message_tips = '系统正在操作中，请等待一会！';
-              this.message_type = 'error';
             }else{
               this.message_tips = res.error_info;
               this.message_type = 'error';
+              messageTip(this.message_tips,this.message_type);
             }
-            messageTip(this.message_tips,this.message_type);
           })
         }
       });
@@ -366,61 +411,72 @@ export default {
             let res = response;
             if(res.status=='accept'){
               this.dialogFormVisible = false;
-              this.message_tips = '正在编辑备份存储目标...';
-              this.message_type = 'success';
+              this.dialogStatusVisible=true;
+              this.activities=[];
+              const newArr={
+                content:'正在编辑备份存储目标',
+                timestamp: getNowDate(),
+                size: 'large',
+                type: 'primary',
+                icon: 'el-icon-more'
+              };
+              this.activities.push(newArr);
               //调获取状态接口
               let i=0;
-              let timer = setInterval(() => {
-                this.getStatus(timer,res.job_id,i++)
+              let action_name='编辑备份存储目标';
+              this.timer = setInterval(() => {
+                this.getStatus(this.timer,res.job_id,i++,action_name)
               }, 1000)
-            }else if(res.status=='ongoing'){
-              this.message_tips = '系统正在操作中，请等待一会！';
-              this.message_type = 'error';
             }else{
               this.message_tips = res.error_info;
               this.message_type = 'error';
+              messageTip(this.message_tips,this.message_type);
             }
-            messageTip(this.message_tips,this.message_type);
-
           });
         }
       });
     },
     handleDelete(row) {
       handleCofirm("此操作将永久删除该数据, 是否继续?").then( () =>{
-         const tempData = {};
-          tempData.job_id ='';
-          tempData.job_type ='delete_backup_storage';
-          tempData.version=version_arr[0].ver;
-          tempData.timestamp=timestamp_arr[0].time+'';
-          tempData.user_name=sessionStorage.getItem('login_username');
-          tempData.paras={'name':row.name};
-          delStorage(tempData).then((response)=>{
-            let res = response;
-            if(res.status=='accept'){
-              this.dialogFormVisible = false;
-              this.message_tips = '正在删除备份存储目标...';
-              this.message_type = 'success';
-              //调获取状态接口
-              let i=0;
-              let timer = setInterval(() => {
-                this.getStatus(timer,res.job_id,i++)
-              }, 1000)
-            }else if(res.status=='ongoing'){
-              this.message_tips = '系统正在操作中，请等待一会！';
-              this.message_type = 'error';
-            }else{
-              this.message_tips = res.error_info;
-              this.message_type = 'error';
-            }
+        const tempData = {};
+        tempData.job_id ='';
+        tempData.job_type ='delete_backup_storage';
+        tempData.version=version_arr[0].ver;
+        tempData.timestamp=timestamp_arr[0].time+'';
+        tempData.user_name=sessionStorage.getItem('login_username');
+        tempData.paras={'name':row.name};
+        delStorage(tempData).then((response)=>{
+          let res = response;
+          if(res.status=='accept'){
+            this.dialogFormVisible = false;
+            this.dialogStatusVisible=true;
+            this.activities=[];
+            const newArr={
+              content:'正在删除备份存储目标',
+              timestamp: getNowDate(),
+              size: 'large',
+              type: 'primary',
+              icon: 'el-icon-more'
+            };
+            this.activities.push(newArr);
+            //调获取状态接口
+            let i=0;
+            let action_name='删除备份存储目标';
+            this.timer = setInterval(() => {
+              this.getStatus(this.timer,res.job_id,i++,action_name)
+            }, 1000)
+          }else{
+            this.message_tips = res.error_info;
+            this.message_type = 'error';
             messageTip(this.message_tips,this.message_type);
-      })
+          }
+        })
       }).catch(() => {
           console.log('quxiao')
           messageTip('已取消删除','info');
       }); 
     },
-    getStatus (timer,data,i) {
+    getStatus (timer,data,i,action_name) {
       setTimeout(()=>{
         const postarr={};
         postarr.job_type='get_status';
@@ -430,16 +486,40 @@ export default {
         postarr.paras={};
         getEvStatus(postarr).then((res) => {
         if(res.status=='done'||res.status=='failed'){
-          clearInterval(timer);
-          this.info=res.error_info;
           if(res.status=='done'){
-            this.getList();
+            const newArrdone={
+              content:action_name+'成功',
+              timestamp: getNowDate(),
+              color: '#0bbd87',
+              icon: 'el-icon-circle-check'
+            };
+            this.activities.push(newArrdone)
+            this.getList()
+            //this.dialogStatusVisible=false;
+            clearInterval(timer);
           }else{
-            this.installStatus = true;
+            if(res.attachment==null&&res.error_code=='70001'&&res.status=='failed'){
+              if(i>5){
+                const newArr={
+                  content:res.error_info,
+                  timestamp: getNowDate(),
+                  color: 'red',
+                  icon: 'el-icon-circle-close'
+                };
+                this.activities.push(newArr);
+                clearInterval(timer);
+              }
+            }else{
+              const newArr={
+                content:res.error_info,
+                timestamp: getNowDate(),
+                color: 'red',
+                icon: 'el-icon-circle-close'
+              };
+              this.activities.push(newArr);
+              clearInterval(timer);
+            }
           }
-        }else{
-          this.info=res.error_info;
-          this.installStatus = true;
         }
       });
         if(i>=86400){
