@@ -32,6 +32,7 @@
       border
       highlight-current-row
       style="width: 100%;margin-bottom: 20px;">
+    >
       <el-table-column
         type="index"
         align="center"
@@ -104,11 +105,14 @@
 </template>
 
 <script>
- import {getBackUpList} from '@/api/cluster/list'
+ import {getOneBackUpList} from '@/api/cluster/list'
  import Pagination from '@/components/Pagination' 
 
 export default {
   name: "operation",
+  props:{
+		listsent:{typeof:Object}
+  },
   components: { Pagination },
   data() {
     return {
@@ -122,7 +126,8 @@ export default {
         pageSize: 10,
         username: '',
         backup_type:'',
-        status:''
+        status:'',
+        id:''
       },
       dialogFormVisible: false,
       dialogEditVisible:false,
@@ -137,6 +142,7 @@ export default {
     };
   },
   created() {
+    this.listQuery.id = this.listsent.id
     this.getList()
   },
   methods: {
@@ -149,13 +155,14 @@ export default {
       this.listQuery.backup_type = ''
       this.listQuery.status = ''
       this.listQuery.pageNo = 1
+      this.listQuery.id = this.listQuery.id
       this.getList()
     },
     getList() {
         this.listLoading = true
         let queryParam = Object.assign({}, this.listQuery)
         //模糊搜索
-        getBackUpList(queryParam).then(response => {
+        getOneBackUpList(queryParam).then(response => {
           this.list = response.list;
           this.total = response.total;
           setTimeout(() => {

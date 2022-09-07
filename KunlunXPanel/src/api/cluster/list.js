@@ -452,6 +452,13 @@ export function setMaxDalay(data) {
     data
   })
 } 
+export function getMaxDalay(data) {
+  return request({
+    url: '/user/Cluster/getMaxDalay',
+    method: 'post',
+    data
+  })
+} 
 export function getMetaCluster(query) {
   return request({
       url: '/user/Cluster/getMetaCluster',
@@ -483,6 +490,62 @@ export function getVariable(data) {
 export function getWorkMode(data) {
   return request({
     url: '/user/Cluster/getWorkMode',
+    method: 'post',
+    data
+  })
+}
+export function getOneBackUpList(query) {
+  return request({
+    url: '/user/Cluster/getOneBackUpList',
+    method: 'get',
+    params:query
+  })
+}
+export function computeList(query) {
+  return request({
+      url: '/user/Cluster/computeList',
+      method: 'get',
+      params:query
+  });
+}
+export function shardList(query) {
+  return request({
+      url: '/user/Cluster/shardList',
+      method: 'get',
+      params:query
+  });
+}
+export function getNoSwitchList(data){
+  return request({
+    url: '/user/Cluster/getNoSwitchList',
+    method: 'post',
+    data
+  });
+}
+export function setNoSwitch(data) {
+  return request({
+    url: '/user/Cluster/setNoSwitch',
+    method: 'post',
+    data
+  })
+} 
+export function delSwitch(data) {
+  return request({
+    url: '/user/Cluster/delSwitch',
+    method: 'post',
+    data
+  })
+}
+export function controlInstance(data) {
+  return request({
+    url: '/user/Cluster/controlInstance',
+    method: 'post',
+    data
+  })
+}
+export function getThisShardNodes(data) {
+  return request({
+    url: `/user/Cluster/getThisShardNodes`,
     method: 'post',
     data
   })

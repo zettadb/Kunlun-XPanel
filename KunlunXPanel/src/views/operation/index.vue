@@ -27,6 +27,11 @@
             label="任务名称">
       </el-table-column>
       <el-table-column
+            prop="cluster_id"
+            align="center"
+            label="集群ID">
+      </el-table-column>
+      <el-table-column
             prop="object"
             align="center"
             label="操作对象">

@@ -16,6 +16,7 @@ class Operation extends CI_Controller {
 		$this->config->load('myconfig');
 		$this->key=$this->config->item('key');
 		$this->job_type=$this->config->item('job_type');
+		$this->post_url=$this->config->item('post_url');
 	}
 
 	public function getOperationList(){
@@ -54,20 +55,38 @@ class Operation extends CI_Controller {
 			foreach ($res as $row=>$value){
 				foreach ($value as $key2 => $value2) {
 					$string=json_decode($res[$row]['job_info'],true);
-					//print_r($string);exit;
 					//输入信息
 					if ($key2 == 'memo') {
 						if(!empty($value2)) {
 							$info=json_decode($value2,true);
 							if(!empty($info)) {
+								if(!empty($info['cluster_id'])){
+									$res[$row]['cluster_id'] = $info['cluster_id'];
+								}else{
+									if(!empty($string['paras']['cluster_id'])){
+										$res[$row]['cluster_id'] =$string['paras']['cluster_id'];
+									}else{
+										$res[$row]['cluster_id'] ='';
+									}
+								}
 								if(!empty($info['error_info'])){
-									$res[$row]['info'] = $info['error_info'];
+									if($res[$row]['status']=='ongoing'){
+										$res[$row]['info'] = '';
+									}else{
+										$res[$row]['info'] = $info['error_info'];
+										//print_r($info['error_info']);exit;
+									}
 								}else{
 									$res[$row]['info'] = '';
 								}
 							}
 						}else{
 							$res[$row]['info'] = '';
+							if(!empty($string['paras']['cluster_id'])){
+								$res[$row]['cluster_id'] =$string['paras']['cluster_id'];
+							}else{
+								$res[$row]['cluster_id'] ='';
+							}
 						}
 					}
 					if ($key2 == 'job_type') {
@@ -81,16 +100,21 @@ class Operation extends CI_Controller {
 								}
 							}
 							if($value2=='create_cluster'){
-								$ip='';
-								if(!empty($string['paras']['machinelist'])){
-									foreach ($string['paras']['machinelist'] as $host){
-										if(!empty($host['hostaddr'])){
-											$ip.=$host['hostaddr'].',';
-										}else{
-											$ip.=$host.',';
-										}
+								$child='';
+								$arr='';
+								if(!empty($string['paras']['computer_iplists'])) {
+									foreach ($string['paras']['computer_iplists'] as $host) {
+										$child.='<div>'.$host.'</div>';
 									}
-									$ip=rtrim($ip, ",");
+									$arr.='<div>所选计算类型的计算机：<div style="margin-left:30px;">'.$child.'</div></div>';
+								}
+								$shard_child='';
+								$shard_arrs='';
+								if(!empty($string['paras']['storage_iplists'])) {
+									foreach ($string['paras']['storage_iplists'] as $host1) {
+										$shard_child.='<div>'.$host1.'</div>';
+									}
+									$shard_arrs.='<div>所选存储类型的计算机：<div style="margin-left:30px;">'.$shard_child.'</div></div>';
 								}
 								if(!empty($string)) {
 									$nick_name='';
@@ -127,11 +151,53 @@ class Operation extends CI_Controller {
 									if(!empty($string['paras']['ha_mode'])){
 										$ha_mode=$string['paras']['ha_mode'];
 									}
-									$res[$row]['list'] = '<div>集群名称：' . $nick_name . '</div><div>shard总个数：' . $shards . '</div><div>每个shard含节点总个数：' .$nodes . '</div><div>计算节点总个数：' . $comps. '</div><div>每计算节点最大连接数：' . $max_connections . '</div><div>缓冲池大小：' . $innodb_size . '</div><div>cpu核数：' . $cpu_cores. '</div><div>复制模式：' . $ha_mode. '</div><div>选择计算机：' . $ip . '</div>';
+									//get_status获取ip
+									$computer_hosts='';
+									$shard_hosts='';
+									$child_comp='';
+									$arr_comp='';
+									$child_shard='';
+									$arr_shard='';
+									$shard_arr='';
+									//调接口
+									$this->load->model('Cluster_model');
+									$data_string= array(
+										'version'=>'1.0',
+										'job_id'=>$res[$row]['id'],
+										'job_type'=>'get_status',
+										'timestamp'=>'1435749309',
+										'paras'=>'{}'
+									);
+									$post_data =json_encode($data_string);
+									$post_arr = $this->Cluster_model->postData($post_data,$this->post_url);
+									$post_arr = json_decode($post_arr, TRUE);
+									if(!empty($post_arr['attachment']['computer_step'][0]['computer_hosts'])){
+										$computer_hosts=$post_arr['attachment']['computer_step'][0]['computer_hosts'];
+										rtrim($computer_hosts, ';');
+										$comparr=explode(';',$computer_hosts);
+										for ($i=0;$i<count($comparr);$i++){
+											$child_comp.='<div>'.$comparr[$i].'</div>';
+										}
+										$arr_comp.='<div>计算节点ip：<div style="margin-left:30px;">'.$child_comp.'</div></div>';
+									}
+									if(!empty($post_arr['attachment']['shard_step'][0]['shard_hosts'])){
+										$shard_hosts=$post_arr['attachment']['shard_step'][0]['shard_hosts'][0];
+										//存在多个shard时，todo
+										foreach($shard_hosts as $key =>$value){
+											$shard_arr.=$value;
+										}
+										rtrim($shard_arr, ';');
+										$shardarr=explode(';',$shard_arr);
+										for ($i=0;$i<count($shardarr);$i++){
+											$child_shard.='<div>'.$shardarr[$i].'</div>';
+										}
+										$arr_shard.='<div>存储节点ip：<div style="margin-left:30px;">'.$child_shard.'</div></div>';
+									}
+									$res[$row]['list'] = '<div>业务名称：' . $nick_name . '</div><div>shard总个数：' . $shards . '</div><div>每个shard含节点总个数：' .$nodes . '</div><div>计算节点总个数：' . $comps. '</div><div>每计算节点最大连接数：' . $max_connections . '</div><div>缓冲池大小：' . $innodb_size . '</div><div>cpu核数：' . $cpu_cores. '</div><div>高可用模式：' . $ha_mode. '</div>'.$arr.$shard_arrs.$arr_comp.$arr_shard;
 									//$res[$row]['list']=array('shard总个数'=>$string['shards'],'每个shard含节点总个数'=>$string['nodes'],'计算节点总个数'=>$string['comps'],'每计算节点最大连接数'=>$string['max_connections'],'缓冲池大小'=>$string['innodb_size'],'cpu核数'=>$string['cpu_cores'],'ha_mode'=>$string['ha_mode'],'选择计算机'=>$ip);
 									$res[$row]['object'] = $nick_name;
 								}else{
-									$res[$row]['list'] = '<div>集群名称：</div><div>shard总个数：</div><div>每个shard含节点总个数：</div><div>计算节点总个数：</div><div>每计算节点最大连接数：</div><div>缓冲池大小：</div><div>cpu核数：</div><div>复制模式：</div><div>选择计算机：</div>';
+									$res[$row]['list'] = '<div>业务名称：</div><div>shard总个数：</div><div>每个shard含节点总个数：</div><div>计算节点总个数：</div><div>每计算节点最大连接数：</div><div>缓冲池大小：</div><div>cpu核数：</div><div>复制模式：</div><div>选择计算机：</div>';
 								}
 							}
 							if($value2=='delete_cluster'){
@@ -142,36 +208,115 @@ class Operation extends CI_Controller {
 									}else if(!empty($string['paras']['cluster_name'])){
 										$nick_name=$string['paras']['cluster_name'];
 									}
-									$res[$row]['list']='<div>集群名称：'.$nick_name.'</div>';
+									$cluster_id='';
+									if(!empty($string['paras']['cluster_id'])){
+										$cluster_id=$string['paras']['cluster_id'];
+									}
+									//get_status获取ip
+									$computer_hosts='';
+									$shard_hosts='';
+									$child_comp='';
+									$arr_comp='';
+									$child_shard='';
+									$arr_shard='';
+									$shard_arr='';
+									//调接口
+									$this->load->model('Cluster_model');
+									$data_string= array(
+										'version'=>'1.0',
+										'job_id'=>$res[$row]['id'],
+										'job_type'=>'get_status',
+										'timestamp'=>'1435749309',
+										'paras'=>'{}'
+									);
+									$post_data =json_encode($data_string);
+									$post_arr = $this->Cluster_model->postData($post_data,$this->post_url);
+									$post_arr = json_decode($post_arr, TRUE);
+									if(!empty($post_arr['attachment']['computer_step'][0]['computer_hosts'])){
+										$computer_hosts=$post_arr['attachment']['computer_step'][0]['computer_hosts'];
+										rtrim($computer_hosts, ';');
+										$comparr=explode(';',$computer_hosts);
+										for ($i=0;$i<count($comparr);$i++){
+											$child_comp.='<div>'.$comparr[$i].'</div>';
+										}
+										$arr_comp.='<div>计算节点ip：<div style="margin-left:30px;">'.$child_comp.'</div></div>';
+									}
+									if(!empty($post_arr['attachment']['shard_step'][0]['storage_hosts'])){
+										$shard_hosts=$post_arr['attachment']['shard_step'][0]['storage_hosts'];
+										rtrim($shard_hosts, ';');
+										$shardarr=explode(';',$shard_hosts);
+										for ($i=0;$i<count($shardarr);$i++){
+											$child_shard.='<div>'.$shardarr[$i].'</div>';
+										}
+										$arr_shard.='<div>存储节点ip：<div style="margin-left:30px;">'.$child_shard.'</div></div>';
+									}
+									$res[$row]['list']='<div>集群ID:'.$cluster_id.'</div><div>业务名称：'.$nick_name.'</div>'.$arr_comp.$arr_shard;
 									$res[$row]['object'] = $nick_name;
 								}else{
-									$res[$row]['list']='<div>集群名称：</div>';
+									$res[$row]['list']='<div>业务名称：</div>';
 								}
 							}
 							if($value2=='add_shards'){
-								$ip='';
-								if(!empty($string['paras']['machinelist'])) {
-									foreach ($string['paras']['machinelist'] as $host) {
-										$ip .= $host['hostaddr'] . ',';
+								$shard_child='';
+								$shard_arrs='';
+								if(!empty($string['paras']['storage_iplists'])) {
+									foreach ($string['paras']['storage_iplists'] as $host1) {
+										$shard_child.='<div>'.$host1.'</div>';
 									}
+									$shard_arrs.='<div>所选计算机：<div style="margin-left:30px;">'.$shard_child.'</div></div>';
 								}
-								$ip=rtrim($ip, ",");
 								if(!empty($string)){
 									$nick_name='';
 									if(!empty($string['paras']['nick_name'])){
 										$nick_name=$string['paras']['nick_name'];
-									}else if(!empty($string['paras']['cluster_name'])){
-										$nick_name=$string['paras']['cluster_name'];
+									}else if(!empty($string['paras']['cluster_id'])){
+										$name=$this->getClusterName($string['paras']['cluster_id']);
+										if(!empty($name)) {
+											$nick_name= $name[0]['nick_name'];
+										}else{
+											$nick_name = '';
+										}
 									}
 									$shards='';
 									if(!empty($string['paras']['shards'])){
 										$shards=$string['paras']['shards'];
 									}
-									$res[$row]['list']='<div>集群名称：'.$nick_name.'</div><div>选择计算机：'.$ip.'</div><div>shard个数：'.$shards.'</div>';
-									//$res[$row]['list']=array('集群名称'=>$string['cluster_name'],'选择计算机'=>$ip,'shard个数'=>$string['shards']);
+									//get_status获取ip
+									$computer_hosts='';
+									$child_comp='';
+									$arr_comp='';
+									$shard_arr='';
+									//调接口
+									$this->load->model('Cluster_model');
+									$data_string= array(
+										'version'=>'1.0',
+										'job_id'=>$res[$row]['id'],
+										'job_type'=>'get_status',
+										'timestamp'=>'1435749309',
+										'paras'=>'{}'
+									);
+									$post_data =json_encode($data_string);
+									$post_arr = $this->Cluster_model->postData($post_data,$this->post_url);
+									$post_arr = json_decode($post_arr, TRUE);
+									//print_r($post_arr);exit;
+									if(!empty($post_arr['attachment']['shard_hosts'])){
+										$computer_hosts=$post_arr['attachment']['shard_hosts'][0];
+										//存在多个shard时，todo
+										foreach($computer_hosts as $key =>$value){
+											$shard_arr.=$value;
+										}
+										rtrim($shard_arr, ';');
+										$comparr=explode(';',$shard_arr);
+										for ($i=0;$i<count($comparr);$i++){
+											$child_comp.='<div>'.$comparr[$i].'</div>';
+										}
+										$arr_comp.='<div>存储节点ip：<div style="margin-left:30px;">'.$child_comp.'</div></div>';
+									}
+									$res[$row]['list']='<div>业务名称：'.$nick_name.'</div><div>shard个数：'.$shards.'</div>'.$arr_comp.$shard_arrs;
+									//$res[$row]['list']=array('业务名称'=>$string['cluster_name'],'选择计算机'=>$ip,'shard个数'=>$string['shards']);
 									$res[$row]['object'] = $nick_name;
 								}else{
-									$res[$row]['list']='<div>集群名称：</div><div>选择计算机：'.$ip.'</div><div>shard个数：</div>';
+									$res[$row]['list']='<div>业务名称：</div><div>shard个数：</div>';
 								}
 							}
 							if($value2=='delete_shard'){
@@ -179,18 +324,27 @@ class Operation extends CI_Controller {
 									$nick_name='';
 									if(!empty($string['paras']['nick_name'])){
 										$nick_name=$string['paras']['nick_name'];
-									}else if(!empty($string['paras']['cluster_name'])){
-										$nick_name=$string['paras']['cluster_name'];
+									}else if(!empty($string['paras']['cluster_id'])){
+										$name=$this->getClusterName($string['paras']['cluster_id']);
+										if(!empty($name)) {
+											$nick_name= $name[0]['nick_name'];
+										}else{
+											$nick_name = '';
+										}
 									}
 									$shard_name='';
 									if(!empty($string['paras']['shard_name'])){
 										$shard_name=$string['paras']['shard_name'];
+									}else{
+										if(!empty($string['paras']['shard_id'])&&!empty($string['paras']['cluster_id'])){
+											$shard_name=$this->getShardName($string['paras']['cluster_id'],$string['paras']['shard_id']);
+										}
 									}
-									$res[$row]['list'] = '<div>集群名称：' . $nick_name . '</div><div>shard名称：' . $shard_name . '</div>';
-									//$res[$row]['list']=array('集群名称'=>$string['cluster_name'],'shard名称'=>$string['shard_name']);
-									$res[$row]['object'] = $nick_name;
+									$res[$row]['list'] = '<div>业务名称：' . $nick_name . '</div><div>shard名称：' . $shard_name . '</div>';
+									//$res[$row]['list']=array('业务名称'=>$string['cluster_name'],'shard名称'=>$string['shard_name']);
+									$res[$row]['object'] = $nick_name.'('.$shard_name.')';
 								}else{
-									$res[$row]['list'] = '<div>集群名称：</div><div>shard名称：</div>';
+									$res[$row]['list'] = '<div>业务名称：</div><div>shard名称：</div>';
 								}
 							}
 							if($value2=='backup_cluster'){
@@ -201,11 +355,11 @@ class Operation extends CI_Controller {
 									}else if(!empty($string['paras']['backup_cluster_name'])){
 										$nick_name=$string['paras']['backup_cluster_name'];
 									}
-									$res[$row]['list'] = '<div>原集群名称：' . $nick_name . '</div>';
-									//$res[$row]['list']=array('原集群名称'=>$string['backup_cluster_name']);
+									$res[$row]['list'] = '<div>原业务名称：' . $nick_name . '</div>';
+									//$res[$row]['list']=array('原业务名称'=>$string['backup_cluster_name']);
 									$res[$row]['object'] = $nick_name;
 								}else{
-									$res[$row]['list'] = '<div>原集群名称：</div>';
+									$res[$row]['list'] = '<div>原业务名称：</div>';
 								}
 							}
 							if($value2=='restore_new_cluster'){
@@ -220,37 +374,72 @@ class Operation extends CI_Controller {
 									}else if(!empty($string['paras']['cluster_name'])){
 										$nick_name=$string['paras']['cluster_name'];
 									}
-									$res[$row]['list'] = '<div>备份集群名称：' . $backup_cluster_name. '</div><div>新集群名称：' .$nick_name. '</div>';
-									//$res[$row]['list']=array('备份集群名称'=>$string['paras']['backup_cluster_name']);
+									$res[$row]['list'] = '<div>备份业务名称：' . $backup_cluster_name. '</div><div>新业务名称：' .$nick_name. '</div>';
+									//$res[$row]['list']=array('备份业务名称'=>$string['paras']['backup_cluster_name']);
 									$res[$row]['object'] = $backup_cluster_name;
 								}else{
-									$res[$row]['list'] = '<div>备份集群名称：</div><div>新集群名称：</div>';
+									$res[$row]['list'] = '<div>备份业务名称：</div><div>新业务名称：</div>';
 								}
 							}
 							if($value2=='add_comps'){
-								$ip='';
-								if(!empty($string['paras']['machinelist'])) {
-									foreach ($string['paras']['machinelist'] as $host) {
-										$ip .= $host['hostaddr'] . ',';
+								$child='';
+								$arr='';
+								if(!empty($string['paras']['computer_iplists'])) {
+									foreach ($string['paras']['computer_iplists'] as $host) {
+										$child.='<div>'.$host.'</div>';
 									}
+									$arr.='<div>选择计算机：<div style="margin-left:30px;">'.$child.'</div></div>';
 								}
-								$ip=rtrim($ip, ",");
 								if(!empty($string)) {
 									$nick_name='';
 									if(!empty($string['paras']['nick_name'])){
 										$nick_name=$string['paras']['nick_name'];
-									}else if(!empty($string['paras']['cluster_name'])){
-										$nick_name=$string['paras']['cluster_name'];
+									}else if(!empty($string['paras']['cluster_id'])){
+										$name=$this->getClusterName($string['paras']['cluster_id']);
+										if(!empty($name)) {
+											$nick_name= $name[0]['nick_name'];
+										}else{
+											$nick_name = '';
+										}
+									}
+									$cluster_id='';
+									if(!empty($string['paras']['cluster_id'])){
+										$cluster_id=$string['paras']['cluster_id'];
 									}
 									$comps='';
 									if(!empty($string['paras']['comps'])){
 										$comps=$string['paras']['comps'];
 									}
-									$res[$row]['list'] = '<div>集群名称：' . $nick_name . '</div><div>选择计算机：' . $ip . '</div><div>计算节点个数：' . $comps . '</div>';
-									//$res[$row]['list']=array('集群名称'=>$string['cluster_name'],'选择计算机'=>$ip,'计算节点个数'=>$string['comps']);
+									//get_status获取ip
+									$computer_hosts='';
+									$child_comp='';
+									$arr_comp='';
+									//调接口
+									$this->load->model('Cluster_model');
+									$data_string= array(
+										'version'=>'1.0',
+										'job_id'=>$res[$row]['id'],
+										'job_type'=>'get_status',
+										'timestamp'=>'1435749309',
+										'paras'=>'{}'
+									);
+									$post_data =json_encode($data_string);
+									$post_arr = $this->Cluster_model->postData($post_data,$this->post_url);
+									$post_arr = json_decode($post_arr, TRUE);
+									if(!empty($post_arr['attachment']['computer_hosts'])){
+										$computer_hosts=$post_arr['attachment']['computer_hosts'];
+										rtrim($computer_hosts, ';');
+										$comparr=explode(';',$computer_hosts);
+										for ($i=0;$i<count($comparr);$i++){
+											$child_comp.='<div>'.$comparr[$i].'</div>';
+										}
+										$arr_comp.='<div>计算节点ip：<div style="margin-left:30px;">'.$child_comp.'</div></div>';
+									}
+									
+									$res[$row]['list'] = '<div>集群ID：' . $cluster_id . '</div><div>业务名称：' . $nick_name . '</div><div>计算节点个数：' . $comps . '</div>'.$arr.$arr_comp;
 									$res[$row]['object'] = $nick_name;
 								}else{
-									$res[$row]['list'] = '<div>集群名称：</div><div>选择计算机：' . $ip . '</div><div>计算节点个数：</div>';
+									$res[$row]['list'] = '<div>业务名称：</div><div>选择计算机：</div><div>计算节点个数：</div>';
 								}
 							}
 							if($value2=='delete_comp'){
@@ -258,49 +447,116 @@ class Operation extends CI_Controller {
 									$nick_name='';
 									if(!empty($string['paras']['nick_name'])){
 										$nick_name=$string['paras']['nick_name'];
-									}else if(!empty($string['paras']['cluster_name'])){
-										$nick_name=$string['paras']['cluster_name'];
+									}else if(!empty($string['paras']['cluster_id'])){
+										$name=$this->getClusterName($string['paras']['cluster_id']);
+										if(!empty($name)) {
+											$nick_name= $name[0]['nick_name'];
+										}else{
+											$nick_name = '';
+										}
+									}
+									$cluster_id='';
+									if(!empty($string['paras']['cluster_id'])){
+										$cluster_id=$string['paras']['cluster_id'];
+									}
+									$comp_id='';
+									if(!empty($string['paras']['comp_id'])){
+										$comp_id=$string['paras']['comp_id'];
 									}
 									$comp_name='';
-									if(!empty($string['paras']['comp_name'])){
-										$comp_name=$string['paras']['comp_name'];
+									$ip='';
+									$port='';
+									if(!empty($string['paras']['comp_id'])){
+										$comp=$this->getCompName($string['paras']['cluster_id'],$string['paras']['comp_id']);
+										if(!empty($comp)) {
+											$comp_name= $comp[0]['name'];
+											$ip= $comp[0]['hostaddr'];
+											$port= $comp[0]['port'];
+										}else{
+											$comp_name = '';
+											$ip='';
+											$port='';
+										}
 									}
-									$res[$row]['list'] = '<div>集群名称：' . $nick_name . '</div><div>计算节点名称：' . $comp_name . '</div>';
+									$res[$row]['list'] = '<div>集群ID：' . $cluster_id . '</div><div>业务名称：' . $nick_name . '</div><div>计算节点ID：' . $comp_id . '</div><div>计算节点名称：' . $comp_name . '</div><div>ip：' . $ip . '</div><div>端口：' . $port . '</div>';
 									$res[$row]['object'] = $nick_name;
 								}else{
-									$res[$row]['list'] = '<div>集群名称：</div><div>计算节点名称：</div>';
+									$res[$row]['list'] = '<div>集群ID：</div><div>业务名称：</div><div>计算节点ID：</div><div>计算节点名称：</div><div>ip：</div><div>端口：</div>';
 								}
 							}
 							if($value2=='add_nodes'){
-								$ip='';
-								if(!empty($string['paras']['machinelist'])) {
-									foreach ($string['paras']['machinelist'] as $host) {
-										$ip .= $host['hostaddr'] . ',';
+								$child='';
+								$arr='';
+								if(!empty($string['paras']['storage_iplists'])) {
+									foreach ($string['paras']['storage_iplists'] as $host) {
+										$child.='<div>'.$host.'</div>';
 									}
+									$arr.='<div>选择计算机：<div style="margin-left:30px;">'.$child.'</div></div>';
 								}
-								$ip=rtrim($ip, ",");
 								if(!empty($string)) {
 									$nick_name='';
 									if(!empty($string['paras']['nick_name'])){
 										$nick_name=$string['paras']['nick_name'];
-									}else if(!empty($string['paras']['cluster_name'])){
-										$nick_name=$string['paras']['cluster_name'];
+									}else if(!empty($string['paras']['cluster_id'])){
+										$name=$this->getClusterName($string['paras']['cluster_id']);
+										if(!empty($name)) {
+											$nick_name= $name[0]['nick_name'];
+										}else{
+											$nick_name = '';
+										}
 									}
 									$shard_name='';
-									if(!empty($string['paras']['shard_name'] )){
-										$shard_name=$string['paras']['shard_name'] ;
-									}else{
-										$shard_name='';
+									if(!empty($string['paras']['shard_id'])){
+										$shard_name=$this->getShardName($string['paras']['cluster_id'],$string['paras']['shard_id']);
+									}
+									$shard_id='';
+									if(!empty($string['paras']['shard_id'])){
+										$shard_id=$string['paras']['shard_id'];
+									}
+									$cluster_id='';
+									if(!empty($string['paras']['cluster_id'])){
+										$cluster_id=$string['paras']['cluster_id'];
 									}
 									$nodes='';
 									if(!empty($string['paras']['nodes'])){
 										$nodes=$string['paras']['nodes'];
 									}
-									$res[$row]['list'] = '<div>集群名称：' . $nick_name . '</div><div>选择计算机：' . $ip . '</div><div>shard名称：' .$shard_name. '</div><div>节点个数：' .$nodes  . '</div>';
-									//$res[$row]['list']=array('集群名称'=>$string['cluster_name'],'选择计算机'=>$ip,'shard名称'=>$string['shard_name'],'节点个数'=>$string['nodes']);
-									$res[$row]['object'] = $nick_name;
+									//get_status获取ip
+									$computer_hosts='';
+									$child_comp='';
+									$arr_comp='';
+									$shard_arr='';
+									//调接口
+									$this->load->model('Cluster_model');
+									$data_string= array(
+										'version'=>'1.0',
+										'job_id'=>$res[$row]['id'],
+										'job_type'=>'get_status',
+										'timestamp'=>'1435749309',
+										'paras'=>'{}'
+									);
+									$post_data =json_encode($data_string);
+									$post_arr = $this->Cluster_model->postData($post_data,$this->post_url);
+									$post_arr = json_decode($post_arr, TRUE);
+									//print_r($post_arr);exit;
+									if(!empty($post_arr['attachment']['shard_hosts'])){
+										$computer_hosts=$post_arr['attachment']['shard_hosts'][0];
+										//print_r($computer_hosts);exit;
+										foreach($computer_hosts as $key =>$value){
+											$shard_arr.=$value;
+										}
+										rtrim($shard_arr, ';');
+										$comparr=explode(';',$shard_arr);
+										for ($i=0;$i<count($comparr);$i++){
+											$child_comp.='<div>'.$comparr[$i].'</div>';
+										}
+										$arr_comp.='<div>存储节点ip：<div style="margin-left:30px;">'.$child_comp.'</div></div>';
+									}
+									$res[$row]['list'] = '<div>集群ID：' . $cluster_id. '</div><div>业务名称：' . $nick_name. '</div><div>shard_id：' . $shard_id . '</div><div>shard名称：' . $shard_name . '</div><div>个数：' . $nodes . '个</div>'.$arr.$arr_comp;
+									//$res[$row]['list']=array('业务名称'=>$string['cluster_name'],'shard名称'=>$string['shard_name'],'ip'=>$string['ip'],'端口'=>$string['port']);
+									$res[$row]['object'] = $nick_name.'('.$shard_name.')';
 								}else{
-									$res[$row]['list'] = '<div>集群名称：</div><div>选择计算机：' . $ip . '</div><div>shard名称：</div><div>节点个数：</div>';
+									$res[$row]['list'] = '<div>业务名称：</div><div>选择计算机：</div><div>shard名称：</div><div>节点个数：</div>';
 								}
 							}
 							if($value2=='delete_node'){
@@ -308,12 +564,25 @@ class Operation extends CI_Controller {
 									$nick_name='';
 									if(!empty($string['paras']['nick_name'])){
 										$nick_name=$string['paras']['nick_name'];
-									}else if(!empty($string['paras']['cluster_name'])){
-										$nick_name=$string['paras']['cluster_name'];
+									}else if(!empty($string['paras']['cluster_id'])){
+										$name=$this->getClusterName($string['paras']['cluster_id']);
+										if(!empty($name)) {
+											$nick_name= $name[0]['nick_name'];
+										}else{
+											$nick_name = '';
+										}
 									}
 									$shard_name='';
-									if(!empty($string['paras']['shard_name'])){
-										$shard_name=$string['paras']['shard_name'];
+									if(!empty($string['paras']['shard_id'])){
+										$shard_name=$this->getShardName($string['paras']['cluster_id'],$string['paras']['shard_id']);
+									}
+									$shard_id='';
+									if(!empty($string['paras']['shard_id'])){
+										$shard_id=$string['paras']['shard_id'];
+									}
+									$cluster_id='';
+									if(!empty($string['paras']['cluster_id'])){
+										$cluster_id=$string['paras']['cluster_id'];
 									}
 									$hostaddr='';
 									if(!empty($string['paras']['hostaddr'])){
@@ -323,11 +592,11 @@ class Operation extends CI_Controller {
 									if(!empty($string['paras']['port'])){
 										$port=$string['paras']['port'];
 									}
-									$res[$row]['list'] = '<div>集群名称：' . $nick_name. '</div><div>shard名称：' . $shard_name . '</div><div>ip：' . $hostaddr . '</div><div>端口：' . $port. '</div>';
-									//$res[$row]['list']=array('集群名称'=>$string['cluster_name'],'shard名称'=>$string['shard_name'],'ip'=>$string['ip'],'端口'=>$string['port']);
-									$res[$row]['object'] = $nick_name;
+									$res[$row]['list'] = '<div>集群ID：' . $cluster_id. '</div><div>业务名称：' . $nick_name. '</div><div>shard_id：' . $shard_id . '</div><div>shard名称：' . $shard_name . '</div><div>ip：' . $hostaddr . '</div><div>端口：' . $port. '</div>';
+									//$res[$row]['list']=array('业务名称'=>$string['cluster_name'],'shard名称'=>$string['shard_name'],'ip'=>$string['ip'],'端口'=>$string['port']);
+									$res[$row]['object'] = $nick_name.'('.$shard_name.')';
 								}else{
-									$res[$row]['list']='<div>集群名称：</div><div>shard名称：</div><div>ip：</div><div>端口：</div>';
+									$res[$row]['list']='<div>业务名称：</div><div>shard名称：</div><div>ip：</div><div>端口：</div>';
 								}
 							}
 							if($value2=='mysqld_exporter'){
@@ -358,7 +627,6 @@ class Operation extends CI_Controller {
 										$port=$string['paras']['port'];
 									}
 									$res[$row]['list'] = '<div>ip：' .$hostaddr . '</div><div>端口：' .$port . '</div>';
-									//$res[$row]['list']=array('ip'=>$string['ip'],'端口'=>$string['port']);
 									$res[$row]['object'] = $hostaddr.':'.$port;
 								}else{
 									$res[$row]['list'] = '<div>ip：</div><div>端口：</div>';
@@ -444,8 +712,17 @@ class Operation extends CI_Controller {
 							if($value2=='control_instance'){
 								if(!empty($string)) {
 									$control='';
+									$action='';
+									$object='';
+									//$res[$row]['job_type'] = '';
 									if(!empty($string['paras']['control'])){
-										$control=$string['paras']['control'] ;
+										if($string['paras']['control']=='start'){
+											$control='启用';
+										}else if($string['paras']['control']=='stop'){
+											$control='禁用';
+										}else if($string['paras']['control']=='restart'){
+											$control='重启';
+										}
 									}
 									$hostaddr='';
 									if(!empty($string['paras']['hostaddr'])){
@@ -455,9 +732,45 @@ class Operation extends CI_Controller {
 									if(!empty($string['paras']['port'])){
 										$port=$string['paras']['port'];
 									}
-									$res[$row]['list'] = '<div>操作：' .$control . '</div><div>ip：' .$hostaddr  . '</div><div>端口：' . $port . '</div>';
+									$cluster_id='';
+									if(!empty($string['paras']['cluster_id'])){
+										$cluster_id=$string['paras']['cluster_id'];
+										$res[$row]['cluster_id']=$cluster_id;
+									}
+									$nick_name='';
+									if(!empty($string['paras']['cluster_id'])){
+										$name=$this->getClusterName($string['paras']['cluster_id']);
+										if(!empty($name)) {
+											$nick_name= $name[0]['nick_name'];
+										}else{
+											$nick_name = '';
+										}
+										$object.=$nick_name;
+									}
+									$machine_type='';
+									$child='';
+									if(!empty($string['paras']['machine_type'])){
+										if($string['paras']['machine_type']=='storage'){
+											$machine_type='存储节点';
+											$shard_id='';
+											if(!empty($string['paras']['shard_id'])){
+												$shard_id=$string['paras']['shard_id'];
+											}
+											$shard_name='';
+											if(!empty($string['paras']['shard_id'])){
+												$shard_name=$this->getShardName($string['paras']['cluster_id'],$string['paras']['shard_id']);
+												$object.='('.$shard_name.')';
+											}
+											$child='<div>shard_id：' .$shard_id  . '</div><div>shard名称：' . $shard_name . '</div>';
+										}else if($string['paras']['machine_type']=='computer'){
+											$machine_type='计算节点';
+										}
+									}
+									$action=$control.$machine_type;
+									$res[$row]['job_type'] = $action;
+									$res[$row]['list'] = '<div>操作：' .$action . '</div><div>集群ID：' .$cluster_id . '</div><div>业务名称：' .$nick_name. '</div>'.$child.'<div>ip：' .$hostaddr  . '</div><div>端口：' . $port . '</div>';
 									//$res[$row]['list']=array('操作'=>$string['control'],'ip'=>$string['ip'],'端口'=>$string['port']);
-									$res[$row]['object'] = $control;
+									$res[$row]['object'] = $object;
 								}else{
 									$res[$row]['list']='<div>操作：</div><div>ip：</div><div>端口：</div>';
 								}
@@ -527,16 +840,262 @@ class Operation extends CI_Controller {
 								}
 							}
 							if($value2=='manual_switch'){
-								$res[$row]['list'] = '';
-								$res[$row]['object'] = '';
+								if(!empty($string)) {
+									$assign_hostaddr='';
+									if(!empty($string['paras']['assign_hostaddr'])){
+										$assign_hostaddr=$string['paras']['assign_hostaddr'] ;
+									}
+									$master_hostaddr='';
+									if(!empty($string['paras']['master_hostaddr'])){
+										$master_hostaddr=$string['paras']['master_hostaddr'];
+									}
+									$cluster_id='';
+									if(!empty($string['paras']['cluster_id'])){
+										$cluster_id=$string['paras']['cluster_id'];
+									}
+									$shard_id='';
+									if(!empty($string['paras']['shard_id'])){
+										$shard_id=$string['paras']['shard_id'];
+									}
+									$nick_name='';
+									if(!empty($string['paras']['nick_name'])){
+										$nick_name=$string['paras']['nick_name'];
+									}else if(!empty($string['paras']['cluster_id'])){
+										$name=$this->getClusterName($string['paras']['cluster_id']);
+										if(!empty($name)) {
+											$nick_name= $name[0]['nick_name'];
+										}else{
+											$nick_name = '';
+										}
+									}
+									$shard_name='';
+									if(!empty($string['paras']['shard_id'])&&!empty($string['paras']['cluster_id'])){
+										$shard_name=$this->getShardName($string['paras']['cluster_id'],$string['paras']['shard_id']);
+									}
+									$res[$row]['list'] = '<div>集群ID：' .$cluster_id. '</div><div>shard_id：' . $shard_id . '</div><div>原主节点：' .$master_hostaddr . '</div><div>新主节点：' .$assign_hostaddr  . '</div>';
+									$res[$row]['object'] = $nick_name.'('.$shard_name.')';
+								}else{
+									$res[$row]['list'] = '<div>集群ID：</div><div>shard_id：</div><div>原主节点：</div><div>新主节点：</div>';
+									$res[$row]['object'] = '';
+								}
 							}
 							if($value2=='rebuild_node'){
-								$res[$row]['list'] = '';
-								$res[$row]['object'] = '';
+								if(!empty($string)) {
+									$cluster_id='';
+									if(!empty($string['paras']['cluster_id'])){
+										$cluster_id=$string['paras']['cluster_id'];
+									}
+									$nick_name='';
+									if(!empty($string['paras']['nick_name'])){
+										$nick_name=$string['paras']['nick_name'];
+									}else if(!empty($string['paras']['cluster_id'])){
+										$name=$this->getClusterName($string['paras']['cluster_id']);
+										if(!empty($name)) {
+											$nick_name= $name[0]['nick_name'];
+										}else{
+											$nick_name = '';
+										}
+									}
+									$shard_id='';
+									if(!empty($string['paras']['shard_id'])){
+										$shard_id=$string['paras']['shard_id'];
+									}
+									$shard_name='';
+									if(!empty($string['paras']['shard_id'])&&!empty($string['paras']['cluster_id'])){
+										$shard_name=$this->getShardName($string['paras']['cluster_id'],$string['paras']['shard_id']);
+									}
+									// 是否从主节点上拉取数据
+									$allow_pull_from_master='';
+									//主备延迟
+									$allow_replica_delay='';
+									$arr='<div>集群ID：' .$cluster_id. '</div><div>业务名称：' .$nick_name . '</div><div>shard_id：'.$shard_id.'</div><div>shard名称：'.$shard_name.'</div>';
+									if(isset($string['paras']['allow_pull_from_master'])){
+										if($string['paras']['allow_pull_from_master']=='1'){
+											$allow_pull_from_master='是';
+											$arr.='<div>是否从主节点上拉取数据：'.$allow_pull_from_master.'</div>';
+										}else{
+											if(!empty($string['paras']['allow_replica_delay'])){
+												$allow_replica_delay=$string['paras']['allow_replica_delay'];
+											}else{
+												$allow_replica_delay='';
+											}
+											$allow_pull_from_master='否';
+											$arr.='<div>是否从主节点上拉取数据：'.$allow_pull_from_master.'</div><div>主备延迟：'.$allow_replica_delay.'s</div>';
+										}
+									}
+									//限速
+									$pv_limit='';
+									$hostaddr='';
+									$port='';
+									$need_backup='';
+									$hdfs_host='';
+									$redo_arr='';
+									if(!empty($string['paras']['rb_nodes'])){
+										foreach ($string['paras']['rb_nodes'] as $key3=>$value3) {
+											$arr_child='';
+											//print_r($value3['hostaddr']);exit;
+											if(!empty($value3['hostaddr'])){
+												$hostaddr=$value3['hostaddr'];
+											}else{
+												$hostaddr='';
+											}
+											if(!empty($value3['port'])){
+												$port=$value3['port'];
+											}else{
+												$port='';
+											}
+											if(!empty($value3['pv_limit'])){
+												$pv_limit=$value3['pv_limit'];
+											}else{
+												$pv_limit='';
+											}
+											$arr_child.='<div>ip：'.$hostaddr.'</div><div>端口：'.$port.'</div><div>限速：'.$pv_limit.'KB/s</div>';
+											if(isset($value3['need_backup'])){
+												if($value3['need_backup']=='1'){
+													$need_backup='是';
+													if(!empty($value3['hdfs_host'])){
+														$hdfs_host=$value3['hdfs_host'];
+													}else{
+														$hdfs_host='';
+													}
+													$arr_child.='<div>是否备份：'.$need_backup.'</div><div>备份存储目标：'.$hdfs_host.'</div>';
+												}else{
+													$need_backup='否';
+													$arr_child.='<div>是否备份：'.$need_backup.'</div>';
+												}
+											}else{
+												$need_backup='';
+											}
+											$redo_arr.='<div>需重做备机节点'.($key3+1).'：<div style="margin-left:30px;">'.$arr_child.'</div></div>';
+										}
+									}
+									//$res[$row]['list'] = '<div>集群ID：' .$cluster_id. '</div><div>业务名称：' .$nick_name . '</div><div>shard_id：'.$shard_id.'</div><div>shard名称：'.$shard_name.'</div><div>需重做的备机节点：'.$shard_name.'</div><div>是否从主节点上拉取数据：'.$shard_name.'</div><div>主备延迟：'.$shard_name.'</div><div>是否备份：'.$shard_name.'</div><div>备份存储目标：'.$shard_name.'</div><div>限速：'.$shard_name.'</div>';
+									$res[$row]['list']=$arr.'<div style="max-height:250px;overflow-y:auto;">'.$redo_arr.'</div>';
+									$res[$row]['object'] = $nick_name.'('.$shard_name.')';
+								}else{
+									$res[$row]['list'] = '<div>集群ID：</div><div>业务名称：</div>';
+									$res[$row]['object'] = '';
+								}
 							}
 							if($value2=='cluster_restore'){
-								$res[$row]['list'] = '';
-								$res[$row]['object'] = '';
+								if(!empty($string)) {
+									$dst_cluster_id='';
+									if(!empty($string['paras']['dst_cluster_id'])){
+										$dst_cluster_id=$string['paras']['dst_cluster_id'] ;
+									}
+									$src_cluster_id='';
+									$src_nick_name = '';
+									if(!empty($string['paras']['src_cluster_id'])){
+										$src_cluster_id=$string['paras']['src_cluster_id'];
+										$src_name=$this->getClusterName($src_cluster_id);
+										if(!empty($src_name)) {
+											$src_nick_name= $src_name[0]['nick_name'];
+										}else{
+											$src_nick_name = '';
+										}
+									}
+									$restore_time='';
+									if(!empty($string['paras']['restore_time'])){
+										$restore_time=$string['paras']['restore_time'];
+									}
+									$nick_name='';
+									if(!empty($string['paras']['nick_name'])){
+										$nick_name=$string['paras']['nick_name'];
+									}else if(!empty($string['paras']['dst_cluster_id'])){
+										$name=$this->getClusterName($string['paras']['dst_cluster_id']);
+										if(!empty($name)) {
+											$nick_name= $name[0]['nick_name'];
+										}else{
+											$nick_name = '';
+										}
+									}
+									
+									$res[$row]['list'] = '<div>原集群ID：' .$src_cluster_id. '</div><div>原集群业务名称：' .$src_nick_name  . '</div><div>目标集群ID：' . $dst_cluster_id. '</div><div>目标集群业务名称：' .$nick_name  . '</div><div>回档时间：' .$restore_time . '</div>';
+									$res[$row]['object'] = $nick_name.'('.$shard_name.')';
+								}else{
+									$res[$row]['list'] = '<div>原集群ID：</div><div>原集群业务名称：</div><div>目标集群ID：</div><div>目标集群业务名称：</div><div>回档时间：</div>';
+									$res[$row]['object'] = '';
+								}
+							}
+							if($value2=='manual_backup_cluster'){
+								if(!empty($string)) {
+									$cluster_id='';
+									if(!empty($string['paras']['cluster_id'])){
+										$cluster_id=$string['paras']['cluster_id'];
+									}
+									$nick_name='';
+									if(!empty($string['paras']['nick_name'])){
+										$nick_name=$string['paras']['nick_name'];
+									}else if(!empty($string['paras']['cluster_id'])){
+										$name=$this->getClusterName($string['paras']['cluster_id']);
+										if(!empty($name)) {
+											$nick_name= $name[0]['nick_name'];
+										}else{
+											$nick_name = '';
+										}
+									}
+									$res[$row]['list'] = '<div>集群ID：' .$cluster_id. '</div><div>业务名称：' .$nick_name . '</div>';
+									$res[$row]['object'] = $nick_name;
+								}else{
+									$res[$row]['list'] = '<div>集群ID：</div><div>业务名称：</div>';
+									$res[$row]['object'] = '';
+								}
+							}
+							if($value2=='expand_cluster'){
+								if(!empty($string)) {
+									$cluster_id='';
+									if(!empty($string['paras']['cluster_id'])){
+										$cluster_id=$string['paras']['cluster_id'];
+									}
+									$nick_name='';
+									if(!empty($string['paras']['nick_name'])){
+										$nick_name=$string['paras']['nick_name'];
+									}else if(!empty($string['paras']['cluster_id'])){
+										$name=$this->getClusterName($string['paras']['cluster_id']);
+										if(!empty($name)) {
+											$nick_name= $name[0]['nick_name'];
+										}else{
+											$nick_name = '';
+										}
+									}
+									$src_shard_id='';
+									if(!empty($string['paras']['src_shard_id'])){
+										$src_shard_id=$string['paras']['src_shard_id'];
+									}
+									$src_shard_name='';
+									if(!empty($string['paras']['src_shard_id'])){
+										$src_shard_name=$this->getShardName($string['paras']['cluster_id'],$string['paras']['src_shard_id']);;
+									}
+									$dst_shard_name='';
+									if(!empty($string['paras']['dst_shard_id'])){
+										$dst_shard_name=$this->getShardName($string['paras']['cluster_id'],$string['paras']['dst_shard_id']);;
+									}
+									$dst_shard_id='';
+									if(!empty($string['paras']['dst_shard_id'])){
+										$dst_shard_id=$string['paras']['dst_shard_id'];
+									}
+									$drop_old_table='';
+									if(isset($string['paras']['drop_old_table'])){
+										if($string['paras']['drop_old_table']=='1'){
+											$drop_old_table='否';
+										}else{
+											$drop_old_table='是';
+										}
+									}
+									$table_list='';
+									if(!empty($string['paras']['table_list'])){
+										$table_list=$string['paras']['table_list'];
+										$child='';
+										foreach ($table_list as $key4) {
+											$child.='<div>'.$key4.'</div>';	
+										}
+									}
+									$res[$row]['list'] = '<div>集群ID：' .$cluster_id. '</div><div>业务名称：' .$nick_name . '</div><div>原shard_id：' .$src_shard_id . '</div><div>原shard名称：' .$src_shard_name . '</div><div>目标shard_id：' .$dst_shard_id . '</div><div>目标shard名称：' .$dst_shard_name . '</div><div>是否保留原表：' .$drop_old_table . '</div><div>已选原shard表：<div style="margin-left:30px;max-height:250px;overflow-y:auto;">'.$child.'</div></div>';
+									$res[$row]['object'] = $nick_name;
+								}else{
+									$res[$row]['list'] = '';
+									$res[$row]['object'] = '';
+								}
 							}
 						}else{
 							$res[$row]['job_type'] = '';
@@ -544,6 +1103,7 @@ class Operation extends CI_Controller {
 					}
 
 				}
+				
 			}
 		}
 		$data['code'] = 200;
@@ -663,8 +1223,13 @@ class Operation extends CI_Controller {
 									$nick_name='';
 									if(!empty($string['paras']['nick_name'])){
 										$nick_name=$string['paras']['nick_name'];
-									}else if(!empty($string['paras']['cluster_name'])){
-										$nick_name=$string['paras']['cluster_name'];
+									}else if(!empty($string['paras']['cluster_id'])){
+										$name=$this->getClusterName($string['paras']['cluster_id']);
+										if(!empty($name)) {
+											$nick_name= $name[0]['nick_name'];
+										}else{
+											$nick_name = '';
+										}
 									}
 									$res[$row]['object'] = $nick_name;
 								}else{
@@ -881,5 +1446,26 @@ class Operation extends CI_Controller {
 		}
 		return $count;
 	}
-
+	public function getClusterName($id){
+		$sql="select name,nick_name from db_clusters where id='$id'";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		return $res;
+	}
+	public function getShardName($db_cluster_id,$id){
+		$sql="select name from shards where id='$id' and db_cluster_id='$db_cluster_id'";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		if(!empty($res)) {
+			return $res[0]['name'];
+		}else{
+			return '';
+		}
+	}
+	public function getCompName($db_cluster_id,$id){
+		$sql="select name,hostaddr,port from comp_nodes where id='$id' and db_cluster_id='$db_cluster_id'";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		return $res;
+	}
 }

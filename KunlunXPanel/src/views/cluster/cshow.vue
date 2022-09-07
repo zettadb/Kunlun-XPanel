@@ -3,7 +3,7 @@
     <el-radio-group  v-model="currentCase" size="small" @change="agreeChange" v-show="g_loading">
     <el-radio v-for="cluster in clusters" :label="cluster.id" :key="cluster.id">{{cluster.nick_name+'('+cluster.id+')'}}</el-radio>
     </el-radio-group>
-    <div v-text="info" v-show="installStatus===true" class="info"></div>
+    <!--  <div v-text="info" v-show="installStatus===true" class="info"></div> -->
     <div class="nodata" v-show="nodataShow">暂无数据</div>
     <!-- style="margin-top:0px;width: calc(100(100% - 10px);height:calc(100vh - 160px);" -->
     <div ref="myPage" style="margin-top:0px;width: calc(100(100% - 10px);height:calc(100vh - 160px);" v-show="g_loading" @click="isShowNodeMenuPanel = false">
@@ -24,23 +24,22 @@
     </div>
     <div v-show="isShowNodeMenuPanel&&g_loading" :style="{left: nodeMenuPanelPosition.x + 'px', top: nodeMenuPanelPosition.y + 'px' }" style="z-index: 999;padding:10px;background-color: #ffffff;border:#eeeeee solid 1px;box-shadow: 0px 0px 8px #cccccc;position: absolute;">
       <div style="line-height: 25px;padding-left: 10px;color: #888888;font-size: 10px;">对{{nodeName}}进行操作：</div>
-      <div class="c-node-menu-item"  v-if="user_name=='super_dba'&&(type==='snode')" @click.stop="doAction('设置实例变量')">设置实例变量</div>
-      <div class="c-node-menu-item"  v-if="user_name=='super_dba'&&(type==='snode')" @click.stop="doAction('获取实例变量')">获取实例变量</div>
+      <!-- <div class="c-node-menu-item"  v-if="user_name=='super_dba'&&(type==='snode')" @click.stop="doAction('设置实例变量')">设置实例变量</div> -->
+      <!-- <div class="c-node-menu-item"  v-if="user_name=='super_dba'&&(type==='snode')" @click.stop="doAction('获取实例变量')">获取实例变量</div> -->
       <!-- <div class="c-node-menu-item" v-if="type==='shard'&& (storage_node_create_priv==='Y')" @click.stop="doAction('新增存储节点')">新增存储节点</div>--> 
-      <div class="c-node-menu-item" v-if="type==='shard'&&ha_mode==='rbr'" @click.stop="doAction('主备切换')">主备切换</div>
-      <div class="c-node-menu-item" v-if="type==='shard'&&ha_mode==='rbr'&& (storage_node_create_priv==='Y')" @click.stop="doAction('重做备机节点')">重做备机节点</div>
-      <div class="c-node-menu-item" v-if="type==='shard'&&ha_mode==='rbr'" @click.stop="doAction('设置延迟告警时间')">设置延迟告警时间</div>
+      <!-- <div class="c-node-menu-item" v-if="type==='shard'&&ha_mode==='rbr'" @click.stop="doAction('主备切换')">主备切换</div> -->
+      <!-- <div class="c-node-menu-item" v-if="type==='shard'&&ha_mode==='rbr'&& (storage_node_create_priv==='Y')" @click.stop="doAction('重做备机节点')">重做备机节点</div> -->
+      <!-- <div class="c-node-menu-item" v-if="type==='shard'&&ha_mode==='rbr'" @click.stop="doAction('设置延迟告警时间')">设置延迟告警时间</div> -->
       <div class="c-node-menu-item" v-if="type==='cluster'&& (shard_create_priv==='Y')" @click.stop="doAction('新增存储集群')">新增存储集群</div>
       <div class="c-node-menu-item" v-if="type==='cluster'&& (compute_node_create_priv==='Y')" @click.stop="doAction('新增计算节点')">新增计算节点</div>
       <div class="c-node-menu-item"  v-if="type==='snode'" @click.stop="doAction('详情')">详情</div>
-      <!-- <div class="c-node-menu-item" v-if="(type==='cnode'||type==='snode')&& (user_name=='super_dba')" @click.stop="doAction('启用')">启用</div>
-      <div class="c-node-menu-item"  v-if="(type==='cnode'||type==='snode')&& (user_name=='super_dba'&&ha_mode==='mgr')" @click.stop="doAction('禁用')">禁用</div>
-      <div class="c-node-menu-item"  v-if="(type==='cnode'||type==='snode')&& (user_name=='super_dba')" @click.stop="doAction('重启')">重启</div> -->
-      <!-- <div class="c-node-menu-item"  v-if="(type==='shard'&& shard_drop_priv==='Y')&&(type==='cnode'&& compute_node_drop_priv==='Y')&&(type==='snode'&& storage_node_drop_priv==='Y')" @click.stop="doAction('删除')">删除</div> -->
+      <!-- <div class="c-node-menu-item" v-if="(type==='cnode'||type==='snode')&& (user_name=='super_dba')&&(node_status!=='active')" @click.stop="doAction('启用')">启用</div>
+      <div class="c-node-menu-item"  v-if="(type==='cnode'||type==='snode')&& (user_name=='super_dba')&& (master!=='true')&&(node_status!=='manual_stop')" @click.stop="doAction('禁用')">禁用</div>
+      <div class="c-node-menu-item"  v-if="(type==='cnode'||type==='snode')&& (user_name=='super_dba')&& (master!=='true')" @click.stop="doAction('重启')">重启</div>
       <div class="c-node-menu-item"  v-if="type==='shard'&& shard_drop_priv==='Y'" @click.stop="doAction('删除')">删除</div>
       <div class="c-node-menu-item"  v-if="type==='cnode'&& compute_node_drop_priv==='Y'" @click.stop="doAction('删除')">删除</div>
-      <div class="c-node-menu-item"  v-else-if="type==='snode'&& storage_node_drop_priv==='Y'" @click.stop="doAction('删除')">删除</div>
-      <div class="c-node-menu-item"  v-if="(type==='cnode'||type==='snode')" @click.stop="doAction('进入')">进入</div>
+      <div class="c-node-menu-item"  v-else-if="type==='snode'&& storage_node_drop_priv==='Y'" @click.stop="doAction('删除')">删除</div>-->
+      <div class="c-node-menu-item"  v-if="(type==='cnode'||type==='snode')&&(node_status=='active')" @click.stop="doAction('节点监控')">节点监控</div> 
     </div>
 
     <div v-if="isShowNodeTipsPanel" :style="{left: nodeMenuPanelPosition.x + 'px', top: nodeMenuPanelPosition.y + 'px' }" style="z-index: 999;padding:10px;background-color: #ffffff;border:#eeeeee solid 1px;box-shadow: 0px 0px 8px #cccccc;position: absolute;">
@@ -269,12 +268,13 @@
               <span>{{detailtemp.port}}</span>
             </el-form-item>
             <el-form-item label="状态:" prop="master">
-              <span v-if="detailtemp.master=='true'">{{'主节点('+detailtemp.status+')'}}</span>
-              <span v-else-if="detailtemp.master=='false'">{{'备节点('+detailtemp.status+')'}}</span>
+              <span v-if="detailtemp.master=='true'">{{detailtemp|nodeStatus}}</span>
+              <span v-else-if="detailtemp.master=='false'">{{detailtemp|nodeStatus}}</span>
             </el-form-item>
-            <el-form-item label="同步状态:" prop="sync_state">
+            <el-form-item label="节点类型:" prop="sync_state">
               <span v-if="detailtemp.sync_state=='async'">异步</span>
-              <span v-else>同步</span>
+              <span v-else-if="detailtemp.sync_state=='fsync'">强同步</span>
+              <span v-else>{{detailtemp.sync_state}}</span>
             </el-form-item>
           </el-form>
         </div>
@@ -349,7 +349,7 @@
     </el-dialog>
 
     <!--  状态框 -->
-    <el-dialog :visible.sync="dialogStatusVisible" custom-class="single_dal_view" width="400px">
+    <el-dialog :visible.sync="dialogStatusVisible" custom-class="single_dal_view" width="400px" :close-on-click-modal="false" :before-close="beforeSyncDestory">
       <div class="block">
         <el-timeline>
           <el-timeline-item
@@ -384,7 +384,7 @@
       
     </el-dialog>
     <!-- 重做备机状态框 -->
-     <el-dialog :title="job_id" :visible.sync="dialogStatusRedoVisible" custom-class="single_dal_view" :close-on-click-modal="false">
+     <el-dialog :title="job_id" :visible.sync="dialogStatusRedoVisible" custom-class="single_dal_view" :close-on-click-modal="false" :before-close="beforeRedoDestory">
       <div style="width: 100%;background: #fff;padding:0 20px;" class="block">
         <el-steps direction="vertical" :active="init_active">
           <el-step 
@@ -549,6 +549,7 @@ export default {
       clusters:[],
       nodeName:'',
       type:'',
+      master:'',
       ha_mode:'',
       message_tips:'',
       message_type :'',
@@ -813,7 +814,8 @@ export default {
       shard_description:'',
       shardInfo:'',
       dialogShardInfo:false,
-
+      node_status:'',
+      temp_cluster:{},
 
       demoname: '---',
       range_horizontal: [ 100, 300 ],
@@ -902,6 +904,49 @@ export default {
       clearInterval(timer);                                     
     })
   },
+  destroyed() {
+    clearInterval(this.timer)
+    this.timer = null
+  },
+  filters: {
+      nodeStatus:function(value){
+        let status='';
+        let master='';
+        if(value.status=='active'){
+          status='在线';
+          if(value.master=='true'){
+            master='主节点';
+          }else if(value.master=='false'){
+            master='备机节点';
+          }
+          return master+'('+status+')'; 
+        }else if(value.status=='inactive'){
+          status='异常';
+          if(value.master=='true'){
+            master='主节点';
+          }else if(value.master=='false'){
+            master='备机节点';
+          }
+          return master+'('+status+')';
+        }else if(value.status=='manual_stop'){
+          status='停止';
+          if(value.master=='true'){
+            master='主节点';
+          }else if(value.master=='false'){
+            master='备机节点';
+          }
+          return master+'('+status+')';
+        }else if(value.status=='creating'){
+          status='安装中';
+          if(value.master=='true'){
+            master='主节点';
+          }else if(value.master=='false'){
+            master='备机节点';
+          }
+          return master+'('+status+')';
+        }
+      }
+    },
   methods: {
     getAllMetaCluster(){
       let queryParam = {user_name:sessionStorage.getItem('login_username')}
@@ -945,6 +990,11 @@ export default {
         this.redotemp.allow_pull_from_master='0'; 
       }
     },
+    beforeSyncDestory(){
+      clearInterval(this.timer)
+      this.dialogStatusVisible=false;
+      this.timer=null;
+    },
     beforeSwitchDestory(){
       //console.log('00:00');
       clearInterval(this.timer)
@@ -952,18 +1002,17 @@ export default {
       this.timer = null;
 
     },
+    beforeRedoDestory(){
+      clearInterval(this.timer)
+      this.dialogStatusRedoVisible=false;
+      this.timer = null;
+    },
     //清除定时器
     beforeDelDestory(){
       //console.log('10:00');
       clearInterval(this.timer)
       this.dialogStatusShowVisible=false;
     },
-    // beforeDestory(){
-    //   clearInterval(this.avltimer)
-    // },
-    // destroyed(){
-    //    clearInterval(this.avltimer)
-    // },
     resetredotemp(){
       this.redotemp={
         redolist:[],
@@ -1068,6 +1117,7 @@ export default {
           tempData.timestamp=timestamp_arr[0].time+'';
           let rebuild=[];
           let ipList=[]
+          //console.log(this.redotemp.redolist.length);return;
           for(let i=0;i<this.redotemp.redolist.length;i++){
             let ip_arr=(this.redotemp.redolist[i].substring(0,this.redotemp.redolist[i].length-1)).split('(');
             let pv_limit='';
@@ -1271,6 +1321,9 @@ export default {
               }else {
                 this.$set(param.data, 'color', '#acacac')
               }
+              if(param.data.status=='manual_stop'){
+                this.$set(param.data, 'color', '#acacac')
+              }
             }
           }
           
@@ -1290,6 +1343,7 @@ export default {
     agreeChange:function(val){
       //console.log(val);
       let temp={id:val}
+      this.temp_cluster={id:val};
       this.getOneCluster(temp);
     },
     async getCluster() {
@@ -1301,6 +1355,7 @@ export default {
         this.currentCase=res.list[0].id
         this.clusters = res.list;
         let temp={id:res.list[0].id}
+        this.temp_cluster={id:res.list[0].id};
         this.getOneCluster(temp);
         this.nodataShow=false;
         this.g_loading=true;
@@ -1324,21 +1379,14 @@ export default {
               this.$set(param.data, 'childrenLoaded', false)
               this.$set(param.data, 'icon', 'iconfont icon-shard')
               this.$set(param.data, 'color', '#e98f36')
-              // if(param.data.error.length>0){
-              //   //console.log(param.data.error.length);
-              //   for (let j = 0; j < param.data.error.length; j++) {
-              //     this.open4(param.data.error[j]);
-              //   }
-              // }
-              //this.$set(param, 'data', {'icon':'iconfont icon-shard','color':'#e98f36'})
             }
             if(param.id.indexOf('cnode')!=-1){
-               this.$set(param.data, 'icon', 'iconfont icon-compnode')
-               if(param.data.status=='inactive'){
+              this.$set(param.data, 'icon', 'iconfont icon-compnode')
+              if(param.data.status=='manual_stop'){
                 this.$set(param.data, 'color', '#acacac')
-               }else{
-                 this.$set(param.data, 'color', '#1196db')
-               }
+              }else{
+                this.$set(param.data, 'color', '#1196db')
+              }
             }
             if(param.id.indexOf('snode')!=-1){
                this.$set(param.data, 'icon', 'iconfont icon-snode')
@@ -1378,12 +1426,13 @@ export default {
         if((this.currentNode.data.name=='shard'&&this.shard_drop_priv!=='Y'&&this.currentNode.data.ha_mode)){
           this.isShowNodeMenuPanel = false
         }
-        else if(this.currentNode.id=='cluster'){//cluster not display
+        else if(this.currentNode.id=='cluster'||this.currentNode.text.indexOf('shard') !=-1){//cluster not display
           this.isShowNodeMenuPanel = false
         }
         else{
           this.isShowNodeMenuPanel = true
           this.nodeName=this.currentNode.text;
+          this.node_status=this.currentNode.data.status;
           if(this.currentNode.text.indexOf('shard') !=-1) {
             this.type='shard'
             this.ha_mode=this.currentNode.data.ha_mode;
@@ -1414,18 +1463,19 @@ export default {
        if(this.currentNode.id.indexOf('cnode') !=-1||this.currentNode.id.indexOf('snode') !=-1){
           this.isShowNodeMenuPanel = true
           this.nodeName=this.currentNode.text;
+          this.node_status=this.currentNode.data.status;
            if(this.currentNode.id.indexOf('cnode') !=-1) {
             this.type='cnode'
           }else if(this.currentNode.id.indexOf('snode') !=-1){
             this.type='snode'
+            this.master=this.currentNode.data.master;
           }
        }
        this.nodeMenuPanelPosition.x = $event.clientX - _base_position.x
        this.nodeMenuPanelPosition.y = $event.clientY - _base_position.y
     },
     doAction(actionName) {
-      if(actionName==='进入'){
-
+      if(actionName==='节点监控'){
           if(this.currentNode.data.name==='pgsql'){
             const pparas={};
             pparas['cluster_id']=this.currentNode.data.cluster_id;
@@ -1437,7 +1487,6 @@ export default {
                 window.open(ip_arr[0].ip+pyres.url+'?orgId=1&refresh=5s');
               }
             })
-            
           //  window.open(ip_arr[0].ip+'/d/postgresql/postgresql?orgId=1&refresh=5s');
           }else if(this.currentNode.data.name==='mysql'){
             const mparas={};
@@ -1471,7 +1520,6 @@ export default {
                   this.message_type = 'error';
                   messageTip(this.message_tips,this.message_type);
                 }else if(res.value==code){
-                //handleCofirm("此操作将永久删除"+this.currentNode.text+", 是否继续?").then( () =>{
                   const tempData = {};
                   tempData.user_name = sessionStorage.getItem('login_username');
                   tempData.job_id ='';
@@ -1486,18 +1534,6 @@ export default {
                   delShard(tempData).then((response)=>{
                     let res = response;
                     if(res.status='accept'){
-                      // this.dialogStatusVisible=true;
-                      // this.activities=[];
-                      // const newArr={
-                      //   content:'正在删除'+this.currentNode.text,
-                      //   timestamp: getNowDate(),
-                      //   size: 'large',
-                      //   type: 'primary',
-                      //   icon: 'el-icon-more'
-                      // };
-                      // this.activities.push(newArr);
-                      //this.message_tips = '正在删除'+this.currentNode.text;
-                      //this.message_type = 'success';
                       this.isShowNodeMenuPanel = false
                       this.dialogStatusShowVisible=true;
                       //调获取状态接口
@@ -1596,52 +1632,7 @@ export default {
               messageTip('已取消删除','info');
               });
             }
-          });
-          //     handleCofirm("此操作将永久删除计算节点"+this.currentNode.text+", 是否继续?").then( () =>{
-          //     const tempData = {};
-          //     tempData.user_name = sessionStorage.getItem('login_username');
-          //     tempData.job_id ='';
-          //     tempData.job_type ='delete_comp';
-          //     tempData.version=version_arr[0].ver;
-          //     tempData.timestamp=timestamp_arr[0].time+'';
-          //     const paras={};
-          //     paras.cluster_id=this.currentNode.data.cluster_id;
-          //     paras.nick_name=this.currentNode.data.nick_name;
-          //     paras.comp_id=this.currentNode.data.comp_id;
-          //     tempData.paras=paras;
-          //     //console.log(tempData);return;
-          //     delComp(tempData).then((response)=>{
-          //       let res = response;
-          //       if(res.status=='accept'){
-          //         this.dialogStatusVisible=true;
-          //         this.activities=[];
-          //         const newArr={
-          //           content:'正在删除计算节点'+this.currentNode.text,
-          //           timestamp: getNowDate(),
-          //           size: 'large',
-          //           type: 'primary',
-          //           icon: 'el-icon-more'
-          //         };
-          //         this.activities.push(newArr);
-          //         //this.message_tips = '正在删除计算节点'+this.currentNode.text;
-          //         //this.message_type = 'success';
-          //         this.isShowNodeMenuPanel = false
-          //         //调获取状态接口
-          //         let i=0;
-          //         let timer = setInterval(() => {
-          //           this.getStatus(timer,res.job_id,i++)
-          //         }, 1000)
-          //       }
-          //       else{
-          //         this.message_tips = res.error_info;
-          //         this.message_type = 'error';
-          //       }
-          //       messageTip(this.message_tips,this.message_type);
-          //   })
-          // }).catch(() => {
-          //     console.log('quxiao')
-          //     messageTip('已取消删除','info');
-          // }); 
+          });  
 
         }else if(this.currentNode.data.name==='mysql'){
           //先判断该集群是否只有一个存储节点，如果只有一个存储节点不予许删除
@@ -1672,22 +1663,9 @@ export default {
                   paras.port=this.currentNode.data.port;
                   paras.nick_name=this.currentNode.data.nick_name;
                   tempData.paras=paras;
-                  //console.log(tempData);return;
                   delSnode(tempData).then((response)=>{
                     let res = response;
                     if(res.status=='accept'){
-                      // this.dialogStatusVisible=true;
-                      // this.activities=[];
-                      // const newArr={
-                      //   content:'正在删除存储节点'+this.currentNode.text,
-                      //   timestamp: getNowDate(),
-                      //   size: 'large',
-                      //   type: 'primary',
-                      //   icon: 'el-icon-more'
-                      // };
-                      // this.activities.push(newArr);
-                      //this.message_tips = '正在删除存储节点'+this.currentNode.text;
-                      //this.message_type = 'success';
                       this.isShowNodeMenuPanel = false
                       this.dialogStatusShowVisible=true;
                       //调获取状态接口
@@ -1715,104 +1693,54 @@ export default {
               messageTip('已取消删除','info');
               });
             }
-          });
-
-          // handleCofirm("此操作将永久删除存储节点"+this.currentNode.text+", 是否继续?").then( () =>{
-          //   const tempData = {};
-          //     tempData.user_name = sessionStorage.getItem('login_username');
-          //     tempData.job_id ='';
-          //     tempData.job_type ='delete_node';
-          //     tempData.version=version_arr[0].ver;
-          //     tempData.timestamp=timestamp_arr[0].time+'';
-          //     const paras={};
-          //     paras.cluster_id=this.currentNode.data.cluster_id;
-          //     paras.shard_id=this.currentNode.data.shard_id;
-          //     paras.hostaddr=this.currentNode.data.hostaddr;
-          //     paras.port=this.currentNode.data.port;
-          //     paras.nick_name=this.currentNode.data.nick_name;
-          //     tempData.paras=paras;
-          //     //console.log(tempData);return;
-          //     delSnode(tempData).then((response)=>{
-          //       let res = response;
-          //       if(res.status=='accept'){
-          //         this.dialogStatusVisible=true;
-          //         this.activities=[];
-          //         const newArr={
-          //           content:'正在删除存储节点'+this.currentNode.text,
-          //           timestamp: getNowDate(),
-          //           size: 'large',
-          //           type: 'primary',
-          //           icon: 'el-icon-more'
-          //         };
-          //         this.activities.push(newArr);
-          //         //this.message_tips = '正在删除存储节点'+this.currentNode.text;
-          //         //this.message_type = 'success';
-          //         this.isShowNodeMenuPanel = false
-          //         //调获取状态接口
-          //         let i=0;
-          //         let timer = setInterval(() => {
-          //           this.getStatus(timer,res.job_id,i++)
-          //         }, 2000)
-          //       }
-          //       else{
-          //         this.message_tips = res.error_info;
-          //         this.message_type = 'error';
-          //       }
-          //       messageTip(this.message_tips,this.message_type);
-          //   })
-          // }).catch(() => {
-          //     console.log('quxiao')
-          //     messageTip('已取消删除','info');
-          // }); 
+          })
         }
       }
       if(actionName==='启用'){
          if(this.currentNode.data.name==='pgsql'){
           handleCofirm("是否继续启用"+this.currentNode.text+"该计算节点?").then( () =>{
             const tempData = {};
-              tempData.user_name = sessionStorage.getItem('login_username');
-              tempData.job_id ='';
-              tempData.job_type ='control_instance';
-              tempData.version=version_arr[0].ver;
-              tempData.timestamp=timestamp_arr[0].time+'';
-              const paras={};
-              paras.control='start';
-              paras.hostaddr=this.currentNode.data.hostaddr;
-              paras.port=this.currentNode.data.port;
-              //paras.type=this.currentNode.data.name;
-              tempData.paras=paras;
-              let arr={
-                list:tempData,
-                type:'pgsql'
+            tempData.user_name = sessionStorage.getItem('login_username');
+            tempData.job_id ='';
+            tempData.job_type ='control_instance';
+            tempData.version=version_arr[0].ver;
+            tempData.timestamp=timestamp_arr[0].time+'';
+            const paras={};
+            paras.control='start';
+            paras.hostaddr=this.currentNode.data.hostaddr;
+            paras.port=this.currentNode.data.port;
+            paras.cluster_id=this.currentNode.data.cluster_id;
+            paras.machine_type='computer';
+            tempData.paras=paras;
+            let arr={
+              list:tempData,
+              type:'pgsql'
+            }
+            startComp(arr).then((response)=>{
+              let res = response;
+              if(res.status=='accept'){
+                this.dialogStatusVisible=true;
+                this.activities=[];
+                const newArr={
+                  content:'正在启动计算节点'+this.currentNode.text,
+                  timestamp: getNowDate(),
+                  size: 'large',
+                  type: 'primary',
+                  icon: 'el-icon-more'
+                };
+                this.activities.push(newArr);
+                //调获取状态接口
+                let i=0;
+                this.timer = setInterval(() => {
+                  this.getStatus(this.timer,res.job_id,i++)
+                }, 5000)
+                this.isShowNodeMenuPanel = false
               }
-              //console.log(arr);return;
-              startComp(arr).then((response)=>{
-                let res = response;
-                if(res.status=='accept'){
-                  this.dialogStatusVisible=true;
-                  this.activities=[];
-                  const newArr={
-                    content:'正在启动计算节点'+this.currentNode.text,
-                    timestamp: getNowDate(),
-                    size: 'large',
-                    type: 'primary',
-                    icon: 'el-icon-more'
-                  };
-                  this.activities.push(newArr);
-                  //this.message_tips = '正在启动计算节点'+this.currentNode.text;
-                  //this.message_type = 'success';
-                  //调获取状态接口
-                  let i=0;
-                  let timer = setInterval(() => {
-                    this.getStatus(timer,res.job_id,i++)
-                  }, 1000)
-                  this.isShowNodeMenuPanel = false
-                }
-                else{
-                  this.message_tips = res.error_info;
-                  this.message_type = 'error';
-                  messageTip(this.message_tips,this.message_type);
-                }
+              else{
+                this.message_tips = res.error_info;
+                this.message_type = 'error';
+                messageTip(this.message_tips,this.message_type);
+              }
             })
           }).catch(() => {
               console.log('quxiao')
@@ -1831,7 +1759,9 @@ export default {
               paras.control='start';
               paras.hostaddr=this.currentNode.data.hostaddr;
               paras.port=this.currentNode.data.port;
-              //paras.type=this.currentNode.data.name;
+              paras.cluster_id=this.currentNode.data.cluster_id;
+              paras.shard_id=this.currentNode.data.shard_id;
+              paras.machine_type='storage';
               tempData.paras=paras;
               let arr={
                 list:tempData,
@@ -1854,9 +1784,9 @@ export default {
                   //this.message_type = 'success';
                   //调获取状态接口
                   let i=0;
-                  let timer = setInterval(() => {
-                    this.getStatus(timer,res.job_id,i++)
-                  }, 1000)
+                  this.timer = setInterval(() => {
+                    this.getStatus(this.timer,res.job_id,i++)
+                  }, 5000)
                   this.isShowNodeMenuPanel = false
                 }
                 else{
@@ -1884,7 +1814,8 @@ export default {
               paras.control='stop';
               paras.hostaddr=this.currentNode.data.hostaddr;
               paras.port=this.currentNode.data.port;
-              //paras.type=this.currentNode.data.name;
+              paras.cluster_id=this.currentNode.data.cluster_id;
+              paras.machine_type='computer';
               tempData.paras=paras;
               let arr={
                 list:tempData,
@@ -1903,13 +1834,11 @@ export default {
                     icon: 'el-icon-more'
                   };
                   this.activities.push(newArr);
-                  //this.message_tips = '正在禁用计算节点'+this.currentNode.text;
-                  //this.message_type = 'success';
                   //调获取状态接口
                   let i=0;
-                  let timer = setInterval(() => {
-                    this.getStatus(timer,res.job_id,i++)
-                  }, 1000)
+                  this.timer = setInterval(() => {
+                    this.getStatus(this.timer,res.job_id,i++)
+                  }, 5000)
                   //成功后重新设置数据
                   //this.getCluster();
                   this.isShowNodeMenuPanel = false
@@ -1937,7 +1866,9 @@ export default {
               paras.control='stop';
               paras.hostaddr=this.currentNode.data.hostaddr;
               paras.port=this.currentNode.data.port;
-              //paras.type=this.currentNode.data.name;
+              paras.cluster_id=this.currentNode.data.cluster_id;
+              paras.shard_id=this.currentNode.data.shard_id;
+              paras.machine_type='storage';
               tempData.paras=paras;
               let arr={
                 list:tempData,
@@ -1956,14 +1887,12 @@ export default {
                     icon: 'el-icon-more'
                   };
                   this.activities.push(newArr);
-                  //this.message_tips = '正在禁用存储节点'+this.currentNode.text;
-                  //this.message_type = 'success';
                   this.isShowNodeMenuPanel = false
                   //调获取状态接口
                   let i=0;
-                  let timer = setInterval(() => {
-                    this.getStatus(timer,res.job_id,i++)
-                  }, 1000)
+                  this.timer = setInterval(() => {
+                    this.getStatus(this.timer,res.job_id,i++)
+                  }, 5000)
                 }
                 else{
                   this.message_tips = res.error_info;
@@ -1990,7 +1919,8 @@ export default {
               paras.control='restart';
               paras.hostaddr=this.currentNode.data.hostaddr;
               paras.port=this.currentNode.data.port;
-              //paras.type=this.currentNode.data.name;
+              paras.cluster_id=this.currentNode.data.cluster_id;
+              paras.machine_type='computer';
               tempData.paras=paras;
               let arr={
                 list:tempData,
@@ -2009,13 +1939,11 @@ export default {
                     icon: 'el-icon-more'
                   };
                   this.activities.push(newArr);
-                  //this.message_tips = '正在重启计算节点'+this.currentNode.text;
-                  //this.message_type = 'success';
                   //调获取状态接口
                   let i=0;
-                  let timer = setInterval(() => {
-                    this.getStatus(timer,res.job_id,i++)
-                  }, 1000)
+                  this.timer = setInterval(() => {
+                    this.getStatus(this.timer,res.job_id,i++)
+                  }, 5000)
                   this.isShowNodeMenuPanel = false
                 }
                 else{
@@ -2041,7 +1969,9 @@ export default {
               paras.control='restart';
               paras.hostaddr=this.currentNode.data.hostaddr;
               paras.port=this.currentNode.data.port;
-              //paras.type=this.currentNode.data.name;
+              paras.cluster_id=this.currentNode.data.cluster_id;
+              paras.shard_id=this.currentNode.data.shard_id;
+              paras.machine_type='storage';
               tempData.paras=paras;
               let arr={
                 list:tempData,
@@ -2060,14 +1990,12 @@ export default {
                     icon: 'el-icon-more'
                   };
                   this.activities.push(newArr);
-                  //this.message_tips = '正在重启存储节点'+this.currentNode.text;
-                  //this.message_type = 'success';
                   this.isShowNodeMenuPanel = false
                   //调获取状态接口
                   let i=0;
-                  let timer = setInterval(() => {
-                    this.getStatus(timer,res.job_id,i++)
-                  }, 1000)
+                  this.timer = setInterval(() => {
+                    this.getStatus(this.timer,res.job_id,i++)
+                  }, 5000)
                 }
                 else{
                   this.message_tips = res.error_info;
@@ -2123,7 +2051,6 @@ export default {
       }
       if(actionName==='重做备机节点'){
         this.resetredotemp();
-        //this.redotemp.shard_name=this.currentNode.text;
         this.redotemp.shard_id=this.currentNode.data.shard_id;
         this.redotemp.cluster_id=this.currentNode.data.cluster_id;
         this.dialogRedoVisible=true;
@@ -2214,7 +2141,6 @@ export default {
         this.dialogDalayVisible=true;
       }
       if(actionName==='详情'){
-        // this.isShowNodeTipsPanel=true;
         this.isShowNodeMenuPanel=false;
         this.detailtemp.cluster_id=this.currentNode.data.cluster_id;
         this.detailtemp.cpu_cores=this.currentNode.data.cpu_cores;
@@ -2228,7 +2154,7 @@ export default {
         this.detailtemp.rocksdb_buffer_pool_MB=this.currentNode.data.rocksdb_buffer_pool_MB;
         this.detailtemp.shard_id=this.currentNode.data.shard_id;
         this.detailtemp.shard_name=this.currentNode.data.shard_name;
-        this.detailtemp.sync_status=this.currentNode.data.sync_status;
+        this.detailtemp.sync_state=this.currentNode.data.sync_status;
         this.detailtemp.status=this.currentNode.data.status;
         this.dialogDetailVisible=true;
       }
@@ -2306,15 +2232,8 @@ export default {
               }
             }else{
               if(res.status=='ongoing'){
-                //console.log(11);
                 for(let k=0;k<this.stepParams.length;k++){
-                  //console.log(this.stepParams.length);
-                  //console.log(typeof this.stepParams[k].title);
-                  //console.log(this.stepParams[k].title);
-                  //console.log(typeof res.attachment.step);
-                  //console.log(res.attachment.step);
                   if(res.attachment.step==this.stepParams[k].title){
-                    //console.log(44);
                     this.active=k;
                     this.stepParams[k].icon='el-icon-loading';
                     this.stepParams[k].status='process';
@@ -2323,12 +2242,10 @@ export default {
                       for(let j=0;j<k;j++){
                         this.stepParams[j].icon='el-icon-circle-check';
                         this.stepParams[j].status='success';
-                        //console.log(55);
                       }
                     }
                   }
                 }
-                 //console.log(this.active);
               }else if(res.status=='done'){
                 for(let k=0;k<this.stepParams.length;k++){
                   this.active=this.stepParams.length;
@@ -2337,18 +2254,15 @@ export default {
                 }
                 clearInterval(timer);
                 //this.getCluster();
+                this.getOneCluster(this.temp_cluster);
               }else if(res.status=='failed'){
-                //console.log(22);
                 for(let k=0;k<this.stepParams.length;k++){
-
-                  //if(res.attachment.step==this.stepParams[k].title){
                     if(this.stepParams[k].status=='process'){
                       this.active=k;
                       this.stepParams[k].icon='el-icon-circle-close';
                       this.stepParams[k].status='error';
                       this.stepParams[k].description=res.error_info;
                     }
-                  //}
                 }
                 clearInterval(timer);
               }
@@ -2807,7 +2721,6 @@ export default {
               this.shard_show=true;
               this.init_show=false;
               this.computer_show=false;
-              console.log(10)
             }else if(info=='删除计算节点'){
               this.shard_show=false; 
               this.init_show=false;
@@ -2865,7 +2778,6 @@ export default {
             if(this.computer.length==0||this.shard.length==0){
               if(this.computer_show==true){
                 if(this.computer.length==0){
-                  console.log(1);
                   let newArrgoing={}
                   if(res.attachment.hasOwnProperty('computer_hosts')){
                     const arr=res.attachment.computer_hosts.substr(0,res.attachment.computer_hosts.length-1);
@@ -2909,7 +2821,6 @@ export default {
                         for(let e=0;e<shard_ids.length;e++){
                           for(var item in shard_ids[e]){
                             var shard_idsValue=shard_ids[e][item];
-                            console.log(shard_idsValue);
                             const shard_text=item+':'+shard_idsValue;
                             shardgoing.title=shard_idsValue!==''?shard_text:'正在'+info;
                             shardgoing.icon='el-icon-circle-check';
@@ -2920,7 +2831,6 @@ export default {
                           }
                         }
                       }else{
-                        console.log(3);
                         shard_ids=res.attachment.shard_id;
                         let shardgoing={}
                         shardgoing.title=shard_ids!==''?shard_ids:'正在'+info;
@@ -2939,7 +2849,6 @@ export default {
                         for(let e=0;e<shard_ids.length;e++){
                           for(var item in shard_ids[e]){
                             var shard_idsValue=shard_ids[e][item];
-                            console.log(shard_idsValue);
                             const shard_text=item+':'+shard_idsValue;
                             shardgoing.title=shard_idsValue!==''?shard_text:'正在'+info;
                             shardgoing.icon='el-icon-circle-close';
@@ -2967,7 +2876,6 @@ export default {
                         for(let e=0;e<shard_ids.length;e++){
                           for(var item in shard_ids[e]){
                             var shard_idsValue=shard_ids[e][item];
-                            console.log(shard_idsValue);
                             const shard_text=item+':'+shard_idsValue;
                             shardgoing.title=shard_idsValue!==''?shard_text:'正在'+info;
                             shardgoing.icon='el-icon-loading';
@@ -2992,7 +2900,6 @@ export default {
                 }
               }
               if(res.status=='failed'){
-                console.log(7);
                 this.storage_state='error';
                 this.shard_icon='el-icon-circle-close'
                 this.shard_title=info+'失败';
@@ -3047,7 +2954,6 @@ export default {
                 }
                 clearInterval(timer);
               }else if(res.status=='done'){
-                console.log(8);
                 this.storage_state='success';
                 this.shard_icon='el-icon-circle-check'
                 this.shard_title=info+'成功';
@@ -3075,7 +2981,6 @@ export default {
                 }
                 //遍历存储节点改状态
                 if(this.shard.length>0){
-                  console.log(9);
                   for(let c=0;c<this.shard.length;c++){
                     let shard_ids='';
                     if(info=='新增shard'){
@@ -3099,7 +3004,8 @@ export default {
                   }
                 }
                 clearInterval(timer);
-                this.getCluster();
+                //this.getCluster();
+                this.getOneCluster(this.temp_cluster);
               }
             }
           }else if(res.attachment==null&&res.error_code=='70001'&&res.status=='failed'){
@@ -3198,7 +3104,7 @@ export default {
         postarr.paras={};
         getEvStatus(postarr).then((res) => {
         if(res.status=='done'||res.status=='failed'){
-          clearInterval(timer);
+          //clearInterval(timer);
           //this.info=res.error_info;
           if(res.status=='done'){
             const newArrdone={
@@ -3208,16 +3114,32 @@ export default {
               icon: 'el-icon-circle-check'
             };
             this.activities.push(newArrdone)
-            this.getList();
-            this.dialogStatusVisible=false;
+            //this.getCluster();
+            this.getOneCluster(this.temp_cluster);
+            //this.dialogStatusVisible=false;
+            clearInterval(timer);
           }else{
-            const newArr={
-              content:res.error_info,
-              timestamp: getNowDate(),
-              color: 'red',
-              icon: 'el-icon-circle-close'
-            };
-            this.activities.push(newArr);
+            if(res.attachment==null&&res.error_code=='70001'&&res.status=='failed'){
+              if(i>5){
+                const newArr={
+                  content:res.error_info,
+                  timestamp: getNowDate(),
+                  color: 'red',
+                  icon: 'el-icon-circle-close'
+                };
+                this.activities.push(newArr);
+                clearInterval(timer);
+              }
+            }else{
+              const newArr={
+                content:res.error_info,
+                timestamp: getNowDate(),
+                color: 'red',
+                icon: 'el-icon-circle-close'
+              };
+              this.activities.push(newArr);
+              clearInterval(timer);
+            }
             //this.installStatus = true;
           }
         }else{
@@ -3227,8 +3149,8 @@ export default {
             color: '#0bbd87'
           };
           this.activities.push(newArrgoing)
-          //this.info=res.error_info;
-          //this.installStatus = true;
+          this.info=res.error_info;
+          this.installStatus = true;
         }
       });
         if(i>=86400){

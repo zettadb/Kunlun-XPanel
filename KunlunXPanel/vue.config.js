@@ -14,7 +14,7 @@ const name = defaultSettings.title || 'KunlunXPanel' // page title
 // You can change the port by the following methods:
 // port = 9528 npm run dev OR npm run dev --port = 9528
 const port = process.env.port || process.env.npm_config_port || 9528 // dev port
-
+const Timestamp = new Date().getTime()
 // All configuration item explanations can be find in https://cli.vuejs.org/config/
 module.exports = {
   /**
@@ -129,6 +129,27 @@ module.exports = {
           config.optimization.runtimeChunk('single')
         }
       )
+      if (process.env.NODE_ENV === 'production') {
+        // 给js和css配置Timestamp
+        config.output.filename('static/js/[name].' + Timestamp + '.js').end()
+        config.output.chunkFilename('static/js/[name].' + Timestamp + '.js').end()
+        config.plugin('extract-css').tap(args => [{
+          filename: `static/css/[name].${Timestamp}.css`,
+          chunkFilename: `static/css/[name].${Timestamp}.css`
+        }])
+        // 给img配置Timestamp
+        config.module.rule('images').use('url-loader').tap(options => {
+          options.name = `static/img/[name].${Timestamp}.[ext]`
+          options.fallback = {
+            loader: 'file-loader',
+            options: {
+              name: `static/img/[name].${Timestamp}.[ext]`
+            }
+          }
+          return options
+        })
+      }
+      // Timestamp 时间设置的一个变量 直接在module.exports 上面 const Timestamp = new Date().getTime()
   },
   css: {
     loaderOptions: {

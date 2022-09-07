@@ -49,27 +49,26 @@
           <span class="link-type" @click="handleDetail(row)">{{ row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column   
+      <!-- <el-table-column   
       prop="name" 
       label="集群名称"
        align="center">
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column  
        prop="nick_name" 
        label="业务名称" 
        align="center">
       </el-table-column>
-      <el-table-column
+      <!-- <el-table-column
             prop="ha_mode"
             align="center"
             label="高可用模式">
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column
-            prop="comptotal"
+            prop="comp_count"
             align="center"
             label="计算节点总数">
       </el-table-column>
-
       <el-table-column
             prop="shardtotal"
             align="center"
@@ -91,23 +90,23 @@
             <span v-else-if="scope.row.first_backup!==''">{{scope.row.first_backup}}</span>
         </template>
       </el-table-column>
-      <!--  width="230" -->
+      <!--  width="450" -->
       <el-table-column
         label="操作"
         align="center"
-        width="450"
+        width="150"
         fixed="right"
         class-name="small-padding fixed-width"
         v-if="storage_node_create_priv==='Y'||shard_create_priv==='Y'||compute_node_create_priv==='Y'||restore_priv==='Y'||backup_priv==='Y'||cluster_drop_priv==='Y'||row.ha_mode==='rbr'"
       >
         <template slot-scope="{row,$index}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)" v-if="storage_node_create_priv==='Y'&&shard_create_priv==='Y'&&compute_node_create_priv==='Y'">+</el-button>
-          <el-button type="primary" size="mini" @click="handleRetreated(row)" v-if="restore_priv==='Y'">回档</el-button>
-          <el-button type="primary" size="mini" @click="handleExpand(row)">扩容</el-button>
+          <!-- <el-button type="primary" size="mini" @click="handleUpdate(row)" v-if="storage_node_create_priv==='Y'&&shard_create_priv==='Y'&&compute_node_create_priv==='Y'">+</el-button> -->
+          <!-- <el-button type="primary" size="mini" @click="handleRetreated(row)" v-if="restore_priv==='Y'">回档</el-button> -->
+          <!-- <el-button type="primary" size="mini" @click="handleExpand(row)">扩容</el-button> -->
           <!-- <el-button type="primary" size="mini" @click="handleRestore(row)" v-if="restore_priv==='Y'">恢复</el-button> -->
-          <el-button type="primary" size="mini" @click="handleBackUp(row,$index)" v-if="backup_priv==='Y'">全量备份</el-button>
-          <el-button type="primary" size="mini" @click="handleSwitchOver(row,$index)" v-if="row.ha_mode==='rbr'">主备切换</el-button>
-          <!-- <el-button type="primary" size="mini" @click="handleSetUp(row)">设置</el-button> -->
+          <!-- <el-button type="primary" size="mini" @click="handleBackUp(row,$index)" v-if="backup_priv==='Y'">全量备份</el-button> -->
+          <!-- <el-button type="primary" size="mini" @click="handleSwitchOver(row,$index)" v-if="row.ha_mode==='rbr'">主备切换</el-button> -->
+          <el-button type="primary" size="mini" @click="handleSetUp(row)">设置</el-button>
           <el-button
             size="mini"
             type="danger"
@@ -176,18 +175,21 @@
           </el-select>
         </el-form-item>
   
-        <div v-show="dialogStatus==='create'||'detail'">
+        <div v-show="dialogStatus==='create'">
         <el-form-item label="shard个数:" prop="shards_count" >
           <el-input  v-model="temp.shards_count" class="right_input" placeholder="请输入shard个数" :disabled="dialogStatus==='detail'">
             <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">个</i>
           </el-input>
         </el-form-item>
         </div>
-        <el-form-item label="副本数:" prop="snode_count"  v-show="dialogStatus==='create'||'detail'">
+        <el-form-item label="副本数:" prop="snode_count"  v-show="dialogStatus==='create'">
           <el-input  v-model="temp.snode_count" class="right_input"  placeholder="副本数至少是3，且不能大于256" :disabled="dialogStatus==='detail'">
            <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">个</i>
           </el-input>
         </el-form-item>
+        <!-- <el-form-item label="shard分配:" prop="shardtotal"  v-show="dialogStatus==='detail'">
+          <span>{{temp.shardtotal}}</span>
+        </el-form-item> -->
         <el-form-item label="计算节点总个数:" prop="comp_count"  v-show="dialogStatus==='create'||'detail'">
           <el-input  v-model="temp.comp_count" class="right_input"  placeholder="输入计算节点总个数" :disabled="dialogStatus==='detail'">
            <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">个</i>
@@ -398,7 +400,7 @@
       </div>
     </el-dialog>
     <!-- 扩容-->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogExpandVisible" custom-class="single_dal_view"  :close-on-click-modal="false">
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogExpandVisible" custom-class="single_dal_view"  :close-on-click-modal="false" >
       <el-form
         ref="expandForm"
         :model="expandtemp"
@@ -407,7 +409,7 @@
         label-width="130px"
       >
         <div class="icons-container">
-          <el-tabs type="border-card" v-model="activeName" @tab-click="handleClick">
+          <el-tabs type="border-card" v-model="activeName" @tab-click="handleClick" >
             <el-tab-pane  v-for="(item,index) in shardNameList" :key="index" :label="item.name" :name="item.name" :value="item.id+'_'+item.cluster_id">
              <el-table
               :key="tableKey"
@@ -462,6 +464,7 @@
                   </el-option>
                 </el-select>
               </el-form-item>
+              
             </el-tab-pane>
           </el-tabs>
         </div>
@@ -597,7 +600,7 @@
       </div>
     </el-dialog>
     <!--状态框 -->
-    <el-dialog :visible.sync="dialogStatusVisible" custom-class="single_dal_view" width="400px"  :close-on-click-modal="false">
+    <el-dialog :visible.sync="dialogStatusVisible" custom-class="single_dal_view" width="400px"  :close-on-click-modal="false" :before-close="beforeSyncDestory">
       <div class="block">
         <el-timeline>
           <el-timeline-item
@@ -734,7 +737,7 @@
       <json-viewer :value="shardInfo"></json-viewer>
     </el-dialog>
     <!--扩容状态框 -->
-    <el-dialog :title="job_id" :visible.sync="dialogExpondInfo" custom-class="single_dal_view" :close-on-click-modal="false">
+    <el-dialog :title="job_id" :visible.sync="dialogExpondInfo" custom-class="single_dal_view" :close-on-click-modal="false" :before-close="beforeExpandDestory">
       <span v-if="expondInit">{{expand_init}}</span>
       <json-viewer :value="expondInfo" v-if="expondSatus"></json-viewer>
       <span v-if="expondResult">{{expand_end}}</span>
@@ -960,7 +963,7 @@ export default {
         name: ''
       },
       temp: {
-        ha_mode:'',
+        ha_mode:sessionStorage.getItem('work_mode')=='enterprise'?'rbr':'mgr',
         shards_count:'1',
         snode_count: '3',
         comp_count:'1',
@@ -1068,7 +1071,7 @@ export default {
       user_drop_priv:'',
       user_edit_priv:'',
       row:{},
-      hamodeData:sessionStorage.getItem('work_mode')?c_ha_mode_arr:ha_mode_arr,
+      hamodeData:sessionStorage.getItem('work_mode')=='enterprise'?ha_mode_arr:c_ha_mode_arr,
       shardsDate:shards_arr,
       norepshardsDate:norepshards_arr,
       pershardDate:per_shard_arr,
@@ -1080,7 +1083,7 @@ export default {
       comp_machines:[],
       comp_minMachine:0,
       comp_machineTotal:0,
-      node_types:sessionStorage.getItem('work_mode')?c_node_type_arr:node_type_arr,
+      node_types:sessionStorage.getItem('work_mode')=='enterprise'?node_type_arr:c_node_type_arr,
       shardList:[],
       backup_priv:JSON.parse(sessionStorage.getItem('priv')).backup_priv,
       restore_priv:JSON.parse(sessionStorage.getItem('priv')).restore_priv,
@@ -1332,7 +1335,21 @@ export default {
       },
     },
   },
+  destroyed() {
+    clearInterval(this.timer)
+    this.timer = null
+  },
   methods: {
+    beforeSyncDestory(){
+      clearInterval(this.timer)
+      this.dialogStatusVisible=false;
+      this.timer=null;
+    },
+    beforeExpandDestory(){
+      clearInterval(this.timer)
+      this.dialogExpondInfo=false;
+      this.timer = null;
+    },
     autoChangeDscShardName(value){
       for(let i=0;i<this.shardsList.length;i++){
         if(this.shardsList[i].id==value){
@@ -1592,7 +1609,7 @@ export default {
     },
     resetTemp() {
       this.temp = {
-       ha_mode:'',
+        ha_mode:sessionStorage.getItem('work_mode')=='enterprise'?'rbr':'mgr',
         shards_count:'1',
         snode_count: '3',
         comp_count:'1',
@@ -2666,9 +2683,13 @@ export default {
         }
         })
     },
-    // handleSetUp(row){
-    //   this.$emit('updateActiveName', 'four')
-    // },
+    handleSetUp(row){
+      const temp={
+        list:row,
+        activeName:'four'
+      }
+      this.$emit('updateActiveName', temp)
+    },
     handleExpand(row) {
       this.dialogStatus = "expand";
       this.dialogFormVisible = false;
@@ -2705,7 +2726,9 @@ export default {
       });
     },
     showExpandInfo(row){
+      console.log(row);
       if(this.expandtemp.title=='自动扩容'){
+        console.log(11);
         this.autoExpandTemp();
         this.dialogExpandVisible = false;
         this.dialogDetail = false;
@@ -2786,6 +2809,7 @@ export default {
         paras.policy = row.policy;
       }
       tempData.paras=paras;
+      //console.log(tempData);return;
       expandCluster(tempData).then((response) => {
         let res = response;
         if(res.status=='accept'){
@@ -3338,9 +3362,9 @@ export default {
                         this.shard[d].icon='el-icon-circle-check';
                       }
                     }else{
-                      if(ress.attachment.shard_step[b].hasOwnProperty('storage_hosts')){
+                      if(ress.attachment.shard_step[0].hasOwnProperty('storage_hosts')){
                         if(info=='删除'){
-                          const arr=ress.attachment.shard_step[b].storage_hosts.substr(0,ress.attachment.shard_step[b].storage_hosts.length-1);
+                          const arr=ress.attachment.shard_step[0].storage_hosts.substr(0,ress.attachment.shard_step[0].storage_hosts.length-1);
                           const shard_ids=arr.split(';');
                           for(let e=0;e<shard_ids.length;e++){
                             let shardgoing={}

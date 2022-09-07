@@ -57,7 +57,7 @@
             <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
           </span>
         </el-form-item>
-        <el-form-item prop="metaDate">
+        <!-- <el-form-item prop="metaDate">
           <el-input
             ref="metaDate"
             v-model="loginForm.metaDate"
@@ -69,7 +69,7 @@
             @keyup.enter.native="handleLogin"
             :title="msg"
           />
-        </el-form-item>
+        </el-form-item> -->
         <!-- <el-form-item prop="meta">
           <el-select v-model="loginForm.meta" placeholder="请选择元数据">
             <el-option
@@ -131,43 +131,43 @@ export default {
         callback();
       }
     };
-    const validateMetaDate = (rule, value, callback) => {
-      if (!value) {
-        callback(new Error("请输入元数据的IP端口,以英文冒号分割"));
-      } else if(value){
-        if(value.indexOf(":") != -1 ){
-          const arr=value.split(':');
-          console.log(arr[0]);
-          let regexp = /^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$/;
-          let valdata = arr[0].split(',');
-          let isCorrect = true;
-          if (valdata.length) {
-            for (let i = 0; i < valdata.length; i++) {
-              if (regexp.test(valdata[i]) == false) {
-                  isCorrect = false;
-              }
-            }
-          }
-          if(!arr[0]){
-            callback(new Error('请输入正确的IP'));
-          }else if (arr[0]&&!isCorrect) {
-            callback(new Error('请输入正确的IP'));
-          }else{
-            if(!arr[1]){
-              callback(new Error("请输入正确的端口"));
-            }else if(!(/^[0-9]+$/.test(arr[1])) ) {
-              callback(new Error("端口只能输入数字"));
-            }else{
-              callback();
-            }
-          }
-        }else{
-          callback(new Error("请输入正确的元数据IP端口,以英文冒号分割"));
-        }
-      }else{
-        callback();
-      }
-    };
+    // const validateMetaDate = (rule, value, callback) => {
+    //   if (!value) {
+    //     callback(new Error("请输入元数据的IP端口,以英文冒号分割"));
+    //   } else if(value){
+    //     if(value.indexOf(":") != -1 ){
+    //       const arr=value.split(':');
+    //       console.log(arr[0]);
+    //       let regexp = /^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$/;
+    //       let valdata = arr[0].split(',');
+    //       let isCorrect = true;
+    //       if (valdata.length) {
+    //         for (let i = 0; i < valdata.length; i++) {
+    //           if (regexp.test(valdata[i]) == false) {
+    //               isCorrect = false;
+    //           }
+    //         }
+    //       }
+    //       if(!arr[0]){
+    //         callback(new Error('请输入正确的IP'));
+    //       }else if (arr[0]&&!isCorrect) {
+    //         callback(new Error('请输入正确的IP'));
+    //       }else{
+    //         if(!arr[1]){
+    //           callback(new Error("请输入正确的端口"));
+    //         }else if(!(/^[0-9]+$/.test(arr[1])) ) {
+    //           callback(new Error("端口只能输入数字"));
+    //         }else{
+    //           callback();
+    //         }
+    //       }
+    //     }else{
+    //       callback(new Error("请输入正确的元数据IP端口,以英文冒号分割"));
+    //     }
+    //   }else{
+    //     callback();
+    //   }
+    // };
     // const validateMeta= (rule, value, callback) => {
     //   if (!value) {
     //     callback(new Error("请选择元数据"));
@@ -179,8 +179,8 @@ export default {
       loginForm: {
         username: '',
         password: '',
-        meta:'',
-        metaDate:''
+        // meta:'',
+        // metaDate:''
       },
       loginRules: {
         username: [
@@ -192,9 +192,9 @@ export default {
         // meta: [
         //   { required: true, trigger: "blur", validator: validateMeta }
         // ], 
-        metaDate: [
-          { required: true, trigger: "blur", validator: validateMetaDate }
-        ],
+        // metaDate: [
+        //   { required: true, trigger: "blur", validator: validateMetaDate }
+        // ],
       },
       loading: false,
       passwordType: 'password',
@@ -265,13 +265,14 @@ export default {
       this.$refs.loginForm.validate(async valid => {
         if (valid) {
           //let arr=this.loginForm.meta.substring(0,this.loginForm.meta.length-1).split('(');
-          let arr=this.loginForm.metaDate.split(':');
+          //let arr=this.loginForm.metaDate.split(':');
           //console.log(arr);return;
-          let post_ip={
-            ip:arr[0],
-            port:arr[1]
-          }
-          let res = await change(post_ip);
+          // let post_ip={
+          //   ip:arr[0],
+          //   port:arr[1]
+          // }
+          // let res = await change(post_ip);
+          let res = await change();
           if(res.code==200){
             this.loading = true;
             let post_data = {
@@ -307,6 +308,7 @@ export default {
       // sessionStorage.setItem('meta_ha_mode',meta_ha_mode);
       let num =loginRes.num;
       if(num==1){
+        //console.log(num);
         // sessionStorage.setItem('apply_all_cluster',loginRes.apply_all_cluster);
         // sessionStorage.setItem('affected_clusters',loginRes.affected_clusters);
         // sessionStorage.setItem('priv',JSON.stringify(loginRes.priv));
@@ -319,31 +321,37 @@ export default {
         tempData.timestamp=timestamp_arr[0].time+'';
         let paras={}
         tempData.paras=paras;
-        //console.log(tempData);return;
+        //console.log(tempData);
         //发送接口
         getWorkMode(tempData).then(response=>{
           this.isShowNodeMenuPanel=false;
           let res = response;
-           if(res.hasOwnProperty('attachment')){
-              if(res.attachment!==null){
-                sessionStorage.setItem('work_mode',res.attachment.work_mode);
-              }else if(res.attachment==null){
-                sessionStorage.setItem('work_mode','');
-              }
-              sessionStorage.setItem('zettadb_vue_token',loginRes.Token);
-              sessionStorage.setItem('meta_ha_mode',meta_ha_mode);
-              sessionStorage.setItem('apply_all_cluster',loginRes.apply_all_cluster);
-              sessionStorage.setItem('affected_clusters',loginRes.affected_clusters);
-              sessionStorage.setItem('priv',JSON.stringify(loginRes.priv));
-              this.$router.push({ path: '/dashboard'})
+          //console.log(res);
+          if(res.hasOwnProperty('attachment')){
+            if(res.attachment!==null){
+              sessionStorage.setItem('work_mode',res.attachment.work_mode);
+            }else if(res.attachment==null){
+              sessionStorage.setItem('work_mode','');
             }else{
               this.message_tips = res.error_info;
               this.message_type = 'error';
-              messageTip(this.message_tips,this.message_type);
+              messageTip(this.message_tips,this.message_type);return;
             }
+            sessionStorage.setItem('zettadb_vue_token',loginRes.Token);
+            sessionStorage.setItem('meta_ha_mode',meta_ha_mode);
+            sessionStorage.setItem('apply_all_cluster',loginRes.apply_all_cluster);
+            sessionStorage.setItem('affected_clusters',loginRes.affected_clusters);
+            sessionStorage.setItem('priv',JSON.stringify(loginRes.priv));
+            this.$router.push({ path: '/dashboard'})
+          }else{
+            this.message_tips = res.error_info;
+            this.message_type = 'error';
+            messageTip(this.message_tips,this.message_type);
+          }
         })
       }
       else{
+        sessionStorage.setItem('zettadb_vue_token',loginRes.Token);
         this.$router.push({ path:'/alteration'})
       }
     }
