@@ -37,6 +37,7 @@
       :data="list"
       border
       highlight-current-row
+      default-expand-all
       style="width: 100%;margin-bottom: 20px;">
       <el-table-column
         type="expand"
@@ -247,7 +248,7 @@
 <script>
  import {messageTip,createCode,gotoCofirm,getNowDate} from "@/utils";
  import {shardList,getEvStatus,getStroMachine,addShards,getShardsCount,delShard,getShardsJobLog,getShards,addNodes,getNodesCount,delSnode,controlInstance} from '@/api/cluster/list'
- import {version_arr,timestamp_arr} from "@/utils/global_variable"
+ import {version_arr,timestamp_arr,ip_arr} from "@/utils/global_variable"
  import Pagination from '@/components/Pagination' 
  import JsonViewer from 'vue-json-viewer'
  import {mysqlDashboard} from '@/api/grafana/list'

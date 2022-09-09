@@ -311,6 +311,7 @@ export default {
       timer:null,
       expondInit:true,
       expondResult:false,
+      expondInfo:'',
       rules: {
         shard_name: [
           { required: true, trigger: "blur",validator: validateShardName},

@@ -513,7 +513,7 @@ class Login extends CI_Controller {
 					$res_count=count($res_main);
 					if($res_count==1){
 						//$res_rbr_main=$this->getRbrMain($ip,$port);
-						$sql_change="select hostaddr,port from meta_db_nodes where hostaddr!='$ip' and port!='$port';";
+						$sql_change="select hostaddr,port from meta_db_nodes where hostaddr!='$ip' or port!='$port';";
 						$res_change=$this->Change_model->getAllMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_change);
 						$change_count=count($res_change['list']);
 						if($change_count>=1){

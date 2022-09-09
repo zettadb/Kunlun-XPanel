@@ -18,7 +18,7 @@
             align="center"
             label="任务ID"  >
              <template slot-scope="{row}">
-          <span class="link-type" @click="handleDetail(row)">{{ row.id }}</span>
+          <span class="link-type click_btn" @click="handleDetail(row)">{{ row.id }}</span>
         </template>
       </el-table-column>
       <el-table-column
@@ -160,7 +160,6 @@ export default {
     failedDetail(info){
       let info1=info.replace("\\", ""); 
       this.createClusterErr=  JSON.parse(info1.replace(/\r\n/g,'').replace(/\n/g,''));
-      //console.log(typeof this.createClusterErr);
       this.dialogFailedInfo=true;
     },
     
