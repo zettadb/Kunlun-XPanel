@@ -47,7 +47,7 @@
 
       <el-table-column label="taskid" align="center">
         <template slot-scope="{row}">
-          <span class="link-type" @click="handleDetail(row)">{{ row.taskid }}</span>
+          <span class="link-type click_btn" @click="handleDetail(row)">{{ row.taskid }}</span>
         </template>
       </el-table-column>
       <el-table-column

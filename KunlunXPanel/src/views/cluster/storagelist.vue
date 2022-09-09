@@ -342,21 +342,6 @@ export default {
             let res = response;
             if(res.status=='accept'){
               this.dialogFormVisible = false;
-            //   this.message_tips = '正在新增备份存储目标...';
-            //   this.message_type = 'success';
-            //   //调获取状态接口
-            //   let i=0;
-            //   this.timer = setInterval(() => {
-            //     this.getStatus(this.timer,res.job_id,i++)
-            //   }, 1000)
-            // }else if(res.status=='ongoing'){
-            //   this.message_tips = '系统正在操作中，请等待一会！';
-            //   this.message_type = 'error';
-            // }else{
-            //   this.message_tips = res.error_info;
-            //   this.message_type = 'error';
-            // }
-            // messageTip(this.message_tips,this.message_type);
               this.dialogStatusVisible=true;
               this.activities=[];
               const newArr={

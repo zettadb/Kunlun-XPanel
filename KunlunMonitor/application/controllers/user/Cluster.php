@@ -118,8 +118,8 @@ class Cluster extends CI_Controller {
 							$comptotal= $this->getThisComps($value2);
 							$first_backup= $this->getLastBackup($value2);
 							//$nodetotal= $this->getThisNodes($value2);
-							$res[$row]['shardtotal'] = $shardtotal['nodedetail'];
-							$res[$row]['comp_count'] = $comptotal;
+							$res[$row]['shardList'] = $shardtotal;
+							$res[$row]['compList'] = $comptotal;
 							$res[$row]['first_backup'] = $first_backup;
 
 						}
@@ -529,38 +529,45 @@ class Cluster extends CI_Controller {
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		$count=0;
+		$data=array();
 		if($res!==false){
 			$count=count((array)$res);
 		}
-		$data['shards_count']=$count;
+		//$data['shards_count']=$count;
 		if($count==1){
 			$resnode=$this->getThisNodes($id,$res[0]['id']);
-			$data['nodedetail']=$count.'个shard，'.$res[0]['name'].'('.$resnode.'个副本)';
+			//$data['nodedetail']=$count.'个shard，'.$res[0]['name'].'('.$resnode.'个副本)';
+			foreach ($resnode as &$item) { $item['name'] = $res[0]['name']; }
+			//$data[$res[0]['name']]=$resnode;
+			$data=$resnode;
 
 		}elseif ($count>1){
-			$node='';
+			//$node='';
 			foreach ($res as $key){
 				$resnode=$this->getThisNodes($id,$key['id']);
-				$node.=$key['name'].'('.$resnode.'个副本)，';
+				//$node.=$key['name'].'('.$resnode.'个副本)，';
+				//$data[$key['name']]=$resnode;
+				foreach ($resnode as &$item) { $item['name'] = $key['name']; }
+				foreach ($resnode as $i) {
+					array_push($data,$i);
+				}	
 			}
-			$node=rtrim($node, "，");
-			$data['nodedetail']=$count.'个shard，'.$node;
-		}else{
-			$data['nodedetail']='0个shard0个副本';
+			//$node=rtrim($node, "，");
+			//$data['nodedetail']=$count.'个shard，'.$node;
 		}
 		return $data;
 	}
 	public function getThisComps($id){
-		$sql="select count(id) as count from comp_nodes where db_cluster_id='$id' and status!='deleted'";
+		$sql="select hostaddr as ip,port,status from comp_nodes where db_cluster_id='$id' and status!='deleted'";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
-		return $res[0]['count'];
+		return $res;
 	}
 	public function getThisNodes($id,$shard_id){
-		$sql="select count(id) as count from shard_nodes where db_cluster_id='$id' and shard_id='$shard_id'  and status!='deleted'	";
+		$sql="select hostaddr as ip,port,status,replica_delay,member_state from shard_nodes where db_cluster_id='$id' and shard_id='$shard_id'  and status!='deleted'	";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
-		return $res[0]['count'];
+		return $res;
 	}
 	public function getLastBackup($id){
 		$sql="select end_ts from cluster_coldbackups where cluster_id='$id' order by end_ts desc limit 1";

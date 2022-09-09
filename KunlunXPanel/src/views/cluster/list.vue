@@ -24,6 +24,19 @@
         <!-- <el-button
           class="filter-item"
           type="primary"
+          icon="el-icon-menu"
+          @click="handleCreate"
+          style="float:right"
+        >列表项展示筛选</el-button> -->
+        <el-popover placement="right" title="列筛选" trigger="click" width="420" style="float:right">            
+            <el-checkbox-group v-model="checkedColumns" size="mini">
+              <el-checkbox v-for="item in checkBoxGroup" :key="item" :label="item" :value="item"></el-checkbox>
+            </el-checkbox-group>
+            <el-button slot="reference" type="primary" size="small" plain><i class="el-icon-arrow-down el-icon-menu" />列表项展示筛选</el-button>
+        </el-popover>
+        <!-- <el-button
+          class="filter-item"
+          type="primary"
           icon="el-icon-plus"
           @click="handleStatus"
         >显示进度条</el-button> -->
@@ -44,7 +57,7 @@
         label="序号"
         width="50">
       </el-table-column>
-      <el-table-column label="集群ID" align="center">
+      <el-table-column v-if="colData[0].istrue" label="集群ID" align="center" width="70">
         <template slot-scope="{row}">
           <span class="link-type" @click="handleDetail(row)">{{ row.id }}</span>
         </template>
@@ -55,33 +68,100 @@
        align="center">
       </el-table-column> -->
       <el-table-column  
+      v-if="colData[1].istrue"
        prop="nick_name" 
        label="业务名称" 
        align="center">
       </el-table-column>
-      <!-- <el-table-column
-            prop="ha_mode"
-            align="center"
-            label="高可用模式">
+       <!-- <el-table-column
+       v-if="colData[2].istrue"
+        prop="status"
+        align="center"
+        label="状态">
       </el-table-column> -->
       <el-table-column
-            prop="comp_count"
+            v-if="colData[3].istrue"
             align="center"
-            label="计算节点总数">
+            label="计算节点" width="280">
+           <template slot-scope="scope">
+            <el-table border :data='scope.row.compList' max-height="150px">
+              <el-table-column prop='ip' label="ip" align="center"></el-table-column>
+              <el-table-column prop='port' label="端口" align="center" width="70"></el-table-column>
+              <el-table-column prop='status' label="状态" align="center" width="70">
+                <template slot-scope="scope">
+                  <span v-if="scope.row.status==='active'" style="color: #00ed37">运行中</span>
+                  <span v-else-if="scope.row.status==='creating'" style="color: #c7c9d1;">安装中</span>
+                  <span v-else-if="scope.row.status==='manual_stop'" style="color: #c7c9d1;">停止</span>
+                  <span v-else-if="scope.row.status==='inactive'" style="color: red">异常</span>
+                  <span v-else></span>
+                </template>
+              </el-table-column>
+            </el-table>
+          </template>
       </el-table-column>
       <el-table-column
+            v-if="colData[4].istrue"
             prop="shardtotal"
             align="center"
             label="shard分配"
-            :show-overflow-tooltip="true"
-            >
+             width="600">
+            <template slot-scope="scope">
+              <!-- :span-method="objectSpanMethod" -->
+            <el-table border :data='scope.row.shardList' max-height="150px" >
+              <el-table-column prop='name' label="名称" align="center" width="80"></el-table-column>
+              <el-table-column prop='ip' label="ip" align="center"></el-table-column>
+              <el-table-column prop='port' label="端口" align="center" width="70"></el-table-column>
+              <el-table-column prop='member_state' label="主/备节点" align="center">
+                <template slot-scope="scope">
+                  <span v-if="scope.row.member_state==='source'" style="color: red">主</span>
+                  <span v-else-if="scope.row.member_state==='replica'">备</span>
+                  <span v-else></span>
+                </template>
+              </el-table-column>
+              <el-table-column prop='status' label="状态" align="center" width="70">
+                <template slot-scope="scope">
+                  <span v-if="scope.row.status==='active'" style="color: #00ed37">运行中</span>
+                  <span v-else-if="scope.row.status==='creating'" style="color: #c7c9d1;">安装中</span>
+                  <span v-else-if="scope.row.status==='manual_stop'" style="color: #c7c9d1;">停止</span>
+                  <span v-else-if="scope.row.status==='inactive'" style="color: red">异常</span>
+                  <span v-else></span>
+                </template>
+              </el-table-column>
+              <el-table-column prop='replica_delay' label="延迟时间" align="center">
+                <template slot-scope="scope">
+                  <span>{{scope.row.replica_delay+'s'}}</span>
+                </template>
+              </el-table-column>
+            </el-table>
+          </template>
       </el-table-column>
       <!-- <el-table-column
             prop="when_created"
             align="center"
             label="创建时间">
       </el-table-column> -->
+       <!-- <el-table-column
+        align="left"
+        label="配置"> -->
+        <!-- <template slot-scope="scope">
+            <div>{{'计算节点：'+scope.row.comp_count+'个'}}
+              <p><span>192.168.0.126_45007</span><span style="color: #00ed37">运行中</span></p>
+              <p><span>192.168.0.126_45007</span><span style="color: #00ed37">运行中</span></p>
+            </div>
+            <div>{{'shard:2个'}}
+              <div>shard_1:
+              <p><span>192.168.0.126_45007</span><span style="color: #00ed37">运行中</span><span>23s</span></p>
+              <p><span>192.168.0.126_45007</span><span style="color: #00ed37">运行中</span><span >2s</span></p>
+              </div>
+              <div>shard_2:
+              <p><span>192.168.0.126_45007</span><span style="color: #00ed37">运行中</span><span>23s</span></p>
+              <p><span>192.168.0.126_45007</span><span style="color: #00ed37">运行中</span><span >2s</span></p>
+              </div>
+            </div>
+        </template> -->
+      <!-- </el-table-column> -->
       <el-table-column
+            v-if="colData[5].istrue"
             prop="back_up"
             align="center"
             label="最近备份时间">
@@ -90,7 +170,12 @@
             <span v-else-if="scope.row.first_backup!==''">{{scope.row.first_backup}}</span>
         </template>
       </el-table-column>
-      <!--  width="450" -->
+      <!-- <el-table-column
+            v-if="colData[6].istrue"
+            prop="ha_mode"
+            align="center"
+            label="高可用模式">
+      </el-table-column> -->
       <el-table-column
         label="操作"
         align="center"
@@ -756,7 +841,8 @@
 export default {
   name: "list",
   components: { Pagination,JsonViewer }, 
-  props: ['data', 'defaultActive'],
+  // props: ['data', 'defaultActive','comment'],
+  props:{comment:{type:Array}},
   data() {  
     // const validatemachine = (rule, value, callback) => {
     //  if(value.length === 0){
@@ -1201,6 +1287,19 @@ export default {
       expondResult:false,
       outoExpandInfoVisible:false,
       policys:policy_arr,
+      editableTabs:[],
+      //列表动态隐藏
+      colData: [
+        { title: "集群ID", istrue: true },
+        { title: "业务名称", istrue: true },
+        { title: "状态", istrue: true },
+        { title: "计算节点", istrue: true },
+        { title: "shard分配", istrue: true },  
+        { title: "最近备份时间", istrue: true },  
+        // { title: "高可用模式", istrue: true },  
+      ],
+      checkBoxGroup: [],
+      checkedColumns: [],
       // active: 0,
       //  approvalProcessProject:[
       //      {id:'0',label: "computer_step"},
@@ -1298,6 +1397,19 @@ export default {
     // sessionStorage.setItem('cshow',true);
     this.getList();
     //this.getMode();
+      // 列筛选
+      this.colData.forEach((item, index) => {
+        this.checkBoxGroup.push(item.title);
+        this.checkedColumns.push(item.title);
+      })
+      this.checkedColumns = this.checkedColumns
+      let UnData = localStorage.getItem(this.colTable)
+      UnData = JSON.parse(UnData)
+      if (UnData != null) {
+        this.checkedColumns = this.checkedColumns.filter((item) => {
+          return !UnData.includes(item)
+        })
+      }
   },
   watch: {
     'temp.machinelist': {
@@ -1334,12 +1446,47 @@ export default {
         }
       },
     },
+    checkedColumns(val,value) {
+     let arr = this.checkBoxGroup.filter(i => !val.includes(i)); // 未选中
+     localStorage.setItem(this.colTable, JSON.stringify(arr))
+     this.colData.filter(i => {
+       if (arr.indexOf(i.title) != -1) {
+         i.istrue = false;
+       } else {
+         i.istrue = true;
+       }
+     });
+   }
   },
   destroyed() {
     clearInterval(this.timer)
     this.timer = null
   },
   methods: {
+    // objectSpanMethod({ row, column, rowIndex, columnIndex}) {
+    //   console.log(this.list[rowIndex]['shardList']);
+    //   const fields = ['name']
+    //   if (fields.includes(column.property)) {
+    //     const cellValue = row['name']
+    //     //console.log(column.property);
+    //     if (cellValue && fields.includes(column.property)) {
+    //       const prevRow = this.list[rowIndex]['shardList'][rowIndex - 1]  
+    //       let nextRow = this.list[rowIndex]['shardList'][rowIndex + 1]
+    //       if (prevRow && prevRow['name'] === cellValue) {
+    //         return { rowspan: 0, colspan: 0 }
+    //       } else {
+    //         // return { rowspan: row.rowspan, colspan: 1 }
+    //         let countRowspan = 1
+    //         while (nextRow && nextRow['name'] === cellValue) {
+    //           nextRow = this.list[rowIndex]['shardList'][++countRowspan + rowIndex]
+    //         }
+    //         if (countRowspan > 1) {
+    //           return { rowspan: countRowspan, colspan: 1 }
+    //         }
+    //       }
+    //     }
+    //   }
+    // },
     beforeSyncDestory(){
       clearInterval(this.timer)
       this.dialogStatusVisible=false;
@@ -2684,9 +2831,35 @@ export default {
         })
     },
     handleSetUp(row){
+      //this.editableTabs=this.comment;
+       if(this.comment.length==0){
+        this.editableTabs=this.comment;
+       }
+      let newTabName = row.id+ '';
+      let tabs = this.editableTabs;
+      if(tabs.length>0){
+        let exist = false;
+        tabs.forEach((tab) => {
+          if (tab.name === newTabName) {
+            exist = true;
+          }
+        });
+        if(!exist){
+          this.editableTabs.push({
+            title: row.id+'集群设置',
+            name: newTabName
+          });
+        }
+      }else{
+        this.editableTabs.push({
+          title: row.id+'集群设置',
+          name: newTabName
+        });
+      }
       const temp={
         list:row,
-        activeName:'four'
+        activeName:'four',
+        tab:this.editableTabs
       }
       this.$emit('updateActiveName', temp)
     },

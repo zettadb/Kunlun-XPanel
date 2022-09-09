@@ -214,7 +214,7 @@
 <script>
  import { messageTip,createCode,gotoCofirm,getNowDate} from "@/utils";
  import { computeList,getEvStatus,getCompMachine,addComps,getCompsCount,delComp,controlInstance } from '@/api/cluster/list'
- import {version_arr,timestamp_arr} from "@/utils/global_variable"
+ import {version_arr,timestamp_arr,ip_arr} from "@/utils/global_variable"
  import Pagination from '@/components/Pagination' 
  import {pgsqlDashboard} from '@/api/grafana/list'
 export default {

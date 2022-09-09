@@ -163,6 +163,7 @@
     .rightmenu{
       width: 87%;
       height: 100%;
+      overflow: auto;
     }
     .el-col-3{
       width: 100%;
