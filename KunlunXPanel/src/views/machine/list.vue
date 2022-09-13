@@ -120,7 +120,7 @@
       <el-table-column
         label="操作"
         align="center"
-        width="300"
+        width="180"
         class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-button type="primary" size="mini" @click="gotolink(row.hostaddr)">节点视图</el-button>

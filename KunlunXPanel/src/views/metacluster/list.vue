@@ -14,13 +14,13 @@
         <el-button  icon="el-icon-refresh-right" @click="handleClear">
           重置
         </el-button>
-         <el-button
+         <!-- <el-button
           class="filter-item"
           type="primary"
           icon="el-icon-plus"
           @click="handleUpdate"
           v-if="storage_node_create_priv==='Y'&&work_mode=='enterprise'"
-        >添加节点</el-button>
+        >添加节点</el-button> -->
         <el-button
           class="filter-item"
           type="primary"
@@ -92,7 +92,7 @@
         align="center"
         label="主备延迟时间(s)">
       </el-table-column>
-      <el-table-column
+      <!-- <el-table-column
         label="操作"
         align="center"
         width="250"
@@ -107,7 +107,7 @@
             v-if="cluster_drop_priv==='Y'"
           >删除</el-button>
         </template>
-      </el-table-column>
+      </el-table-column> -->
     </el-table>
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
