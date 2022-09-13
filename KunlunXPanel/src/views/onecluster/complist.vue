@@ -5,9 +5,15 @@
         <el-input
           class="list_search_keyword"
           v-model="listQuery.hostaddr"
-          placeholder="可输入shard名称搜索"
+          placeholder="可输入ip搜索"
           @keyup.enter.native="handleFilter"
         />
+        <el-select v-model="listQuery.status" placeholder="请选择状态" class="list_search_select" style="width:150px;">
+          <el-option label="运行中" value="active"></el-option>
+          <el-option label="安装中" value="creating"></el-option>
+          <el-option label="停止" value="manual_stop"></el-option>
+          <el-option label="异常" value="inactive"></el-option>
+        </el-select>
         <el-button icon="el-icon-search" @click="handleFilter">
           查询
         </el-button>
@@ -37,20 +43,23 @@
         label="序号"
         width="50">
       </el-table-column>
-      <el-table-column label="计算节点ID" align="center">
+      <!-- <el-table-column label="计算节点ID" align="center">
         <template slot-scope="{row}">
           <span class="link-type" @click="handleDetail(row)">{{ row.id }}</span>
         </template>
-      </el-table-column>
-      <el-table-column
+      </el-table-column> -->
+      <!-- <el-table-column
         prop="db_cluster_id"
         align="center"
         label=" 集群ID">
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column
         prop="hostaddr"
         align="center"
         label="IP地址">
+        <template slot-scope="{row}">
+          <span class="link-type click_btn" @click="handleDetail(row)">{{ row.hostaddr }}</span>
+        </template>
       </el-table-column>
       <el-table-column
         prop="port"
@@ -67,18 +76,18 @@
         align="center"
         label="状态" width="170">
         <template slot-scope="scope">
-          <span v-if="scope.row.status==='active'" style="color: #00ed37">在线</span>
+          <span v-if="scope.row.status==='active'" style="color: #00ed37">运行中</span>
           <span v-else-if="scope.row.status==='inactive'" style="color: red">异常</span>
           <span v-else-if="scope.row.status==='creating'">安装中</span>
-          <span v-else-if="scope.row.status==='manual_stop'" style="color: red">离线</span>
+          <span v-else-if="scope.row.status==='manual_stop'" style="color: #c7c9d1;">停止</span>
           <span v-else></span>
         </template>
       </el-table-column>
-      <el-table-column
+      <!-- <el-table-column
         prop="cpu_cores"
         align="center"
         label="cpu核数">
-      </el-table-column>
+      </el-table-column> -->
       <!-- <el-table-column
         prop="max_mem_MB"
         align="center"
@@ -209,6 +218,57 @@
         </el-timeline>
       </div>
     </el-dialog>
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" custom-class="single_dal_view">
+      <div class="box">
+        <div title="" >
+          <el-form
+           ref="dataForm"
+          :rules="rules"
+          :model="temp"
+          label-position="left"
+          label-width="120px"
+          >
+            <el-form-item label="计算节点ID:" prop="id" v-show="dialogStatus==='detail'">
+              <span>{{temp.id}}</span>
+            </el-form-item>
+            <el-form-item label="集群ID:" prop="db_cluster_id" v-show="dialogStatus==='detail'">
+              <span>{{temp.db_cluster_id}}</span>
+            </el-form-item>
+            <el-form-item label="IP地址:" prop="hostaddr" v-show="dialogStatus==='detail'">
+              <span>{{temp.hostaddr}}</span>
+            </el-form-item>
+            <el-form-item label="端口:" prop="port" v-show="dialogStatus==='detail'">
+              <span>{{temp.port}}</span>
+            </el-form-item>
+            <el-form-item label="cpu核数:" prop="cpu_cores" v-show="dialogStatus==='detail'">
+              <span>{{temp.cpu_cores}}</span>
+            </el-form-item>
+          </el-form>
+        </div>
+        <div title="">
+          <el-form
+          ref="dataForm"
+          :rules="rules"
+          :model="temp"
+          label-position="left"
+          label-width="150px"
+          >
+            <el-form-item label="状态:" prop="status" v-show="dialogStatus==='detail'">
+              <span>{{temp.status|statusString}}</span>
+            </el-form-item>
+            <el-form-item label="计算节点名称:" prop="name" v-show="dialogStatus==='detail'">
+              <span>{{temp.name}}</span>
+            </el-form-item>
+            <el-form-item label="最大内存（MB）:" prop="max_mem_MB" v-show="dialogStatus==='detail'">
+              <span>{{temp.max_mem_MB}}</span>
+            </el-form-item>
+            <el-form-item label="最大连接数:" prop="max_conns" v-show="dialogStatus==='detail'">
+              <span>{{temp.max_conns}}</span>
+            </el-form-item>
+          </el-form>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -246,7 +306,8 @@ export default {
         pageNo: 1,
         pageSize: 10,
         hostaddr: '',
-        id:''
+        id:'',
+        status:''
       },
       temp: {
         nodes: '',
@@ -309,6 +370,19 @@ export default {
     this.listQuery.id=this.listsent.id;
     this.getList()
   },
+  filters: {
+    statusString:function(value){
+      if(value=='active'){
+        return '运行中'
+      }else if(value=='creating'){
+        return '安装中'
+      }else if(value=='inactive'){
+        return '异常'
+      }else if(value=='offline'){
+        return '停止'
+      }
+    }
+    },
   destroyed() {
     clearInterval(this.timer)
     this.timer = null
@@ -343,6 +417,7 @@ export default {
     },
     handleClear(){
       this.listQuery.hostaddr = ''
+      this.listQuery.status = ''
       this.listQuery.pageNo = 1
       this.listQuery.id = this.listsent.id
       this.getList()
@@ -937,5 +1012,17 @@ export default {
 <style scoped>
 .el-input{
     width:inherit;
+}
+</style>
+<style lang='postcss'>
+.box {
+  width: 100%;
+  /* height: 22px; */
+  display: flex;
+  flex-direction: row;
+}
+.box > div {
+  /* height: 22px; */
+  flex: 1;
 }
 </style>

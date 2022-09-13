@@ -8,6 +8,16 @@
           placeholder="可输入ip搜索"
           @keyup.enter.native="handleFilter"
         />
+        <el-select v-model="listQuery.master" placeholder="请选择主/备节点" class="list_search_select" style="width:150px;">
+          <el-option label="主节点" value="source"></el-option>
+          <el-option label="备节点" value="replica"></el-option>
+        </el-select>
+        <el-select v-model="listQuery.status" placeholder="请选择状态" class="list_search_select" style="width:150px;">
+          <el-option label="运行中" value="active"></el-option>
+          <el-option label="安装中" value="creating"></el-option>
+          <el-option label="停止" value="manual_stop"></el-option>
+          <el-option label="异常" value="inactive"></el-option>
+        </el-select>
         <el-button icon="el-icon-search" @click="handleFilter">
           查询
         </el-button>
@@ -49,29 +59,35 @@
             <el-table-column type="index" label="序号" align="center" width="50"></el-table-column>
             <el-table-column prop="hostaddr" label="IP" align="center"></el-table-column>
             <el-table-column prop="port" label="端口" align="center"></el-table-column>
-            <el-table-column prop="master" label="是否为主节点" align="center">
+            <el-table-column prop="master" label="主/备节点" align="center">
               <template slot-scope="scope">
-                <span v-if="scope.row.master==='true'">主节点</span>
-                <span v-else-if="scope.row.master==='false'">备机节点</span>
+                <span v-if="scope.row.master==='true'" style="color: red">主</span>
+                <span v-else-if="scope.row.master==='false'">备</span>
                 <span v-else></span>
               </template>
             </el-table-column>
-            <el-table-column prop="delay" label="主备延迟时间(s)" align="center"></el-table-column>
+            <el-table-column prop="delay" label="延迟时间" align="center" sortable>
+              <template slot-scope="scope">
+                <span>{{scope.row.delay+'s'}}</span>
+              </template>
+            </el-table-column>
             <el-table-column prop="status" label="状态" align="center">
                <template slot-scope="scope">
-                <span v-if="scope.row.status==='online'" style="color: #00ed37">在线</span>
+                <span v-if="scope.row.status==='online'" style="color: #00ed37">运行中</span>
                 <span v-if="scope.row.status==='creating'">安装中</span>
                 <span v-if="scope.row.status==='inactive'" style="color: red">异常</span>
-                <span v-else-if="scope.row.status==='offline'" style="color: red">离线</span>
+                <span v-else-if="scope.row.status==='offline'" style="color: #c7c9d1;">停止</span>
                 <span v-else></span>
               </template>
             </el-table-column>
-            <el-table-column label="操作" align="center" width="300" class-name="small-padding fixed-width">
+            <el-table-column label="操作" align="center" width="380" class-name="small-padding fixed-width">
               <template slot-scope="{row,$index}">
                 <el-button size="mini" type="primary" v-if="row.status=='online'"  @click="nodeMonitor(row)">节点监控</el-button>
                 <el-button size="mini" type="primary" v-if="row.status!=='online'"  @click="handleControlNode(row,'start')">启用</el-button>
                 <el-button size="mini" type="primary" v-if="row.master!=='true'&&row.status!=='offline'" @click="handleControlNode(row,'stop')">禁用</el-button>
                 <el-button size="mini" type="primary" v-if="row.master!=='true'"  @click="handleControlNode(row,'restart')">重启</el-button>
+                <el-button size="mini" type="primary" v-if="row.master=='true'"  @click="handleSwitch(row)">主备切换</el-button>
+                <el-button size="mini" type="primary" v-if="row.master=='true'"  @click="handleReDo(row)">重做备机节点</el-button>
                 <el-button
                   size="mini"
                   type="danger"
@@ -304,7 +320,9 @@ export default {
         pageSize: 10,
         hostaddr: '',
         id:'',
-        ha_mode:''
+        ha_mode:'',
+        master:'',
+        status:''
       },
       temp: {
         nodes: '',
@@ -427,6 +445,8 @@ export default {
     },
     handleClear(){
       this.listQuery.hostaddr = ''
+      this.listQuery.master = ''
+      this.listQuery.status = ''
       this.listQuery.pageNo = 1
       this.listQuery.id = this.listsent.id
       this.listQuery.ha_mode = this.listsent.ha_mode

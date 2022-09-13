@@ -68,6 +68,10 @@
             <i class="el-icon-setting"></i>
             <span slot="title">获取实例变量</span>
           </el-menu-item>
+          <el-menu-item index="14">
+            <i class="el-icon-setting"></i>
+            <span slot="title">表重分布</span>
+          </el-menu-item>
         </el-menu>
       </el-col>
     </div>
@@ -91,8 +95,9 @@
   import SetAlarmTime from '../onecluster/set_alarm_time.vue'
   import SetVariable from '../onecluster/setvariable.vue'
   import GetVariable from '../onecluster/getvariable.vue'
+  import Error from '../404.vue'
   export default {
-    components: {CompList,CommonSet,AllBackeUp,Expansion,Restore,SwitchOver,BackUp,StandbySwitch,ShardList,RedoMachine,SetAlarmTime,SetVariable,GetVariable},
+    components: {CompList,CommonSet,AllBackeUp,Expansion,Restore,SwitchOver,BackUp,StandbySwitch,ShardList,RedoMachine,SetAlarmTime,SetVariable,GetVariable,Error},
     props:{
       oneList:{typeof:Object}
     },
@@ -125,6 +130,8 @@
           this.componted="RedoMachine"
         }else if(index==9){
           this.componted="ShardList"
+        }else if(index==10){
+          this.componted="CompList"
         }else if(index==11){
           this.componted="SetAlarmTime"
         }else if(index==12){
@@ -133,7 +140,7 @@
           this.componted="GetVariable"
         }
         else{
-          this.componted="CompList"
+          this.componted="Error"
         }
       }
     }
