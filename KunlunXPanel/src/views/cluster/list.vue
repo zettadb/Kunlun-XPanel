@@ -52,7 +52,7 @@
       </el-table-column>
       <el-table-column v-if="colData[0].istrue" label="集群ID" align="center" width="70">
         <template slot-scope="{row}">
-          <span class="link-type click_btn" @click="handleDetail(row)">{{ row.id }}</span>
+          <span class="link-type" @click="handleDetail(row)">{{ row.id }}</span>
         </template>
       </el-table-column>
       <el-table-column  
@@ -66,6 +66,7 @@
         prop="status"
         align="center"
         sortable
+        :show-overflow-tooltip="true"
         label="状态">
         <template slot-scope="scope">
           <span v-if="scope.row.status==='运行中'" style="color: #00ed37">运行中</span>
@@ -154,25 +155,27 @@
       <el-table-column
         label="操作"
         align="center"
-        width="150"
+        width="100"
         fixed="right"
         class-name="small-padding fixed-width"
         v-if="storage_node_create_priv==='Y'||shard_create_priv==='Y'||compute_node_create_priv==='Y'||restore_priv==='Y'||backup_priv==='Y'||cluster_drop_priv==='Y'||row.ha_mode==='rbr'"
       >
-        <template slot-scope="{row,$index}">
+        <template slot-scope="{row}">
           <!-- <el-button type="primary" size="mini" @click="handleUpdate(row)" v-if="storage_node_create_priv==='Y'&&shard_create_priv==='Y'&&compute_node_create_priv==='Y'">+</el-button> -->
-          <!-- <el-button type="primary" size="mini" @click="handleRetreated(row)" v-if="restore_priv==='Y'">回档</el-button> -->
-          <!-- <el-button type="primary" size="mini" @click="handleExpand(row)">扩容</el-button> -->
+          <el-button type="primary" size="mini" @click="handleRetreated(row)" v-if="restore_priv==='Y'" style="margin-left: 10px;margin-bottom:2px;">回档</el-button>
+          <el-button type="primary" size="mini" @click="handleExpand(row)" style="margin-bottom:2px;">扩容</el-button>
+          <el-button type="primary" size="mini" @click="handleUpdate(row)" v-if="storage_node_create_priv==='Y'&&shard_create_priv==='Y'&&compute_node_create_priv==='Y'" style="margin-bottom:2px;">+</el-button>
+          <!-- <el-button type="primary" size="mini" @click="handleRedo(row)"  style="margin-bottom:2px;">重做备机</el-button> -->
           <!-- <el-button type="primary" size="mini" @click="handleRestore(row)" v-if="restore_priv==='Y'">恢复</el-button> -->
           <!-- <el-button type="primary" size="mini" @click="handleBackUp(row,$index)" v-if="backup_priv==='Y'">全量备份</el-button> -->
           <!-- <el-button type="primary" size="mini" @click="handleSwitchOver(row,$index)" v-if="row.ha_mode==='rbr'">主备切换</el-button> -->
           <el-button type="primary" size="mini" @click="handleSetUp(row)">设置</el-button>
-          <el-button
+          <!-- <el-button
             size="mini"
             type="danger"
             @click="handleDelete(row,$index)"
             v-if="cluster_drop_priv==='Y'"
-          >删除</el-button>
+          >删除</el-button> -->
         </template>
       </el-table-column>
     </el-table>
@@ -1271,9 +1274,9 @@ export default {
         { title: "状态", istrue: true },
         { title: "计算节点", istrue: true },
         { title: "shard分配", istrue: true },  
-        { title: "最近备份时间", istrue: true },  
-        { title: "高可用模式", istrue: true },
-        { title: "集群名称", istrue: true },  
+        { title: "最近备份时间", istrue: false },  
+        { title: "高可用模式", istrue: false },
+        { title: "集群名称", istrue: false },  
       ],
       checkBoxGroup: [],
       checkedColumns: ['集群ID','业务名称','状态','计算节点','shard分配'],
@@ -1893,22 +1896,9 @@ export default {
           //发送接口
           createCluster(clusterData).then(response=>{
             let res = response;
-            //console.log(res);return;
             if(res.status=='accept'){
               this.dialogFormVisible = false;
               this.dialogStatusShowVisible=true;
-              // this.activities=[];
-              // const newArr={
-              //   content:'正在新增集群...',
-              //   timestamp: getNowDate(),
-              //   size: 'large',
-              //   type: 'primary',
-              //   icon: 'el-icon-more'
-              // };
-              //this.activities.push(newArr)
-              // this.message_tips = '正在新增...';
-              // this.message_type = 'success';
-
               //把之前的数据清空
               this.computer=[];this.shard=[];this.computer_state='';this.storage_state='';this.computer_title='';this.computer_icon='';this.shard_icon='';this.shard_title='';this.comp_active=0;this.shard_active=0;this.strogemachines=[];this.init_title='';this.init_active=0;this.finish_title='';this.finish_icon='';this.finish_description='';this.computer_description='';this.shard_description='';this.job_id='';this.timer=null;
               let info='新增'
@@ -1920,300 +1910,6 @@ export default {
                 this.getFStatus(this.timer,res.job_id,i++,info)
               }, 5000)
 
-              // this.init_title='正在新增集群...';
-              // //调获取状态接口
-              // let i=0;
-              // let timer = setInterval(() => {
-              //   setTimeout(()=>{
-              //     const postarr={};
-              //     postarr.job_type='get_status';
-              //     postarr.version=version_arr[0].ver;
-              //     postarr.job_id=res.job_id;
-              //     postarr.timestamp=timestamp_arr[0].time+'';
-              //     postarr.paras={};
-              //     getEvStatus(postarr).then((ress) => {
-              //       if(ress.attachment!==null){
-              //          const steps=(ress.attachment.job_steps).split(',');
-              //          //计算
-              //          if(ress.attachment.computer_state=='ongoing'){
-              //           this.computer_state='process';
-              //           this.computer_icon='el-icon-loading'
-              //          }else if(ress.attachment.computer_state=='done'){
-              //           this.computer_state='success';
-              //           this.computer_icon='el-icon-circle-check'
-              //          }else if(ress.attachment.computer_state=='failed'){
-              //           this.computer_state='error';
-              //           this.computer_icon='el-icon-circle-close'
-              //          }
-              //          //存储
-              //          if(ress.attachment.storage_state=='ongoing'){
-              //           this.storage_state='process';
-              //           this.shard_icon='el-icon-loading'
-              //          }else if(ress.attachment.storage_state=='done'){
-              //           this.storage_state='success';
-              //           this.shard_icon='el-icon-circle-check'
-              //          }else if(ress.attachment.storage_state=='failed'){
-              //           this.storage_state='error';
-              //           this.shard_icon='el-icon-circle-close'
-              //          }
-              //          this.computer_title='正在新增'+steps[1];
-              //          this.shard_title='正在新增'+steps[0];
-              //          this.init_active=3;
-              //         if(this.computer.length==0&&this.shard.length==0){
-              //           if(ress.attachment.hasOwnProperty('computer_step')){
-              //             for(let a=0;a<ress.attachment.computer_step.length;a++){
-              //               let newArrgoing={}
-              //               newArrgoing.title=ress.attachment.computer_step[a].computer_hosts;
-              //               newArrgoing.icon='el-icon-loading';
-              //               newArrgoing.status= 'process';
-              //               newArrgoing.description='';
-              //               newArrgoing.computer_id=ress.attachment.computer_step[a].computer_id;
-              //               this.computer.push(newArrgoing)
-              //             }
-              //           }
-              //           if(ress.attachment.hasOwnProperty('shard_step')){
-              //             for(let b=0;b<ress.attachment.shard_step.length;b++){
-              //               let shardgoing={}
-              //               shardgoing.title=ress.attachment.shard_step[b].shard_hosts;
-              //               shardgoing.icon='el-icon-loading';
-              //               shardgoing.status= 'process';
-              //               shardgoing.description='';
-              //               shardgoing.shard_id=ress.attachment.shard_step[b].shard_id;
-              //               this.shard.push(shardgoing)
-              //             }
-              //           }
-              //         }else{
-              //           if(ress.status=='ongoing'){
-              //             //console.log(2);
-              //             //计算
-              //             //if(ress.attachment.computer_state=='ongoing'){
-              //               for(let k=0;k<this.computer.length;k++){
-              //                 for(let j=0;j<ress.attachment.computer_step.length;j++){
-              //                   if(ress.attachment.computer_step[j].computer_state=='ongoing'){
-              //                     console.log(22);
-              //                     if(ress.attachment.computer_step[j].computer_hosts==this.computer[k].title){
-              //                       this.comp_active=k-1;
-              //                       this.computer[k].icon='el-icon-loading';
-              //                       this.computer[k].status='process';
-              //                       if(k>0&&k<(this.comp_active+1)){
-              //                         //小于k的情况
-              //                         for(let p=0;p<k;p++){
-              //                           this.computer[p].icon='el-icon-circle-check';
-              //                           this.computer[p].status='success';
-              //                         }
-              //                       }
-              //                     }
-              //                   }else if(ress.attachment.computer_step[j].computer_state=='failed'){
-              //                     console.log(23);
-              //                     this.comp_active=k;
-              //                     this.computer[k].icon='el-icon-circle-close';
-              //                     this.computer[k].status='error';
-              //                     this.computer[k].description=ress.attachment.computer_step[j].error_info;
-              //                   }else if(ress.attachment.computer_step[j].computer_state=='done'){
-              //                     console.log(24);
-              //                     this.comp_active=k;
-              //                     this.computer[k].status='success';
-              //                     this.computer[k].icon='el-icon-circle-check';
-              //                   }
-              //                 }
-              //               }
-              //             //}
-              //             //存储
-              //             //if(ress.attachment.storage_state=='ongoing'){
-              //               for(let k=0;k<this.shard.length;k++){
-              //                 for(let j=0;j<ress.attachment.shard_step.length;j++){
-              //                   if(ress.attachment.shard_step[j].storage_state=='ongoing'){
-              //                     if(ress.attachment.shard_step[j].shard_hosts==this.shard[k].title){
-              //                       this.shard_active=k-1;
-              //                       this.shard[k].icon='el-icon-loading';
-              //                       this.shard[k].status='process';
-              //                       if(k>0&&k<(this.shard_active+1)){
-              //                         //小于k的情况
-              //                         for(let p=0;p<k;p++){
-              //                           this.shard[p].icon='el-icon-circle-check';
-              //                           this.shard[p].status='success';
-              //                         }
-              //                       }
-              //                     }
-              //                   }else if(ress.attachment.shard_step[j].storage_state=='failed'){
-              //                     this.shard_active=k;
-              //                     this.shard[k].icon='el-icon-circle-close';
-              //                     this.shard[k].status='error';
-              //                     this.shard[k].description=res.error_info;
-              //                   }else if(ress.attachment.shard_step[j].storage_state=='done'){
-              //                     this.shard_active=k;
-              //                     this.shard[k].status='success';
-              //                     this.shard[k].icon='el-icon-circle-check';
-              //                   }
-              //                 }
-              //               }
-              //             //}
-              //           }else if(ress.status=='done'){
-              //             //console.log(3);
-              //             if(ress.attachment.computer_state=='done'){
-              //               this.computer_state='success';
-              //               this.computer_icon='el-icon-circle-check'
-              //             }
-              //             if(ress.attachment.storage_state=='done'){
-              //               this.storage_state='success';
-              //               this.shard_icon='el-icon-circle-check'
-              //             }
-              //             this.comp_active=this.computer.length-1;
-              //             for(let d=0;d<this.computer.length;d++){
-              //               this.computer[d].status='success';
-              //               this.computer[d].icon='el-icon-circle-check';
-              //             }
-              //             this.shard_active=this.shard.length-1;
-              //             for(let d=0;d<this.shard.length;d++){
-              //               this.shard[d].status='success';
-              //               this.shard[d].icon='el-icon-circle-check';
-              //             }
-              //             clearInterval(timer);
-              //             const  apply_all_cluster=sessionStorage.getItem('apply_all_cluster');
-              //             if(apply_all_cluster==2){
-              //                 const arrs= {};
-              //                 arrs.effectCluster=sessionStorage.getItem('affected_clusters');
-              //                 arrs.cluster_name=ress.attachment.cluster_name;
-              //                 arrs.username=sessionStorage.getItem('login_username');
-              //                 arrs.type='add';
-              //                 uAssign(arrs).then((responses) => {
-              //                   let res_update = responses;
-              //                   if(res_update.code==200){
-              //                     this.dialogFormVisible = false;
-              //                     sessionStorage.setItem('affected_clusters',res_update.effectCluster);
-              //                     //console.log(sessionStorage.getItem('affected_clusters'));
-              //                   }
-              //                 });
-              //             }
-              //             setTimeout(() => {
-              //               //this.getList();
-              //               //this.dialogStatusShowVisible=false;
-              //             }, 3000);
-              //           }else if(ress.status=='failed'){
-              //             console.log(4);
-              //             if(ress.attachment.computer_state=='failed'){
-              //               this.computer_state='error';
-              //               this.computer_icon='el-icon-circle-close'
-              //             }else if(ress.attachment.computer_state=='done'){
-              //               let current_id=0;
-              //               for(let b=0;b<ress.attachment.computer_step.length;b++){
-              //                 if(ress.attachment.computer_step[b].computer_state=='done'){
-              //                   this.comp_active=b;
-              //                   for(let c=0;c<this.computer.length;c++){
-              //                     if(this.computer[c].title==ress.attachment.computer_step[b].computer_hosts){
-              //                       this.computer[c].icon='el-icon-circle-check';
-              //                       this.computer[c].status='success';
-              //                       current_id=c;
-              //                     }
-              //                   }
-              //                 }else if(ress.attachment.computer_step[b].computer_state=='failed'){
-              //                     for(let c=0;c<this.computer.length;c++){
-              //                     if(this.computer[c].title==ress.attachment.computer_step[b].computer_hosts){
-              //                       this.computer[c].icon='el-icon-circle-close';
-              //                       this.computer[c].status='error';
-              //                       //current_id=c;
-              //                     }
-              //                   }
-              //                 }
-              //               }
-              //               //小于b的status为success
-              //               // if(this.computer.length>1&&this.comp_active>0){
-              //               //   if(current_id){
-
-              //               //   }
-              //               // }
-              //             }
-              //             if(ress.attachment.storage_state=='failed'){
-              //               this.storage_state='error';
-              //               this.shard_icon='el-icon-circle-close'
-              //             }else if(ress.attachment.storage_state=='done'){
-              //               //let current_id=0;
-              //               for(let b=0;b<ress.attachment.shard_step.length;b++){
-              //                 if(ress.attachment.shard_step[b].storage_state=='done'){
-              //                   this.shard_active=b;
-              //                   for(let c=0;c<this.shard.length;c++){
-              //                     if(this.shard[c].title==ress.attachment.shard_step[b].shard_hosts){
-              //                       this.shard[c].icon='el-icon-circle-check';
-              //                       this.shard[c].status='success';
-              //                       //current_id=c;
-              //                     }
-              //                   }
-              //                 }else if(ress.attachment.shard_step[b].storage_state=='failed'){
-              //                     for(let c=0;c<this.shard.length;c++){
-              //                     if(this.shard[c].title==ress.attachment.shard_step[b].shard_hosts){
-              //                       this.shard[c].icon='el-icon-circle-close';
-              //                       this.shard[c].status='error';
-              //                       //current_id=c;
-              //                     }
-              //                   }
-              //                 }
-              //               }
-              //             }
-              //             clearInterval(timer);
-              //           }
-              //         }
-
-              //       }
-              //     // if(ress.status=='done'||ress.status=='failed'){ 
-              //     //   clearInterval(timer);
-              //     //   //this.info=ress.error_info;
-              //     //   if(ress.status=='done'){
-              //     //     const newArrdone={
-              //     //       content:ress.error_info,
-              //     //       timestamp: getNowDate(),
-              //     //       color: '#0bbd87',
-              //     //       icon: 'el-icon-circle-check'
-              //     //     };
-              //     //     this.activities.push(newArrdone)
-              //     //     //查是否应用于全部集群，不是，增加cluster_id
-              //     //     const  apply_all_cluster=sessionStorage.getItem('apply_all_cluster');
-              //     //     if(apply_all_cluster==2){
-              //     //         const arrs= {};
-              //     //         arrs.effectCluster=sessionStorage.getItem('affected_clusters');
-              //     //         arrs.cluster_name=ress.attachment.cluster_name;
-              //     //         arrs.username=sessionStorage.getItem('login_username');
-              //     //         arrs.type='add';
-              //     //         uAssign(arrs).then((responses) => {
-              //     //           let res_update = responses;
-              //     //           if(res_update.code==200){
-              //     //             this.dialogFormVisible = false;
-              //     //             sessionStorage.setItem('affected_clusters',res_update.effectCluster);
-              //     //             //console.log(sessionStorage.getItem('affected_clusters'));
-              //     //           }
-              //     //         });
-              //     //     }
-              //     //     setTimeout(() => {
-              //     //       this.getList();
-              //     //       this.dialogStatusVisible=false;
-              //     //     }, 3000);
-              //     //   }else{
-              //     //     const newArrdone={
-              //     //       content:ress.error_info,
-              //     //       timestamp: getNowDate(),
-              //     //       color: 'red',
-              //     //       icon: 'el-icon-circle-close'
-              //     //     };
-              //     //     this.activities.push(newArrdone)
-              //     //     //this.installStatus = true;
-              //     //   }
-              //     // }else{
-              //     //    const newArrgoing={
-              //     //     content:ress.error_info,
-              //     //     timestamp: getNowDate(),
-              //     //     color: '#0bbd87'
-              //     //   };
-              //     //   this.activities.push(newArrgoing)
-              //     //   //this.info=ress.error_info;
-              //     //   //this.installStatus = true;
-              //     // }
-              //   });
-              //     if(i>=86400){
-              //         clearInterval(timer);
-              //     }
-              //     i++;
-              //   }, 0)
-              
-              //  }, 5000)
             }else if(res.status=='ongoing'){
               this.message_tips = '系统正在操作中，请等待一会！';
               this.message_type = 'error';
@@ -4395,9 +4091,9 @@ export default {
 };
 </script>
 <style scoped>
-.right_input{
-  width:60%;
-}
+/* .right_input{
+  width:8%;
+} */
 .block{
   margin-left: 20px;
   max-height: 400px;

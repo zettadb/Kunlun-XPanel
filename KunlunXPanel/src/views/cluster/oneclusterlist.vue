@@ -7,7 +7,7 @@
           class="el-menu-vertical-demo" @select="selected">
           <el-menu-item index="1">
             <i class="el-icon-setting"></i>
-            <span>基础信息</span>
+            <span>基础设置</span>
           </el-menu-item>
           <el-menu-item index="2">
             <i class="el-icon-setting"></i>
@@ -68,10 +68,10 @@
             <i class="el-icon-setting"></i>
             <span slot="title">获取实例变量</span>
           </el-menu-item>
-          <el-menu-item index="14">
+          <!-- <el-menu-item index="14">
             <i class="el-icon-setting"></i>
             <span slot="title">表重分布</span>
-          </el-menu-item>
+          </el-menu-item> -->
         </el-menu>
       </el-col>
     </div>

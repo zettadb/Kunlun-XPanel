@@ -546,7 +546,8 @@ class Cluster extends CI_Controller {
 		$data['shards_count']=$count;
 		if($count==1){
 			$resnode=$this->getThisNodes($id,$res[0]['id']);
-			$data['nodedetail']=$count.'个shard，'.$res[0]['name'].'('.$resnode.'个副本)';
+			//print_r($resnode);exit;
+			$data['nodedetail']=$count.'个shard，'.$res[0]['name'].'('.count($resnode).'个副本)';
 			foreach ($resnode as &$item) { $item['name'] = $res[0]['name']; }
 			$data['list']=$resnode;
 			foreach ($resnode as $i) {
