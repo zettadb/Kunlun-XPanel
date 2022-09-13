@@ -722,7 +722,8 @@ export default {
       listQuery: {
         pageNo: 1,
         pageSize: 10,
-        name: ''
+        name: '',
+        user_name:sessionStorage.getItem('login_username')
       },
       temp: {
         ha_mode:'',
@@ -1082,11 +1083,13 @@ export default {
     },
     handleFilter() {
       this.listQuery.pageNo = 1
+      this.listQuery.user_name=sessionStorage.getItem('login_username')
       this.getList()
     },
     handleClear(){
       this.listQuery.name = ''
-      this.listQuery.pageNo = 1
+      this.listQuery.pageNo = 1,
+      this.listQuery.user_name=sessionStorage.getItem('login_username')
       this.getList()
     },
     getList() {

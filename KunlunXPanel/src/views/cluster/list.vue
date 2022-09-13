@@ -21,18 +21,11 @@
           @click="handleCreate"
           v-if="cluster_creata_priv==='Y'"
         >新增</el-button>
-        <!-- <el-button
-          class="filter-item"
-          type="primary"
-          icon="el-icon-menu"
-          @click="handleCreate"
-          style="float:right"
-        >列表项展示筛选</el-button> -->
         <el-popover placement="right" title="列筛选" trigger="click" width="420" style="float:right">            
             <el-checkbox-group v-model="checkedColumns" size="mini">
               <el-checkbox v-for="item in checkBoxGroup" :key="item" :label="item" :value="item"></el-checkbox>
             </el-checkbox-group>
-            <el-button slot="reference" type="primary" size="small" plain><i class="el-icon-arrow-down el-icon-menu" />列表项展示筛选</el-button>
+            <el-button slot="reference" type="primary" size="small" plain><i class="el-icon-arrow-down el-icon-menu" />列筛选</el-button>
         </el-popover>
         <!-- <el-button
           class="filter-item"
@@ -59,35 +52,35 @@
       </el-table-column>
       <el-table-column v-if="colData[0].istrue" label="集群ID" align="center" width="70">
         <template slot-scope="{row}">
-          <span class="link-type" @click="handleDetail(row)">{{ row.id }}</span>
+          <span class="link-type click_btn" @click="handleDetail(row)">{{ row.id }}</span>
         </template>
       </el-table-column>
-      <!-- <el-table-column   
-      prop="name" 
-      label="集群名称"
-       align="center">
-      </el-table-column> -->
       <el-table-column  
       v-if="colData[1].istrue"
        prop="nick_name" 
        label="业务名称" 
        align="center">
       </el-table-column>
-       <!-- <el-table-column
+       <el-table-column
        v-if="colData[2].istrue"
         prop="status"
         align="center"
+        sortable
         label="状态">
-      </el-table-column> -->
+        <template slot-scope="scope">
+          <span v-if="scope.row.status==='运行中'" style="color: #00ed37">运行中</span>
+          <span v-else style="color: red">{{scope.row.status}}</span>
+        </template>
+      </el-table-column>
       <el-table-column
             v-if="colData[3].istrue"
             align="center"
-            label="计算节点" width="280">
+            label="计算节点" width="290">
            <template slot-scope="scope">
             <el-table border :data='scope.row.compList' max-height="150px">
               <el-table-column prop='ip' label="ip" align="center"></el-table-column>
               <el-table-column prop='port' label="端口" align="center" width="70"></el-table-column>
-              <el-table-column prop='status' label="状态" align="center" width="70">
+              <el-table-column prop='status' label="状态" align="center" width="80" sortable>
                 <template slot-scope="scope">
                   <span v-if="scope.row.status==='active'" style="color: #00ed37">运行中</span>
                   <span v-else-if="scope.row.status==='creating'" style="color: #c7c9d1;">安装中</span>
@@ -111,14 +104,14 @@
               <el-table-column prop='name' label="名称" align="center" width="80"></el-table-column>
               <el-table-column prop='ip' label="ip" align="center"></el-table-column>
               <el-table-column prop='port' label="端口" align="center" width="70"></el-table-column>
-              <el-table-column prop='member_state' label="主/备节点" align="center">
+              <el-table-column prop='member_state' label="主/备节点" align="center" sortable>
                 <template slot-scope="scope">
                   <span v-if="scope.row.member_state==='source'" style="color: red">主</span>
                   <span v-else-if="scope.row.member_state==='replica'">备</span>
                   <span v-else></span>
                 </template>
               </el-table-column>
-              <el-table-column prop='status' label="状态" align="center" width="70">
+              <el-table-column prop='status' label="状态" align="center" width="80" sortable>
                 <template slot-scope="scope">
                   <span v-if="scope.row.status==='active'" style="color: #00ed37">运行中</span>
                   <span v-else-if="scope.row.status==='creating'" style="color: #c7c9d1;">安装中</span>
@@ -127,7 +120,7 @@
                   <span v-else></span>
                 </template>
               </el-table-column>
-              <el-table-column prop='replica_delay' label="延迟时间" align="center">
+              <el-table-column prop='replica_delay' label="延迟时间" align="center" sortable>
                 <template slot-scope="scope">
                   <span>{{scope.row.replica_delay+'s'}}</span>
                 </template>
@@ -135,31 +128,7 @@
             </el-table>
           </template>
       </el-table-column>
-      <!-- <el-table-column
-            prop="when_created"
-            align="center"
-            label="创建时间">
-      </el-table-column> -->
-       <!-- <el-table-column
-        align="left"
-        label="配置"> -->
-        <!-- <template slot-scope="scope">
-            <div>{{'计算节点：'+scope.row.comp_count+'个'}}
-              <p><span>192.168.0.126_45007</span><span style="color: #00ed37">运行中</span></p>
-              <p><span>192.168.0.126_45007</span><span style="color: #00ed37">运行中</span></p>
-            </div>
-            <div>{{'shard:2个'}}
-              <div>shard_1:
-              <p><span>192.168.0.126_45007</span><span style="color: #00ed37">运行中</span><span>23s</span></p>
-              <p><span>192.168.0.126_45007</span><span style="color: #00ed37">运行中</span><span >2s</span></p>
-              </div>
-              <div>shard_2:
-              <p><span>192.168.0.126_45007</span><span style="color: #00ed37">运行中</span><span>23s</span></p>
-              <p><span>192.168.0.126_45007</span><span style="color: #00ed37">运行中</span><span >2s</span></p>
-              </div>
-            </div>
-        </template> -->
-      <!-- </el-table-column> -->
+      
       <el-table-column
             v-if="colData[5].istrue"
             prop="back_up"
@@ -170,12 +139,18 @@
             <span v-else-if="scope.row.first_backup!==''">{{scope.row.first_backup}}</span>
         </template>
       </el-table-column>
-      <!-- <el-table-column
+      <el-table-column
             v-if="colData[6].istrue"
             prop="ha_mode"
             align="center"
             label="高可用模式">
-      </el-table-column> -->
+      </el-table-column>
+      <el-table-column   
+        v-if="colData[7].istrue"
+        prop="name" 
+        label="集群名称"
+        align="center">
+      </el-table-column>
       <el-table-column
         label="操作"
         align="center"
@@ -272,13 +247,13 @@
            <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">个</i>
           </el-input>
         </el-form-item>
-        <!-- <el-form-item label="shard分配:" prop="shardtotal"  v-show="dialogStatus==='detail'">
-          <span>{{temp.shardtotal}}</span>
-        </el-form-item> -->
         <el-form-item label="计算节点总个数:" prop="comp_count"  v-show="dialogStatus==='create'||'detail'">
           <el-input  v-model="temp.comp_count" class="right_input"  placeholder="输入计算节点总个数" :disabled="dialogStatus==='detail'">
            <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">个</i>
           </el-input>
+        </el-form-item>
+        <el-form-item label="shard分配:" prop="shardtotal"  v-show="dialogStatus==='detail'">
+          <span>{{temp.shardtotal}}</span>
         </el-form-item>
         <el-form-item label="缓冲池大小:" prop="buffer_pool"  v-show="dialogStatus==='create'||'detail'">
           <el-input  v-model="temp.buffer_pool" class="right_input"  placeholder="缓冲池大小单位为MB" :disabled="dialogStatus==='detail'">
@@ -1046,7 +1021,8 @@ export default {
       listQuery: {
         pageNo: 1,
         pageSize: 10,
-        name: ''
+        name: '',
+        user_name:sessionStorage.getItem('login_username')
       },
       temp: {
         ha_mode:sessionStorage.getItem('work_mode')=='enterprise'?'rbr':'mgr',
@@ -1296,10 +1272,11 @@ export default {
         { title: "计算节点", istrue: true },
         { title: "shard分配", istrue: true },  
         { title: "最近备份时间", istrue: true },  
-        // { title: "高可用模式", istrue: true },  
+        { title: "高可用模式", istrue: true },
+        { title: "集群名称", istrue: true },  
       ],
       checkBoxGroup: [],
-      checkedColumns: [],
+      checkedColumns: ['集群ID','业务名称','状态','计算节点','shard分配'],
       // active: 0,
       //  approvalProcessProject:[
       //      {id:'0',label: "computer_step"},
@@ -1400,7 +1377,7 @@ export default {
       // 列筛选
       this.colData.forEach((item, index) => {
         this.checkBoxGroup.push(item.title);
-        this.checkedColumns.push(item.title);
+        //this.checkedColumns.push(item.title);
       })
       this.checkedColumns = this.checkedColumns
       let UnData = localStorage.getItem(this.colTable)
@@ -1410,6 +1387,7 @@ export default {
           return !UnData.includes(item)
         })
       }
+      //console.log(this.checkedColumns);
   },
   watch: {
     'temp.machinelist': {
@@ -1733,11 +1711,13 @@ export default {
     },
     handleFilter() {
       this.listQuery.pageNo = 1
+      this.listQuery.user_name=sessionStorage.getItem('login_username')
       this.getList()
     },
     handleClear(){
       this.listQuery.name = ''
       this.listQuery.pageNo = 1
+      this.listQuery.user_name = sessionStorage.getItem('login_username');
       this.getList()
     },
     getList() {
