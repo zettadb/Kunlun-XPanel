@@ -125,12 +125,17 @@ class Cluster extends CI_Controller {
 							$res[$row]['comp_count'] = count($comptotal['list']);
 							$res[$row]['first_backup'] = $first_backup;
 							$status='';
+							$abnormal='';
 							if(empty($comptotal['status'])&&empty($shardtotal['status'])){
 								$status='运行中';
+								// $abnormal='shard_1的192.168.0.125(57001)异常;shard_2的192.168.0.136(57004)延迟过大;';
 							}else{
-								$status=$comptotal['status'].$shardtotal['status'];
+								$status='异常';
+								$abnormal=$comptotal['status'].$shardtotal['status'];
+								// $abnormal='shard_1的192.168.0.125(57001)异常;shard_2的192.168.0.136(57004)延迟过大;';
 							}
 							$res[$row]['status'] =$status;
+							$res[$row]['abnormal'] =$abnormal;
 						}
 					}
 					if($key2 == 'memo'){

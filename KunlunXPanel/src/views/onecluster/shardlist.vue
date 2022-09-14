@@ -61,7 +61,7 @@
             <el-table-column prop="port" label="端口" align="center"></el-table-column>
             <el-table-column prop="master" label="主/备节点" align="center">
               <template slot-scope="scope">
-                <span v-if="scope.row.master==='true'" style="color: red">主</span>
+                <span v-if="scope.row.master==='true'" style="color: #409eff;">主</span>
                 <span v-else-if="scope.row.master==='false'">备</span>
                 <span v-else></span>
               </template>
@@ -86,8 +86,8 @@
                 <el-button size="mini" type="primary" v-if="row.status!=='online'"  @click="handleControlNode(row,'start')">启用</el-button>
                 <el-button size="mini" type="primary" v-if="row.master!=='true'&&row.status!=='offline'" @click="handleControlNode(row,'stop')">禁用</el-button>
                 <el-button size="mini" type="primary" v-if="row.master!=='true'"  @click="handleControlNode(row,'restart')">重启</el-button>
-                <el-button size="mini" type="primary" v-if="row.master=='true'"  @click="handleSwitch(row)">主备切换</el-button>
-                <el-button size="mini" type="primary" v-if="row.master=='true'"  @click="handleReDo(row)">重做备机节点</el-button>
+                <!-- <el-button size="mini" type="primary" v-if="row.master=='true'"  @click="handleSwitch(row)">主备切换</el-button>
+                <el-button size="mini" type="primary" v-if="row.master=='true'"  @click="handleReDo(row)">重做备机节点</el-button> -->
                 <el-button
                   size="mini"
                   type="danger"

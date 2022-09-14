@@ -69,8 +69,8 @@
         :show-overflow-tooltip="true"
         label="状态">
         <template slot-scope="scope">
-          <span v-if="scope.row.status==='运行中'" style="color: #00ed37">运行中</span>
-          <span v-else style="color: red">{{scope.row.status}}</span>
+          <span v-if="scope.row.status==='运行中'" style="color: #00ed37;" >运行中</span>
+          <span v-else style="color: red;border-bottom: 1px red solid;" @click="statusDetail(scope.row)">{{scope.row.status}}</span>
         </template>
       </el-table-column>
       <el-table-column
@@ -100,14 +100,13 @@
             label="shard分配"
              width="600">
             <template slot-scope="scope">
-              <!-- :span-method="objectSpanMethod" -->
             <el-table border :data='scope.row.shardList' max-height="150px" >
               <el-table-column prop='name' label="名称" align="center" width="80"></el-table-column>
               <el-table-column prop='ip' label="ip" align="center"></el-table-column>
               <el-table-column prop='port' label="端口" align="center" width="70"></el-table-column>
               <el-table-column prop='member_state' label="主/备节点" align="center" sortable>
                 <template slot-scope="scope">
-                  <span v-if="scope.row.member_state==='source'" style="color: red">主</span>
+                  <span v-if="scope.row.member_state==='source'" style="color: #409eff;">主</span>
                   <span v-else-if="scope.row.member_state==='replica'">备</span>
                   <span v-else></span>
                 </template>
@@ -805,6 +804,12 @@
       <json-viewer :value="expondInfo" v-if="expondSatus"></json-viewer>
       <span v-if="expondResult">{{expand_end}}</span>
     </el-dialog>
+    <!-- 列表里的状态详情框 -->
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="statusDetailVisible" custom-class="single_dal_view" :close-on-click-modal="false">
+      <!-- <span style="color:red;">{{abnormal}}</span> -->
+      <div style="color:red;" v-html="abnormal"></div>
+    </el-dialog>
+    
   </div>
 </template>
 
@@ -1127,7 +1132,8 @@ export default {
         retreated:'回档集群',
         expand:'集群扩容',
         expandInfo:'集群扩容确认信息',
-        outoExpand:'自动扩容'
+        outoExpand:'自动扩容',
+        statusDetail:'异常详情'
       },
       dialogDetail: false,
       message_tips:'',
@@ -1280,33 +1286,8 @@ export default {
       ],
       checkBoxGroup: [],
       checkedColumns: ['集群ID','业务名称','状态','计算节点','shard分配'],
-      // active: 0,
-      //  approvalProcessProject:[
-      //      {id:'0',label: "computer_step"},
-      //      {id:'1',label: "shard_step"},
-      //     //  { id:'2',label: "割接审批"},
-      //     //  { id:'3',label: "审批成功"},
-      //  ],
-      // current :0,
-      // lists:[
-      //     {
-      //       title:'shard_step',
-      //       description:'192.168.0.125_57001;192.168.0.136_57001;192.168.0.125_570',
-      //       status:0 // 判断是否有按钮及盒子凸显，例子中0代表不凸显无按钮。 具体情况可自行判断
-      //     },
-      //     {
-      //       title:'computer_step',
-      //       description:'192.168.0.136_47001;',
-      //       status:1
-      //     },
-      //     {
-      //       title:'完成中低先级需求及问题的研发、测试及上线',
-      //       description:'2020-05-31',
-      //       status:0
-      //     }
-      //   ],
-      //dialogBackUpStorageVisible:false,
-      //stypelist:storage_type_arr,
+      statusDetailVisible:false,
+      abnormal:'',
       rules: {
         // machinelist: [
         //   { required: true, trigger: "blur",validator: validatemachine },
@@ -1373,14 +1354,11 @@ export default {
     };
   },
   created() {
-    // sessionStorage.setItem('oneClusterList',false);
-    // sessionStorage.setItem('cshow',true);
     this.getList();
     //this.getMode();
       // 列筛选
       this.colData.forEach((item, index) => {
         this.checkBoxGroup.push(item.title);
-        //this.checkedColumns.push(item.title);
       })
       this.checkedColumns = this.checkedColumns
       let UnData = localStorage.getItem(this.colTable)
@@ -1444,30 +1422,17 @@ export default {
     this.timer = null
   },
   methods: {
-    // objectSpanMethod({ row, column, rowIndex, columnIndex}) {
-    //   console.log(this.list[rowIndex]['shardList']);
-    //   const fields = ['name']
-    //   if (fields.includes(column.property)) {
-    //     const cellValue = row['name']
-    //     //console.log(column.property);
-    //     if (cellValue && fields.includes(column.property)) {
-    //       const prevRow = this.list[rowIndex]['shardList'][rowIndex - 1]  
-    //       let nextRow = this.list[rowIndex]['shardList'][rowIndex + 1]
-    //       if (prevRow && prevRow['name'] === cellValue) {
-    //         return { rowspan: 0, colspan: 0 }
-    //       } else {
-    //         // return { rowspan: row.rowspan, colspan: 1 }
-    //         let countRowspan = 1
-    //         while (nextRow && nextRow['name'] === cellValue) {
-    //           nextRow = this.list[rowIndex]['shardList'][++countRowspan + rowIndex]
-    //         }
-    //         if (countRowspan > 1) {
-    //           return { rowspan: countRowspan, colspan: 1 }
-    //         }
-    //       }
-    //     }
-    //   }
-    // },
+    statusDetail(row){
+      console.log(row);
+      this.dialogStatus = 'statusDetail';
+      this.statusDetailVisible=true;
+      let arr='';
+      let ab_arr=(row.abnormal.substring(0,row.abnormal.length-1)).split(';');
+      for(let i=0;i<ab_arr.length;i++){
+           arr+='<div>'+ab_arr[i]+'</div>';
+      }
+      this.abnormal=arr;
+    },
     beforeSyncDestory(){
       clearInterval(this.timer)
       this.dialogStatusVisible=false;

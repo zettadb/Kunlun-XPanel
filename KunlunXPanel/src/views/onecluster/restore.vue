@@ -139,7 +139,7 @@ export default {
             restoreData.paras=paras;
             //console.log(row);return;
             //console.log(restoreData);return;
-            handleCofirm(tempData.nick_name+"集群的数据将被覆盖，确定要进行回档操作么?").then( () =>{
+            handleCofirm(row.nick_name+"集群的数据将被覆盖，确定要进行回档操作么?").then( () =>{
             restoreCluster(restoreData).then((response) => {
                 let res = response;
                 if(res.status=='accept'){
