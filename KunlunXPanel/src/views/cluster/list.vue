@@ -4551,6 +4551,7 @@ export default {
                     if(ress.attachment.hasOwnProperty('computer_hosts')){
                       const arr=ress.attachment.computer_hosts.substr(0,ress.attachment.computer_hosts.length-1);
                       const computer_hosts=arr.split(';');
+<<<<<<< HEAD
                       if(ress.attachment.computer_state=='done'){
                         for(let e=0;e<computer_hosts.length;e++){
                           let newArrgoing={}
@@ -4611,6 +4612,68 @@ export default {
                         this.computer_description=ress.error_info;
                         }
                       }else{
+=======
+                      if(ress.attachment.computer_state=='done'){
+                        for(let e=0;e<computer_hosts.length;e++){
+                          let newArrgoing={}
+                          newArrgoing.title=computer_hosts[e];
+                          newArrgoing.icon='el-icon-circle-check';
+                          newArrgoing.status= 'success';
+                          newArrgoing.description='';
+                          newArrgoing.computer_id=ress.attachment.computer_id;
+                          this.computer.push(newArrgoing)
+                        }
+                      }else{
+                        for(let e=0;e<computer_hosts.length;e++){
+                          let newArrgoing={}
+                          newArrgoing.title=computer_hosts[e];
+                          newArrgoing.icon='el-icon-loading';
+                          newArrgoing.status= 'process';
+                          newArrgoing.description='';
+                          newArrgoing.computer_id=ress.attachment.computer_id;
+                          this.computer.push(newArrgoing)
+                        }
+                      }
+                    }
+                  }else{
+                    if(ress.attachment.hasOwnProperty('computer_state')){
+                      if(ress.attachment.computer_state=='done'){
+                        this.computer_state='success';
+                        this.computer_icon='el-icon-circle-check'
+                        this.computer_title=info+'成功';
+                        //遍历计算节点改状态
+                        if(this.computer.length>0){
+                          for(let c=0;c<this.computer.length;c++){
+                            const arr=ress.attachment.computer_hosts.substr(0,ress.attachment.computer_hosts.length-1);
+                            const computer_hosts=arr.split(';');
+                            for(let e=0;e<computer_hosts.length;e++){
+                              if(this.computer[c].title==computer_hosts[e]){
+                                this.computer[c].icon='el-icon-circle-check';
+                                this.computer[c].status='success';
+                              }
+                            }
+                          }
+                        }
+                      }else if(ress.attachment.computer_state=='failed'){
+                        this.computer_state='error';
+                        this.computer_icon='el-icon-circle-close'
+                        this.computer_title=info+'失败';
+                        //遍历计算节点改状态
+                        if(this.computer.length>0){
+                          for(let c=0;c<this.computer.length;c++){
+                            const arr=ress.attachment.computer_hosts.substr(0,ress.attachment.computer_hosts.length-1);
+                            const computer_hosts=arr.split(';');
+                            for(let e=0;e<computer_hosts.length;e++){
+                              if(this.computer[c].title==computer_hosts[e]){
+                                this.computer[c].icon='el-icon-circle-close';
+                                this.computer[c].status='error';
+                              }
+                            }
+                          }
+                        this.computer_description=ress.error_info;
+                        }
+                      }else{
+>>>>>>> 1.1
                         this.computer_state='process';
                         this.computer_icon='el-icon-loading'
                         this.computer_title='正在'+info;

@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 <template>
   <div class="login-container">
      <Loginheader />
@@ -436,6 +437,8 @@ $border_radius:5px;
 }
 </style>
 =======
+=======
+>>>>>>> 1.1
 
 <template>
   <div class="page-module login-container backgroundCover flex width_100 height_100">

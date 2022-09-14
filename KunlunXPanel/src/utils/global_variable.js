@@ -73,5 +73,8 @@ export {
   machine_type_arr,
   policy_arr,
   node_stats_arr
+<<<<<<< HEAD
 >>>>>>> 1.0
+=======
+>>>>>>> 1.1
 }
