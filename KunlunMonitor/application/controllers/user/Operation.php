@@ -844,6 +844,22 @@ class Operation extends CI_Controller {
 									$assign_hostaddr='';
 									if(!empty($string['paras']['assign_hostaddr'])){
 										$assign_hostaddr=$string['paras']['assign_hostaddr'] ;
+									}else{
+										$this->load->model('Cluster_model');
+										$data_string= array(
+											'version'=>'1.0',
+											'job_id'=>$res[$row]['id'],
+											'job_type'=>'get_status',
+											'timestamp'=>'1435749309',
+											'paras'=>'{}'
+										);
+										$post_data =json_encode($data_string);
+										$post_arr = $this->Cluster_model->postData($post_data,$this->post_url);
+										$post_arr = json_decode($post_arr, TRUE);
+										//print_r($post_arr);exit;
+										if(!empty($post_arr['attachment']['new_master_host'])){
+											$assign_hostaddr=$post_arr['attachment']['new_master_host'];
+										}
 									}
 									$master_hostaddr='';
 									if(!empty($string['paras']['master_hostaddr'])){

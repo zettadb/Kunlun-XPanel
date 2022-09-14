@@ -7,14 +7,16 @@ import { getCookie } from '@/utils/auth'
 // import { decrypt } from '@/utils/crypto.js'
 //docker环境
 // const baseURL=JSON.parse(sessionStorage.getItem("response")).BASE_URL
-// baseURL:baseURL+'/KunlunMonitor/index.php'
+// baseURL:baseURL+'/monitor/index.php'
 // 普通环境
 // baseURL:process.env.VUE_APP_BASE_API
 
 // create an axios instance
 var host = window.document.location.href.substring(0, window.document.location.href.indexOf(window.document.location.pathname));
+//host+'/monitor/index.php'
+//host+'/KunlunMonitor/index.php'
 const service = axios.create({
-  // baseURL:process.env.VUE_APP_BASE_API,
+  //baseURL:process.env.VUE_APP_BASE_API,
   baseURL:host+'/KunlunMonitor/index.php',
   timeout: 60000
 })

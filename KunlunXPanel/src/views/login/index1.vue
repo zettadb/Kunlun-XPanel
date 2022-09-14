@@ -29,74 +29,74 @@
           <h3 class="title">统一管理用户登录</h3>
         </div>
 
-        <el-form-item prop="username">
-          <el-input
-            ref="username"
-            v-model="loginForm.username"
-            placeholder="请输入账户"
-            name="username"
-            type="text"
-            tabindex="1"
-            auto-complete="on"
-          />
-        </el-form-item>
+      <el-form-item prop="username">
+        <el-input
+          ref="username"
+          v-model="loginForm.username"
+          placeholder="请输入账户"
+          name="username"
+          type="text"
+          tabindex="1"
+          auto-complete="on"
+        />
+      </el-form-item>
 
-        <el-form-item prop="password">
-          <el-input
-            :key="passwordType"
-            ref="password"
-            v-model="loginForm.password"
-            :type="passwordType"
-            placeholder="请输入密码"
-            name="password"
-            tabindex="2"
-            auto-complete="on"
-            @keyup.enter.native="handleLogin"
-          />
-          <span class="show-pwd" @click="showPwd">
-            <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
-          </span>
-        </el-form-item>
-        <!-- <el-form-item prop="metaDate">
-          <el-input
-            ref="metaDate"
-            v-model="loginForm.metaDate"
-            type="text"
-            placeholder="请输入元数据的IP:端口"
-            name="metaDate"
-            tabindex="3"
-            auto-complete="on"
-            @keyup.enter.native="handleLogin"
-            :title="msg"
-          />
-        </el-form-item> -->
-        <!-- <el-form-item prop="meta">
-          <el-select v-model="loginForm.meta" placeholder="请选择元数据">
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.label">
-            </el-option>
-          </el-select>
-          <i class="el-icon-plus" style="margin-left: 15px;font-size: 20px;"></i>
-        </el-form-item> -->
-        <div class="oh change_password_wrap">
-          <el-checkbox v-model="checked" class="remember">记住密码</el-checkbox>
-          <router-link :to="{path: '/alteration'}" class="change_password">忘记密码</router-link>
-        </div>
-        <el-button
-          :loading="loading"
-          type="primary"
-          style="width:100%;margin-bottom:20px;"
-          @click.native.prevent="handleLogin"
-        >登录</el-button>
-      </el-form>
-      <div class="footer">
-        <p>
-          <span>© 2022 zettadb.com版权所有</span>
-          <span>泽拓科技（深圳）有限责任公司</span>
-        </p>
+      <el-form-item prop="password">
+        <el-input
+          :key="passwordType"
+          ref="password"
+          v-model="loginForm.password"
+          :type="passwordType"
+          placeholder="请输入密码"
+          name="password"
+          tabindex="2"
+          auto-complete="on"
+          @keyup.enter.native="handleLogin"
+        />
+        <span class="show-pwd" @click="showPwd">
+          <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
+        </span>
+      </el-form-item>
+      <el-form-item prop="metaDate">
+        <el-input
+          ref="metaDate"
+          v-model="loginForm.metaDate"
+          type="text"
+          placeholder="请输入元数据的IP:端口"
+          name="metaDate"
+          tabindex="3"
+          auto-complete="on"
+          @keyup.enter.native="handleLogin"
+          :title="msg"
+        />
+      </el-form-item>
+      <!-- <el-form-item prop="meta">
+        <el-select v-model="loginForm.meta" placeholder="请选择元数据">
+          <el-option
+            v-for="item in options"
+            :key="item.value"
+            :label="item.label"
+            :value="item.label">
+          </el-option>
+        </el-select>
+        <i class="el-icon-plus" style="margin-left: 15px;font-size: 20px;"></i>
+      </el-form-item> -->
+      <div class="oh change_password_wrap">
+        <el-checkbox v-model="checked" class="remember">记住密码</el-checkbox>
+        <router-link :to="{path: '/alteration'}" class="change_password">忘记密码</router-link>
+      </div>
+      <el-button
+        :loading="loading"
+        type="primary"
+        style="width:100%;margin-bottom:20px;"
+        @click.native.prevent="handleLogin"
+      >登录</el-button>
+    </el-form>
+    <div class="footer">
+      <p>
+        <span>© 2022 zettadb.com版权所有</span>
+        <span>泽拓科技（深圳）有限责任公司</span>
+      </p>
       </div>
     </div>
   </div>
@@ -105,7 +105,7 @@
 import {login,change} from "@/api/login/user";
 import Loginheader from '@/components/Loginheader';
 import { messageTip } from "@/utils";
-import { getMetaPrimary,getWorkMode } from "@/api/cluster/list";
+import { getMetaPrimary } from "@/api/cluster/list";
 //import { getMetaPrimary } from "@/api/cluster/listInterface";
 import { v4 as uuidv4 } from 'uuid';
 import {version_arr,timestamp_arr} from "@/utils/global_variable"
@@ -131,43 +131,43 @@ export default {
         callback();
       }
     };
-    // const validateMetaDate = (rule, value, callback) => {
-    //   if (!value) {
-    //     callback(new Error("请输入元数据的IP端口,以英文冒号分割"));
-    //   } else if(value){
-    //     if(value.indexOf(":") != -1 ){
-    //       const arr=value.split(':');
-    //       console.log(arr[0]);
-    //       let regexp = /^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$/;
-    //       let valdata = arr[0].split(',');
-    //       let isCorrect = true;
-    //       if (valdata.length) {
-    //         for (let i = 0; i < valdata.length; i++) {
-    //           if (regexp.test(valdata[i]) == false) {
-    //               isCorrect = false;
-    //           }
-    //         }
-    //       }
-    //       if(!arr[0]){
-    //         callback(new Error('请输入正确的IP'));
-    //       }else if (arr[0]&&!isCorrect) {
-    //         callback(new Error('请输入正确的IP'));
-    //       }else{
-    //         if(!arr[1]){
-    //           callback(new Error("请输入正确的端口"));
-    //         }else if(!(/^[0-9]+$/.test(arr[1])) ) {
-    //           callback(new Error("端口只能输入数字"));
-    //         }else{
-    //           callback();
-    //         }
-    //       }
-    //     }else{
-    //       callback(new Error("请输入正确的元数据IP端口,以英文冒号分割"));
-    //     }
-    //   }else{
-    //     callback();
-    //   }
-    // };
+    const validateMetaDate = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error("请输入元数据的IP端口,以英文冒号分割"));
+      } else if(value){
+        if(value.indexOf(":") != -1 ){
+          const arr=value.split(':');
+          console.log(arr[0]);
+          let regexp = /^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$/;
+          let valdata = arr[0].split(',');
+          let isCorrect = true;
+          if (valdata.length) {
+            for (let i = 0; i < valdata.length; i++) {
+              if (regexp.test(valdata[i]) == false) {
+                  isCorrect = false;
+              }
+            }
+          }
+          if(!arr[0]){
+            callback(new Error('请输入正确的IP'));
+          }else if (arr[0]&&!isCorrect) {
+            callback(new Error('请输入正确的IP'));
+          }else{
+            if(!arr[1]){
+              callback(new Error("请输入正确的端口"));
+            }else if(!(/^[0-9]+$/.test(arr[1])) ) {
+              callback(new Error("端口只能输入数字"));
+            }else{
+              callback();
+            }
+          }
+        }else{
+          callback(new Error("请输入正确的元数据IP端口,以英文冒号分割"));
+        }
+      }else{
+        callback();
+      }
+    };
     // const validateMeta= (rule, value, callback) => {
     //   if (!value) {
     //     callback(new Error("请选择元数据"));
@@ -179,8 +179,8 @@ export default {
       loginForm: {
         username: '',
         password: '',
-        // meta:'',
-        // metaDate:''
+        meta:'',
+        metaDate:''
       },
       loginRules: {
         username: [
@@ -192,9 +192,9 @@ export default {
         // meta: [
         //   { required: true, trigger: "blur", validator: validateMeta }
         // ], 
-        // metaDate: [
-        //   { required: true, trigger: "blur", validator: validateMetaDate }
-        // ],
+        metaDate: [
+          { required: true, trigger: "blur", validator: validateMetaDate }
+        ],
       },
       loading: false,
       passwordType: 'password',
@@ -265,14 +265,13 @@ export default {
       this.$refs.loginForm.validate(async valid => {
         if (valid) {
           //let arr=this.loginForm.meta.substring(0,this.loginForm.meta.length-1).split('(');
-          //let arr=this.loginForm.metaDate.split(':');
+          let arr=this.loginForm.metaDate.split(':');
           //console.log(arr);return;
-          // let post_ip={
-          //   ip:arr[0],
-          //   port:arr[1]
-          // }
-          // let res = await change(post_ip);
-          let res = await change();
+          let post_ip={
+            ip:arr[0],
+            port:arr[1]
+          }
+          let res = await change(post_ip);
           if(res.code==200){
             this.loading = true;
             let post_data = {
@@ -281,7 +280,7 @@ export default {
             };
             let loginRes = await login(post_data);
             if (loginRes.code == 200) {
-              this.goto(loginRes,res.meta_ha_mode);
+              this.goto(loginRes);
             }
             else{
               messageTip(loginRes.message,'error');
@@ -297,61 +296,23 @@ export default {
         }
       });
     },
-    goto(loginRes,meta_ha_mode){
+    goto(loginRes){
       this.loading = false;
-      //console.log(loginRes);
+      console.log(loginRes);
       if(!loginRes.Token){
         messageTip('登录接口没有返回token','error');return;
       }
-      // sessionStorage.setItem('zettadb_vue_token',loginRes.Token);
-       sessionStorage.setItem('zettadb_vue_name',loginRes.userName);
-      // sessionStorage.setItem('meta_ha_mode',meta_ha_mode);
+      sessionStorage.setItem('zettadb_vue_token',loginRes.Token);
+      sessionStorage.setItem('zettadb_vue_name',loginRes.userName);
       let num =loginRes.num;
       if(num==1){
-        //console.log(num);
-        // sessionStorage.setItem('apply_all_cluster',loginRes.apply_all_cluster);
-        // sessionStorage.setItem('affected_clusters',loginRes.affected_clusters);
-        // sessionStorage.setItem('priv',JSON.stringify(loginRes.priv));
-        //区分企业版还是社区版
-        let tempData = {};
-        tempData.user_name = sessionStorage.getItem('login_username');
-        tempData.job_id ='0';
-        tempData.job_type ='get_cluster_detail';
-        tempData.version=version_arr[0].ver;
-        tempData.timestamp=timestamp_arr[0].time+'';
-        let paras={}
-        tempData.paras=paras;
-        //console.log(tempData);
-        //发送接口
-        getWorkMode(tempData).then(response=>{
-          this.isShowNodeMenuPanel=false;
-          let res = response;
-          console.log(res);
-          if(res.hasOwnProperty('attachment')){
-            if(res.attachment!==null){
-              sessionStorage.setItem('work_mode',res.attachment.work_mode);
-            }else if(res.attachment==null){
-              sessionStorage.setItem('work_mode','');
-            }else{
-              this.message_tips = res.error_info;
-              this.message_type = 'error';
-              messageTip(this.message_tips,this.message_type);return;
-            }
-            sessionStorage.setItem('zettadb_vue_token',loginRes.Token);
-            sessionStorage.setItem('meta_ha_mode',meta_ha_mode);
-            sessionStorage.setItem('apply_all_cluster',loginRes.apply_all_cluster);
-            sessionStorage.setItem('affected_clusters',loginRes.affected_clusters);
-            sessionStorage.setItem('priv',JSON.stringify(loginRes.priv));
-            this.$router.push({ path: '/dashboard'})
-          }else{
-            this.message_tips = res.error_info;
-            this.message_type = 'error';
-            messageTip(this.message_tips,this.message_type);
-          }
-        })
+        sessionStorage.setItem('apply_all_cluster',loginRes.apply_all_cluster);
+        sessionStorage.setItem('affected_clusters',loginRes.affected_clusters);
+        sessionStorage.setItem('priv',JSON.stringify(loginRes.priv));
+        //console.log(JSON.parse(sessionStorage.getItem('priv')).backup_priv);
+        this.$router.push({ path: '/dashboard'})
       }
       else{
-        sessionStorage.setItem('zettadb_vue_token',loginRes.Token);
         this.$router.push({ path:'/alteration'})
       }
     }

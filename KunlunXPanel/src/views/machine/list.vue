@@ -36,13 +36,11 @@
       <div class="table-list-wrap"></div>
     </div>
     <el-table
-    ref="multipleTable"
       :key="tableKey"
       v-loading="listLoading"
       :data="list"
       border
       highlight-current-row
-      :row-class-name="colorStyle"
       style="width: 100%;margin-bottom: 20px;">
       <el-table-column
         type="index"
@@ -87,13 +85,8 @@
       <el-table-column
         prop="node_stats"
         align="center"
-        label="状态" width="170">
+        label="状态">
         <template slot-scope="scope">
-          <!-- @focus="getDatalist(scope.row.node_stats)" -->
-          <!-- <el-select  ref="node_stats" v-model="scope.row.node_stats"  placeholder="请选择"  @change="chageTextColor($event,'node_stats',scope.row,scope.$index)">
-            <el-option v-for="item in nodeStatsList" :key="item.id" :label="item.label" :value="item.id" v-html="'<span style=color:'+item.color+'>'+item.label+'</span>'">
-            </el-option>
-          </el-select> -->
           <span v-if="scope.row.node_stats==='running'" style="color: #00ed37">在线</span>
           <span v-else-if="scope.row.node_stats==='idle'" style="color: #c7c9d1;">不允许再装实例</span>
           <span v-else-if="scope.row.node_stats==='dead'" style="color: red">离线</span>
@@ -271,11 +264,11 @@
 </template>
 <script>
  import { messageTip,handleCofirm,getNowDate } from "@/utils";
- import { getMachineList,getNodes,addMachine,delMachine,importData,setMachineStatus} from '@/api/machine/list'
+ import { getMachineList,getNodes,addMachine,delMachine,importData} from '@/api/machine/list'
  import { pgEnable,getEvStatus } from '@/api/cluster/list'
  //import {addMachine,delMachine,getEvStatus,pEnable,update} from '@/api/machine/listInterface'
  import {getAllMachineStatus} from '@/api/cluster/listInterface'
- import {version_arr,timestamp_arr,machine_type_arr,node_stats_arr} from "@/utils/global_variable"
+ import {version_arr,timestamp_arr,machine_type_arr} from "@/utils/global_variable"
  import Pagination from '@/components/Pagination' 
  //import { v4 as uuidv4 } from 'uuid';
  // { color } from 'echarts/lib/export';
@@ -405,7 +398,6 @@ export default {
         hostaddr: '',
       },
       machine_types:machine_type_arr,
-      nodeStatsList:node_stats_arr,
       temp: {
         hostaddr: '',
         rack_id:'',
@@ -495,55 +487,6 @@ export default {
     this.getList()
   },
   methods:{
-    colorStyle({row,rowIndex}){
-      this.$nextTick(()=>{ 
-        // this.$refs.multipleTable.$el.children[2].children[0].children[1].children[rowIndex].children[6].children[0].children[0].children[0].children[0].style.color=''+ row.node_stats_color+'';
-      });
-    },
-    chageTextColor($event, selectedRef,row,index) {
-       //设置机器的状态
-        // const temp={};
-        // const paras={};
-        // temp.user_name=sessionStorage.getItem('login_username');
-        // temp.job_id='';
-        // temp.version=version_arr[0].ver;
-        // temp.timestamp=timestamp_arr[0].time+'';
-        // temp.job_type='set_machine';
-        // //必填项
-        // paras.hostaddr=row.hostaddr;
-        // paras.node_stats=row.node_stats;
-        // temp.paras=paras;
-        // setMachineStatus(temp).then(response=>{
-        //   let res = response;
-        //   if(res.status=='accept'){
-        //   }else if(res.status=='ongoing'){
-        //     this.message_tips = '系统正在操作中，请等待一会！';
-        //     this.message_type = 'error';
-        //     messageTip(this.message_tips,this.message_type);
-        //   }else{
-        //     this.message_tips = res.error_info;
-        //     this.message_type = 'error';
-        //     messageTip(this.message_tips,this.message_type);
-        //   }
-        // })
-      let color = this.getColor($event)
-      // 改变下拉框颜色值
-      //console.log(this.$refs.multipleTable.$el.children[2].children[0].children[1].children[index].children[6].children[0].children[0].children[0].children[0].style.color)
-      //this.$refs[selectedRef].$el.children[0].children[0].style.color = '' + color + ''
-      //this.$nextTick(()=>{ 
-        //console.log(this.$refs.multipleTable.$el.children[2].children[0].children[1].children[index].children[6].children[0].children[0].children[0].children[0].style.color);
-        this.$refs.multipleTable.$el.children[2].children[0].children[1].children[index].children[6].children[0].children[0].children[0].children[0].style.color=''+color+'';
-        //console.log(this.$refs.multipleTable.$el.children[2].children[0].children[1].children[index].children[6].children[0].children[0].children[0].children[0].style.color);
-      //});
-      
-    },
-    getColor(value) {
-      for (const i in this.nodeStatsList) {
-        if (this.nodeStatsList[i].id === value) {
-          return this.nodeStatsList[i].color
-        }
-      }
-    },
   //清除定时器
   beforeDestory(){
     clearInterval(this.timer)
@@ -963,20 +906,8 @@ export default {
   },
 };
 </script>
-<style >
+<style scoped>
 .right_input_min{
   width:25%;
 }
-/* .el-table .el-input__inner{
-  color: #00ed37;
-} */
-/* .el-table .el-input__inner .cell-green{
-  color: #00ed37;
-}
- .el-table .el-input__inner .cell-red{
-  color: red;
-}
- .el-table .el-input__inner .cell-grey{
-  color: #c7c9d1;
-} */
 </style>

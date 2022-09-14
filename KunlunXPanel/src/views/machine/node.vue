@@ -42,12 +42,11 @@ export default {
       compnode:require('@/assets/images/compnode.png'),
       comps:require('@/assets/images/compnode.png'),
       isShowNodeTipsPanel: false,
-      nodeMenuPanelPosition: { x: 0, y: 0 },
-      shardName:false,
+       nodeMenuPanelPosition: { x: 0, y: 0 },
+       shardName:false,
       currentCase: '横向树状图谱',
       isShowCodePanel: false,
       graphOptions: {
-        'disableDragNode':true,//是否禁用图谱中节点的拖动
         //'backgrounImage': 'http://ai-mark.cn/images/ai-mark-desc.png',
         'backgrounImageNoRepeat': true,
         'layouts': [
@@ -58,8 +57,8 @@ export default {
             // 'defaultJunctionPoint': 'border',
             'defaultNodeShape': 0,
             // 'defaultLineShape': 4,
-            'min_per_width': 120,
-            'max_per_width': 120,
+            'min_per_width': 40,
+            'max_per_width': 70,
             'min_per_height':180
           }
         ],

@@ -204,7 +204,6 @@ export default {
       checkAll: false,
       isIndeterminate: false,
       shardList:[],
-      timer:null,
       rules: {
         nick_name: [
           { required: true, trigger: "blur",validator: validateCheckedCluster },
@@ -437,8 +436,8 @@ export default {
               this.message_type = 'success';
               //调获取状态接口
               let i=0;
-              this.timer = setInterval(() => {
-                this.getStatus(this.timer,res.job_id,i++)
+              let timer = setInterval(() => {
+                this.getStatus(timer,res.job_id,i++)
               }, 1000)
             }else if(res.status=='ongoing'){
               this.message_tips = '系统正在操作中，请等待一会！';

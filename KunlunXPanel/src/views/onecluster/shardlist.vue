@@ -311,7 +311,7 @@ export default {
     };
     return {
       tableKey: 0,
-      list: null,
+      list: [],
       listLoading: true,
       searchLoading:false,
       total: 0,

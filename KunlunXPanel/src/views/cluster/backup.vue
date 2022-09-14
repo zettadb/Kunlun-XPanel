@@ -32,6 +32,7 @@
       border
       highlight-current-row
       style="width: 100%;margin-bottom: 20px;">
+    >
       <el-table-column
         type="index"
         align="center"

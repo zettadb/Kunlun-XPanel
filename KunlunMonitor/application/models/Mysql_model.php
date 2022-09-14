@@ -309,7 +309,7 @@ class Mysql_model extends CI_Model {
 },
 "gridPos": {
 "h": 4,
-"w": 5,
+"w": 4,
 "x": 4,
 "y": 0
 },
@@ -383,8 +383,8 @@ class Mysql_model extends CI_Model {
 },
 "gridPos": {
 	"h": 4,
-"w": 4,
-"x": 9,
+"w": 3,
+"x": 8,
 "y": 0
 },
 "id": 405,
@@ -413,6 +413,88 @@ class Mysql_model extends CI_Model {
 ],
 "title": "Current TPS",
 "type": "gauge"
+},
+{
+	"cacheTimeout": null,
+"datasource": "Prometheus",
+"description": "**InnoDB Buffer Pool Size**\n\nInnoDB maintains a storage area called the buffer pool for caching data and indexes in memory.  Knowing how the InnoDB buffer pool works, and taking advantage of it to keep frequently accessed data in memory, is one of the most important aspects of MySQL tuning. The goal is to keep the working set in memory. In most cases, this should be between 60%-90% of available memory on a dedicated database host, but depends on many factors.",
+"fieldConfig": {
+	"defaults": {
+		"color": {
+			"mode": "thresholds"
+},
+"decimals": 0,
+"mappings": [],
+"thresholds": {
+			"mode": "absolute",
+"steps": [
+{
+	"color": "rgba(50, 172, 45, 0.97)",
+"value": null
+},
+{
+	"color": "rgba(237, 129, 40, 0.89)",
+"value": 90
+},
+{
+	"color": "rgba(245, 54, 54, 0.9)",
+"value": 95
+}
+]
+},
+"unit": "bytes"
+},
+"overrides": []
+},
+"gridPos": {
+	"h": 4,
+"w": 3,
+"x": 11,
+"y": 0
+},
+"id": 51,
+"interval": "$interval",
+"links": [
+{
+	"targetBlank": true,
+"title": "Tuning the InnoDB Buffer Pool Size",
+"url": "https://www.percona.com/blog/2015/06/02/80-ram-tune-innodb_buffer_pool_size/"
+}
+],
+"maxDataPoints": 100,
+"options": {
+	"colorMode": "none",
+"graphMode": "none",
+"justifyMode": "auto",
+"orientation": "horizontal",
+"reduceOptions": {
+		"calcs": [
+			"lastNotNull"
+		],
+"fields": "",
+"values": false
+},
+"text": {},
+"textMode": "auto"
+},
+"pluginVersion": "8.2.1",
+"targets": [
+{
+	"calculatedInterval": "10m",
+"datasourceErrors": {},
+"errors": {},
+"expr": "mysql_global_variables_innodb_buffer_pool_size{instance=~\"'.$host.'\"}",
+"format": "time_series",
+"interval": "5m",
+"intervalFactor": 1,
+"legendFormat": "",
+"metric": "",
+"refId": "A",
+"step": 300
+}
+],
+"title": "InnoDB Buffer Pool",
+"type": "stat"
 },
 {
 	"cacheTimeout": null,
@@ -449,8 +531,8 @@ class Mysql_model extends CI_Model {
 },
 "gridPos": {
 	"h": 4,
-"w": 4,
-"x": 13,
+"w": 3,
+"x": 14,
 "y": 0
 },
 "id": 396,
@@ -690,414 +772,212 @@ class Mysql_model extends CI_Model {
 "type": "stat"
 },
 {
-      "cacheTimeout": null,
-      "datasource": "Prometheus",
-      "description": "**InnoDB Buffer Pool Size**\n\nInnoDB maintains a storage area called the buffer pool for caching data and indexes in memory.  Knowing how the InnoDB buffer pool works, and taking advantage of it to keep frequently accessed data in memory, is one of the most important aspects of MySQL tuning. The goal is to keep the working set in memory. In most cases, this should be between 60%-90% of available memory on a dedicated database host, but depends on many factors.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "decimals": 0,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "rgba(50, 172, 45, 0.97)",
-                "value": null
-              },
-              {
-                "color": "rgba(237, 129, 40, 0.89)",
-                "value": 90
-              },
-              {
-                "color": "rgba(245, 54, 54, 0.9)",
-                "value": 95
-              }
-            ]
-          },
-          "unit": "bytes"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 0,
-        "y": 4
-      },
-      "id": 51,
-      "interval": "$interval",
-      "links": [
-        {
-          "targetBlank": true,
-          "title": "Tuning the InnoDB Buffer Pool Size",
-          "url": "https://www.percona.com/blog/2015/06/02/80-ram-tune-innodb_buffer_pool_size/"
-        }
-      ],
-      "maxDataPoints": 100,
-      "options": {
-        "colorMode": "none",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "8.2.1",
-      "targets": [
-        {
-          "calculatedInterval": "10m",
-          "datasourceErrors": {},
-          "errors": {},
-          "exemplar": true,
-          "expr": "mysql_global_variables_innodb_buffer_pool_size{instance=~\"'.$host.'\"}",
-          "format": "time_series",
-          "interval": "5m",
-          "intervalFactor": 1,
-          "legendFormat": "",
-          "metric": "",
-          "refId": "A",
-          "step": 300
-        }
-      ],
-      "title": "InnoDB Buffer Pool",
-      "type": "stat"
-    },
-    {
-      "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 9,
-        "x": 6,
-        "y": 4
-      },
-      "id": 407,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "8.2.1",
-      "targets": [
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_fullsync_consistency_level{instance=~\"'.$host.'\"}",
-          "interval": "",
-          "legendFormat": "",
-          "refId": "A"
-        }
-      ],
-      "title": "Fullsync Consistency Level",
-      "type": "stat"
-    },
-    {
-      "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 9,
-        "x": 15,
-        "y": 4
-      },
-      "id": 409,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "8.2.1",
-      "targets": [
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_fullsync_relaylog_fsync_ack_level{instance=\"'.$host.'\"}",
-          "interval": "",
-          "legendFormat": "",
-          "refId": "A"
-        }
-      ],
-      "title": "Fullsync Relaylog Fsync Ack Level",
-      "type": "stat"
-    },
-    {
-      "datasource": "Prometheus",
-      "description": "show thread pool status",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 2,
-            "scaleDistribution": {
-              "log": 2,
-              "type": "log"
-            },
-            "showPoints": "always",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "area"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "stall_limit"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "super-light-red",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 24,
-        "x": 0,
-        "y": 8
-      },
-      "id": 403,
-      "options": {
-        "legend": {
-          "calcs": [
-            "min",
-            "max"
-          ],
-          "displayMode": "table",
-          "placement": "right"
-        },
-        "tooltip": {
-          "mode": "multi"
-        }
-      },
-      "targets": [
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_thread_pool_eager_mode{instance=~\"'.$host.'\"} ",
-          "interval": "",
-          "legendFormat": "eager_mode",
-          "refId": "A"
-        },
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_thread_pool_idle_timeout{instance=~\"'.$host.'\"} ",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "idle_timeout",
-          "refId": "C"
-        },
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_thread_pool_listen_eager_mode{instance=~\"'.$host.'\"} ",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "listen_eager_mode",
-          "refId": "D"
-        },
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_thread_pool_max_threads{instance=~\"'.$host.'\"}",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "max_threads",
-          "refId": "E"
-        },
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_thread_pool_oversubscribe{instance=~\"'.$host.'\"} ",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "oversubscribe",
-          "refId": "F"
-        },
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_thread_pool_oversubscribe_congest{instance=~\"'.$host.'\"} ",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "oversubscribe_congest",
-          "refId": "G"
-        },
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_thread_pool_queue_congest_nwaiters{instance=~\"'.$host.'\"} ",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "queue_congest_nwaiters",
-          "refId": "B"
-        },
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_thread_pool_queue_congest_req_timeout{instance=~\"'.$host.'\"} ",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "eue_congest_req_timeout ",
-          "refId": "H"
-        },
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_thread_pool_size{instance=~\"'.$host.'\"}",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "size",
-          "refId": "I"
-        },
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_thread_pool_stall_limit{instance=~\"'.$host.'\"} ",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "stall_limit",
-          "refId": "J"
-        }
-      ],
-      "title": "Thread Pool",
-      "type": "timeseries"
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "Prometheus",
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 14
-      },
-      "hiddenSeries": false,
-      "id": 401,
-      "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": false,
-        "max": true,
-        "min": true,
-        "rightSide": true,
-        "show": true,
-        "total": false,
-        "values": true
-      },
+	"datasource": "Prometheus",
+"description": "show thread pool status",
+"fieldConfig": {
+	"defaults": {
+		"color": {
+			"mode": "palette-classic"
+},
+"custom": {
+			"axisLabel": "",
+"axisPlacement": "auto",
+"barAlignment": 0,
+"drawStyle": "line",
+"fillOpacity": 0,
+"gradientMode": "none",
+"hideFrom": {
+				"legend": false,
+"tooltip": false,
+"viz": false
+},
+"lineInterpolation": "linear",
+"lineWidth": 1,
+"pointSize": 2,
+"scaleDistribution": {
+				"log": 2,
+"type": "log"
+},
+"showPoints": "always",
+"spanNulls": false,
+"stacking": {
+				"group": "A",
+"mode": "none"
+},
+"thresholdsStyle": {
+				"mode": "area"
+}
+},
+"mappings": [],
+"thresholds": {
+			"mode": "absolute",
+"steps": [
+{
+	"color": "green",
+"value": null
+},
+{
+	"color": "red",
+"value": 80
+}
+]
+}
+},
+"overrides": [
+{
+	"matcher": {
+	"id": "byName",
+"options": "stall_limit"
+},
+"properties": [
+{
+	"id": "color",
+"value": {
+	"fixedColor": "super-light-red",
+"mode": "fixed"
+}
+}
+]
+}
+]
+},
+"gridPos": {
+	"h": 6,
+"w": 24,
+"x": 0,
+"y": 4
+},
+"id": 403,
+"options": {
+	"legend": {
+		"calcs": [
+			"min",
+			"max"
+		],
+"displayMode": "table",
+"placement": "right"
+},
+"tooltip": {
+		"mode": "multi"
+}
+},
+"targets": [
+{
+	"exemplar": true,
+"expr": "mysql_global_variables_thread_pool_eager_mode{instance=~\"'.$host.'\"} ",
+"interval": "",
+"legendFormat": "eager_mode",
+"refId": "A"
+},
+{
+	"exemplar": true,
+"expr": "mysql_global_variables_thread_pool_idle_timeout{instance=~\"'.$host.'\"} ",
+"hide": false,
+"interval": "",
+"legendFormat": "idle_timeout",
+"refId": "C"
+},
+{
+	"exemplar": true,
+"expr": "mysql_global_variables_thread_pool_listen_eager_mode{instance=~\"'.$host.'\"} ",
+"hide": false,
+"interval": "",
+"legendFormat": "listen_eager_mode",
+"refId": "D"
+},
+{
+	"exemplar": true,
+"expr": "mysql_global_variables_thread_pool_max_threads{instance=~\"'.$host.'\"}",
+"hide": false,
+"interval": "",
+"legendFormat": "max_threads",
+"refId": "E"
+},
+{
+	"exemplar": true,
+"expr": "mysql_global_variables_thread_pool_oversubscribe{instance=~\"'.$host.'\"} ",
+"hide": false,
+"interval": "",
+"legendFormat": "oversubscribe",
+"refId": "F"
+},
+{
+	"exemplar": true,
+"expr": "mysql_global_variables_thread_pool_oversubscribe_congest{instance=~\"'.$host.'\"} ",
+"hide": false,
+"interval": "",
+"legendFormat": "oversubscribe_congest",
+"refId": "G"
+},
+{
+	"exemplar": true,
+"expr": "mysql_global_variables_thread_pool_queue_congest_nwaiters{instance=~\"'.$host.'\"} ",
+"hide": false,
+"interval": "",
+"legendFormat": "queue_congest_nwaiters",
+"refId": "B"
+},
+{
+	"exemplar": true,
+"expr": "mysql_global_variables_thread_pool_queue_congest_req_timeout{instance=~\"'.$host.'\"} ",
+"hide": false,
+"interval": "",
+"legendFormat": "eue_congest_req_timeout ",
+"refId": "H"
+},
+{
+	"exemplar": true,
+"expr": "mysql_global_variables_thread_pool_size{instance=~\"'.$host.'\"}",
+"hide": false,
+"interval": "",
+"legendFormat": "size",
+"refId": "I"
+},
+{
+	"exemplar": true,
+"expr": "mysql_global_variables_thread_pool_stall_limit{instance=~\"'.$host.'\"} ",
+"hide": false,
+"interval": "",
+"legendFormat": "stall_limit",
+"refId": "J"
+}
+],
+"title": "Thread Pool",
+"type": "timeseries"
+},
+{
+	"aliasColors": {},
+"bars": false,
+"dashLength": 10,
+"dashes": false,
+"datasource": "Prometheus",
+"fieldConfig": {
+	"defaults": {
+		"unit": "short"
+},
+"overrides": []
+},
+"fill": 1,
+"fillGradient": 0,
+"gridPos": {
+	"h": 8,
+"w": 24,
+"x": 0,
+"y": 10
+},
+"hiddenSeries": false,
+"id": 401,
+"legend": {
+	"alignAsTable": true,
+"avg": true,
+"current": false,
+"max": true,
+"min": true,
+"rightSide": true,
+"show": true,
+"total": false,
+"values": true
+},
 "lines": true,
 "linewidth": 2,
 "nullPointMode": "null",
@@ -1332,7 +1212,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 22
+"y": 18
 },
 "id": 382,
 "panels": [],
@@ -1359,7 +1239,7 @@ class Mysql_model extends CI_Model {
 	"h": 6,
 "w": 24,
 "x": 0,
-"y": 23
+"y": 19
 },
 "hiddenSeries": false,
 "id": 399,
@@ -1478,7 +1358,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 29
+"y": 25
 },
 "id": 383,
 "panels": [],
@@ -1509,7 +1389,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 30
+"y": 26
 },
 "height": "250px",
 "hiddenSeries": false,
@@ -1661,7 +1541,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 30
+"y": 26
 },
 "hiddenSeries": false,
 "id": 10,
@@ -1799,7 +1679,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 37
+"y": 33
 },
 "id": 384,
 "panels": [],
@@ -1830,7 +1710,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 38
+"y": 34
 },
 "hiddenSeries": false,
 "id": 53,
@@ -1947,7 +1827,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 38
+"y": 34
 },
 "hiddenSeries": false,
 "id": 11,
@@ -2078,7 +1958,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 45
+"y": 41
 },
 "id": 385,
 "panels": [],
@@ -2108,7 +1988,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 46
+"y": 42
 },
 "hiddenSeries": false,
 "id": 22,
@@ -2242,7 +2122,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 46
+"y": 42
 },
 "height": "250px",
 "hiddenSeries": false,
@@ -2391,7 +2271,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 53
+"y": 49
 },
 "id": 386,
 "panels": [],
@@ -2422,7 +2302,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 54
+"y": 50
 },
 "hiddenSeries": false,
 "id": 30,
@@ -2573,7 +2453,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 54
+"y": 50
 },
 "hiddenSeries": false,
 "id": 48,
@@ -2669,7 +2549,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 61
+"y": 57
 },
 "id": 387,
 "panels": [],
@@ -2700,7 +2580,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 62
+"y": 58
 },
 "hiddenSeries": false,
 "id": 47,
@@ -2826,7 +2706,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 62
+"y": 58
 },
 "hiddenSeries": false,
 "id": 32,
@@ -2934,7 +2814,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 69
+"y": 65
 },
 "id": 388,
 "panels": [],
@@ -2965,7 +2845,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 70
+"y": 66
 },
 "hiddenSeries": false,
 "id": 9,
@@ -3089,7 +2969,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 70
+"y": 66
 },
 "height": "250px",
 "hiddenSeries": false,
@@ -3198,7 +3078,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 77
+"y": 73
 },
 "id": 389,
 "panels": [],
@@ -3229,7 +3109,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 24,
 "x": 0,
-"y": 78
+"y": 74
 },
 "hiddenSeries": false,
 "id": 50,
@@ -3407,7 +3287,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 85
+"y": 81
 },
 "id": 390,
 "panels": [],
@@ -3438,7 +3318,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 24,
 "x": 0,
-"y": 86
+"y": 82
 },
 "hiddenSeries": false,
 "id": 14,
@@ -3557,7 +3437,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 24,
 "x": 0,
-"y": 93
+"y": 89
 },
 "hiddenSeries": false,
 "id": 39,
@@ -3673,7 +3553,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 24,
 "x": 0,
-"y": 100
+"y": 96
 },
 "hiddenSeries": false,
 "id": 8,
@@ -3784,7 +3664,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 24,
 "x": 0,
-"y": 107
+"y": 103
 },
 "hiddenSeries": false,
 "id": 28,
@@ -3891,7 +3771,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 24,
 "x": 0,
-"y": 114
+"y": 110
 },
 "hiddenSeries": false,
 "id": 40,
@@ -3999,7 +3879,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 24,
 "x": 0,
-"y": 121
+"y": 117
 },
 "hiddenSeries": false,
 "id": 49,
@@ -4091,7 +3971,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 128
+"y": 124
 },
 "id": 391,
 "panels": [],
@@ -4122,7 +4002,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 129
+"y": 125
 },
 "hiddenSeries": false,
 "id": 46,
@@ -4243,7 +4123,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 129
+"y": 125
 },
 "height": "",
 "hiddenSeries": false,
@@ -4388,7 +4268,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 136
+"y": 132
 },
 "id": 392,
 "panels": [],
@@ -4418,7 +4298,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 137
+"y": 133
 },
 "hiddenSeries": false,
 "id": 43,
@@ -4524,7 +4404,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 137
+"y": 133
 },
 "hiddenSeries": false,
 "id": 41,
@@ -4635,7 +4515,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 144
+"y": 140
 },
 "id": 393,
 "panels": [],
@@ -4666,7 +4546,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 145
+"y": 141
 },
 "hiddenSeries": false,
 "id": 44,
@@ -4820,7 +4700,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 145
+"y": 141
 },
 "hiddenSeries": false,
 "id": 42,
@@ -4930,7 +4810,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 152
+"y": 148
 },
 "id": 394,
 "panels": [],
@@ -4961,7 +4841,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 24,
 "x": 0,
-"y": 153
+"y": 149
 },
 "hiddenSeries": false,
 "id": 54,
@@ -5085,7 +4965,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 160
+"y": 156
 },
 "id": 395,
 "panels": [],
@@ -5115,7 +4995,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 161
+"y": 157
 },
 "hiddenSeries": false,
 "id": 31,
@@ -5239,7 +5119,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 161
+"y": 157
 },
 "height": "250px",
 "hiddenSeries": false,
@@ -5400,7 +5280,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 168
+"y": 164
 },
 "height": "",
 "hiddenSeries": false,
@@ -5547,7 +5427,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 168
+"y": 164
 },
 "height": "250px",
 "hiddenSeries": false,
@@ -5674,7 +5554,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 175
+"y": 171
 },
 "height": "250px",
 "hiddenSeries": false,
@@ -5804,7 +5684,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 175
+"y": 171
 },
 "hiddenSeries": false,
 "id": 38,
@@ -5910,7 +5790,9 @@ class Mysql_model extends CI_Model {
 },
 "folderId": 0,
 "overwrite": false
-}';
+}
+';
+		//var_dump(json_decode($res, true));exit;
 		return $res;
 	}
 	public function  updateMysqlJSON($host,$id,$uid,$db_title,$db_version){
@@ -6213,7 +6095,7 @@ class Mysql_model extends CI_Model {
 },
 "gridPos": {
 "h": 4,
-"w": 5,
+"w": 4,
 "x": 4,
 "y": 0
 },
@@ -6287,8 +6169,8 @@ class Mysql_model extends CI_Model {
 },
 "gridPos": {
 	"h": 4,
-"w": 4,
-"x": 9,
+"w": 3,
+"x": 8,
 "y": 0
 },
 "id": 405,
@@ -6317,6 +6199,88 @@ class Mysql_model extends CI_Model {
 ],
 "title": "Current TPS",
 "type": "gauge"
+},
+{
+	"cacheTimeout": null,
+"datasource": "Prometheus",
+"description": "**InnoDB Buffer Pool Size**\n\nInnoDB maintains a storage area called the buffer pool for caching data and indexes in memory.  Knowing how the InnoDB buffer pool works, and taking advantage of it to keep frequently accessed data in memory, is one of the most important aspects of MySQL tuning. The goal is to keep the working set in memory. In most cases, this should be between 60%-90% of available memory on a dedicated database host, but depends on many factors.",
+"fieldConfig": {
+	"defaults": {
+		"color": {
+			"mode": "thresholds"
+},
+"decimals": 0,
+"mappings": [],
+"thresholds": {
+			"mode": "absolute",
+"steps": [
+{
+	"color": "rgba(50, 172, 45, 0.97)",
+"value": null
+},
+{
+	"color": "rgba(237, 129, 40, 0.89)",
+"value": 90
+},
+{
+	"color": "rgba(245, 54, 54, 0.9)",
+"value": 95
+}
+]
+},
+"unit": "bytes"
+},
+"overrides": []
+},
+"gridPos": {
+	"h": 4,
+"w": 3,
+"x": 11,
+"y": 0
+},
+"id": 51,
+"interval": "$interval",
+"links": [
+{
+	"targetBlank": true,
+"title": "Tuning the InnoDB Buffer Pool Size",
+"url": "https://www.percona.com/blog/2015/06/02/80-ram-tune-innodb_buffer_pool_size/"
+}
+],
+"maxDataPoints": 100,
+"options": {
+	"colorMode": "none",
+"graphMode": "none",
+"justifyMode": "auto",
+"orientation": "horizontal",
+"reduceOptions": {
+		"calcs": [
+			"lastNotNull"
+		],
+"fields": "",
+"values": false
+},
+"text": {},
+"textMode": "auto"
+},
+"pluginVersion": "8.2.1",
+"targets": [
+{
+	"calculatedInterval": "10m",
+"datasourceErrors": {},
+"errors": {},
+"expr": "mysql_global_variables_innodb_buffer_pool_size{instance=~\"'.$host.'\"}",
+"format": "time_series",
+"interval": "5m",
+"intervalFactor": 1,
+"legendFormat": "",
+"metric": "",
+"refId": "A",
+"step": 300
+}
+],
+"title": "InnoDB Buffer Pool",
+"type": "stat"
 },
 {
 	"cacheTimeout": null,
@@ -6353,8 +6317,8 @@ class Mysql_model extends CI_Model {
 },
 "gridPos": {
 	"h": 4,
-"w": 4,
-"x": 13,
+"w": 3,
+"x": 14,
 "y": 0
 },
 "id": 396,
@@ -6594,414 +6558,212 @@ class Mysql_model extends CI_Model {
 "type": "stat"
 },
 {
-      "cacheTimeout": null,
-      "datasource": "Prometheus",
-      "description": "**InnoDB Buffer Pool Size**\n\nInnoDB maintains a storage area called the buffer pool for caching data and indexes in memory.  Knowing how the InnoDB buffer pool works, and taking advantage of it to keep frequently accessed data in memory, is one of the most important aspects of MySQL tuning. The goal is to keep the working set in memory. In most cases, this should be between 60%-90% of available memory on a dedicated database host, but depends on many factors.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "decimals": 0,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "rgba(50, 172, 45, 0.97)",
-                "value": null
-              },
-              {
-                "color": "rgba(237, 129, 40, 0.89)",
-                "value": 90
-              },
-              {
-                "color": "rgba(245, 54, 54, 0.9)",
-                "value": 95
-              }
-            ]
-          },
-          "unit": "bytes"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 0,
-        "y": 4
-      },
-      "id": 51,
-      "interval": "$interval",
-      "links": [
-        {
-          "targetBlank": true,
-          "title": "Tuning the InnoDB Buffer Pool Size",
-          "url": "https://www.percona.com/blog/2015/06/02/80-ram-tune-innodb_buffer_pool_size/"
-        }
-      ],
-      "maxDataPoints": 100,
-      "options": {
-        "colorMode": "none",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "8.2.1",
-      "targets": [
-        {
-          "calculatedInterval": "10m",
-          "datasourceErrors": {},
-          "errors": {},
-          "exemplar": true,
-          "expr": "mysql_global_variables_innodb_buffer_pool_size{instance=~\"'.$host.'\"}",
-          "format": "time_series",
-          "interval": "5m",
-          "intervalFactor": 1,
-          "legendFormat": "",
-          "metric": "",
-          "refId": "A",
-          "step": 300
-        }
-      ],
-      "title": "InnoDB Buffer Pool",
-      "type": "stat"
-    },
-    {
-      "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 9,
-        "x": 6,
-        "y": 4
-      },
-      "id": 407,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "8.2.1",
-      "targets": [
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_fullsync_consistency_level{instance=~\"'.$host.'\"}",
-          "interval": "",
-          "legendFormat": "",
-          "refId": "A"
-        }
-      ],
-      "title": "Fullsync Consistency Level",
-      "type": "stat"
-    },
-    {
-      "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 9,
-        "x": 15,
-        "y": 4
-      },
-      "id": 409,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "8.2.1",
-      "targets": [
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_fullsync_relaylog_fsync_ack_level{instance=\"'.$host.'\"}",
-          "interval": "",
-          "legendFormat": "",
-          "refId": "A"
-        }
-      ],
-      "title": "Fullsync Relaylog Fsync Ack Level",
-      "type": "stat"
-    },
-    {
-      "datasource": "Prometheus",
-      "description": "show thread pool status",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 2,
-            "scaleDistribution": {
-              "log": 2,
-              "type": "log"
-            },
-            "showPoints": "always",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "area"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "stall_limit"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "super-light-red",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 24,
-        "x": 0,
-        "y": 8
-      },
-      "id": 403,
-      "options": {
-        "legend": {
-          "calcs": [
-            "min",
-            "max"
-          ],
-          "displayMode": "table",
-          "placement": "right"
-        },
-        "tooltip": {
-          "mode": "multi"
-        }
-      },
-      "targets": [
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_thread_pool_eager_mode{instance=~\"'.$host.'\"} ",
-          "interval": "",
-          "legendFormat": "eager_mode",
-          "refId": "A"
-        },
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_thread_pool_idle_timeout{instance=~\"'.$host.'\"} ",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "idle_timeout",
-          "refId": "C"
-        },
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_thread_pool_listen_eager_mode{instance=~\"'.$host.'\"} ",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "listen_eager_mode",
-          "refId": "D"
-        },
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_thread_pool_max_threads{instance=~\"'.$host.'\"}",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "max_threads",
-          "refId": "E"
-        },
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_thread_pool_oversubscribe{instance=~\"'.$host.'\"} ",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "oversubscribe",
-          "refId": "F"
-        },
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_thread_pool_oversubscribe_congest{instance=~\"'.$host.'\"} ",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "oversubscribe_congest",
-          "refId": "G"
-        },
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_thread_pool_queue_congest_nwaiters{instance=~\"'.$host.'\"} ",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "queue_congest_nwaiters",
-          "refId": "B"
-        },
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_thread_pool_queue_congest_req_timeout{instance=~\"'.$host.'\"} ",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "eue_congest_req_timeout ",
-          "refId": "H"
-        },
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_thread_pool_size{instance=~\"'.$host.'\"}",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "size",
-          "refId": "I"
-        },
-        {
-          "exemplar": true,
-          "expr": "mysql_global_variables_thread_pool_stall_limit{instance=~\"'.$host.'\"} ",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "stall_limit",
-          "refId": "J"
-        }
-      ],
-      "title": "Thread Pool",
-      "type": "timeseries"
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "Prometheus",
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 14
-      },
-      "hiddenSeries": false,
-      "id": 401,
-      "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": false,
-        "max": true,
-        "min": true,
-        "rightSide": true,
-        "show": true,
-        "total": false,
-        "values": true
-      },
+	"datasource": "Prometheus",
+"description": "show thread pool status",
+"fieldConfig": {
+	"defaults": {
+		"color": {
+			"mode": "palette-classic"
+},
+"custom": {
+			"axisLabel": "",
+"axisPlacement": "auto",
+"barAlignment": 0,
+"drawStyle": "line",
+"fillOpacity": 0,
+"gradientMode": "none",
+"hideFrom": {
+				"legend": false,
+"tooltip": false,
+"viz": false
+},
+"lineInterpolation": "linear",
+"lineWidth": 1,
+"pointSize": 2,
+"scaleDistribution": {
+				"log": 2,
+"type": "log"
+},
+"showPoints": "always",
+"spanNulls": false,
+"stacking": {
+				"group": "A",
+"mode": "none"
+},
+"thresholdsStyle": {
+				"mode": "area"
+}
+},
+"mappings": [],
+"thresholds": {
+			"mode": "absolute",
+"steps": [
+{
+	"color": "green",
+"value": null
+},
+{
+	"color": "red",
+"value": 80
+}
+]
+}
+},
+"overrides": [
+{
+	"matcher": {
+	"id": "byName",
+"options": "stall_limit"
+},
+"properties": [
+{
+	"id": "color",
+"value": {
+	"fixedColor": "super-light-red",
+"mode": "fixed"
+}
+}
+]
+}
+]
+},
+"gridPos": {
+	"h": 6,
+"w": 24,
+"x": 0,
+"y": 4
+},
+"id": 403,
+"options": {
+	"legend": {
+		"calcs": [
+			"min",
+			"max"
+		],
+"displayMode": "table",
+"placement": "right"
+},
+"tooltip": {
+		"mode": "multi"
+}
+},
+"targets": [
+{
+	"exemplar": true,
+"expr": "mysql_global_variables_thread_pool_eager_mode{instance=~\"'.$host.'\"} ",
+"interval": "",
+"legendFormat": "eager_mode",
+"refId": "A"
+},
+{
+	"exemplar": true,
+"expr": "mysql_global_variables_thread_pool_idle_timeout{instance=~\"'.$host.'\"} ",
+"hide": false,
+"interval": "",
+"legendFormat": "idle_timeout",
+"refId": "C"
+},
+{
+	"exemplar": true,
+"expr": "mysql_global_variables_thread_pool_listen_eager_mode{instance=~\"'.$host.'\"} ",
+"hide": false,
+"interval": "",
+"legendFormat": "listen_eager_mode",
+"refId": "D"
+},
+{
+	"exemplar": true,
+"expr": "mysql_global_variables_thread_pool_max_threads{instance=~\"'.$host.'\"}",
+"hide": false,
+"interval": "",
+"legendFormat": "max_threads",
+"refId": "E"
+},
+{
+	"exemplar": true,
+"expr": "mysql_global_variables_thread_pool_oversubscribe{instance=~\"'.$host.'\"} ",
+"hide": false,
+"interval": "",
+"legendFormat": "oversubscribe",
+"refId": "F"
+},
+{
+	"exemplar": true,
+"expr": "mysql_global_variables_thread_pool_oversubscribe_congest{instance=~\"'.$host.'\"} ",
+"hide": false,
+"interval": "",
+"legendFormat": "oversubscribe_congest",
+"refId": "G"
+},
+{
+	"exemplar": true,
+"expr": "mysql_global_variables_thread_pool_queue_congest_nwaiters{instance=~\"'.$host.'\"} ",
+"hide": false,
+"interval": "",
+"legendFormat": "queue_congest_nwaiters",
+"refId": "B"
+},
+{
+	"exemplar": true,
+"expr": "mysql_global_variables_thread_pool_queue_congest_req_timeout{instance=~\"'.$host.'\"} ",
+"hide": false,
+"interval": "",
+"legendFormat": "eue_congest_req_timeout ",
+"refId": "H"
+},
+{
+	"exemplar": true,
+"expr": "mysql_global_variables_thread_pool_size{instance=~\"'.$host.'\"}",
+"hide": false,
+"interval": "",
+"legendFormat": "size",
+"refId": "I"
+},
+{
+	"exemplar": true,
+"expr": "mysql_global_variables_thread_pool_stall_limit{instance=~\"'.$host.'\"} ",
+"hide": false,
+"interval": "",
+"legendFormat": "stall_limit",
+"refId": "J"
+}
+],
+"title": "Thread Pool",
+"type": "timeseries"
+},
+{
+	"aliasColors": {},
+"bars": false,
+"dashLength": 10,
+"dashes": false,
+"datasource": "Prometheus",
+"fieldConfig": {
+	"defaults": {
+		"unit": "short"
+},
+"overrides": []
+},
+"fill": 1,
+"fillGradient": 0,
+"gridPos": {
+	"h": 8,
+"w": 24,
+"x": 0,
+"y": 10
+},
+"hiddenSeries": false,
+"id": 401,
+"legend": {
+	"alignAsTable": true,
+"avg": true,
+"current": false,
+"max": true,
+"min": true,
+"rightSide": true,
+"show": true,
+"total": false,
+"values": true
+},
 "lines": true,
 "linewidth": 2,
 "nullPointMode": "null",
@@ -7236,7 +6998,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 22
+"y": 18
 },
 "id": 382,
 "panels": [],
@@ -7263,7 +7025,7 @@ class Mysql_model extends CI_Model {
 	"h": 6,
 "w": 24,
 "x": 0,
-"y": 23
+"y": 19
 },
 "hiddenSeries": false,
 "id": 399,
@@ -7382,7 +7144,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 29
+"y": 25
 },
 "id": 383,
 "panels": [],
@@ -7413,7 +7175,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 30
+"y": 26
 },
 "height": "250px",
 "hiddenSeries": false,
@@ -7565,7 +7327,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 30
+"y": 26
 },
 "hiddenSeries": false,
 "id": 10,
@@ -7703,7 +7465,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 37
+"y": 33
 },
 "id": 384,
 "panels": [],
@@ -7734,7 +7496,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 38
+"y": 34
 },
 "hiddenSeries": false,
 "id": 53,
@@ -7851,7 +7613,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 38
+"y": 34
 },
 "hiddenSeries": false,
 "id": 11,
@@ -7982,7 +7744,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 45
+"y": 41
 },
 "id": 385,
 "panels": [],
@@ -8012,7 +7774,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 46
+"y": 42
 },
 "hiddenSeries": false,
 "id": 22,
@@ -8146,7 +7908,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 46
+"y": 42
 },
 "height": "250px",
 "hiddenSeries": false,
@@ -8295,7 +8057,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 53
+"y": 49
 },
 "id": 386,
 "panels": [],
@@ -8326,7 +8088,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 54
+"y": 50
 },
 "hiddenSeries": false,
 "id": 30,
@@ -8477,7 +8239,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 54
+"y": 50
 },
 "hiddenSeries": false,
 "id": 48,
@@ -8573,7 +8335,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 61
+"y": 57
 },
 "id": 387,
 "panels": [],
@@ -8604,7 +8366,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 62
+"y": 58
 },
 "hiddenSeries": false,
 "id": 47,
@@ -8730,7 +8492,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 62
+"y": 58
 },
 "hiddenSeries": false,
 "id": 32,
@@ -8838,7 +8600,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 69
+"y": 65
 },
 "id": 388,
 "panels": [],
@@ -8869,7 +8631,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 70
+"y": 66
 },
 "hiddenSeries": false,
 "id": 9,
@@ -8993,7 +8755,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 70
+"y": 66
 },
 "height": "250px",
 "hiddenSeries": false,
@@ -9102,7 +8864,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 77
+"y": 73
 },
 "id": 389,
 "panels": [],
@@ -9133,7 +8895,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 24,
 "x": 0,
-"y": 78
+"y": 74
 },
 "hiddenSeries": false,
 "id": 50,
@@ -9311,7 +9073,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 85
+"y": 81
 },
 "id": 390,
 "panels": [],
@@ -9342,7 +9104,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 24,
 "x": 0,
-"y": 86
+"y": 82
 },
 "hiddenSeries": false,
 "id": 14,
@@ -9461,7 +9223,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 24,
 "x": 0,
-"y": 93
+"y": 89
 },
 "hiddenSeries": false,
 "id": 39,
@@ -9577,7 +9339,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 24,
 "x": 0,
-"y": 100
+"y": 96
 },
 "hiddenSeries": false,
 "id": 8,
@@ -9688,7 +9450,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 24,
 "x": 0,
-"y": 107
+"y": 103
 },
 "hiddenSeries": false,
 "id": 28,
@@ -9795,7 +9557,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 24,
 "x": 0,
-"y": 114
+"y": 110
 },
 "hiddenSeries": false,
 "id": 40,
@@ -9903,7 +9665,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 24,
 "x": 0,
-"y": 121
+"y": 117
 },
 "hiddenSeries": false,
 "id": 49,
@@ -9995,7 +9757,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 128
+"y": 124
 },
 "id": 391,
 "panels": [],
@@ -10026,7 +9788,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 129
+"y": 125
 },
 "hiddenSeries": false,
 "id": 46,
@@ -10147,7 +9909,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 129
+"y": 125
 },
 "height": "",
 "hiddenSeries": false,
@@ -10292,7 +10054,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 136
+"y": 132
 },
 "id": 392,
 "panels": [],
@@ -10322,7 +10084,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 137
+"y": 133
 },
 "hiddenSeries": false,
 "id": 43,
@@ -10428,7 +10190,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 137
+"y": 133
 },
 "hiddenSeries": false,
 "id": 41,
@@ -10539,7 +10301,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 144
+"y": 140
 },
 "id": 393,
 "panels": [],
@@ -10570,7 +10332,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 145
+"y": 141
 },
 "hiddenSeries": false,
 "id": 44,
@@ -10724,7 +10486,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 145
+"y": 141
 },
 "hiddenSeries": false,
 "id": 42,
@@ -10834,7 +10596,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 152
+"y": 148
 },
 "id": 394,
 "panels": [],
@@ -10865,7 +10627,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 24,
 "x": 0,
-"y": 153
+"y": 149
 },
 "hiddenSeries": false,
 "id": 54,
@@ -10989,7 +10751,7 @@ class Mysql_model extends CI_Model {
 	"h": 1,
 "w": 24,
 "x": 0,
-"y": 160
+"y": 156
 },
 "id": 395,
 "panels": [],
@@ -11019,7 +10781,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 161
+"y": 157
 },
 "hiddenSeries": false,
 "id": 31,
@@ -11143,7 +10905,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 161
+"y": 157
 },
 "height": "250px",
 "hiddenSeries": false,
@@ -11304,7 +11066,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 168
+"y": 164
 },
 "height": "",
 "hiddenSeries": false,
@@ -11451,7 +11213,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 168
+"y": 164
 },
 "height": "250px",
 "hiddenSeries": false,
@@ -11578,7 +11340,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 0,
-"y": 175
+"y": 171
 },
 "height": "250px",
 "hiddenSeries": false,
@@ -11708,7 +11470,7 @@ class Mysql_model extends CI_Model {
 	"h": 7,
 "w": 12,
 "x": 12,
-"y": 175
+"y": 171
 },
 "hiddenSeries": false,
 "id": 38,
@@ -11812,7 +11574,8 @@ class Mysql_model extends CI_Model {
 }
 ]
 }
-}';
+}
+';
 		return $res;
 	}
 }

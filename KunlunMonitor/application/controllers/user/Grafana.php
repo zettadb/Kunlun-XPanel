@@ -96,7 +96,6 @@ class Grafana extends CI_Controller {
 			$postdb_url="http://admin:admin@127.0.0.1:3000/api/dashboards/db";
 			$postdb_result= $this->Grafana_model->postData($mysqld_data,$postdb_url);
 			$postdb_result=json_decode($postdb_result,true);
-			//print_r($postdb_result);exit;
 			if($postdb_result['status']=='success'){
 				$mysql_url=$postdb_result['url'];
 				$data['url']=$mysql_url;
@@ -134,7 +133,6 @@ class Grafana extends CI_Controller {
 							$update_postdb_url="http://admin:admin@127.0.0.1:3000/api/dashboards/db";
 							$update_postdb_result= $this->Grafana_model->postData($update_mysqld_data,$update_postdb_url);
 							$update_postdb_result=json_decode($update_postdb_result,true);
-							//print_r($update_postdb_result);exit;
 							if($update_postdb_result['status']=='success'){
 								$update_mysql_url=$update_postdb_result['url'];
 								$data['url']=$update_mysql_url;

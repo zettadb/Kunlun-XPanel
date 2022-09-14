@@ -109,7 +109,7 @@ class Access extends CI_Controller {
 					print_r(json_encode($data));
 				} else {
 					//获取集群数据
-					$sql="select id,name,nick_name from db_clusters where memo!='' and memo is not null and status!='deleted'";
+					$sql="select id,name,nick_name from db_clusters where memo!='' and memo is not null";
 					$this->load->model('Cluster_model');
 					$res=$this->Cluster_model->getList($sql);
 					$data['code'] = 200;

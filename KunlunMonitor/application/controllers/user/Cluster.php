@@ -64,7 +64,7 @@ class Cluster extends CI_Controller {
 		//获取用户数据
 		if($apply_all_cluster==1){
 			if(empty($effectCluster)){
-				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters where memo!='' and memo is not null and status!='deleted'";
+				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters where memo!='' and memo is not null ";
 				if(!empty($username)){
 					$sql .=" and nick_name like '%$username%'";
 				}
@@ -75,9 +75,9 @@ class Cluster extends CI_Controller {
 				$effectCluster='NULL';
 			}
 			if(strpos($effectCluster,',')==false){
-				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters where id=$effectCluster and memo!='' and memo is not null and status!='deleted'";
+				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters where id=$effectCluster and memo!='' and memo is not null ";
 			}else{
-				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters where id in ($effectCluster) and memo!='' and memo is not null and status!='deleted'";
+				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters where id in ($effectCluster) and memo!='' and memo is not null ";
 			}
 			if(!empty($username)){
 				$sql .=" and nick_name like '%$username%'";
@@ -90,7 +90,7 @@ class Cluster extends CI_Controller {
 		//total
 		if($apply_all_cluster==1){
 			if(empty($effectCluster)){
-				$total_sql="select count(id) as count from db_clusters where memo!='' and memo is not null and status!='deleted'";
+				$total_sql="select count(id) as count from db_clusters where memo!='' and memo is not null ";
 				if(!empty($username)){
 					$total_sql .=" and name like '%$username%'";
 				}
@@ -98,9 +98,9 @@ class Cluster extends CI_Controller {
 		}
 		if($apply_all_cluster==2){
 			if(strpos($effectCluster,',')==false){
-				$total_sql="select count(id) as count from db_clusters where id=$effectCluster  and memo!='' and memo is not null and status!='deleted'";
+				$total_sql="select count(id) as count from db_clusters where id=$effectCluster  and memo!='' and memo is not null ";
 			}else{
-				$total_sql="select count(id) as count from db_clusters where id in ($effectCluster) and memo!='' and memo is not null and status!='deleted'";
+				$total_sql="select count(id) as count from db_clusters where id in ($effectCluster) and memo!='' and memo is not null ";
 			}
 			if(!empty($username)){
 				$total_sql .=" and nick_name like '%$username%'";
@@ -122,7 +122,7 @@ class Cluster extends CI_Controller {
 							$res[$row]['shardList'] = $shardtotal['list'];
 							$res[$row]['compList'] = $comptotal['list'];
 							$res[$row]['shardtotal'] = $shardtotal['nodedetail'];
-							$res[$row]['comp_count'] = count($comptotal['list']);
+							$res[$row]['comp_count'] = $comptotal['list']!==false?count($comptotal['list']):0;
 							$res[$row]['first_backup'] = $first_backup;
 							$status='';
 							$abnormal='';
@@ -252,7 +252,7 @@ class Cluster extends CI_Controller {
 		$start=($pageNo - 1) * $pageSize;
 		$this->load->model('Cluster_model');
 		//查cluster_id
-		$sql_clusterid="select id from db_clusters where memo!='' and memo is not null and status!='deleted'";
+		$sql_clusterid="select id from db_clusters where memo!='' and memo is not null";
 		$res_clusterid=$this->Cluster_model->getList($sql_clusterid);
 		$cluster_id='';
 		if(!empty($res_clusterid)){
@@ -352,13 +352,13 @@ class Cluster extends CI_Controller {
 		print_r(json_encode($data));
 	}
 	public function getClusterName($id){
-		$sql="select name,nick_name from db_clusters where id='$id' and status!='deleted'";
+		$sql="select name,nick_name from db_clusters where id='$id'";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		return $res;
 	}
 	public function getShardName($db_cluster_id,$id){
-		$sql="select name from shards where id='$id' and db_cluster_id='$db_cluster_id' and status!='deleted'";
+		$sql="select name from shards where id='$id' and db_cluster_id='$db_cluster_id'";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		if(!empty($res)) {
@@ -368,7 +368,7 @@ class Cluster extends CI_Controller {
 		}
 	}
 	public function getCompName($db_cluster_id,$id){
-		$sql="select name from comp_nodes where id='$id' and db_cluster_id='$db_cluster_id' and status!='deleted'";
+		$sql="select name from comp_nodes where id='$id' and db_cluster_id='$db_cluster_id'";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		return $res[0]['name'];
@@ -453,7 +453,7 @@ class Cluster extends CI_Controller {
 		//判断参数
 		$string=json_decode(@file_get_contents('php://input'),true);
 		$id = $string['id'];
-		$sql="select id,name from shards where db_cluster_id='$id' and status!='deleted'";
+		$sql="select id,name from shards where db_cluster_id='$id'";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		$data['code'] = 200;
@@ -539,7 +539,7 @@ class Cluster extends CI_Controller {
 		print_r(json_encode($data));
 	}
 	public function getThisShards($id,$user_name){
-		$sql="select id,name from shards where db_cluster_id='$id' and status!='deleted'";
+		$sql="select id,name from shards where db_cluster_id='$id' ";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		$count=0;
@@ -627,17 +627,21 @@ class Cluster extends CI_Controller {
 			$node=rtrim($node, "，");
 			$data['nodedetail']=$count.'个shard，'.$node;
 			$data['status']=$status;
+		}else{
+			$data['nodedetail']='';
 		}
 		return $data;
 	}
 	public function getThisComps($id){
-		$sql="select hostaddr as ip,port,status from comp_nodes where db_cluster_id='$id' and status!='deleted'";
+		$sql="select hostaddr as ip,port,status from comp_nodes where db_cluster_id='$id' ";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		$status='';
-		foreach ($res as $i) {
-			if($i['status']=='inactive'){
-				$status.='计算节点('.$i['ip'].'_'.$i['port'].')'.'异常;';
+		if($res!==false){
+			foreach ($res as $i) {
+				if($i['status']=='inactive'){
+					$status.='计算节点('.$i['ip'].'_'.$i['port'].')'.'异常;';
+				}
 			}
 		}
 		$data['list']=$res;
@@ -645,7 +649,7 @@ class Cluster extends CI_Controller {
 		return $data;
 	}
 	public function getThisNodes($id,$shard_id){
-		$sql="select hostaddr as ip,port,status,replica_delay,member_state from shard_nodes where db_cluster_id='$id' and shard_id='$shard_id'  and status!='deleted'	";
+		$sql="select hostaddr as ip,port,status,replica_delay,member_state from shard_nodes where db_cluster_id='$id' and shard_id='$shard_id' ";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		return $res;
@@ -697,7 +701,7 @@ class Cluster extends CI_Controller {
 		$links=array();
 //		$links=array(array('from'=>$cluster_id, 'to'=>$shards_id),array('from'=>$cluster_id, 'to'=>$comp_id));
 		//获取存储节点数据
-		$sql="select id,name from shards where db_cluster_id='$id' and status!='deleted'";
+		$sql="select id,name from shards where db_cluster_id='$id'";
 		$res=$this->Cluster_model->getList($sql);
 		if($res!==false){
 			foreach ($res as $row=>$value){
@@ -737,7 +741,7 @@ class Cluster extends CI_Controller {
 			//array_unique($nodes);
 		}
 		//获取计算节点数据
-		$sql="select id,name,port,hostaddr,cpu_cores,max_mem_MB,max_conns,status from comp_nodes where db_cluster_id='$id' and status!='deleted'";
+		$sql="select id,name,port,hostaddr,cpu_cores,max_mem_MB,max_conns,status from comp_nodes where db_cluster_id='$id'";
 		$this->load->model('Cluster_model');
 		$res_comp=$this->Cluster_model->getList($sql);
 		if($res_comp!==false){
@@ -770,23 +774,7 @@ class Cluster extends CI_Controller {
 		print_r(json_encode($data));
 	}
 	public function getShardNode($cluster_id,$id){
-		$sql="select id,hostaddr,port,user_name,passwd,cpu_cores,initial_storage_GB,max_storage_GB,innodb_buffer_pool_MB,rocksdb_buffer_pool_MB,sync_state,replica_delay from shard_nodes where shard_id='$id' and db_cluster_id='$cluster_id' and status!='deleted'";
-		$this->load->model('Cluster_model');
-		$res=$this->Cluster_model->getList($sql);
-		return $res;
-	}
-	public function getShardNodeIp($cluster_id,$id,$ip,$master,$status){
-		$sql="select id,hostaddr,port,user_name,passwd,cpu_cores,initial_storage_GB,max_storage_GB,innodb_buffer_pool_MB,rocksdb_buffer_pool_MB,sync_state,replica_delay from shard_nodes where shard_id='$id' and db_cluster_id='$cluster_id' and status!='deleted' ";
-		if(!empty($ip)){
-			$sql .=" and hostaddr like '%$ip%'";
-		}
-		if(!empty($master)){
-			$sql .=" and member_state ='$master'";
-		}
-		if(!empty($status)){
-			$sql .=" and status ='$status'";
-		}
-		//echo $sql;exit;
+		$sql="select id,hostaddr,port,user_name,passwd,cpu_cores,initial_storage_GB,max_storage_GB,innodb_buffer_pool_MB,rocksdb_buffer_pool_MB,sync_state,replica_delay from shard_nodes where shard_id='$id' and db_cluster_id='$cluster_id'";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		return $res;
@@ -812,7 +800,7 @@ class Cluster extends CI_Controller {
 			$data['message']='该用户不存在';
 			print_r(json_encode($data));return;
 		}
-			$sql="select db_cluster_id,shard_id from shard_nodes where status!='deleted';";
+		$sql="select db_cluster_id,shard_id from shard_nodes ;";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		$error_list=array();
@@ -846,7 +834,7 @@ class Cluster extends CI_Controller {
 		}else{
 			$maxtime='100';
 		}
-		$sql="select hostaddr,port,replica_delay from shard_nodes where shard_id='$id' and db_cluster_id='$cluster_id' and replica_delay>'$maxtime' and status!='deleted'";
+		$sql="select hostaddr,port,replica_delay from shard_nodes where shard_id='$id' and db_cluster_id='$cluster_id' and replica_delay>'$maxtime'";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		$error=array();
@@ -1140,7 +1128,7 @@ class Cluster extends CI_Controller {
 					//获取用户数据
 					if($apply_all_cluster==1){
 						if(empty($effectCluster)){
-							$sql_name="select id,name,when_created,nick_name from db_clusters where  memo!='' and memo is not null and status!='deleted'";
+							$sql_name="select id,name,when_created,nick_name from db_clusters where  memo!='' and memo is not null";
 						}
 					}
 					if($apply_all_cluster==2) {
@@ -1148,9 +1136,9 @@ class Cluster extends CI_Controller {
 							$effectCluster='NULL';
 						}
 						if (strpos($effectCluster, ',') == false) {
-							$sql_name = "select id,name,nick_name from db_clusters where id=$effectCluster and  memo!='' and memo is not null and status!='deleted'";
+							$sql_name = "select id,name,nick_name from db_clusters where id=$effectCluster and  memo!='' and memo is not null";
 						} else {
-							$sql_name = "select id,name,nick_name from db_clusters where id in ($effectCluster) and  memo!='' and memo is not null and status!='deleted'";
+							$sql_name = "select id,name,nick_name from db_clusters where id in ($effectCluster) and  memo!='' and memo is not null";
 						}
 					}
 					$this->load->model('Cluster_model');
@@ -1431,21 +1419,18 @@ class Cluster extends CI_Controller {
 							$username=$key['user_name'];
 							$pwd=$key['passwd'];
 							if($ha_mode=='rbr'){
-								$sql_rbr="select member_state,status from shard_nodes where db_cluster_id='$cluster_id' and shard_id='$shard_id' and hostaddr='$ip' and port='$shard_arr_name' and status!='deleted'";
+								$sql_rbr="select member_state,status from shard_nodes where db_cluster_id='$cluster_id' and shard_id='$shard_id' and hostaddr='$ip' and port='$shard_arr_name'";
 								$res_rbr=$this->Cluster_model->getList($sql_rbr);
 								if($res_rbr[0]['member_state']=='source'){
 									$master='true';
 								}else{
 									$master='false';
 								}
-								// if($res_rbr[0]['status']=='active'){
-								// 	$status='online';
-								// }elseif($res_rbr[0]['status']=='manual_stop'){
-								// 	$status='offline';
-								// }else{
-								// 	$status=$res_rbr[0]['status'];
-								// }
-								$status=$res_rbr[0]['status'];
+								if($res_rbr[0]['status']=='inactive'){
+									$status='offline';
+								}else{
+									$status='online';
+								}
 							}elseif($ha_mode=='mgr'){
 								$per_dbname='performance_schema';
 								$sql_main="select MEMBER_ROLE,MEMBER_STATE from replication_group_members where MEMBER_HOST='$ip' and MEMBER_PORT='$shard_arr_name';";
@@ -1549,7 +1534,7 @@ class Cluster extends CI_Controller {
 		$shard_id = $string['shard_id'];
 		$ha_mode = $string['ha_mode'];
 		if($ha_mode=='mgr'){
-			$sql="select hostaddr,port,user_name,passwd from shard_nodes where db_cluster_id='$cluster_id' and shard_id='$shard_id' and status!='deleted'";
+			$sql="select hostaddr,port,user_name,passwd from shard_nodes where db_cluster_id='$cluster_id' and shard_id='$shard_id'";
 			$this->load->model('Cluster_model');
 			$res=$this->Cluster_model->getList($sql);
 			$arr=array();
@@ -1576,7 +1561,7 @@ class Cluster extends CI_Controller {
 			}
 		}
 		if($ha_mode=='rbr') {
-			$sql="select hostaddr as ip,port from shard_nodes where db_cluster_id='$cluster_id' and shard_id='$shard_id' and member_state='replica' and status not in('inactive','deleted')";
+			$sql="select hostaddr as ip,port from shard_nodes where db_cluster_id='$cluster_id' and shard_id='$shard_id' and member_state='replica' and status!='inactive'";
 			$this->load->model('Cluster_model');
 			$res=$this->Cluster_model->getList($sql);
 			$arr=$res;
@@ -1647,11 +1632,11 @@ class Cluster extends CI_Controller {
 		$user_name = $string['user_name'];
 		$this->load->model('Cluster_model');
 		if(empty($effectCluster)){
-			$sql = "select hostaddr,port from comp_nodes where status ='active'  ORDER BY id desc;";
+			$sql = "select hostaddr,port from comp_nodes  ORDER BY id desc;";
 		}else{
 			$s = explode(",", $effectCluster);
 			$effect = "'".implode("','",$s)."'";
-			$sql = "select hostaddr,port from comp_nodes where db_cluster_id in ($effect) and status ='active' ORDER BY id desc;";
+			$sql = "select hostaddr,port from comp_nodes where db_cluster_id in ($effect)  ORDER BY id desc;";
 		}
 		$res = $this->Cluster_model->getList($sql);
 		if(!empty($res)){
@@ -1912,13 +1897,13 @@ class Cluster extends CI_Controller {
 		$cluster_id=$string['id'];
 		$this->load->model('Cluster_model');
 		//nodes
-		$sql_nodes="select count(id) as count from shard_nodes where db_cluster_id='$cluster_id' and status!='deleted'";
+		$sql_nodes="select count(id) as count from shard_nodes where db_cluster_id='$cluster_id'";
 		$nodes=$this->Cluster_model->getList($sql_nodes);
 		//shard
-		$sql_shard="select count(id) as count from shards where db_cluster_id='$cluster_id' and status!='deleted'";
+		$sql_shard="select count(id) as count from shards where db_cluster_id='$cluster_id'";
 		$shards=$this->Cluster_model->getList($sql_shard);
 		//comp
-		$sql_comp="select count(id) as count from comp_nodes where db_cluster_id='$cluster_id' and status!='deleted'";
+		$sql_comp="select count(id) as count from comp_nodes where db_cluster_id='$cluster_id'";
 		$comp=$this->Cluster_model->getList($sql_comp);
 		$data['code'] = 200;
 		$data['shard'] = (int)$shards[0]['count'];
@@ -2294,7 +2279,7 @@ class Cluster extends CI_Controller {
 			$arr[$string[$i]] = $string[$i + 1];
 		}
 		$cluster_id=$arr['id'];
-		$sql ="select count(id) as count from shards where db_cluster_id='$cluster_id' and status!='deleted'";
+		$sql ="select count(id) as count from shards where db_cluster_id='$cluster_id'";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		//print_r($res);exit;
@@ -2311,7 +2296,7 @@ class Cluster extends CI_Controller {
 			$arr[$string[$i]] = $string[$i + 1];
 		}
 		$cluster_id=$arr['id'];
-		$sql ="select count(id) as count from comp_nodes where db_cluster_id='$cluster_id' and status!='deleted'";
+		$sql ="select count(id) as count from comp_nodes where db_cluster_id='$cluster_id'";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		//print_r($res);exit;
@@ -2346,7 +2331,7 @@ class Cluster extends CI_Controller {
 			$arr[$string[$i]] = $string[$i + 1];
 		}
 		$cluster_id=$arr['cluster_id'];
-		$sql ="select id,name,nick_name	 from db_clusters where id!='$cluster_id' and memo!='' and memo is not null and status!='deleted'";
+		$sql ="select id,name,nick_name	 from db_clusters where id!='$cluster_id' and memo!='' and memo is not null";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		//print_r($res);exit;
@@ -2415,7 +2400,7 @@ class Cluster extends CI_Controller {
 		//获取用户数据
 		if($apply_all_cluster==1){
 			if(empty($effectCluster)){
-				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters where memo='' or memo is  null and status!='deleted'";
+				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters where memo='' or memo is  null ";
 				if(!empty($username)){
 					$sql .=" and nick_name like '%$username%'";
 				}
@@ -2426,9 +2411,9 @@ class Cluster extends CI_Controller {
 				$effectCluster='NULL';
 			}
 			if(strpos($effectCluster,',')==false){
-				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters where id=$effectCluster and memo='' or memo is  null and status!='deleted'";
+				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters where id=$effectCluster and memo='' or memo is  null ";
 			}else{
-				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters where id in ($effectCluster) and memo='' or memo is  null and status!='deleted'";
+				$sql="select id,name,when_created,nick_name,ha_mode,memo from db_clusters where id in ($effectCluster) and memo='' or memo is  null ";
 			}
 			if(!empty($username)){
 				$sql .=" and nick_name like '%$username%'";
@@ -2441,7 +2426,7 @@ class Cluster extends CI_Controller {
 		//total
 		if($apply_all_cluster==1){
 			if(empty($effectCluster)){
-				$total_sql="select count(id) as count from db_clusters where memo='' or memo is null and status!='deleted'";
+				$total_sql="select count(id) as count from db_clusters where memo='' or memo is null ";
 				if(!empty($username)){
 					$total_sql .=" and name like '%$username%'";
 				}
@@ -2449,9 +2434,9 @@ class Cluster extends CI_Controller {
 		}
 		if($apply_all_cluster==2){
 			if(strpos($effectCluster,',')==false){
-				$total_sql="select count(id) as count from db_clusters where id=$effectCluster  and memo='' or memo is  null and status!='deleted'";
+				$total_sql="select count(id) as count from db_clusters where id=$effectCluster  and memo='' or memo is  null ";
 			}else{
-				$total_sql="select count(id) as count from db_clusters where id in ($effectCluster) and memo='' or memo is null and status!='deleted'";
+				$total_sql="select count(id) as count from db_clusters where id in ($effectCluster) and memo='' or memo is null ";
 			}
 			if(!empty($username)){
 				$total_sql .=" and nick_name like '%$username%'";
@@ -2471,7 +2456,7 @@ class Cluster extends CI_Controller {
 							$first_backup= $this->getLastBackup($value2);
 							//$nodetotal= $this->getThisNodes($value2);
 							$res[$row]['shardtotal'] = $shardtotal['nodedetail'];
-							$res[$row]['comptotal'] = count($comptotal['list']);
+							$res[$row]['comptotal'] = $comptotal['list']!==false?count($comptotal['list']):0;
 							$res[$row]['first_backup'] = $first_backup;
 
 						}
@@ -2517,7 +2502,7 @@ class Cluster extends CI_Controller {
 			$arr[$string[$i]] = $string[$i + 1];
 		}
 		$cluster_id=$arr['id'];
-		$sql="select id,name,db_cluster_id as cluster_id from shards where  db_cluster_id='$cluster_id' and status!='deleted'";
+		$sql="select id,name,db_cluster_id as cluster_id from shards where  db_cluster_id='$cluster_id'";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		$data['code'] = 200;
@@ -2570,7 +2555,7 @@ class Cluster extends CI_Controller {
 		}
 		$cluster_id=$arr['cluster_id'];
 		$shard_id=$arr['shard_id'];
-		$sql="select id,name from shards where  db_cluster_id='$cluster_id' and id!='$shard_id' and status!='deleted'";
+		$sql="select id,name from shards where  db_cluster_id='$cluster_id' and id!='$shard_id'";
 		//echo $sql;exit;
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
@@ -2683,62 +2668,9 @@ class Cluster extends CI_Controller {
 			print_r(json_encode($res));
 		}
 	}
-	public function getMaxDalay(){//无判断权限
-		//获取token
-		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["Token"];
-		if (empty($token)) {
-			$data['code'] = 201;
-			$data['message'] = 'token不能为空';
-			print_r(json_encode($data));return;
-		}
+	public function getNoSwitchList(){
 		//判断参数
 		$string=json_decode(@file_get_contents('php://input'),true);
-		$cluster_id=$string['cluster_id'];
-		$shard_id=$string['shard_id'];
-		$user_name=$string['user_name'];
-		$this->load->model('Login_model');
-		//查user_id
-		$user_sql="select id from kunlun_user where name='$user_name';";
-		$res_user=$this->Login_model->getList($user_sql);
-		if(!empty($res_user)){
-			$user_id=$res_user[0]['id'];
-		}else{
-			$data['code']=500;
-			$data['message']='该用户不存在';
-			print_r(json_encode($data));
-		}
-		$result=array();
-		//先查表是否存在
-		$sql="select TABLE_NAME from information_schema.TABLES where TABLE_NAME = 'shard_max_dalay';";
-		$res=$this->Login_model->getList($sql);
-		if($res!==false){
-			//表存在的情况
-			$sql_select="select max_delay_time from shard_max_dalay where db_cluster_id='$cluster_id' and shard_id='$shard_id' and user_id='$user_id'";
-			$res_select=$this->Login_model->getList($sql_select);
-			$result=$res_select;
-		}else{
-			$result=array();
-		}
-		$data['code'] = 200;
-		$data['list'] = $result;
-		print_r(json_encode($data));
-	}
-	public function setVariable(){
-		//获取token
-		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["Token"];
-		if (empty($token)) {
-			$data['code'] = 201;
-			$data['message'] = 'token不能为空';
-			print_r(json_encode($data));return;
-		}
-		//判断参数
-		$string=json_decode(@file_get_contents('php://input'),true);
-		if($string['user_name']!=='super_dba'){
-			$data['error_info'] = 'super_dba账户才具备设置实例变量权限';
-			print_r(json_encode($data));return;
-		}
 		//调接口
 		$this->load->model('Cluster_model');
 		$post_data=str_replace("\\/", "/", json_encode($string));
@@ -2748,7 +2680,7 @@ class Cluster extends CI_Controller {
 		$data=$post_arr;
 		print_r(json_encode($data));
 	}
-	public function getVariable(){
+	public function setNoSwitch(){
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
 		$token=$arr["Token"];
@@ -2759,26 +2691,28 @@ class Cluster extends CI_Controller {
 		}
 		//判断参数
 		$string=json_decode(@file_get_contents('php://input'),true);
-		if($string['user_name']!=='super_dba'){
-			$data['error_info'] = 'super_dba账户才具备查看实例变量权限';
-			print_r(json_encode($data));return;
-		}
 		//调接口
 		$this->load->model('Cluster_model');
 		$post_data=str_replace("\\/", "/", json_encode($string));
-		//print_r($post_data);exit;
 		$post_arr = $this->Cluster_model->postData($post_data,$this->post_url);
 		$post_arr = json_decode($post_arr, TRUE);
 		$data=$post_arr;
 		print_r(json_encode($data));
 	}
-	public function getWorkMode(){
+	public function delSwitch(){
+		//获取token
+		$arr = apache_request_headers();//获取请求头数组
+		$token=$arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));return;
+		}
 		//判断参数
 		$string=json_decode(@file_get_contents('php://input'),true);
 		//调接口
 		$this->load->model('Cluster_model');
 		$post_data=str_replace("\\/", "/", json_encode($string));
-		//print_r($post_data);exit;
 		$post_arr = $this->Cluster_model->postData($post_data,$this->post_url);
 		$post_arr = json_decode($post_arr, TRUE);
 		$data=$post_arr;
@@ -2801,7 +2735,7 @@ class Cluster extends CI_Controller {
 		$start=($pageNo - 1) * $pageSize;
 		$this->load->model('Cluster_model');
 		//查cluster_id
-		$sql_clusterid="select id from db_clusters where memo!='' and memo is not null and status!='deleted' and id='$id'";
+		$sql_clusterid="select id from db_clusters where memo!='' and memo is not null  and id='$id'";
 		$res_clusterid=$this->Cluster_model->getList($sql_clusterid);
 		$cluster_id='';
 		if(!empty($res_clusterid)){
@@ -2917,7 +2851,7 @@ class Cluster extends CI_Controller {
 		//print_r($pageSize);exit;
 		//获取用户数据
 		$this->load->model('Cluster_model');
-		$sql="select id,name,hostaddr,port,db_cluster_id,status,cpu_cores,max_mem_MB,max_conns from comp_nodes where status!='deleted' and db_cluster_id='$id'";
+		$sql="select id,name,hostaddr,port,db_cluster_id,status,cpu_cores,max_mem_MB,max_conns from comp_nodes where  db_cluster_id='$id'";
 		if(!empty($username)){
 			$sql .=" and  hostaddr like '%$username%'";
 		}
@@ -2930,7 +2864,7 @@ class Cluster extends CI_Controller {
 		if($res===false){
 			$res=array();
 		}
-		$sql_total="select count(id) as count from comp_nodes where status!='deleted' and db_cluster_id='$id'";
+		$sql_total="select count(id) as count from comp_nodes where  db_cluster_id='$id'";
 		if(!empty($username)){
 			$sql_total .=" and  hostaddr like '%$username%'";
 		}
@@ -2957,10 +2891,10 @@ class Cluster extends CI_Controller {
 		$status_all=$arr['status'];
 		$start=($pageNo - 1) * $pageSize;
 		$this->load->model('Cluster_model');
-		$sql="select id,name,num_nodes,db_cluster_id from shards where status!='deleted' and db_cluster_id='$id'";
+		$sql="select id,name,num_nodes,db_cluster_id from shards where  db_cluster_id='$id'";
 		if(!empty($user_name)||!empty($master_all)||!empty($status_all)){
 			//通过ip查出shard_id
-			$sql_shard="select shard_id from shard_nodes where db_cluster_id='$id'  and status!='deleted' ";
+			$sql_shard="select shard_id from shard_nodes where db_cluster_id='$id'  ";
 			if(!empty($user_name)){
 				$sql_shard .=" and  hostaddr like '%$user_name%' ";
 			}
@@ -2988,10 +2922,10 @@ class Cluster extends CI_Controller {
 		$sql .=" order by id desc limit ".$pageSize." offset ".$start;
 		//print_r($sql);exit;
 		$res=$this->Cluster_model->getList($sql);
-		$sql_total="select count(id) as count from shards where status!='deleted' and db_cluster_id='$id'";
+		$sql_total="select count(id) as count from shards where  db_cluster_id='$id'";
 		if(!empty($user_name)||!empty($master_all)||!empty($status_all)){
 			//通过ip查出shard_id
-			$sql_shard="select shard_id from shard_nodes where db_cluster_id='$id'  and status!='deleted' ";
+			$sql_shard="select shard_id from shard_nodes where db_cluster_id='$id'  ";
 			if(!empty($user_name)){
 				$sql_shard .=" and  hostaddr like '%$user_name%' ";
 			}
@@ -3043,7 +2977,7 @@ class Cluster extends CI_Controller {
 									$username=$key['user_name'];
 									$pwd=$key['passwd'];
 									if($ha_mode=='rbr'){
-										$sql_rbr="select member_state,status from shard_nodes where db_cluster_id='$id' and shard_id='$value2' and hostaddr='$ip' and port='$shard_arr_name' and status!='deleted'";
+										$sql_rbr="select member_state,status from shard_nodes where db_cluster_id='$id' and shard_id='$value2' and hostaddr='$ip' and port='$shard_arr_name'";
 										$res_rbr=$this->Cluster_model->getList($sql_rbr);
 										if($res_rbr[0]['member_state']=='source'){
 											$master='true';
@@ -3102,51 +3036,30 @@ class Cluster extends CI_Controller {
 		$data['total'] = $res_total ? (int)$res_total[0]['count'] : 0;
 		print_r(json_encode($data));
 	}
-	public function getNoSwitchList(){
+	
+	public function getShardNodeIp($cluster_id,$id,$ip,$master,$status){
+		$sql="select id,hostaddr,port,user_name,passwd,cpu_cores,initial_storage_GB,max_storage_GB,innodb_buffer_pool_MB,rocksdb_buffer_pool_MB,sync_state,replica_delay from shard_nodes where shard_id='$id' and db_cluster_id='$cluster_id' ";
+		if(!empty($ip)){
+			$sql .=" and hostaddr like '%$ip%'";
+		}
+		if(!empty($master)){
+			$sql .=" and member_state ='$master'";
+		}
+		if(!empty($status)){
+			$sql .=" and status ='$status'";
+		}
+		//echo $sql;exit;
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		return $res;
+	}
+	public function getWorkMode(){
 		//判断参数
 		$string=json_decode(@file_get_contents('php://input'),true);
 		//调接口
 		$this->load->model('Cluster_model');
 		$post_data=str_replace("\\/", "/", json_encode($string));
 		//print_r($post_data);exit;
-		$post_arr = $this->Cluster_model->postData($post_data,$this->post_url);
-		$post_arr = json_decode($post_arr, TRUE);
-		$data=$post_arr;
-		print_r(json_encode($data));
-	}
-	public function setNoSwitch(){
-		//获取token
-		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["Token"];
-		if (empty($token)) {
-			$data['code'] = 201;
-			$data['message'] = 'token不能为空';
-			print_r(json_encode($data));return;
-		}
-		//判断参数
-		$string=json_decode(@file_get_contents('php://input'),true);
-		//调接口
-		$this->load->model('Cluster_model');
-		$post_data=str_replace("\\/", "/", json_encode($string));
-		$post_arr = $this->Cluster_model->postData($post_data,$this->post_url);
-		$post_arr = json_decode($post_arr, TRUE);
-		$data=$post_arr;
-		print_r(json_encode($data));
-	}
-	public function delSwitch(){
-		//获取token
-		$arr = apache_request_headers();//获取请求头数组
-		$token=$arr["Token"];
-		if (empty($token)) {
-			$data['code'] = 201;
-			$data['message'] = 'token不能为空';
-			print_r(json_encode($data));return;
-		}
-		//判断参数
-		$string=json_decode(@file_get_contents('php://input'),true);
-		//调接口
-		$this->load->model('Cluster_model');
-		$post_data=str_replace("\\/", "/", json_encode($string));
 		$post_arr = $this->Cluster_model->postData($post_data,$this->post_url);
 		$post_arr = json_decode($post_arr, TRUE);
 		$data=$post_arr;
@@ -3166,7 +3079,7 @@ class Cluster extends CI_Controller {
 		//print_r($string);exit;
 		$cluster_id = $string['cluster_id'];
 		$id = $string['shard_id'];
-		$sql="select hostaddr as ip,port from shard_nodes where shard_id='$id' and db_cluster_id='$cluster_id' and status!='deleted'";
+		$sql="select hostaddr as ip,port from shard_nodes where shard_id='$id' and db_cluster_id='$cluster_id' ";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		$data['code'] = 200;
