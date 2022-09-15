@@ -12,10 +12,12 @@ const priv_type_arr = ['增加用户','删除用户','用户授权','添加角�
 const datatree_arr=[{id: 'cluster',label: '集群权限',children: [{id: 'cluster_add',label: '新增集群'}, {id: 'cluster_del',label: '删除集群'}, {id: 'cluster_backeup',label: '备份集群'}, {id: 'cluster_restore',label: '恢复集群'}, {id: 'cluster_expand',label: '集群扩容'}, {id: 'cluster_shrink',label: '集群缩容'},{id: 'backup_service_en',label: '启/禁用备份服务'}, {id: 'storage',label: '存储节点权限',children: [{id:'storage_node_create',label:'新增存储节点'},{id:'storage_node_drop',label:'删除存储节点'},{id:'storage_en',label:'启/禁用存储节点'}]},{id: 'comp',label: '计算节点权限',children: [{id:'comp_add',label:'新增计算节点'},{id:'comp_del',label:'删除计算节点'},{id:'comp_en',label:'启/禁用计算节点'}]},{id: 'shard',label: '存储shard权限',children: [{id:'shard_add',label:'新增存储shard'},{id:'shard_del',label:'删除存储shard'}]}]}, {id: 'equip',label: '计算机权限',children: [{id: 'equip_add',label: '新增计算机'}, {id: 'equip_edit',label: '编辑计算机'}, {id: 'equip_del',label: '删除计算机'}]}];
 //const ha_mode_arr=[{id:'mgr',label:'mgr'},{id:'rbr',label:'rbr'},{id:'no_rep',label:'no_rep'}];
 const ha_mode_arr=[{id:'rbr',label:'rbr'}];
+const c_ha_mode_arr=[{id:'mgr',label:'mgr'}];
 const shards_arr=[{id:'1',label:'1'},{id:'2',label:'2'},{id:'3',label:'3'},{id:'4',label:'4'},{id:'5',label:'5'},{id:'6',label:'6'},{id:'7',label:'7'},{id:'8',label:'8'},{id:'9',label:'9'},{id:'10',label:'10'}];
 const norepshards_arr=[{id:'1',label:'1'}];;
 const per_shard_arr=[{id:'3',label:'3'},{id:'4',label:'4'},{id:'5',label:'5'},{id:'6',label:'6'},{id:'7',label:'7'},{id:'8',label:'8'},{id:'9',label:'9'},{id:'10',label:'10'}];
 const node_type_arr=[{id:'add_shards',label:'shard'},{id:'add_comps',label:'计算节点'},{id:'add_nodes',label:'存储节点'}];
+const c_node_type_arr=[{id:'add_shards',label:'shard'},{id:'add_comps',label:'计算节点'}];
 const machine_type_arr=[{id:'storage',label:'储存'},{id:'computer',label:'计算'}];
 const version_arr=[{ver:'1.0'}];
 const storage_type_arr=[{id:'HDFS',name:'HDFS'}];
@@ -23,20 +25,24 @@ const ip_arr=[{ip:ip}];
 //const ip_arr=[{ip:'http://'+ip+':3000'}];
 const timestamp_arr=[{time:new Date().getTime()}];
 const policy_arr=[{id:'top_hit',label:'按热点排序'},{id:'top_size',label:'按数据量排序'}];
+const node_stats_arr=[{id:'running',label:'在线',color:'#00ed37'},{id:'idle',label:'不允许再装实例',color:'#c7c9d1'},{id:'dead',label:'离线',color:'red'}];
 export {
   role_type_arr,
   valid_period,
   priv_type_arr,
   datatree_arr,
   ha_mode_arr,
+  c_ha_mode_arr,
   shards_arr,
   per_shard_arr,
   norepshards_arr,
   node_type_arr,
+  c_node_type_arr,
   version_arr,
   ip_arr,
   storage_type_arr,
   timestamp_arr,
   machine_type_arr,
-  policy_arr
+  policy_arr,
+  node_stats_arr
 }

@@ -26,8 +26,8 @@
             <span>{{form.fullsync_level+'个'}}</span>
         </el-form-item>
         <el-form-item>
-            <el-button type="danger" @click="onSubmit(form)">删除集群</el-button>
-            <!-- <el-button>取消</el-button> -->
+            <el-button type="danger" @click="onSubmit(form)" v-if="delflag">删除集群</el-button>
+            <!-- <el-button @click="onDel()">取消</el-button> -->
         </el-form-item>
     </el-form>
      <el-dialog :title="job_id" :visible.sync="dialogStatusShowVisible" custom-class="single_dal_view" :close-on-click-modal="false" :before-close="beforeDestory">
@@ -141,6 +141,7 @@ export default {
             shardInfo:'',
             dialogShardInfo:false,
             job_id:'',
+            delflag:true
         }
     },
     mounted(){
@@ -227,10 +228,17 @@ export default {
             }); 
         
         },
+        onDel(){
+            this.$emit('clusterId',this.listsent.id)
+            // this.$listeners.getId(this.listsent.id)
+        },
         //清除定时器
         beforeDestory(){
         clearInterval(this.timer)
         this.dialogStatusShowVisible=false;
+        //把集群id传给父组件，更新数据
+        this.delflag=false;
+        this.$emit('clusterId',this.listsent.id)
         },
         getFStatus (timer,data,i,info) {
             setTimeout(()=>{
@@ -798,11 +806,11 @@ export default {
                                 });
                             }
                             setTimeout(() => {
-                            this.getList();
+                            // this.getList();
                             //this.dialogStatusShowVisible=false;
                             }, 3000);
                         }else{
-                            this.getList();
+                            // this.getList();
                         }
                         }else if(ress.status=='failed'){
                         this.finish_title=info+'集群失败'

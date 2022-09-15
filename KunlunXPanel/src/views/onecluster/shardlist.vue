@@ -74,7 +74,7 @@
             <el-table-column prop="status" label="状态" align="center">
                <template slot-scope="scope">
                 <span v-if="scope.row.status==='online'" style="color: #00ed37">运行中</span>
-                <span v-if="scope.row.status==='creating'">安装中</span>
+                <span v-if="scope.row.status==='creating'" style="color: #00ed37">运行中</span>
                 <span v-if="scope.row.status==='inactive'" style="color: red">异常</span>
                 <span v-else-if="scope.row.status==='offline'" style="color: #c7c9d1;">停止</span>
                 <span v-else></span>
@@ -82,10 +82,10 @@
             </el-table-column>
             <el-table-column label="操作" align="center" width="380" class-name="small-padding fixed-width">
               <template slot-scope="{row,$index}">
-                <el-button size="mini" type="primary" v-if="row.status=='online'"  @click="nodeMonitor(row)">节点监控</el-button>
-                <el-button size="mini" type="primary" v-if="row.status!=='online'"  @click="handleControlNode(row,'start')">启用</el-button>
+                <el-button size="mini" type="primary" v-if="row.status=='creating'"  @click="nodeMonitor(row)">节点监控</el-button>
+                <!-- <el-button size="mini" type="primary" v-if="row.status!=='online'"  @click="handleControlNode(row,'start')">启用</el-button>
                 <el-button size="mini" type="primary" v-if="row.master!=='true'&&row.status!=='offline'" @click="handleControlNode(row,'stop')">禁用</el-button>
-                <el-button size="mini" type="primary" v-if="row.master!=='true'"  @click="handleControlNode(row,'restart')">重启</el-button>
+                <el-button size="mini" type="primary" v-if="row.master!=='true'"  @click="handleControlNode(row,'restart')">重启</el-button> -->
                 <!-- <el-button size="mini" type="primary" v-if="row.master=='true'"  @click="handleSwitch(row)">主备切换</el-button>
                 <el-button size="mini" type="primary" v-if="row.master=='true'"  @click="handleReDo(row)">重做备机节点</el-button> -->
                 <el-button

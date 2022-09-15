@@ -84,7 +84,7 @@
               <el-table-column prop='status' label="状态" align="center" width="80" sortable>
                 <template slot-scope="scope">
                   <span v-if="scope.row.status==='active'" style="color: #00ed37">运行中</span>
-                  <span v-else-if="scope.row.status==='creating'" style="color: #c7c9d1;">安装中</span>
+                  <span v-else-if="scope.row.status==='creating'" style="color: #00ed37">运行中  </span>
                   <span v-else-if="scope.row.status==='manual_stop'" style="color: #c7c9d1;">停止</span>
                   <span v-else-if="scope.row.status==='inactive'" style="color: red">异常</span>
                   <span v-else></span>
@@ -114,7 +114,7 @@
               <el-table-column prop='status' label="状态" align="center" width="80" sortable>
                 <template slot-scope="scope">
                   <span v-if="scope.row.status==='active'" style="color: #00ed37">运行中</span>
-                  <span v-else-if="scope.row.status==='creating'" style="color: #c7c9d1;">安装中</span>
+                  <span v-else-if="scope.row.status==='creating'" style="color: #00ed37">运行中</span>
                   <span v-else-if="scope.row.status==='manual_stop'" style="color: #c7c9d1;">停止</span>
                   <span v-else-if="scope.row.status==='inactive'" style="color: red">异常</span>
                   <span v-else></span>
@@ -825,7 +825,7 @@ export default {
   name: "list",
   components: { Pagination,JsonViewer }, 
   // props: ['data', 'defaultActive','comment'],
-  props:{comment:{type:Array}},
+  props:{comment:{type:Object}},
   data() {  
     // const validatemachine = (rule, value, callback) => {
     //  if(value.length === 0){
@@ -2473,8 +2473,12 @@ export default {
     },
     handleSetUp(row){
       //this.editableTabs=this.comment;
-       if(this.comment.length==0){
-        this.editableTabs=this.comment;
+      if(this.comment.active=='delcluster'){
+        this.handleClear();
+      }
+      console.log(this.comment);
+       if(this.comment.editableTabs.length==0){
+        this.editableTabs=this.comment.editableTabs;
        }
       let newTabName = row.id+ '';
       let tabs = this.editableTabs;

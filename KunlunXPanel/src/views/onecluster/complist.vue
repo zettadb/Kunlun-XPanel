@@ -78,7 +78,7 @@
         <template slot-scope="scope">
           <span v-if="scope.row.status==='active'" style="color: #00ed37">运行中</span>
           <span v-else-if="scope.row.status==='inactive'" style="color: red">异常</span>
-          <span v-else-if="scope.row.status==='creating'">安装中</span>
+          <span v-else-if="scope.row.status==='creating'" style="color: #00ed37">运行中</span>
           <span v-else-if="scope.row.status==='manual_stop'" style="color: #c7c9d1;">停止</span>
           <span v-else></span>
         </template>
@@ -106,9 +106,9 @@
         class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-button size="mini" type="primary" v-if="row.status=='active'"  @click="nodeMonitor(row)">节点监控</el-button>
-          <el-button size="mini" type="primary" v-if="row.status!=='active'"  @click="handleControlNode(row,'start')">启用</el-button>
+          <!-- <el-button size="mini" type="primary" v-if="row.status!=='active'"  @click="handleControlNode(row,'start')">启用</el-button>
           <el-button size="mini" type="primary" v-if="row.status!=='manual_stop'" @click="handleControlNode(row,'stop')">禁用</el-button>
-          <el-button size="mini" type="primary"   @click="handleControlNode(row,'restart')">重启</el-button>
+          <el-button size="mini" type="primary"   @click="handleControlNode(row,'restart')">重启</el-button> -->
           <el-button
             size="mini"
             type="danger"

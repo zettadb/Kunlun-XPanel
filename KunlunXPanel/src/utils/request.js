@@ -16,7 +16,7 @@ var host = window.document.location.href.substring(0, window.document.location.h
 //host+'/monitor/index.php'
 //host+'/KunlunMonitor/index.php'
 const service = axios.create({
-  //baseURL:process.env.VUE_APP_BASE_API,
+  // baseURL:process.env.VUE_APP_BASE_API,
   baseURL:host+'/KunlunMonitor/index.php',
   timeout: 60000
 })

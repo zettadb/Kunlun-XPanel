@@ -76,7 +76,7 @@
       </el-col>
     </div>
     <div class="rightmenu">
-     <component :is="componted" :listsent="listsent" />
+     <component :is="componted" :listsent="listsent"  @clusterId="clusterId" />
     </div>
   </div>
   </template>
@@ -142,6 +142,9 @@
         else{
           this.componted="Error"
         }
+      },
+      clusterId(value){
+        this.$emit('getId',value);
       }
     }
   }
