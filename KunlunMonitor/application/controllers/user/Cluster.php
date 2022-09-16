@@ -122,7 +122,7 @@ class Cluster extends CI_Controller {
 							$res[$row]['shardList'] = $shardtotal['list'];
 							$res[$row]['compList'] = $comptotal['list'];
 							$res[$row]['shardtotal'] = $shardtotal['nodedetail'];
-							$res[$row]['comp_count'] = count($comptotal['list']);
+							$res[$row]['comp_count'] = $comptotal['list']!==false?count($comptotal['list']):0;
 							$res[$row]['first_backup'] = $first_backup;
 							$status='';
 							$abnormal='';
@@ -627,17 +627,21 @@ class Cluster extends CI_Controller {
 			$node=rtrim($node, "，");
 			$data['nodedetail']=$count.'个shard，'.$node;
 			$data['status']=$status;
+		}else{
+			$data['nodedetail']='';
 		}
 		return $data;
 	}
 	public function getThisComps($id){
-		$sql="select hostaddr as ip,port,status from comp_nodes where db_cluster_id='$id' and status!='deleted'";
+		$sql="select hostaddr as ip,port,status from comp_nodes where db_cluster_id='$id'  and status!='deleted'";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		$status='';
-		foreach ($res as $i) {
-			if($i['status']=='inactive'){
-				$status.='计算节点('.$i['ip'].'_'.$i['port'].')'.'异常;';
+		if($res!==false){
+			foreach ($res as $i) {
+				if($i['status']=='inactive'){
+					$status.='计算节点('.$i['ip'].'_'.$i['port'].')'.'异常;';
+				}
 			}
 		}
 		$data['list']=$res;
@@ -645,7 +649,7 @@ class Cluster extends CI_Controller {
 		return $data;
 	}
 	public function getThisNodes($id,$shard_id){
-		$sql="select hostaddr as ip,port,status,replica_delay,member_state from shard_nodes where db_cluster_id='$id' and shard_id='$shard_id'  and status!='deleted'	";
+		$sql="select hostaddr as ip,port,status,replica_delay,member_state from shard_nodes where db_cluster_id='$id' and shard_id='$shard_id' and status!='deleted'";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		return $res;
@@ -2471,7 +2475,7 @@ class Cluster extends CI_Controller {
 							$first_backup= $this->getLastBackup($value2);
 							//$nodetotal= $this->getThisNodes($value2);
 							$res[$row]['shardtotal'] = $shardtotal['nodedetail'];
-							$res[$row]['comptotal'] = count($comptotal['list']);
+							$res[$row]['comptotal'] = $comptotal['list']!==false?count($comptotal['list']):0;
 							$res[$row]['first_backup'] = $first_backup;
 
 						}

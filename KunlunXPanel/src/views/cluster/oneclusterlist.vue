@@ -75,8 +75,8 @@
         </el-menu>
       </el-col>
     </div>
-    <div class="rightmenu">
-     <component :is="componted" :listsent="listsent" />
+    <div class="rightmenu"> 
+     <component :is="componted" :listsent="listsent"  @clusterId="clusterId" />
     </div>
   </div>
   </template>
@@ -142,6 +142,9 @@
         else{
           this.componted="Error"
         }
+      },
+      clusterId(value){
+        this.$emit('getId',value);
       }
     }
   }
@@ -187,6 +190,7 @@
     ::-webkit-scrollbar-thumb{
       border-radius: 5px;
       -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+              box-shadow: inset 0 0 6px rgba(0,0,0,.3);
       background-color: rgba(0,0,0,0.1);
     }
   </style>

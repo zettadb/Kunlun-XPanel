@@ -825,7 +825,7 @@ export default {
   name: "list",
   components: { Pagination,JsonViewer }, 
   // props: ['data', 'defaultActive','comment'],
-  props:{comment:{type:Array}},
+  props:{comment:{type:Object}},
   data() {  
     // const validatemachine = (rule, value, callback) => {
     //  if(value.length === 0){
@@ -2472,10 +2472,10 @@ export default {
         })
     },
     handleSetUp(row){
-      //this.editableTabs=this.comment;
-       if(this.comment.length==0){
-        this.editableTabs=this.comment;
-       }
+      if(this.comment.active=='delcluster'){
+        this.handleClear();
+      }
+      this.editableTabs=this.comment.editableTabs;
       let newTabName = row.id+ '';
       let tabs = this.editableTabs;
       if(tabs.length>0){
@@ -4074,6 +4074,7 @@ export default {
 ::-webkit-scrollbar-thumb{
   border-radius: 5px;
   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+          box-shadow: inset 0 0 6px rgba(0,0,0,.3);
   background-color: rgba(0,0,0,0.1);
 }
 

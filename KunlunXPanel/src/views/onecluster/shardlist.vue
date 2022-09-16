@@ -86,8 +86,8 @@
                 <el-button size="mini" type="primary" v-if="row.status!=='online'"  @click="handleControlNode(row,'start')">启用</el-button>
                 <el-button size="mini" type="primary" v-if="row.master!=='true'&&row.status!=='offline'" @click="handleControlNode(row,'stop')">禁用</el-button>
                 <el-button size="mini" type="primary" v-if="row.master!=='true'"  @click="handleControlNode(row,'restart')">重启</el-button>
-                <!-- <el-button size="mini" type="primary" v-if="row.master=='true'"  @click="handleSwitch(row)">主备切换</el-button>
-                <el-button size="mini" type="primary" v-if="row.master=='true'"  @click="handleReDo(row)">重做备机节点</el-button> -->
+                <el-button size="mini" type="primary" v-if="row.master=='true'"  @click="handleSwitch(row)">主备切换</el-button>
+                <el-button size="mini" type="primary" v-if="row.master=='true'"  @click="handleReDo(row)">重做备机节点</el-button>
                 <el-button
                   size="mini"
                   type="danger"
@@ -311,7 +311,8 @@ export default {
     };
     return {
       tableKey: 0,
-      list: null,
+      //list: null,
+      list: [],
       listLoading: true,
       searchLoading:false,
       total: 0,

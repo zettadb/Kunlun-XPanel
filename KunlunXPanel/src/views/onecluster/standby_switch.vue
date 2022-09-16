@@ -222,9 +222,9 @@ export default {
         },
         resetform(){
             this.form={
-                 name: '',
-                nick_name: '',
-                id: '',
+                name: this.listsent.name,
+                nick_name: this.listsent.nick_name,
+                id:this.listsent.id,
                 primary_node:'',
                 replica:'',
                 shard_id:'' ,
