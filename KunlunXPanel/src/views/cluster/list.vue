@@ -2442,10 +2442,10 @@ export default {
           //this.message_type = 'success';
           //调获取状态接口
           let i=0;this.timer=null;
-          this.getStatus(this.timer,res.job_id,i++)
+          // this.getStatus(this.timer,res.job_id,i++)
           this.timer = setInterval(() => {
             this.getStatus(this.timer,res.job_id,i++)
-          }, 5000)
+          }, 1000)
         }
         else if(res.status=='ongoing'){
           this.message_tips = '系统正在操作中，请等待一会！';
@@ -2476,10 +2476,10 @@ export default {
       if(this.comment.active=='delcluster'){
         this.handleClear();
       }
-      console.log(this.comment);
-       if(this.comment.editableTabs.length==0){
-        this.editableTabs=this.comment.editableTabs;
-       }
+      // console.log(this.comment);
+      // if(this.comment.editableTabs.length==0){
+      this.editableTabs=this.comment.editableTabs;
+      // }
       let newTabName = row.id+ '';
       let tabs = this.editableTabs;
       if(tabs.length>0){
@@ -4078,6 +4078,7 @@ export default {
 ::-webkit-scrollbar-thumb{
   border-radius: 5px;
   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+          box-shadow: inset 0 0 6px rgba(0,0,0,.3);
   background-color: rgba(0,0,0,0.1);
 }
 

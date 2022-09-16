@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import {getOldCluster,restoreCluster} from '@/api/cluster/list'
+import {getOldCluster,restoreCluster,getEvStatus} from '@/api/cluster/list'
 import { messageTip,handleCofirm,getNowDate} from "@/utils";
 import {version_arr,timestamp_arr} from "@/utils/global_variable"
 export default {
@@ -158,10 +158,10 @@ export default {
                 //this.message_type = 'success';
                 //调获取状态接口
                 let i=0;this.timer=null;
-                this.getStatus(this.timer,res.job_id,i++)
+                //this.getStatus(this.timer,res.job_id,i++)
                 this.timer = setInterval(() => {
                     this.getStatus(this.timer,res.job_id,i++)
-                }, 5000)
+                }, 1000)
                 }
                 else if(res.status=='ongoing'){
                 this.message_tips = '系统正在操作中，请等待一会！';
@@ -178,6 +178,74 @@ export default {
                 }); 
             }
             })
+        },
+        getStatus (timer,data,i) {
+            setTimeout(()=>{
+                const postarr={};
+                postarr.job_type='get_status';
+                postarr.version=version_arr[0].ver;
+                postarr.job_id=data;
+                postarr.timestamp=timestamp_arr[0].time+'';
+                postarr.paras={};
+                getEvStatus(postarr).then((res) => {
+                let error_info='';
+                if(res.attachment!==null){
+                    if(res.attachment.memo_info.error_info!==''){
+                    error_info=res.attachment.memo_info.error_info
+                    }else{
+                    error_info=res.error_info
+                    }
+                }
+                if(res.status=='done'||res.status=='failed'){
+                clearInterval(timer);
+                //this.info=res.error_info;
+                if(res.status=='done'){
+                    // if(error_info){
+                    //   const newArrdone={
+                    //     content:error_info,
+                    //     timestamp: getNowDate(),
+                    //     color: '#0bbd87',
+                    //     icon: 'el-icon-circle-check'
+                    //   };
+                    //   this.activities.push(newArrdone)
+                    // }else{
+                    const newArrdone={
+                        content:'集群回档成功',
+                        timestamp: getNowDate(),
+                        color: '#0bbd87',
+                        icon: 'el-icon-circle-check'
+                    };
+                    this.activities.push(newArrdone)
+                    // }
+                    this.getList();
+                    //this.dialogStatusVisible=false;
+                }else{
+                    const newArr={
+                    content:error_info,
+                    timestamp: getNowDate(),
+                    color: 'red',
+                    icon: 'el-icon-circle-close'
+                    };
+                    this.activities.push(newArr);
+                    //this.installStatus = true;
+                }
+                }else{
+                if(error_info){
+                    const newArrgoing={
+                    content:error_info,
+                    timestamp: getNowDate(),
+                    color: '#0bbd87'
+                    };
+                    this.activities.push(newArrgoing)
+                }
+                //this.info=res.error_info;
+                //this.installStatus = true;
+                }
+            });
+                if(i>=86400){
+                    clearInterval(timer);
+                }
+            }, 0)
         }
     }
 };

@@ -39,7 +39,7 @@
       <div class="c-node-menu-item"  v-if="type==='shard'&& shard_drop_priv==='Y'" @click.stop="doAction('删除')">删除</div>
       <div class="c-node-menu-item"  v-if="type==='cnode'&& compute_node_drop_priv==='Y'" @click.stop="doAction('删除')">删除</div>
       <div class="c-node-menu-item"  v-else-if="type==='snode'&& storage_node_drop_priv==='Y'" @click.stop="doAction('删除')">删除</div>-->
-      <div class="c-node-menu-item"  v-if="(type==='cnode'||type==='snode')&&(node_status=='active')" @click.stop="doAction('节点监控')">节点监控</div> 
+      <div class="c-node-menu-item"  v-if="(type==='cnode'||type==='snode')&&(node_status=='active'||node_status=='creating'||node_status=='online')" @click.stop="doAction('节点监控')">节点监控</div> 
     </div>
 
     <div v-if="isShowNodeTipsPanel" :style="{left: nodeMenuPanelPosition.x + 'px', top: nodeMenuPanelPosition.y + 'px' }" style="z-index: 999;padding:10px;background-color: #ffffff;border:#eeeeee solid 1px;box-shadow: 0px 0px 8px #cccccc;position: absolute;">
@@ -3191,6 +3191,7 @@ export default {
 ::-webkit-scrollbar-thumb{
   border-radius: 5px;
   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+          box-shadow: inset 0 0 6px rgba(0,0,0,.3);
   background-color: rgba(0,0,0,0.1);
 }
 </style>

@@ -2668,6 +2668,95 @@ class Cluster extends CI_Controller {
 			print_r(json_encode($res));
 		}
 	}
+	public function getMaxDalay(){//无判断权限
+		//获取token
+		$arr = apache_request_headers();//获取请求头数组
+		$token=$arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));return;
+		}
+		//判断参数
+		$string=json_decode(@file_get_contents('php://input'),true);
+		$cluster_id=$string['cluster_id'];
+		$shard_id=$string['shard_id'];
+		$user_name=$string['user_name'];
+		$this->load->model('Login_model');
+		//查user_id
+		$user_sql="select id from kunlun_user where name='$user_name';";
+		$res_user=$this->Login_model->getList($user_sql);
+		if(!empty($res_user)){
+			$user_id=$res_user[0]['id'];
+		}else{
+			$data['code']=500;
+			$data['message']='该用户不存在';
+			print_r(json_encode($data));
+		}
+		$result=array();
+		//先查表是否存在
+		$sql="select TABLE_NAME from information_schema.TABLES where TABLE_NAME = 'shard_max_dalay';";
+		$res=$this->Login_model->getList($sql);
+		if($res!==false){
+			//表存在的情况
+			$sql_select="select max_delay_time from shard_max_dalay where db_cluster_id='$cluster_id' and shard_id='$shard_id' and user_id='$user_id'";
+			$res_select=$this->Login_model->getList($sql_select);
+			$result=$res_select;
+		}else{
+			$result=array();
+		}
+		$data['code'] = 200;
+		$data['list'] = $result;
+		print_r(json_encode($data));
+	}
+	public function setVariable(){
+		//获取token
+		$arr = apache_request_headers();//获取请求头数组
+		$token=$arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));return;
+		}
+		//判断参数
+		$string=json_decode(@file_get_contents('php://input'),true);
+		if($string['user_name']!=='super_dba'){
+			$data['error_info'] = 'super_dba账户才具备设置实例变量权限';
+			print_r(json_encode($data));return;
+		}
+		//调接口
+		$this->load->model('Cluster_model');
+		$post_data=str_replace("\\/", "/", json_encode($string));
+		//print_r($post_data);exit;
+		$post_arr = $this->Cluster_model->postData($post_data,$this->post_url);
+		$post_arr = json_decode($post_arr, TRUE);
+		$data=$post_arr;
+		print_r(json_encode($data));
+	}
+	public function getVariable(){
+		//获取token
+		$arr = apache_request_headers();//获取请求头数组
+		$token=$arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));return;
+		}
+		//判断参数
+		$string=json_decode(@file_get_contents('php://input'),true);
+		if($string['user_name']!=='super_dba'){
+			$data['error_info'] = 'super_dba账户才具备查看实例变量权限';
+			print_r(json_encode($data));return;
+		}
+		//调接口
+		$this->load->model('Cluster_model');
+		$post_data=str_replace("\\/", "/", json_encode($string));
+		//print_r($post_data);exit;
+		$post_arr = $this->Cluster_model->postData($post_data,$this->post_url);
+		$post_arr = json_decode($post_arr, TRUE);
+		$data=$post_arr;
+		print_r(json_encode($data));
+	}
 	public function getNoSwitchList(){
 		//判断参数
 		$string=json_decode(@file_get_contents('php://input'),true);
