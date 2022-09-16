@@ -556,6 +556,11 @@ class Login extends CI_Controller {
 					$this->load->model('Change_model');
 					$res_main=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_main);
 					//print_r($res_main);exit;
+				}else if($dbha_mode=='no_rep'){
+					//获取元数据的主节点
+					$sql_main="select hostaddr,port from meta_db_nodes where member_state='source'";
+					$this->load->model('Change_model');
+					$res_main=$this->Change_model->getMysql($ip,$port,'pgx','pgx_pwd','kunlun_metadata_db',$sql_main);
 				}
 				if($res_main['code']==200){
 					$f = fopen('./application/config/database.php', 'w+');
