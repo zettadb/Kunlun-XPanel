@@ -371,6 +371,9 @@ class Cluster extends CI_Controller {
 		$sql="select name from comp_nodes where id='$id' and db_cluster_id='$db_cluster_id' and status!='deleted'";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
+		if($res==false){
+			return '';
+		}
 		return $res[0]['name'];
 	}
 	public function ifBackUp(){
@@ -629,6 +632,8 @@ class Cluster extends CI_Controller {
 			$data['status']=$status;
 		}else{
 			$data['nodedetail']='';
+			$data['list']=false;
+			$data['status']=$status;
 		}
 		return $data;
 	}

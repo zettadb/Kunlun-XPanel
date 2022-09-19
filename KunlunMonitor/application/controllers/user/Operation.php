@@ -66,7 +66,15 @@ class Operation extends CI_Controller {
 									if(!empty($string['paras']['cluster_id'])){
 										$res[$row]['cluster_id'] =$string['paras']['cluster_id'];
 									}else{
-										$res[$row]['cluster_id'] ='';
+										if($res[$row]['job_type']=='回档集群'||$res[$row]['job_type']=='cluster_restore'){
+											if(!empty($string['paras']['dst_cluster_id'])){
+												$res[$row]['cluster_id'] =$string['paras']['dst_cluster_id'];
+											}else{
+												$res[$row]['cluster_id'] ='';
+											}
+										}else{
+											$res[$row]['cluster_id'] ='';
+										}
 									}
 								}
 								if(!empty($info['error_info'])){
@@ -1025,9 +1033,11 @@ class Operation extends CI_Controller {
 											$nick_name = '';
 										}
 									}
-									
+									// if(!empty($dst_cluster_id)){
+									// 	$res[$row]['cluster_id']=$dst_cluster_id;
+									// }
 									$res[$row]['list'] = '<div>原集群ID：' .$src_cluster_id. '</div><div>原集群业务名称：' .$src_nick_name  . '</div><div>目标集群ID：' . $dst_cluster_id. '</div><div>目标集群业务名称：' .$nick_name  . '</div><div>回档时间：' .$restore_time . '</div>';
-									$res[$row]['object'] = $nick_name.'('.$shard_name.')';
+									$res[$row]['object'] = $nick_name;
 								}else{
 									$res[$row]['list'] = '<div>原集群ID：</div><div>原集群业务名称：</div><div>目标集群ID：</div><div>目标集群业务名称：</div><div>回档时间：</div>';
 									$res[$row]['object'] = '';

@@ -249,6 +249,39 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/AlarmRecord',
+    component: Layout,
+    redirect: '/alarmRecord',
+    name: 'AlarmRecord',
+    meta: { 
+      title: '告警管理',
+      requiresAuth:true, 
+      icon: 'el-icon-warning-outline'
+    },
+    children: [
+      {
+        path: 'index',
+        name: 'Index',
+        component: () => import('@/views/alarmrecord/index'),
+        meta: {
+          title: '告警终端管理',
+          requiresAuth:true, 
+          // icon: 'table' 
+        }
+      },
+      // {
+      //   path: 'NoSwitch',
+      //   name: 'NoSwitch',
+      //   component: () => import('@/views/cluster/noswitch'),
+      //   meta: { 
+      //     title: '告警配置',
+      //     requiresAuth:true, 
+      //     //  icon: 'tree' 
+      //   }
+      // },
+    ]
+  },
+  {
     path: '/ClusterMgr',
     component: Layout,
     children: [
@@ -260,7 +293,7 @@ export const constantRoutes = [
           title: 'cluster_mgr状态',
           requiresAuth:true, 
           icon: 'el-icon-aim'
-        }
+        },
       }
     ]
   },

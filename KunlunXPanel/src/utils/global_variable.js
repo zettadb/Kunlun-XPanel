@@ -26,6 +26,7 @@ const ip_arr=[{ip:ip}];
 const timestamp_arr=[{time:new Date().getTime()}];
 const policy_arr=[{id:'top_hit',label:'按热点排序'},{id:'top_size',label:'按数据量排序'}];
 const node_stats_arr=[{id:'running',label:'在线',color:'#00ed37'},{id:'idle',label:'不允许再装实例',color:'#c7c9d1'},{id:'dead',label:'离线',color:'red'}];
+const alarm_type_arr=[{id:'create_cluster',label:'新增集群'},{id:'delete_cluster',label:'删除集群'},{id:'add_shards',label:'新增shard'},{id:'delete_shard',label:'删除shard'},{id:'add_comps',label:'增加计算节点'},{id:'delete_comp',label:'删除计算节点'},{id:'add_nodes',label:'增加存储节点'},{id:'delete_node',label:'删除存储节点'},{id:'manual_switch',label:'主备切换'},{id:'rebuild_node',label:'重做备机节点'},{id:'cluster_restore',label:'回档集群'},{id:'expand_cluster',label:'集群扩容'},{id:'manual_backup_cluster',label:'全量备份'}];
 export {
   role_type_arr,
   valid_period,
@@ -44,5 +45,6 @@ export {
   timestamp_arr,
   machine_type_arr,
   policy_arr,
-  node_stats_arr
+  node_stats_arr,
+  alarm_type_arr
 }

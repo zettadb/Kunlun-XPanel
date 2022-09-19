@@ -273,8 +273,6 @@
  import { messageTip,handleCofirm,getNowDate } from "@/utils";
  import { getMachineList,getNodes,addMachine,delMachine,importData,setMachineStatus} from '@/api/machine/list'
  import { pgEnable,getEvStatus } from '@/api/cluster/list'
- //import {addMachine,delMachine,getEvStatus,pEnable,update} from '@/api/machine/listInterface'
- import {getAllMachineStatus} from '@/api/cluster/listInterface'
  import {version_arr,timestamp_arr,machine_type_arr,node_stats_arr} from "@/utils/global_variable"
  import Pagination from '@/components/Pagination' 
  //import { v4 as uuidv4 } from 'uuid';
@@ -632,25 +630,6 @@ export default {
       let queryParam = Object.assign({}, this.listQuery)
       //模糊搜索
       getMachineList(queryParam).then(response => {
-        //机器的状态
-        const tempData = {};
-        tempData.job_id ='';
-        tempData.job_type ='get_machine_summary';
-        tempData.version=version_arr[0].ver;
-        tempData.timestamp =timestamp_arr[0].time+'';
-        tempData.paras={};
-        // getAllMachineStatus(tempData).then(res => {
-        //   const res_status=res.attachment.list_machine;
-        //   for(let i=0;i<response.total;i++){
-        //     const arr=response.list[i];
-        //     for (let j = 0; j < res_status.length; j++) {
-        //       const ip=res_status[j].hostaddr;
-        //       if(ip==arr.hostaddr){
-        //         this.$set(arr, 'status', res_status[j].status)
-        //       }
-        //     }
-        //   }
-        // })
         this.list = response.list;
         this.total = response.total;
         setTimeout(() => {

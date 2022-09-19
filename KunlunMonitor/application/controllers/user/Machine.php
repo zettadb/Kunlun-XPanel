@@ -434,9 +434,9 @@ class Machine extends CI_Controller {
 		$data['avail']=$avail;
 		print_r(json_encode($data));
 	}
-	//获取集群信息
+	//获取机器信息
 	public function getAllMachineStatus(){
-		//获取集群数据
+		//获取机器数据
 		$sql="select hostaddr,node_stats as status from server_nodes where hostaddr!='pseudo_server_useless' group by hostaddr";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);

@@ -94,7 +94,6 @@ import {login,change} from "@/api/login/user";
 import Loginheader from '@/components/Loginheader';
 import { messageTip } from "@/utils";
 import { getMetaPrimary } from "@/api/cluster/list";
-//import { getMetaPrimary } from "@/api/cluster/listInterface";
 import { v4 as uuidv4 } from 'uuid';
 import {version_arr,timestamp_arr} from "@/utils/global_variable"
 

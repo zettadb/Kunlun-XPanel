@@ -818,8 +818,6 @@
  import Pagination from '@/components/Pagination' 
  import {ha_mode_arr,c_ha_mode_arr,shards_arr,per_shard_arr,norepshards_arr,node_type_arr,c_node_type_arr,version_arr,storage_type_arr,timestamp_arr,policy_arr} from "@/utils/global_variable"
  import {getClusterList,ifBackUp,getAllMachine,getShards,uAssign,getStroMachine,getCompMachine,createCluster,delCluster,backeUpCluster,addShards,addComps,addNodes,restoreCluster,getBackUpStorage,getEvStatus,getShardsJobLog,getOldCluster, getShardsCount,getShardsName,getShardTable,getOtherShards,expandCluster,getExpandTableList } from '@/api/cluster/list'
- //import {addShards,createCluster,addComps,addNodes,getEvStatus,delCluster,backeUpCluster,restoreCluster,getMetaMode,getBackUpStorage} from '@/api/cluster/listInterface'
- import {getMetaMode} from '@/api/cluster/listInterface'
  import JsonViewer from 'vue-json-viewer'
 export default {
   name: "list",
@@ -1787,21 +1785,6 @@ export default {
         }
       });
      
-      // const temp={};
-      // temp.job_type='get_meta_mode';
-      // temp.version=version_arr[0].ver;
-      // temp.job_id='';
-      // temp.timestamp=timestamp_arr[0].time+'';
-      // temp.paras={}
-      // getMetaMode(temp).then((res) => {
-      //   if(res){
-      //     const ha_mode=[{"id":res.attachment.mode,"label":res.attachment.mode}];
-      //     this.hamodeData=ha_mode;
-      //   };
-      // });
-      // this.$nextTick(() => {
-      //   this.$refs.dataForm.clearValidate();
-      // });
     },
     createData() {
       this.$refs["dataForm"].validate((valid) => {

@@ -401,7 +401,6 @@
  import {ha_mode_arr,shards_arr,per_shard_arr,norepshards_arr,node_type_arr,version_arr,storage_type_arr,timestamp_arr,policy_arr} from "@/utils/global_variable"
  import {getStroMachine,addNodes,getEvStatus,getShardsJobLog,getShardTable,getOtherShards,getExpandTableList,switchShard,getBackupStorageList,rebuildNode} from '@/api/cluster/list'
  import {getMetaClusterList,getMetaPrimary,getMetaStandbyNode} from '@/api/metacluster/list'
- //import {getMetaMode} from '@/api/cluster/listInterface'
  import JsonViewer from 'vue-json-viewer'
 export default {
   name: "list",

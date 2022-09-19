@@ -473,10 +473,7 @@ import { messageTip,handleCofirm,getNowDate,createCode,gotoCofirm} from "@/utils
 import {getClusterNodesList,getEffectCluster,getNodes,getAllMachine, getShards,getSnodeTotal,getStandbyNode,getShardPrimary,pgEnable,myEnable,delShard,delComp,delSnode,startComp,startSnode,stopComp,stopSnode,restartComp,restartSnode,getClusterDetail,switchShard,getStorageList,rebuildNode,getEvStatus,getShardsCount,getCompsCount,getNodesCount,getBackupStorageList,setMaxDalay,getMetaCluster,setVariable,getVariable} from '@/api/cluster/list'
 import {mysqlDashboard,pgsqlDashboard} from '@/api/grafana/list'
 import SeeksRelationGraph from 'relation-graph'
-//import {v4 as uuidv4 } from 'uuid';
 import {version_arr,ip_arr,timestamp_arr} from "@/utils/global_variable"
-//import {getEvStatus,pgEnable,myEnable,delShard,delComp,delSnode,startComp,startSnode,stopComp,stopSnode,restartComp,restartSnode,getClusterDetail,switchShard,getStorageList,rebuildNode} from '@/api/cluster/listInterface'
-// import { Steps } from 'element-ui';
 export default {
   name: 'Demo',
   components: { SeeksRelationGraph },
