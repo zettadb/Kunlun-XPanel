@@ -462,14 +462,13 @@
       </div>
     </el-dialog>
     <!-- 扩容-->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogExpandVisible" custom-class="single_dal_view"  :close-on-click-modal="false" >
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogExpandVisible" custom-class="single_dal_view expand"  :close-on-click-modal="false" >
       <el-form
         ref="expandForm"
         :model="expandtemp"
         :rules="rules"
         label-position="left"
-        label-width="130px"
-      >
+        label-width="130px">
         <div class="icons-container">
           <el-tabs type="border-card" v-model="activeName" @tab-click="handleClick" >
             <el-tab-pane  v-for="(item,index) in shardNameList" :key="index" :label="item.name" :name="item.name" :value="item.id+'_'+item.cluster_id">
@@ -482,7 +481,6 @@
               border
               highlight-current-row
               style="width: 100%;margin-bottom: 20px;">
-                <!-- :selectable='checkboxInit' -->
                 <el-table-column type="selection" width="55"></el-table-column>
                 <el-table-column
                     type="index"
@@ -4113,7 +4111,7 @@ export default {
   
 
 </style>
-<style lang="less" scoped>
+<style lang="less">
 
 
 //  .hoverSteps{
@@ -4142,4 +4140,7 @@ export default {
 //       text-align: right;
 //     }
 //   }
+.expand .el-tabs__content{
+  height:100% !important;
+}
 </style>

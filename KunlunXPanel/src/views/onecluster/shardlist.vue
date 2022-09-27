@@ -259,11 +259,143 @@
     <el-dialog :title="dialogStatus" :visible.sync="dialogShardInfo" custom-class="single_dal_view" :close-on-click-modal="false">
       <json-viewer :value="shardInfo"></json-viewer>
     </el-dialog>
+     <!--主备切换-->
+    <el-dialog title="主备切换" :visible.sync="dialogSwitchOVisible" custom-class="single_dal_view">
+      <el-form
+        ref="switchForm"
+        :model="switchtemp"
+        :rules="rules"
+        label-position="left"
+        label-width="100px"
+      >
+      <el-form-item label="主节点:" prop="primary_node">
+        <span>{{switchtemp.primary_node}}</span>
+      </el-form-item>
+      <el-form-item label="备机节点:" prop="replica" >
+        <el-select v-model="switchtemp.replica" clearable placeholder="请选择备机节点">
+          <el-option
+            v-for="item in options"
+            :key="item.value"
+            :label="item.label"
+            :value="item.label">
+          </el-option>
+        </el-select>
+      </el-form-item>
+      </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="dialogSwitchOVisible = false">关闭</el-button>
+          <el-button type="primary" @click="switchData(switchtemp)">确认</el-button>
+        </div>
+    </el-dialog>
+    <!--重做备机节点-->
+    <el-dialog title="重做备机节点" :visible.sync="dialogRedoVisible" custom-class="single_dal_view">
+      <el-form
+        ref="redoForm"
+        :model="redotemp"
+        :rules="rules"
+        label-position="left"
+        label-width="180px"
+      >
+      <el-form-item label="需重做的备机节点:" prop="redolist" >
+        <el-select v-model="redotemp.redolist" multiple placeholder="请选择" @change="change">
+          <el-option
+            v-for="item in options"
+            :key="item.value"
+            :label="item.label"
+            :value="item.label">
+          </el-option>
+        </el-select>
+       </el-form-item>
+       
+       <el-form-item label="是否从主节点上拉取数据:" prop="allow_pull_from_master" >
+        <el-radio v-model="redotemp.allow_pull_from_master" label="1">是</el-radio>
+        <el-radio v-model="redotemp.allow_pull_from_master" label="0">否</el-radio>
+      </el-form-item>
+      <el-form-item label="主备延迟:" prop="allow_replica_delay"  v-if="redotemp.allow_pull_from_master=='0'">
+        <el-input  v-model="redotemp.allow_replica_delay" class="right_input"  placeholder="主备延迟">
+          <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">s</i>
+        </el-input>
+      </el-form-item>
+       <el-form-item label="是否备份:" prop="need_backup" >
+        <el-radio v-model="redotemp.need_backup" label="1">是</el-radio>
+        <el-radio v-model="redotemp.need_backup" label="0">否</el-radio>
+      </el-form-item>
+      <el-form-item label="备份存储目标:" prop="hdfs_host"  v-if="redotemp.need_backup=='1'">
+        <el-select v-model="redotemp.hdfs_host" placeholder="请选择">
+          <el-option
+            v-for="item in hdfs_options"
+            :key="item.value"
+            :label="item.label"
+            :value="item.label">
+          </el-option>
+        </el-select>
+       </el-form-item>
+      <el-form-item label="限速:" prop="pv_limit" >
+        <el-input  v-model="redotemp.pv_limit" class="right_input"  placeholder="限速">
+          <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">KB/s</i>
+        </el-input>
+      </el-form-item>
+
+      </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="dialogRedoVisible = false">关闭</el-button>
+          <el-button type="primary" @click="redoData(redotemp)">确认</el-button>
+        </div>
+    </el-dialog>
+    <!-- 主备切换状态框 -->
+    <el-dialog :title="job_id" :visible.sync="dialogStatusFVisible" custom-class="single_dal_view" :close-on-click-modal="false" :before-close="beforeSwitchDestory">
+      <div style="height: 400px;">
+        <el-steps direction="vertical" :active="active" finish-status="success">
+          <el-step
+              v-for="(item,index) of stepParams"
+              :key="index"
+              :title="item.title"
+              :icon="item.icon"
+              :status="item.status"
+              :description="item.description"
+              :class="stepSuc.includes(index) ? 'stepSuc':'stepErr'"
+              @click.native="handleStep(index)"
+          />
+        </el-steps>
+      </div>
+      
+    </el-dialog>
+    <!-- 重做备机状态框 -->
+     <el-dialog :title="job_id" :visible.sync="dialogStatusRedoVisible" custom-class="single_dal_view" :close-on-click-modal="false" :before-close="beforeRedoDestory">
+      <div style="width: 100%;background: #fff;padding:0 20px;" class="block">
+        <el-steps direction="vertical" :active="init_active">
+          <el-step 
+          :title="items.title"  
+          v-for="(items, key) in statusList" 
+          :key="key" 
+          :icon="items.icon" 
+          :status="items.status"
+          :description="items.description">
+            <template slot="description">
+              <span>{{items.description}}</span>
+            <div style="padding:20px;">
+              <el-steps direction="vertical" :active="second_active" >
+                <el-step
+                    v-for="(item,index) of statusList[key].second"
+                    :key="index"
+                    :title="item.title"
+                    :icon="item.icon"
+                    :status="item.status"
+                    :description="item.description"
+                >
+                </el-step>
+              </el-steps>
+            </div>
+            </template>
+          </el-step>
+        </el-steps>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
  import {messageTip,createCode,gotoCofirm,getNowDate} from "@/utils";
- import {shardList,getEvStatus,getStroMachine,addShards,getShardsCount,delShard,getShardsJobLog,getShards,addNodes,getNodesCount,delSnode,controlInstance} from '@/api/cluster/list'
+ import {shardList,getEvStatus,getStroMachine,addShards,getShardsCount,delShard,getShardsJobLog,getShards,addNodes,getNodesCount,delSnode,controlInstance,getStandbyNode,getShardPrimary,switchShard,getBackupStorageList,rebuildNode } from '@/api/cluster/list'
  import {version_arr,timestamp_arr,ip_arr} from "@/utils/global_variable"
  import Pagination from '@/components/Pagination' 
  import JsonViewer from 'vue-json-viewer'
@@ -309,6 +441,45 @@ export default {
         callback();
       }
     };
+    const validateredolist = (rule, value, callback) => {
+     if(value.length === 0){
+        callback(new Error("请选择需重做的备机节点"));
+      }else if(value.length==this.options.length){
+        this.redotemp.allow_pull_from_master='1';
+        callback();
+      }
+      else {
+        callback();
+      }
+    };
+    const validatereplicadelay = (rule, value, callback) => {
+     if(!value){
+        callback(new Error("主备延迟不能为空"));
+      }else if(!(/^[0-9]+$/.test(value))){
+        callback(new Error("主备延迟只能输入数字"));
+      }
+      else {
+        callback();
+      }
+    };
+    const validatehdfshost = (rule, value, callback) => {
+      if(value.length === 0){
+        callback(new Error("请选择备份存储目标"));
+      }
+      else {
+        callback();
+      }
+    };
+    const validatemaxtime = (rule, value, callback) => {
+     if(!value){
+        callback(new Error("最大延迟时间不能为空"));
+      }else if(!(/^[0-9]+$/.test(value))){
+        callback(new Error("最大延迟时间只能输入数字"));
+      }
+      else {
+        callback();
+      }
+    };
     return {
       tableKey: 0,
       //list: null,
@@ -334,9 +505,38 @@ export default {
         shards_count:'',
         shard_name:''
       },
+      redotemp:{
+        redolist:[],
+        allow_pull_from_master:'0',
+        allow_replica_delay:'30',
+        need_backup:'0',
+        pv_limit:'10',
+        hdfs_host:''   
+      },
+      switchtemp:{
+        replica:'',
+        primary_node:'',
+        shard_id:'',
+        cluster_id:'',
+      },
+      options: [],
+      hdfs_options:[],
+      active: 0,
+      // 已选步骤
+      stepSuc: [0],
+      // 步骤参数
+      stepParams: [],
+      init_active:0,
+      second_active:0,
+      statusList:[],
+      ipList:[],
       dialogFormVisible: false,
       dialogEditVisible:false,
       dialogUploadVisible:false,
+      dialogSwitchOVisible:false,
+      dialogRedoVisible:false,
+      dialogStatusFVisible:false,
+      dialogStatusRedoVisible:false,
       dialogStatus: "",
       textMap: {
         create: "添加shard",
@@ -395,6 +595,18 @@ export default {
         shard_name: [
           { required: true, trigger: "blur",validator: validateShardName},
         ],
+         redolist: [
+          { required: true, trigger: "blur",validator: validateredolist },
+        ],
+        allow_replica_delay: [
+          { required: true, trigger: "blur",validator: validatereplicadelay },
+        ],
+        hdfs_host: [
+          { required: true, trigger: "blur",validator: validatehdfshost },
+        ],
+        maxtime:[
+          { required: true, trigger: "blur",validator: validatemaxtime },
+        ],
       },
     };
   },
@@ -408,6 +620,213 @@ export default {
     this.timer = null
   },
   methods:{
+    beforeSwitchDestory(){
+      //console.log('00:00');
+      clearInterval(this.timer)
+      this.dialogStatusFVisible=false;
+      this.timer = null;
+
+    },
+    beforeRedoDestory(){
+      clearInterval(this.timer)
+      this.dialogStatusRedoVisible=false;
+      this.timer = null;
+    },
+    redoData(row) {
+      this.$refs["redoForm"].validate((valid) => {
+        if (valid) {
+          let tempData = {};
+          tempData.user_name = sessionStorage.getItem('login_username');
+          tempData.job_id ='';
+          tempData.job_type ='rebuild_node';
+          tempData.version=version_arr[0].ver;
+          tempData.timestamp=timestamp_arr[0].time+'';
+          let rebuild=[];
+          let ipList=[]
+          //console.log(this.redotemp.redolist.length);return;
+          for(let i=0;i<this.redotemp.redolist.length;i++){
+            let ip_arr=(this.redotemp.redolist[i].substring(0,this.redotemp.redolist[i].length-1)).split('(');
+            let pv_limit='';
+            if(!this.redotemp.pv_limit){
+              pv_limit='10'
+            }else{
+              pv_limit=this.redotemp.pv_limit
+            }
+            let rb_paras={}
+            if(this.redotemp.need_backup=='1'){
+              const hdfs_host=(this.redotemp.hdfs_host.substring(0,this.redotemp.hdfs_host.length-1)).replace('(',':');
+              rb_paras.hostaddr=ip_arr[0];
+              rb_paras.port=ip_arr[1];
+              rb_paras.need_backup=this.redotemp.need_backup;
+              rb_paras.hdfs_host=hdfs_host;
+              rb_paras.pv_limit=pv_limit
+            }else{
+              rb_paras.hostaddr=ip_arr[0];
+              rb_paras.port=ip_arr[1];
+              rb_paras.need_backup=this.redotemp.need_backup;
+              rb_paras.pv_limit=pv_limit
+            }
+            rebuild.push(rb_paras)
+            ipList.push({title:ip_arr[0]+'_'+ip_arr[1],error_code: '0',error_info: '',status: 'no_start',step: ''})
+          }
+           let paras={}
+          if(this.redotemp.allow_pull_from_master=='1'){
+            paras.shard_id=this.redotemp.shard_id,
+            paras.cluster_id=this.redotemp.cluster_id,
+            paras.allow_pull_from_master=this.redotemp.allow_pull_from_master,
+            paras.rb_nodes= rebuild
+          }else{
+            paras.shard_id=this.redotemp.shard_id;
+            paras.cluster_id=this.redotemp.cluster_id;
+            paras.allow_pull_from_master=this.redotemp.allow_pull_from_master;
+            paras.allow_replica_delay=this.redotemp.allow_replica_delay;
+            paras.rb_nodes= rebuild
+          }
+          tempData.paras=paras;
+          this.dialogStatusRedoVisible=true;
+          this.dialogRedoVisible=false;
+          //console.log(tempData);return;
+          //发送接口
+          rebuildNode(tempData).then(response=>{
+            let res = response;
+            if(res.status=='accept'){
+              this.dialogRedoVisible = false;
+              this.stepParams=[];
+              let i=0;
+              const info='重做备机节点';this.statusList=[];this.timer=null;this.init_active=0;this.second_active=0;
+              //传重做备机节点的ipList
+              this.getFStatus(this.timer,res.job_id,i++,info,ipList)
+              this.timer= setInterval(() => {
+                this.getFStatus(this.timer,res.job_id,i++,info,ipList)
+              }, 5000)
+            }
+            else{
+              this.message_tips = res.error_info;
+              this.message_type = 'error';
+              messageTip(this.message_tips,this.message_type);
+            }
+          })
+        }
+      });
+    },
+    switchData(row) {
+      this.$refs["switchForm"].validate((valid) => {
+        if (valid) {
+          //this.dialogStatusVisible=true;
+          const tempData = {};
+          tempData.user_name = sessionStorage.getItem('login_username');
+          tempData.job_id ='';
+          tempData.job_type ='manual_switch';
+          tempData.version=version_arr[0].ver;
+          tempData.timestamp=timestamp_arr[0].time+'';
+          let master_ip=(this.switchtemp.primary_node.substring(0,this.switchtemp.primary_node.length-1)).replace('(','_');
+          let paras={};
+          if(!this.switchtemp.replica.length){
+            paras.shard_id=this.switchtemp.shard_id;
+            paras.cluster_id=this.switchtemp.cluster_id;
+            paras.master_hostaddr=master_ip;
+          }else{
+            let assign_ip=(this.switchtemp.replica.substring(0,this.switchtemp.replica.length-1)).replace('(','_');
+            paras.shard_id=this.switchtemp.shard_id;
+            paras.cluster_id=this.switchtemp.cluster_id;
+            paras.master_hostaddr=master_ip;
+            paras.assign_hostaddr=assign_ip;
+          }
+          tempData.paras=paras;
+          //console.log(tempData);return;
+          //发送接口
+          switchShard(tempData).then(response=>{
+            let res = response;
+            if(res.status=='accept'){
+              this.dialogSwitchOVisible = false;
+              this.stepParams=[];
+              let i=0;
+              const info='主备切换';
+              this.computer=[];this.shard=[];this.computer_state='';this.storage_state='';this.computer_title='';this.computer_icon='';this.shard_icon='';this.shard_title='';this.comp_active=0;this.shard_active=0;this.strogemachines=[];this.init_title='';this.init_active=0;this.finish_title='';this.finish_icon='';this.finish_description='';this.computer_description='';this.shard_description='';this.job_id='';this.timer=null;
+              this.timer = setInterval(() => {
+                this.getFStatus(this.timer,res.job_id,i++,info,'')
+              }, 1000)
+            }
+            else{
+              this.message_tips = res.error_info;
+              this.message_type = 'error';
+              messageTip(this.message_tips,this.message_type);
+            }
+          })
+        }
+      });
+    },
+    change(){
+      if(this.options.length==this.redotemp.redolist.length){
+        this.redotemp.allow_pull_from_master='1'; 
+      }else{
+        this.redotemp.allow_pull_from_master='0'; 
+      }
+    },
+    handleReDo(row){
+      this.resetReDoTemp();
+      this.dialogRedoVisible=true;
+      this.redotemp.shard_id=row.shard_id;
+      this.redotemp.cluster_id=row.cluster_id;
+      getBackupStorageList().then(response => {
+          this.hdfs_options=[];
+          if(response.list!==null){
+            for (let i = 0; i < response.list.length; i++) {
+               const arr={'value':i,'label':response.list[i].hostaddr+'('+response.list[i].port+')'};
+               this.hdfs_options.push(arr);
+            }
+          }
+        });
+        //获取备机节点
+        const temps={};
+        temps.cluster_id=row.cluster_id;
+        temps.shard_id=row.shard_id;
+        temps.ha_mode=this.listsent.ha_mode;
+        getStandbyNode(temps).then((res) => {
+          if(res.code==200){
+            this.options=[];
+            if(res.list.length>0){
+              for (let i = 0; i < res.list.length; i++) {
+                const arr={'value':i,'label':res.list[i].ip+'('+res.list[i].port+')'};
+                this.options.push(arr);
+              }
+            }
+          }  
+        });
+
+    },
+    handleSwitch(row){
+      this.resetSwitchTemp();
+      this.dialogSwitchOVisible=true;
+      //获取主节点
+      const temp={};
+      temp.cluster_id=row.cluster_id;
+      temp.shard_id=row.shard_id;
+      temp.ha_mode=this.listsent.ha_mode;
+      this.switchtemp.shard_id=row.shard_id;
+      this.switchtemp.cluster_id=row.cluster_id;
+      getShardPrimary(temp).then((res) => {
+        if(res.list.length>0){
+            this.switchtemp.primary_node=res.list[0].ip+'('+res.list[0].port+')';
+        }
+      });
+      //获取备机节点
+      const temps={};
+      temps.cluster_id=row.cluster_id;
+      temps.shard_id=row.shard_id;
+      temps.ha_mode=this.listsent.ha_mode;
+      getStandbyNode(temps).then((res) => {
+        if(res.code==200){
+          this.options=[];
+          if(res.list.length>0){
+            for (let i = 0; i < res.list.length; i++) {
+              const arr={'value':i,'label':res.list[i].ip+'('+res.list[i].port+')'};
+              this.options.push(arr);
+            }
+          }
+        }
+      });
+    },
     nodeMonitor(row){
       const mparas={};
       mparas['cluster_id']=row.cluster_id;
@@ -474,6 +893,24 @@ export default {
         cluster_id:'',
         shards_count:'1',
         shard_name:''
+      };
+    },
+    resetSwitchTemp() {
+      this.switchtemp={
+        replica:'',
+        primary_node:'',
+        shard_id:'',
+        cluster_id:'',
+      };
+    },
+    resetReDoTemp(){
+      this.redotemp={
+        redolist:[],
+        allow_pull_from_master:'0',
+        allow_replica_delay:'30',
+        need_backup:'0',
+        pv_limit:'10',
+        hdfs_host:''   
       };
     },
     handleCreate() {
@@ -825,7 +1262,7 @@ export default {
       messageTip('已取消删除','info');
       });
     },
-    getFStatus (timer,data,i,info,ip) {
+    getFStatus (timer,data,i,info,iparr) {
       setTimeout(()=>{
         const postarr={};
         postarr.job_type='get_status';
@@ -836,7 +1273,532 @@ export default {
         this.job_id='任务ID:'+data;
         getEvStatus(postarr).then((ress) => {
           //新增shard,存储节点
-          if(info=='添加shard'||info=='添加存储节点'||info=='删除shard'||info=='删除存储节点'){
+           if(info=='主备切换'){
+            if(ress.attachment!==null){
+            this.dialogStatusFVisible=true;
+            const steps=(ress.attachment.job_step).replace(/\s+/g, '').split(',');
+            if(this.stepParams.length==0){
+              for(let a=0;a<steps.length;a++){
+                let newArrgoing={}
+                if(a==0){
+                  newArrgoing.title=steps[a];
+                  newArrgoing.icon='el-icon-loading';
+                  newArrgoing.status= 'process';
+                  newArrgoing.description='';
+                }else{
+                  newArrgoing.title=steps[a];
+                  newArrgoing.icon= '';
+                  newArrgoing.status= 'wait';
+                  newArrgoing.description='';
+                }
+                if(ress.attachment.step==steps[a]){
+                  if(a>(this.active)){
+                    for(let k=0;k<this.stepParams.length;k++){
+                      if(k==a){
+                        if(this.stepParams[k].status=='wait'){
+                          this.stepParams[k].icon='el-icon-loading';
+                          this.stepParams[k].status='process';
+                        }
+                      }
+                      if(k>0&&k<a){
+                        //小于i的情况
+                        for(let j=0;j<k;j++){
+                          this.stepParams[j].icon='el-icon-circle-check';
+                          this.stepParams[j].status='success';
+                        }
+                      }
+                    }
+                  }
+                  this.active=a;
+                }
+                this.stepParams.push(newArrgoing)
+              }
+            }else{
+              if(ress.status=='ongoing'){
+                for(let k=0;k<this.stepParams.length;k++){
+                  if(ress.attachment.step==this.stepParams[k].title){
+                    this.active=k;
+                    this.stepParams[k].icon='el-icon-loading';
+                    this.stepParams[k].status='process';
+                    if(k>0&&k<(this.active+1)){
+                      //小于i的情况
+                      for(let j=0;j<k;j++){
+                        this.stepParams[j].icon='el-icon-circle-check';
+                        this.stepParams[j].status='success';
+                      }
+                    }
+                  }
+                }
+              }else if(ress.status=='done'){
+                for(let k=0;k<this.stepParams.length;k++){
+                  this.active=this.stepParams.length;
+                  this.stepParams[k].icon='el-icon-circle-check';
+                  this.stepParams[k].status='success';
+                }
+                clearInterval(timer);
+                this.getList();
+                this.getOneCluster(this.temp_cluster);
+              }else if(ress.status=='failed'){
+                for(let k=0;k<this.stepParams.length;k++){
+                    if(this.stepParams[k].status=='process'){
+                      this.active=k;
+                      this.stepParams[k].icon='el-icon-circle-close';
+                      this.stepParams[k].status='error';
+                      this.stepParams[k].description=ress.error_info;
+                    }
+                }
+                clearInterval(timer);
+              }
+            }
+            }else if(ress.attachment==null&&ress.error_code=='70001'&&ress.status=='failed'){
+              if(i>5){
+                clearInterval(timer);
+              }
+            }
+          }else if(info=='重做备机节点'){
+            if(ress.attachment!==null){
+              if(this.statusList.length==0){
+                let statusgoing={}
+                if(ress.status=='failed'){
+                  statusgoing={title:info+'失败',icon:'el-icon-circle-close',status:'error',description:ress.error_info,second:[]}
+                  this.statusList.push(statusgoing)
+                  clearInterval(timer);
+                }else{
+                  //let statusgoing={}
+                  // let iparr=[];
+                  // for(let item in ress.attachment){
+                  //   if(item!=='job_step'){
+                  //   let key=ress.attachment[item];
+                  //   this.$set(key, 'title', item)
+                  //   iparr.push(key);
+                  //   }
+                  // }
+                  for(let a=0;a<iparr.length;a++){
+                    const steps=(ress.attachment.job_step).replace(/\s+/g, '').split(',');
+                    let secondgoing={}
+                    let secondlist=[];
+                    for(let b=0;b<steps.length;b++){
+                      secondgoing={title:steps[b],icon:'',status: 'wait',description:''}
+                      secondlist.push(secondgoing)
+                    }
+                    if(a==0){
+                      statusgoing={title:iparr[a].title,icon:'el-icon-loading',status:'process',description:'',second:secondlist}
+                      this.statusList.push(statusgoing)
+                      if(iparr[a].status=='done'){
+                        this.init_active=a+1;
+                        this.statusList[a].icon='el-icon-circle-check';
+                        this.statusList[a].status='success';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          this.statusList[a].second[c].icon='el-icon-circle-check';
+                          this.statusList[a].second[c].status='success';
+                        }
+                      }else if(iparr[a].status=='ongoing'){
+                        this.init_active=a;
+                        this.statusList[a].icon='el-icon-loading';
+                        this.statusList[a].status='process';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          if(iparr[a].step==this.statusList[a].second[c].title){
+                            this.statusList[a].second[c].icon='el-icon-loading';
+                            this.statusList[a].second[c].status='process';
+                            for(let j=0;j<c;j++){
+                              this.statusList[a].second[j].icon='el-icon-circle-check';
+                              this.statusList[a].second[j].status='success';
+                            }
+                          }
+                        }
+                      }else if(iparr[a].status=='failed'){
+                        this.statusList[a].icon='el-icon-circle-close';
+                        this.statusList[a].status='error';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          if(iparr[a].step==this.statusList[a].second[c].title){
+                            this.statusList[a].second[c].icon='el-icon-circle-close';
+                            this.statusList[a].second[c].status='error';
+                            for(let j=0;j<c;j++){
+                              this.statusList[a].second[j].icon='el-icon-circle-check';
+                              this.statusList[a].second[j].status='success';
+                            }
+                          }
+                        }
+                        this.statusList[a].description=iparr[a].error_info;
+                      }
+                    }
+                    else{
+                      const steps=(ress.attachment.job_step).replace(/\s+/g, '').split(',');
+                      let secondgoing={}
+                      let secondlist=[];
+                      for(let b=0;b<steps.length;b++){
+                        secondgoing={title:steps[b],icon:'',status: 'wait',description:''}
+                        secondlist.push(secondgoing)
+                      }
+                      if(this.init_active==0){
+                        statusgoing={title:iparr[a].title,icon:'',status:'wait',description:'',second:secondlist}
+                        this.statusList.push(statusgoing)
+                      }else{
+                        statusgoing={title:iparr[a].title,icon:'el-icon-loading',status:'process',description:'',second:secondlist}
+                        this.statusList.push(statusgoing)
+                      }
+                      //第a个修改里边的状态
+                      if(iparr[a].status=='done'){
+                        this.init_active=a+1;
+                        this.statusList[a].icon='el-icon-circle-check';
+                        this.statusList[a].status='success';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          this.statusList[a].second[c].icon='el-icon-circle-check';
+                          this.statusList[a].second[c].status='success';
+                        }
+                      }else if(iparr[a].status=='ongoing'){
+                        this.init_active=a;
+                        this.statusList[a].icon='el-icon-loading';
+                        this.statusList[a].status='process';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          if(iparr[a].step==this.statusList[a].second[c].title){
+                            this.statusList[a].second[c].icon='el-icon-loading';
+                            this.statusList[a].second[c].status='process';
+                            for(let j=0;j<c;j++){
+                              this.statusList[a].second[j].icon='el-icon-circle-check';
+                              this.statusList[a].second[j].status='success';
+                            }
+                          }
+                        }
+                      }else if(iparr[a].status=='failed'){
+                        this.statusList[a].icon='el-icon-circle-close';
+                        this.statusList[a].status='error';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          if(iparr[a].step==this.statusList[a].second[c].title){
+                            this.statusList[a].second[c].icon='el-icon-circle-close';
+                            this.statusList[a].second[c].status='error';
+                            for(let j=0;j<c;j++){
+                              this.statusList[a].second[j].icon='el-icon-circle-check';
+                              this.statusList[a].second[j].status='success';
+                            }
+                          }
+                        }
+                        this.statusList[a].description=iparr[a].error_info;
+                      }
+                    }
+                  }
+                }
+              }else{
+                //statusList不为0的情况
+                if(ress.status=='ongoing'){
+                  //let statusgoing={}
+                  let iparr=[];
+                  for(let item in ress.attachment){
+                    if(item!=='job_step'){
+                    let key=ress.attachment[item];
+                    this.$set(key, 'title', item)
+                    iparr.push(key);
+                    }
+                  }
+                  for(let a=0;a<iparr.length;a++){
+                    if(a==0){
+                      if(iparr[a].status=='done'){
+                        this.init_active=a+1;
+                        this.statusList[a].icon='el-icon-circle-check';
+                        this.statusList[a].status='success';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          this.statusList[a].second[c].icon='el-icon-circle-check';
+                          this.statusList[a].second[c].status='success';
+                        }
+                      }else if(iparr[a].status=='ongoing'){
+                        this.init_active=a;
+                        this.statusList[a].icon='el-icon-loading';
+                        this.statusList[a].status='process';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          if(iparr[a].step==this.statusList[a].second[c].title){
+                            this.statusList[a].second[c].icon='el-icon-loading';
+                            this.statusList[a].second[c].status='process';
+                            for(let j=0;j<c;j++){
+                              this.statusList[a].second[j].icon='el-icon-circle-check';
+                              this.statusList[a].second[j].status='success';
+                            }
+                          }
+                        }
+                      }else if(iparr[a].status=='failed'){
+                        this.statusList[a].icon='el-icon-circle-close';
+                        this.statusList[a].status='error';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          if(iparr[a].step==this.statusList[a].second[c].title){
+                            this.statusList[a].second[c].icon='el-icon-circle-close';
+                            this.statusList[a].second[c].status='error';
+                            for(let j=0;j<c;j++){
+                              this.statusList[a].second[j].icon='el-icon-circle-check';
+                              this.statusList[a].second[j].status='success';
+                            }
+                          }
+                        }
+                        this.statusList[a].description=iparr[a].error_info;
+                      }
+                    }
+                    else{
+                      //第a个修改里边的状态
+                      if(iparr[a].status=='done'){
+                        this.init_active=a+1;
+                        this.statusList[a].icon='el-icon-circle-check';
+                        this.statusList[a].status='success';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          this.statusList[a].second[c].icon='el-icon-circle-check';
+                          this.statusList[a].second[c].status='success';
+                        }
+                      }else if(iparr[a].status=='ongoing'){
+                        this.init_active=a;
+                        this.statusList[a].icon='el-icon-loading';
+                        this.statusList[a].status='process';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          if(iparr[a].step==this.statusList[a].second[c].title){
+                            this.statusList[a].second[c].icon='el-icon-loading';
+                            this.statusList[a].second[c].status='process';
+                            for(let j=0;j<c;j++){
+                              this.statusList[a].second[j].icon='el-icon-circle-check';
+                              this.statusList[a].second[j].status='success';
+                            }
+                          }
+                        }
+                      }else if(iparr[a].status=='failed'){
+                        this.statusList[a].icon='el-icon-circle-close';
+                        this.statusList[a].status='error';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          if(iparr[a].step==this.statusList[a].second[c].title){
+                            this.statusList[a].second[c].icon='el-icon-circle-close';
+                            this.statusList[a].second[c].status='error';
+                            for(let j=0;j<c;j++){
+                              this.statusList[a].second[j].icon='el-icon-circle-check';
+                              this.statusList[a].second[j].status='success';
+                            }
+                          }
+                        }
+                        this.statusList[a].description=iparr[a].error_info;
+                      }
+                    }
+                  }
+                }else if(ress.status=='failed'){
+                    let iparr=[];
+                  for(let item in ress.attachment){
+                    if(item!=='job_step'){
+                    let key=ress.attachment[item];
+                    this.$set(key, 'title', item)
+                    iparr.push(key);
+                    }
+                  }
+                  for(let a=0;a<iparr.length;a++){
+                    if(a==0){
+                      if(iparr[a].status=='done'){
+                        this.init_active=a+1;
+                        this.statusList[a].icon='el-icon-circle-check';
+                        this.statusList[a].status='success';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          this.statusList[a].second[c].icon='el-icon-circle-check';
+                          this.statusList[a].second[c].status='success';
+                        }
+                      }else if(iparr[a].status=='ongoing'){
+                        this.init_active=a;
+                        this.statusList[a].icon='el-icon-loading';
+                        this.statusList[a].status='process';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          if(iparr[a].step==this.statusList[a].second[c].title){
+                            this.statusList[a].second[c].icon='el-icon-loading';
+                            this.statusList[a].second[c].status='process';
+                            for(let j=0;j<c;j++){
+                              this.statusList[a].second[j].icon='el-icon-circle-check';
+                              this.statusList[a].second[j].status='success';
+                            }
+                          }
+                        }
+                      }else if(iparr[a].status=='failed'){
+                        this.statusList[a].icon='el-icon-circle-close';
+                        this.statusList[a].status='error';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          if(iparr[a].step==this.statusList[a].second[c].title){
+                            this.statusList[a].second[c].icon='el-icon-circle-close';
+                            this.statusList[a].second[c].status='error';
+                            for(let j=0;j<c;j++){
+                              this.statusList[a].second[j].icon='el-icon-circle-check';
+                              this.statusList[a].second[j].status='success';
+                            }
+                          }
+                        }
+                        this.statusList[a].description=iparr[a].error_info;
+                      }
+                    }
+                    else{
+                      //第a个修改里边的状态
+                      if(iparr[a].status=='done'){
+                        this.init_active=a+1;
+                        this.statusList[a].icon='el-icon-circle-check';
+                        this.statusList[a].status='success';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          this.statusList[a].second[c].icon='el-icon-circle-check';
+                          this.statusList[a].second[c].status='success';
+                        }
+                      }else if(iparr[a].status=='ongoing'){
+                        this.init_active=a;
+                        this.statusList[a].icon='el-icon-loading';
+                        this.statusList[a].status='process';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          if(iparr[a].step==this.statusList[a].second[c].title){
+                            this.statusList[a].second[c].icon='el-icon-loading';
+                            this.statusList[a].second[c].status='process';
+                            for(let j=0;j<c;j++){
+                              this.statusList[a].second[j].icon='el-icon-circle-check';
+                              this.statusList[a].second[j].status='success';
+                            }
+                          }
+                        }
+                      }else if(iparr[a].status=='failed'){
+                        this.statusList[a].icon='el-icon-circle-close';
+                        this.statusList[a].status='error';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          if(iparr[a].step==this.statusList[a].second[c].title){
+                            this.statusList[a].second[c].icon='el-icon-circle-close';
+                            this.statusList[a].second[c].status='error';
+                            for(let j=0;j<c;j++){
+                              this.statusList[a].second[j].icon='el-icon-circle-check';
+                              this.statusList[a].second[j].status='success';
+                            }
+                          }
+                        }
+                        this.statusList[a].description=iparr[a].error_info;
+                      }
+                    }
+                  }
+                  let statusgoing={title:info+'失败',icon:'el-icon-circle-close',status:'error',description:ress.error_info,second:''}
+                  this.statusList.push(statusgoing)
+                  clearInterval(timer);
+                }else if(ress.status=='done'){
+                    let iparr=[];
+                  for(let item in ress.attachment){
+                    if(item!=='job_step'){
+                    let key=ress.attachment[item];
+                    this.$set(key, 'title', item)
+                    iparr.push(key);
+                    }
+                  }
+                  for(let a=0;a<iparr.length;a++){
+                    if(a==0){
+                      if(iparr[a].status=='done'){
+                        this.init_active=a+1;
+                        this.statusList[a].icon='el-icon-circle-check';
+                        this.statusList[a].status='success';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          this.statusList[a].second[c].icon='el-icon-circle-check';
+                          this.statusList[a].second[c].status='success';
+                        }
+                      }else if(iparr[a].status=='ongoing'){
+                        this.init_active=a;
+                        this.statusList[a].icon='el-icon-loading';
+                        this.statusList[a].status='process';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          if(iparr[a].step==this.statusList[a].second[c].title){
+                            this.statusList[a].second[c].icon='el-icon-loading';
+                            this.statusList[a].second[c].status='process';
+                            for(let j=0;j<c;j++){
+                              this.statusList[a].second[j].icon='el-icon-circle-check';
+                              this.statusList[a].second[j].status='success';
+                            }
+                          }
+                        }
+                      }else if(iparr[a].status=='failed'){
+                        this.statusList[a].icon='el-icon-circle-close';
+                        this.statusList[a].status='error';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          if(iparr[a].step==this.statusList[a].second[c].title){
+                            this.statusList[a].second[c].icon='el-icon-circle-close';
+                            this.statusList[a].second[c].status='error';
+                            for(let j=0;j<c;j++){
+                              this.statusList[a].second[j].icon='el-icon-circle-check';
+                              this.statusList[a].second[j].status='success';
+                            }
+                          }
+                        }
+                        this.statusList[a].description=iparr[a].error_info;
+                      }
+                    }
+                    else{
+                      //第a个修改里边的状态
+                      if(iparr[a].status=='done'){
+                        this.init_active=a+1;
+                        this.statusList[a].icon='el-icon-circle-check';
+                        this.statusList[a].status='success';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          this.statusList[a].second[c].icon='el-icon-circle-check';
+                          this.statusList[a].second[c].status='success';
+                        }
+                      }else if(iparr[a].status=='ongoing'){
+                        this.init_active=a;
+                        this.statusList[a].icon='el-icon-loading';
+                        this.statusList[a].status='process';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          if(iparr[a].step==this.statusList[a].second[c].title){
+                            this.statusList[a].second[c].icon='el-icon-loading';
+                            this.statusList[a].second[c].status='process';
+                            for(let j=0;j<c;j++){
+                              this.statusList[a].second[j].icon='el-icon-circle-check';
+                              this.statusList[a].second[j].status='success';
+                            }
+                          }
+                        }
+                      }else if(iparr[a].status=='failed'){
+                        this.statusList[a].icon='el-icon-circle-close';
+                        this.statusList[a].status='error';
+                        for(let c=0;c<this.statusList[a].second.length;c++){
+                          if(iparr[a].step==this.statusList[a].second[c].title){
+                            this.statusList[a].second[c].icon='el-icon-circle-close';
+                            this.statusList[a].second[c].status='error';
+                            for(let j=0;j<c;j++){
+                              this.statusList[a].second[j].icon='el-icon-circle-check';
+                              this.statusList[a].second[j].status='success';
+                            }
+                          }
+                        }
+                        this.statusList[a].description=iparr[a].error_info;
+                      }
+                    }
+                  }
+                  let statusgoing={title:info+'成功',icon:'el-icon-circle-check',status:'success',description:'',second:''}
+                  this.statusList.push(statusgoing)
+                  clearInterval(timer);
+                  this.getList();
+                }else{
+                  this.message_tips = ress.error_info;
+                  this.message_type = 'error';
+                  messageTip(this.message_tips,this.message_type);
+                }
+              }
+            }else if(ress.attachment==null&&ress.error_code=='70001'&&ress.status=='failed'){
+              // if(i==0){
+              //   this.statusList=[];
+              //   let statusgoing={}
+              //   statusgoing={title:'正在'+info,icon:'el-icon-loading',status:'process',description:'',second:[]}
+              //   this.statusList.push(statusgoing)
+              // }
+              if(i>5){
+                let statusgoing={title:info+'失败',icon:'el-icon-circle-close',status:'error',description:ress.error_code,second:[]}
+                this.statusList.push(statusgoing)
+                // this.statusList.title=info+'失败';
+                // this.statusList.icon='el-icon-circle-close';
+                // this.statusList.status='error';
+                // this.statusList.description=ress.error_code;
+                clearInterval(timer);
+              }
+            }else if(ress.attachment==null&&ress.status=='ongoing'){
+              this.statusList=[];
+              let statusgoing={}
+              statusgoing={title:'正在'+info,icon:'el-icon-loading',status:'process',description:'',second:[]}
+              this.statusList.push(statusgoing)
+            }else if(ress.attachment==null&&ress.status=='done'){
+              this.statusList=[];
+              let statusgoing={}
+              statusgoing={title:info+'成功',icon:'el-icon-circle-check',status:'success',description:'',second:[]}
+              this.statusList.push(statusgoing)
+              clearInterval(timer);
+            }else{
+              this.statusList=[];
+              let statusgoing={}
+              statusgoing={title:info+'失败',icon:'el-icon-circle-close',status:'error',description:ress.error_code,second:[]}
+              this.statusList.push(statusgoing)
+              clearInterval(timer);
+            }
+          }else if(info=='添加shard'||info=='添加存储节点'||info=='删除shard'||info=='删除存储节点'){
             //新增shard,存储节点
             if(ress.attachment!==null){
               console.log(5);

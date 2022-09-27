@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="filter-container">
       <div class="table-list-search-wrap">
-        <el-select v-model="listQuery.job_type" placeholder="请选择告警类型" class="list_search_select" style="width:150px;">
+        <el-select v-model="listQuery.job_type" placeholder="请选择告警类型" class="list_search_select" style="width:150px;" clearable>
            <el-option
             v-for="item in alarmTypes"
             :key="item.id"
@@ -10,12 +10,31 @@
             :value="item.id">
           </el-option>
         </el-select>
+        <el-select v-model="listQuery.status" placeholder="请选择告警状态" class="list_search_select" style="width:150px;" clearable>
+          <el-option label="未处理" value="unhandled"></el-option>
+          <el-option label="已处理" value="handled"></el-option>
+          <el-option label="忽略" value="ignore"></el-option>
+        </el-select>
+        <!-- <el-select v-model="listQuery.alarm_level" placeholder="请选择告警级别" class="list_search_select" style="width:150px;" clearable>
+           <el-option
+            v-for="item in alarmLevel"
+            :key="item.id"
+            :label="item.label"
+            :value="item.id">
+          </el-option>
+        </el-select> -->
         <el-button icon="el-icon-search" @click="handleFilter">
           查询
         </el-button>
         <el-button icon="el-icon-refresh-right" @click="handleClear">
           重置
         </el-button>
+         <!-- <el-button
+          class="filter-item"
+          type="primary"
+          icon="el-icon-setting"
+          @click="handleSet"
+        >设置告警级别</el-button> -->
       </div>
       <div class="table-list-wrap"></div>
     </div>
@@ -34,25 +53,30 @@
         width="50">
       </el-table-column>
 
-      <el-table-column label="告警类别" align="center">
+      <el-table-column label="告警类型" align="center">
         <template slot-scope="{row}">
-          <span class="link-type" @click="handleDetail(row)">{{ row.job_type }}</span>
+          <span class="link-type click_btn" @click="handleDetail(row)">{{ row.job_type }}</span>
         </template>
       </el-table-column>
 
       <el-table-column
-        prop="user_name"
+        prop="object"
         align="center"
-        label="操作账户">
+        label="告警对象">
       </el-table-column>
+       <!-- <el-table-column
+        prop="occur_timestamp"
+        align="center"
+        label="告警时间">
+      </el-table-column> -->
       <el-table-column
         prop="alarm_status"
         align="center"
         label="告警状态">
         <template slot-scope="scope">
-          <span v-if="scope.row.alarm_status==='1'" >已处理</span>
-          <span v-else-if="scope.row.alarm_status==='2'">忽略</span>
-          <span v-else>未处理</span>
+          <span v-if="scope.row.status==='handled'" >已处理</span>
+          <span v-else-if="scope.row.status==='ignore'">忽略</span>
+          <span v-else-if="scope.row.status==='unhandled'">未处理</span>
         </template>
       </el-table-column>
       
@@ -62,28 +86,47 @@
         :show-overflow-tooltip="true"
         label="错误信息">
       </el-table-column>
-      
+      <div v-if="this.listQuery.status!=='unhandled'">
+      <el-table-column
+        prop="handle_time"
+        align="center"
+        label="处理时间">
+      </el-table-column>
+      <el-table-column
+        prop="handler_name"
+        align="center"
+        label="处理人">
+      </el-table-column>
+      </div>
+
       <el-table-column
         label="操作"
         align="center"
         width="180"
-        class-name="small-padding fixed-width">
-        <template slot-scope="{row}">
-          <el-button type="primary" size="mini" @click="hanldeAlarm(row)">处理</el-button>
-          <el-button type="warning" size="mini" @click="hanldeAlarm(row)">忽略</el-button>
+        class-name="small-padding fixed-width"
+        v-if="this.listQuery.status=='unhandled'">
+        <template slot-scope="{row}" > 
+          <el-button type="primary"  size="mini" @click="hanldeAlarm(row)">处理</el-button>
+          <el-button type="warning"  size="mini"  @click="ignoreAlarm(row)">忽略</el-button>
         </template>
       </el-table-column>
     </el-table>
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
+    <el-dialog title="详情" :visible.sync="dialogInfo" custom-class="single_dal_view" :close-on-click-modal="false">
+      <json-viewer :value="alarmJobInfo"></json-viewer>
+    </el-dialog>
   </div>
 </template>
 <script>
- import {getAlarmRecordList} from '@/api/alarmrecord/list'
- import {alarm_type_arr} from "@/utils/global_variable"
+ import { messageTip,createCode,gotoCofirm} from "@/utils";
+ import {getAlarmRecordList,update} from '@/api/alarmrecord/list'
+ import {alarm_type_arr,alarm_level_arr} from "@/utils/global_variable"
  import Pagination from '@/components/Pagination' 
+ import {getClusterMonitor} from '@/api/cluster/list'
+ import JsonViewer from 'vue-json-viewer'
 export default {
   name: "alarmrecord",
-  components: { Pagination },
+  components: { Pagination ,JsonViewer},
   data() {
     return {
       tableKey: 0,
@@ -95,8 +138,11 @@ export default {
         pageNo: 1,
         pageSize: 10,
         job_type: '',
+        status:'unhandled',
+        alarm_level:''
       },
       alarmTypes:alarm_type_arr,
+      alarmLevel:alarm_level_arr,
       dialogFormVisible: false,
       dialogEditVisible:false,
       dialogUploadVisible:false,
@@ -111,19 +157,46 @@ export default {
       message_tips:'',
       message_type:'',
       installStatus:false,
+      dialogInfo:false,
+      alarmJobInfo:'',
       info:'',
       row:{},
       machine_add_priv:JSON.parse(sessionStorage.getItem('priv')).machine_add_priv,
       machine_drop_priv:JSON.parse(sessionStorage.getItem('priv')).machine_drop_priv,
       machine_priv:JSON.parse(sessionStorage.getItem('priv')).machine_priv,
+      timer:null,
       rules: {
       },
+
     };
   },
   created() {
     this.getList()
   },
+  mounted(){
+    let i=0;
+    this.timer = setInterval(() => {
+      this.getStatus(this.timer,i++)
+      //this.getList()
+      let queryParam = Object.assign({}, this.listQuery)
+      //模糊搜索
+      getAlarmRecordList(queryParam).then(response => {
+        this.list = response.list;
+        this.total = response.total;
+        this.listLoading = false
+      });
+    }, 60000)//1m
+  } ,
+  destroyed() {
+    clearInterval(this.timer)
+    this.timer = null
+  },
   methods:{
+   handleDetail(row){
+        this.$alert(row.list, '详细信息', {
+          dangerouslyUseHTMLString: true
+        });
+    },
     handleFilter() {
       this.listQuery.pageNo = 1
       this.getList()
@@ -131,6 +204,8 @@ export default {
     handleClear(){
       this.listQuery.job_type = ''
       this.listQuery.pageNo = 1
+      this.listQuery.status='unhandled',
+      this.alarm_level=''
       this.getList()
     },
     getList() {
@@ -145,6 +220,75 @@ export default {
         }, 0.5 * 1000)
       });
     },
+    getStatus (timer,i) {
+      setTimeout(()=>{
+        let queryParam = {user_name:sessionStorage.getItem('login_username')}
+        getClusterMonitor(queryParam).then((res) => {
+        });
+        if(i>=86400){
+            clearInterval(timer);
+        }
+      }, 0)
+    },
+    hanldeAlarm(row){
+       const code=createCode();
+      let string="将对"+row.object+row.job_type+"告警进行处理操作,是否继续?code="+code;
+      gotoCofirm(string).then( (res) =>{  
+        //先执行删权限
+        if(!res.value){
+          this.message_tips = 'code不能为空！';
+          this.message_type = 'error';
+          messageTip(this.message_tips,this.message_type);
+        }else if(res.value==code){
+          let tempData={};
+          tempData.user_name=sessionStorage.getItem('login_username');
+          tempData.status='handled';
+          tempData.id=row.id;
+          update(tempData).then((response) => {
+            let res = response;
+            if(res.code==200){
+              this.dialogFormVisible = false;
+              this.message_tips = '处理成功';
+              this.message_type = 'success';
+              this.getList();
+            }
+            else{
+              this.message_tips = '处理失败';
+              this.message_type = 'error';
+            }
+            messageTip(this.message_tips,this.message_type);
+          });
+       }else{
+          this.message_tips = 'code输入有误';
+          this.message_type = 'error';
+          messageTip(this.message_tips,this.message_type);
+        }
+      }).catch(() => {
+      console.log('quxiao')
+      messageTip('已取消删除','info');
+      });
+    },
+    ignoreAlarm(row){
+      let tempData={};
+      tempData.user_name=sessionStorage.getItem('login_username');
+      tempData.status='ignore';
+      tempData.id=row.id;
+      update(tempData).then((response) => {
+        let res = response;
+        if(res.code==200){
+          this.dialogFormVisible = false;
+          this.message_tips = '忽略成功';
+          this.message_type = 'success';
+          this.getList();
+        }
+        else{
+          this.message_tips = '忽略失败';
+          this.message_type = 'error';
+        }
+        messageTip(this.message_tips,this.message_type);
+      });
+    }
+    
 
   },
 };

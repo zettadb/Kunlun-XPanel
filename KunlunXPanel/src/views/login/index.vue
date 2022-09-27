@@ -341,7 +341,8 @@ export default {
             sessionStorage.setItem('apply_all_cluster',loginRes.apply_all_cluster);
             sessionStorage.setItem('affected_clusters',loginRes.affected_clusters);
             sessionStorage.setItem('priv',JSON.stringify(loginRes.priv));
-            this.$router.push({ path: '/dashboard'})
+            // this.$router.push({ path: '/dashboard'})
+            this.$router.push({ path: '/cluster'})
           }else{
             this.message_tips = res.error_info;
             this.message_type = 'error';

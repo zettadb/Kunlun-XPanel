@@ -120,11 +120,11 @@
       <el-table-column
         label="操作"
         align="center"
-        width="180"
+        width="250"
         class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-button type="primary" size="mini" @click="gotolink(row.hostaddr)">节点视图</el-button>
-          <!-- <el-button type="primary" size="mini" @click="handleUpdate(row)"  v-if="machine_priv==='Y'">编辑</el-button> -->
+          <el-button type="primary" size="mini" @click="handleUpdate(row)"  v-if="machine_priv==='Y'">编辑</el-button>
           <el-button
             size="mini"
             type="danger"
@@ -162,20 +162,20 @@
           <el-input v-model="temp.start_port" placeholder="请输入起始端口号" :disabled="dialogStatus==='detail'" class="right_input_min" /> -
           <el-input v-model="temp.end_port" placeholder="请输入结束端口号" :disabled="dialogStatus==='detail'" class="right_input_min" />
         </el-form-item>
-
-        <el-form-item label="日志目录:" prop="logdir" v-if="storage_status">
+        <div v-if="temp.machine_type=='storage'">
+        <el-form-item label="日志目录:" prop="logdir" >
           <el-input  v-model="temp.logdir" placeholder="请输入日志目录"  :disabled="dialogStatus==='detail'"/>
         </el-form-item>
 
-        <el-form-item label="wal日志目录:" prop="wal_log_dir" v-if="storage_status">
+        <el-form-item label="wal日志目录:" prop="wal_log_dir">
           <el-input  v-model="temp.wal_log_dir" placeholder="请输入wal日志目录"  :disabled="dialogStatus==='detail'"/>
         </el-form-item>
 
-        <el-form-item label="存储节点数据目录:" prop="datadir" v-if="storage_status">
+        <el-form-item label="存储节点数据目录:" prop="datadir" >
           <el-input v-model="temp.datadir" placeholder="请输入存储节点数据目录"  :disabled="dialogStatus==='detail' "/>
         </el-form-item>
-
-        <el-form-item label="计算节点数据目录:" prop="comp_datadir" v-if="comp_status">
+        </div>
+        <el-form-item label="计算节点数据目录:" prop="comp_datadir" v-if="temp.machine_type=='computer'">
           <el-input  v-model="temp.comp_datadir" placeholder="请输入计算节点数据目录"  :disabled="dialogStatus==='detail'"/>
         </el-form-item>
         <el-form-item label="总内存:" prop="total_mem">
@@ -187,7 +187,7 @@
           <el-input  v-model="temp.total_cpu_cores" placeholder="请输入cpu核数"  :disabled="dialogStatus==='detail'"/>
         </el-form-item>
         <el-form-item label="机架编号:" prop="rack_id">
-          <el-input v-model="temp.rack_id" placeholder="请输入机架编号" autocomplete='new-password' :disabled="dialogStatus==='detail'"/>
+          <el-input v-model="temp.rack_id" placeholder="请输入机架编号" autocomplete='new-password' :disabled="dialogStatus==='detail'||dialogStatus==='update'"/>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -271,7 +271,7 @@
 </template>
 <script>
  import { messageTip,handleCofirm,getNowDate } from "@/utils";
- import { getMachineList,getNodes,addMachine,delMachine,importData,setMachineStatus} from '@/api/machine/list'
+ import { getMachineList,getNodes,addMachine,delMachine,importData,setMachineStatus,update} from '@/api/machine/list'
  import { pgEnable,getEvStatus } from '@/api/cluster/list'
  import {version_arr,timestamp_arr,machine_type_arr,node_stats_arr} from "@/utils/global_variable"
  import Pagination from '@/components/Pagination' 
@@ -706,8 +706,8 @@ export default {
               this.activities.push(newArr)
               let i=0;
               let info='新增';
-              let timer = setInterval(() => {
-                this.getStatus(timer,res.job_id,i++,info)
+              this.timer = setInterval(() => {
+                this.getStatus(this.timer,res.job_id,i++,info)
               }, 1000)
 
               //重启promentheus
@@ -763,44 +763,40 @@ export default {
           tempData.job_type ='update_machine';
           tempData.version=version_arr[0].ver;
           tempData.timestamp=timestamp_arr[0].time+'';
-          this.temp.port_range=this.temp.start_port+'-'+this.temp.end_port;
-          if(!this.temp.rack_id){
-            this.temp.rack_id='0';
+          const paras={};
+          paras.port_range=this.temp.start_port+'-'+this.temp.end_port;
+          paras.hostaddr=this.temp.hostaddr;
+          paras.machine_type=this.temp.machine_type;
+          paras.total_cpu_cores=this.temp.total_cpu_cores;
+          paras.total_mem=this.temp.total_mem;
+          if(this.temp.machine_type=='storage'){
+            paras.datadir=this.temp.datadir;
+            paras.logdir=this.temp.logdir;
+            paras.wal_log_dir=this.temp.wal_log_dir;
+          }else if(this.temp.machine_type=='computer'){
+            paras.comp_datadir=this.temp.comp_datadir;
           }
-          this.$delete(this.temp,'start_port');
-          this.$delete(this.temp,'end_port');
-          tempData.paras=Object.assign({}, this.temp);
+          tempData.paras=paras;
+          //console.log(tempData);return;
           update(tempData).then((response) => {
             let res = response;
-            this.message_tips = '正在编辑计算机...';
-            this.message_type = 'success';
-            if(res.error_code=='0'){
+            if(res.status=='accept'){
               this.dialogFormVisible = false;
-              this.message_tips = '编辑计算机成功';
-              this.message_type = 'success';
-              // let i=0;
-              // let timer = setInterval(() => {
-              //   this.getStatus(timer,res.job_id,i++)
-              // }, 1000)
-              //重启promentheus
-              // const prometheus = {};
-              // prometheus['job_id'] = '';
-              // prometheus['job_type']='update_prometheus';
-              // prometheus['version']=version_arr[0].ver;
-              // prometheus['timestamp']=timestamp_arr[0].time+'';
-              // prometheus['user_name']=sessionStorage.getItem('login_username');
-              // prometheus['paras']={};
-              // pgEnable(prometheus).then((resp) => {
-              //   // if(resp.code==200){
-              //   //   let j=0;
-              //   //   let timerp = setInterval(() => {
-              //   //   this.getStatus(timerp,prometheus['job_id'],j++)
-              //   //   }, 1000)
-              //   // }
-              // })
-
-              //this.dialogFormVisible = false
-              //this.getList();
+              this.job_id='编辑计算机('+res.job_id+')';
+              this.dialogStatusVisible=true;
+              this.activities=[];
+              const newArr={
+                title:'正在编辑计算机',
+                status: 'process',
+                icon: 'el-icon-loading',
+                description:''
+              };
+              this.activities.push(newArr)
+              let i=0;
+              let info='编辑';
+              this.timer = setInterval(() => {
+                this.getStatus(this.timer,res.job_id,i++,info)
+              }, 1000)
             }
             else{
               this.message_tips = res.error_info;
@@ -848,8 +844,8 @@ export default {
               this.activities.push(newArr)
               let info='删除';
               let i=0;
-              let timer = setInterval(() => {
-                this.getStatus(timer,res.job_id,i++,info)
+              this.timer = setInterval(() => {
+                this.getStatus(this.timer,res.job_id,i++,info)
               }, 1000)
                 //重启promentheus
               // const prometheus = {};
@@ -930,6 +926,7 @@ export default {
             this.activities[0].title=info+'计算机失败'
             this.activities[0].icon='el-icon-circle-close'
             this.activities[0].status='error'
+            this.activities[0].description=res.error_info
           }
         }
       });

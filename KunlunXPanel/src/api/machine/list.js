@@ -22,13 +22,13 @@ export function addMachine(data) {
     })
 }
 
-// export function update(data) {
-//     return request({
-//       url: '/user/Machine/editMachine',
-//       method: 'post',
-//       data
-//     })
-// }
+export function update(data) {
+    return request({
+      url: '/user/Machine/editMachine',
+      method: 'post',
+      data
+    })
+}
 
 export function delMachine(data) {
     return request({

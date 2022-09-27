@@ -73,9 +73,9 @@ service.interceptors.request.use(
 // response(响应)拦截器
 service.interceptors.response.use(
   response => {
-    // console.log(response);
+    //console.log(response);
     let res = response.data;//eslint-disable-line
-    res.code += ''
+    // res.code += ''
     return res
   },
   error => {

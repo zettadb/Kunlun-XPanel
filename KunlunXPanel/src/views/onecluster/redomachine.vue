@@ -801,7 +801,7 @@ export default {
                     //   this.statusList.push(statusgoing)
                     // }
                     if(i>5){
-                      let statusgoing={title:info+'失败',icon:'el-icon-circle-close',status:'error',description:res.error_code,second:[]}
+                      let statusgoing={title:info+'失败',icon:'el-icon-circle-close',status:'error',description:res.error_info,second:[]}
                       this.statusList.push(statusgoing)
                       // this.statusList.title=info+'失败';
                       // this.statusList.icon='el-icon-circle-close';

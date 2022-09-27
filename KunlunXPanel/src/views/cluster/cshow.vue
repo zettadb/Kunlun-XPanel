@@ -3,7 +3,6 @@
     <el-radio-group  v-model="currentCase" size="small" @change="agreeChange" v-show="g_loading">
     <el-radio v-for="cluster in clusters" :label="cluster.id" :key="cluster.id">{{cluster.nick_name+'('+cluster.id+')'}}</el-radio>
     </el-radio-group>
-    <!--  <div v-text="info" v-show="installStatus===true" class="info"></div> -->
     <div class="nodata" v-show="nodataShow">暂无数据</div>
     <!-- style="margin-top:0px;width: calc(100(100% - 10px);height:calc(100vh - 160px);" -->
     <div ref="myPage" style="margin-top:0px;width: calc(100(100% - 10px);height:calc(100vh - 160px);" v-show="g_loading" @click="isShowNodeMenuPanel = false">
@@ -13,7 +12,6 @@
         :on-node-click="onNodeClick"
         :on-line-click="onLineClick" :on-node-expand="onNodeExpand" :on-node-collapse="onNodeCollapse"
       >
-        <!-- @click="showNodeMenus(node, $event)" @contextmenu.prevent.stop="hideNodeTips(node, $event)"  -->
         <div slot="node" slot-scope="{node}"   @click="showNodeMenus(node, $event)">
           <div>
             <i :style="{ color: node.data.color, fontSize: 40 + 'px' }" :class="node.data.icon"/>
@@ -348,7 +346,7 @@
         </div>
     </el-dialog>
 
-    <!--  状态框 -->
+    <!-- 状态框 -->
     <el-dialog :visible.sync="dialogStatusVisible" custom-class="single_dal_view" width="400px" :close-on-click-modal="false" :before-close="beforeSyncDestory">
       <div class="block">
         <el-timeline>
@@ -850,7 +848,7 @@ export default {
           },
           "defaultExpandHolderPosition": "right",//右边展开关闭
           'defaultNodeShape': 1,//	默认的节点形状，0:圆形；1:矩形
-          'defaultNodeWidth': '100',//默认节点的宽度
+          'defaultNodeWidth': '125',//默认节点的宽度
           'defaultLineShape': 4,//默认的线条样式（1:直线/2:样式2/3:样式3/4:折线/5:样式5/6:样式6)
           'defaultJunctionPoint': 'lr',//连接与节点的接触方式，lr为左右
           'defaultNodeBorderWidth': 0,//默认的节点边框粗细（像素）
@@ -862,7 +860,6 @@ export default {
         // allowSwitchLineShape: true,//显示切换线条形状的按钮
         // allowSwitchJunctionPoint: true,//切换连接点位置的按钮
         //defaultJunctionPoint: 'border'
-        // 这里可以参考"Graph 图谱"中的参数进行设置
       },
       // avltimer:null,
       rules: {
@@ -1310,17 +1307,49 @@ export default {
             let param = arr.nodes[i];
             if(param.id.indexOf('snode')!=-1){
               this.$set(param.data, 'icon', 'iconfont icon-snode')
-              this.$set(param.data, 'color', '#e98f36')
+              //this.$set(param.data, 'color', '#e98f36')
               if(param.data.master=='true'){
-                this.$set(param.data, 'color', '#ff0000')
+                if(param.data.status=='active'){
+                  this.$set(param.data, 'color', '#1196db')
+                  this.$set(param, 'text', param.data.port+'(主-正常)')
+                }else if(param.data.status=='inactive'){
+                  this.$set(param.data, 'color', '#e15050')
+                  this.$set(param, 'text', param.data.port+'(主-异常)')
+                }else if(param.data.status=='creating'){
+                  this.$set(param.data, 'color', '#2c2d2d')
+                  this.$set(param, 'text', param.data.port+'(主-安装中)')
+                }else if(param.data.status=='manual_stop'){
+                  this.$set(param.data, 'color', '#acacac')
+                  this.$set(param, 'text', param.data.port+'(主-停止)')
+                }else{
+                  this.$set(param.data, 'color', '#e15050')
+                  this.$set(param, 'text', param.data.port+'(主-异常)')
+                }
               }else if(param.data.master=='false'){
-                this.$set(param.data, 'color', '#e98f36')
+                if(param.data.status=='active'){
+                  this.$set(param.data, 'color', '#e98f36')
+                  this.$set(param, 'text', param.data.port+'(备-正常)')
+                }else if(param.data.status=='inactive'){
+                  this.$set(param.data, 'color', '#e15050')
+                  this.$set(param, 'text', param.data.port+'(备-异常)')
+                }else if(param.data.status=='creating'){
+                  this.$set(param.data, 'color', '#2c2d2d')
+                  this.$set(param, 'text', param.data.port+'(备-安装中)')
+                }else if(param.data.status=='manual_stop'){
+                  this.$set(param.data, 'color', '#acacac')
+                  this.$set(param, 'text', param.data.port+'(备-停止)')
+                }else{
+                  this.$set(param.data, 'color', '#e15050')
+                  this.$set(param, 'text', param.data.port+'(备-异常)')
+                }
+                //this.$set(param, 'text', param.data.port+'(备-正常)')
+                //this.$set(param.data, 'color', '#e98f36')
               }else {
-                this.$set(param.data, 'color', '#acacac')
+                this.$set(param.data, 'color', '#e15050')
               }
-              if(param.data.status=='manual_stop'){
-                this.$set(param.data, 'color', '#acacac')
-              }
+              // if(param.data.status=='manual_stop'){
+              //   this.$set(param.data, 'color', '#acacac')
+              // }
             }
           }
           
@@ -1381,14 +1410,24 @@ export default {
               this.$set(param.data, 'icon', 'iconfont icon-compnode')
               if(param.data.status=='manual_stop'){
                 this.$set(param.data, 'color', '#acacac')
-              }else{
+                this.$set(param, 'text', param.data.port+'(停止)')
+              }else if(param.data.status=='creating'){
+                this.$set(param.data, 'color', '#2c2d2d')
+                this.$set(param, 'text', param.data.port+'(安装中)')
+              }else if(param.data.status=='active'){
                 this.$set(param.data, 'color', '#1196db')
+                this.$set(param, 'text', param.data.port+'(正常)')
+              }else if(param.data.status=='inactive'){
+                this.$set(param.data, 'color', '#e15050')
+                this.$set(param, 'text', param.data.port+'(异常)')
+              }else{
+                  this.$set(param.data, 'color', '#e15050')
               }
             }
-            if(param.id.indexOf('snode')!=-1){
-               this.$set(param.data, 'icon', 'iconfont icon-snode')
-               this.$set(param.data, 'color', '#e98f36')
-            }
+            // if(param.id.indexOf('snode')!=-1){
+            //    this.$set(param.data, 'icon', 'iconfont icon-snode')
+            //    this.$set(param.data, 'color', '#e98f36')
+            // }
           }
           this.list = arr;
           this.showSeeksGraph( this.list )
@@ -2274,7 +2313,7 @@ export default {
               if(this.statusList.length==0){
                 let statusgoing={}
                 if(res.status=='failed'){
-                  statusgoing={title:info+'失败',icon:'el-icon-circle-close',status:'error',description:res.error_code,second:[]}
+                  statusgoing={title:info+'失败',icon:'el-icon-circle-close',status:'error',description:res.error_info,second:[]}
                   this.statusList.push(statusgoing)
                   clearInterval(timer);
                 }else{
@@ -3188,6 +3227,7 @@ export default {
 ::-webkit-scrollbar-thumb{
   border-radius: 5px;
   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+  box-shadow: inset 0 0 6px rgba(0,0,0,.3);
   background-color: rgba(0,0,0,0.1);
 }
 </style>
