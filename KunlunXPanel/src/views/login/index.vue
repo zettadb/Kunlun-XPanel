@@ -547,7 +547,6 @@ import {login,change} from "@/api/login/user";
 import Loginheader from '@/components/Loginheader';
 import { messageTip } from "@/utils";
 import { getMetaPrimary,getWorkMode } from "@/api/cluster/list";
-//import { getMetaPrimary } from "@/api/cluster/listInterface";
 import { v4 as uuidv4 } from 'uuid';
 import {version_arr,timestamp_arr} from "@/utils/global_variable"
 
@@ -783,7 +782,8 @@ export default {
             sessionStorage.setItem('apply_all_cluster',loginRes.apply_all_cluster);
             sessionStorage.setItem('affected_clusters',loginRes.affected_clusters);
             sessionStorage.setItem('priv',JSON.stringify(loginRes.priv));
-            this.$router.push({ path: '/dashboard'})
+            // this.$router.push({ path: '/dashboard'})
+            this.$router.push({ path: '/cluster'})
           }else{
             this.message_tips = res.error_info;
             this.message_type = 'error';

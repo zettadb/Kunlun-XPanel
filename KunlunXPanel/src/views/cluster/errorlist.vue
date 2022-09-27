@@ -541,8 +541,6 @@
  import Pagination from '@/components/Pagination' 
  import {ha_mode_arr,shards_arr,per_shard_arr,norepshards_arr,node_type_arr,version_arr,storage_type_arr,timestamp_arr} from "@/utils/global_variable"
  import {getClusterList,ifBackUp,getAllMachine,getShards,uAssign,getStroMachine,getCompMachine,createCluster,delCluster,backeUpCluster,addShards,addComps,addNodes,restoreCluster,getBackUpStorage,getEvStatus,getShardsJobLog,getOldCluster,clusterListError} from '@/api/cluster/list'
- //import {addShards,createCluster,addComps,addNodes,getEvStatus,delCluster,backeUpCluster,restoreCluster,getMetaMode,getBackUpStorage} from '@/api/cluster/listInterface'
- import {getMetaMode} from '@/api/cluster/listInterface'
  import JsonViewer from 'vue-json-viewer'
 export default {
   name: "list",
@@ -3210,6 +3208,7 @@ export default {
 ::-webkit-scrollbar-thumb{
   border-radius: 5px;
   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+  box-shadow: inset 0 0 6px rgba(0,0,0,.3);
   background-color: rgba(0,0,0,0.1);
 }
 

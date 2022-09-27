@@ -10,7 +10,7 @@ export default {
 		},
     data() {
         return {
-			colors: ['#ffc933','#2a81cd','#2a81cf']
+			colors: ['#ffc933','#2a81cd','#f74f64']
 		}
     },
     methods: {

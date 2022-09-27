@@ -342,7 +342,7 @@ export default {
                 machineTotal:0,
                 machineOnline:0,
                 machineOffline:0,
-                // machineIdle:0
+                machineIdle:0
             },
             hostaddr:[],
             ips:[],
@@ -433,9 +433,9 @@ export default {
                     }else if(res.list[i].status=='dead'){
                         this.machineList.machineOffline++;
                     }
-                    // else if(res.list[i].status=='idle'){
-                    //     this.machineList.machineIdle++
-                    // }
+                    else if(res.list[i].status=='idle'){
+                        this.machineList.machineIdle++
+                    }
                 }
                 //console.log(this.machineList);
             }

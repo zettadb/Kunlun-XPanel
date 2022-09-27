@@ -1411,14 +1411,13 @@ export default {
       </div>
     </el-dialog>
     <!-- 扩容-->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogExpandVisible" custom-class="single_dal_view"  :close-on-click-modal="false" >
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogExpandVisible" custom-class="single_dal_view expand"  :close-on-click-modal="false" >
       <el-form
         ref="expandForm"
         :model="expandtemp"
         :rules="rules"
         label-position="left"
-        label-width="130px"
-      >
+        label-width="130px">
         <div class="icons-container">
           <el-tabs type="border-card" v-model="activeName" @tab-click="handleClick" >
             <el-tab-pane  v-for="(item,index) in shardNameList" :key="index" :label="item.name" :name="item.name" :value="item.id+'_'+item.cluster_id">
@@ -1431,7 +1430,6 @@ export default {
               border
               highlight-current-row
               style="width: 100%;margin-bottom: 20px;">
-                <!-- :selectable='checkboxInit' -->
                 <el-table-column type="selection" width="55"></el-table-column>
                 <el-table-column
                     type="index"
@@ -1767,14 +1765,12 @@ export default {
  import Pagination from '@/components/Pagination' 
  import {ha_mode_arr,c_ha_mode_arr,shards_arr,per_shard_arr,norepshards_arr,node_type_arr,c_node_type_arr,version_arr,storage_type_arr,timestamp_arr,policy_arr} from "@/utils/global_variable"
  import {getClusterList,ifBackUp,getAllMachine,getShards,uAssign,getStroMachine,getCompMachine,createCluster,delCluster,backeUpCluster,addShards,addComps,addNodes,restoreCluster,getBackUpStorage,getEvStatus,getShardsJobLog,getOldCluster, getShardsCount,getShardsName,getShardTable,getOtherShards,expandCluster,getExpandTableList } from '@/api/cluster/list'
- //import {addShards,createCluster,addComps,addNodes,getEvStatus,delCluster,backeUpCluster,restoreCluster,getMetaMode,getBackUpStorage} from '@/api/cluster/listInterface'
- import {getMetaMode} from '@/api/cluster/listInterface'
  import JsonViewer from 'vue-json-viewer'
 export default {
   name: "list",
   components: { Pagination,JsonViewer }, 
   // props: ['data', 'defaultActive','comment'],
-  props:{comment:{type:Array}},
+  props:{comment:{type:Object}},
   data() {  
     // const validatemachine = (rule, value, callback) => {
     //  if(value.length === 0){
@@ -2736,21 +2732,6 @@ export default {
         }
       });
      
-      // const temp={};
-      // temp.job_type='get_meta_mode';
-      // temp.version=version_arr[0].ver;
-      // temp.job_id='';
-      // temp.timestamp=timestamp_arr[0].time+'';
-      // temp.paras={}
-      // getMetaMode(temp).then((res) => {
-      //   if(res){
-      //     const ha_mode=[{"id":res.attachment.mode,"label":res.attachment.mode}];
-      //     this.hamodeData=ha_mode;
-      //   };
-      // });
-      // this.$nextTick(() => {
-      //   this.$refs.dataForm.clearValidate();
-      // });
     },
     createData() {
       this.$refs["dataForm"].validate((valid) => {
@@ -3391,10 +3372,10 @@ export default {
           //this.message_type = 'success';
           //调获取状态接口
           let i=0;this.timer=null;
-          this.getStatus(this.timer,res.job_id,i++)
+          // this.getStatus(this.timer,res.job_id,i++)
           this.timer = setInterval(() => {
             this.getStatus(this.timer,res.job_id,i++)
-          }, 5000)
+          }, 1000)
         }
         else if(res.status=='ongoing'){
           this.message_tips = '系统正在操作中，请等待一会！';
@@ -3421,10 +3402,10 @@ export default {
         })
     },
     handleSetUp(row){
-      //this.editableTabs=this.comment;
-       if(this.comment.length==0){
-        this.editableTabs=this.comment;
-       }
+      if(this.comment.active=='delcluster'){
+        this.handleClear();
+      }
+      this.editableTabs=this.comment.editableTabs;
       let newTabName = row.id+ '';
       let tabs = this.editableTabs;
       if(tabs.length>0){
@@ -5086,6 +5067,7 @@ export default {
 ::-webkit-scrollbar-thumb{
   border-radius: 5px;
   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+          box-shadow: inset 0 0 6px rgba(0,0,0,.3);
   background-color: rgba(0,0,0,0.1);
 }
 
@@ -5141,7 +5123,7 @@ export default {
   
 
 </style>
-<style lang="less" scoped>
+<style lang="less">
 
 
 //  .hoverSteps{
@@ -5170,5 +5152,12 @@ export default {
 //       text-align: right;
 //     }
 //   }
+<<<<<<< HEAD
 </style>
 >>>>>>> 1.0
+=======
+.expand .el-tabs__content{
+  height:100% !important;
+}
+</style>
+>>>>>>> 1.1

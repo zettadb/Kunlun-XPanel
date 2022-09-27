@@ -550,3 +550,10 @@ export function getThisShardNodes(data) {
     data
   })
 }
+export function getClusterMonitor(query) {
+  return request({
+      url: '/user/Cluster/getClusterMonitor',
+      method: 'get',
+      params:query
+  });
+}

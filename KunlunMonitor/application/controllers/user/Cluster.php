@@ -117,12 +117,13 @@ class Cluster extends CI_Controller {
 						if(!empty($value2)) {
 							$shardtotal = $this->getThisShards($value2,$user_name);
 							$comptotal= $this->getThisComps($value2);
+							//print_r($shardtotal);exit;
 							$first_backup= $this->getLastBackup($value2);
 							//$nodetotal= $this->getThisNodes($value2);
 							$res[$row]['shardList'] = $shardtotal['list'];
 							$res[$row]['compList'] = $comptotal['list'];
 							$res[$row]['shardtotal'] = $shardtotal['nodedetail'];
-							$res[$row]['comp_count'] = count($comptotal['list']);
+							$res[$row]['comp_count'] = $comptotal['list']!==false?count($comptotal['list']):0;
 							$res[$row]['first_backup'] = $first_backup;
 							$status='';
 							$abnormal='';
@@ -371,6 +372,9 @@ class Cluster extends CI_Controller {
 		$sql="select name from comp_nodes where id='$id' and db_cluster_id='$db_cluster_id' and status!='deleted'";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
+		if($res==false){
+			return '';
+		}
 		return $res[0]['name'];
 	}
 	public function ifBackUp(){
@@ -585,6 +589,7 @@ class Cluster extends CI_Controller {
 					$status.=$i['name'].'('.$i['ip'].'_'.$i['port'].')'.'延迟过大;';
 				}
 			}
+			$data['status']=$status;
 		}elseif ($count>1){
 			$node='';
 			foreach ($res as $key){
@@ -627,17 +632,23 @@ class Cluster extends CI_Controller {
 			$node=rtrim($node, "，");
 			$data['nodedetail']=$count.'个shard，'.$node;
 			$data['status']=$status;
+		}else{
+			$data['nodedetail']='';
+			$data['list']=false;
+			$data['status']=$status;
 		}
 		return $data;
 	}
 	public function getThisComps($id){
-		$sql="select hostaddr as ip,port,status from comp_nodes where db_cluster_id='$id' and status!='deleted'";
+		$sql="select hostaddr as ip,port,status from comp_nodes where db_cluster_id='$id'  and status!='deleted'";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		$status='';
-		foreach ($res as $i) {
-			if($i['status']=='inactive'){
-				$status.='计算节点('.$i['ip'].'_'.$i['port'].')'.'异常;';
+		if($res!==false){
+			foreach ($res as $i) {
+				if($i['status']=='inactive'){
+					$status.='计算节点('.$i['ip'].'_'.$i['port'].')'.'异常;';
+				}
 			}
 		}
 		$data['list']=$res;
@@ -645,7 +656,7 @@ class Cluster extends CI_Controller {
 		return $data;
 	}
 	public function getThisNodes($id,$shard_id){
-		$sql="select hostaddr as ip,port,status,replica_delay,member_state from shard_nodes where db_cluster_id='$id' and shard_id='$shard_id'  and status!='deleted'	";
+		$sql="select hostaddr as ip,port,status,replica_delay,member_state from shard_nodes where db_cluster_id='$id' and shard_id='$shard_id' and status!='deleted'";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		return $res;
@@ -812,10 +823,11 @@ class Cluster extends CI_Controller {
 			$data['message']='该用户不存在';
 			print_r(json_encode($data));return;
 		}
-			$sql="select db_cluster_id,shard_id from shard_nodes where status!='deleted';";
+		$sql="select db_cluster_id,shard_id from shard_nodes where status!='deleted' group by db_cluster_id,shard_id;";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		$error_list=array();
+		$error_msg=array();
 		foreach ($res as $row){
 			$res_cluster=$this->getClusterName($row['db_cluster_id']);
 			if(!empty($res_cluster)){
@@ -824,12 +836,15 @@ class Cluster extends CI_Controller {
 				$cluster_name='';
 			}
 			$shard_name=$this->getShardName($row['db_cluster_id'],$row['shard_id']);
-			$error_msg=array();
 			if(!empty($cluster_name)&&$shard_name){
 				$error=$this->shardError($row['db_cluster_id'],$row['shard_id'],$user_id,$shard_name,$cluster_name);
-				$error_list=array_merge($error_msg,$error);
+				foreach ($error as $error_row){
+					array_push($error_list,$error_row);
+				}
+				//$error_list=array_merge($error);
 			}
 		}
+		$error_list=array_unique($error_list);
 		print_r(json_encode($error_list));
 
 	}
@@ -846,13 +861,21 @@ class Cluster extends CI_Controller {
 		}else{
 			$maxtime='100';
 		}
-		$sql="select hostaddr,port,replica_delay from shard_nodes where shard_id='$id' and db_cluster_id='$cluster_id' and replica_delay>'$maxtime' and status!='deleted'";
 		$this->load->model('Cluster_model');
+		$sql="select hostaddr,port,replica_delay from shard_nodes where shard_id='$id' and db_cluster_id='$cluster_id' and replica_delay>'$maxtime' and status!='deleted'";
 		$res=$this->Cluster_model->getList($sql);
 		$error=array();
 		if(!empty($res)){
 			foreach ($res as $row){
 				array_push($error,$cluster_name.'('.$cluster_id.')集群的'.$shard_name.'中,'.$row['hostaddr'].'('.$row['port'].')'.'当前延迟为'.$row['replica_delay'].'s,超过延迟最大值'.$maxtime.'s');
+			}
+		}
+		//存储节点异常
+		$sql_storage="select hostaddr,port from shard_nodes where shard_id='$id' and db_cluster_id='$cluster_id' and status='inactive'";
+		$res_storage=$this->Cluster_model->getList($sql_storage);
+		if(!empty($res_storage)){
+			foreach ($res_storage as $row_stor){
+				array_push($error,$cluster_name.'('.$cluster_id.')集群的'.$shard_name.'中,'.$row_stor['hostaddr'].'('.$row_stor['port'].')'.'存储节点异常');
 			}
 		}
 		return $error;
@@ -2471,7 +2494,7 @@ class Cluster extends CI_Controller {
 							$first_backup= $this->getLastBackup($value2);
 							//$nodetotal= $this->getThisNodes($value2);
 							$res[$row]['shardtotal'] = $shardtotal['nodedetail'];
-							$res[$row]['comptotal'] = count($comptotal['list']);
+							$res[$row]['comptotal'] = $comptotal['list']!==false?count($comptotal['list']):0;
 							$res[$row]['first_backup'] = $first_backup;
 
 						}
@@ -3172,5 +3195,407 @@ class Cluster extends CI_Controller {
 		$data['code'] = 200;
 		$data['list'] = $res;
 		print_r(json_encode($data));
+	}
+	//监控主备延迟，节点异常，机器离线，主备切换失败
+	public function getClusterMonitor(){
+		set_time_limit(0);
+		//GET请求
+		$serve=$_SERVER['QUERY_STRING'];
+		$string=preg_split('/[=&]/',$serve);
+		$arr=array();
+		for($i=0;$i<count($string);$i+=2) {
+			$arr[$string[$i]] = $string[$i + 1];
+		}
+		$user_name=$arr['user_name'];
+		//查user_id
+		$this->load->model('Login_model');
+		$user_sql="select id from kunlun_user where name='$user_name';";
+		$res_user=$this->Login_model->getList($user_sql);
+		if(!empty($res_user)){
+			$user_id=$res_user[0]['id'];
+		}else{
+			$data['code']=500;
+			$data['message']='该用户不存在';
+			print_r(json_encode($data));return;
+		}
+		$sql="select db_cluster_id,shard_id from shard_nodes where status!='deleted' group by db_cluster_id,shard_id;";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		$error_list=array();
+		if(!empty($res)){
+			//如不存在创建表
+			$sql_table="CREATE TABLE IF NOT EXISTS cluster_alarm_info (id bigint unsigned NOT NULL AUTO_INCREMENT,job_id VARCHAR (128) DEFAULT NULL,alarm_level enum('FATAL','ERROR','WARNING') NOT NULL DEFAULT 'WARNING',alarm_type varchar(128) DEFAULT NULL,status enum('unhandled','handled','ignore') NOT NULL DEFAULT 'unhandled',occur_timestamp timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),job_info text,handle_time timestamp(6) NULL DEFAULT NULL,handler_name varchar(128) DEFAULT NULL,cluster_id int unsigned DEFAULT NULL,shardid int unsigned DEFAULT NULL,compnodeid int unsigned DEFAULT NULL,svrid int unsigned DEFAULT NULL,PRIMARY KEY (id),UNIQUE KEY `id` (`id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3;";
+			$this->Cluster_model->updateList($sql_table);
+			foreach ($res as $row){
+				$cluster_id=$row['db_cluster_id'];
+				$shard_id=$row['shard_id'];
+				$res_cluster=$this->getClusterName($row['db_cluster_id']);
+				if(!empty($res_cluster)){
+					$cluster_name=$res_cluster[0]['nick_name'];
+				}else{
+					$cluster_name='';
+				}
+				$shard_name=$this->getShardName($row['db_cluster_id'],$row['shard_id']);
+				$error_msg=array();
+				//计算节点异常
+				$comp_node_error=$this->compNodeError($row['db_cluster_id'],$cluster_name);
+				if(!empty($comp_node_error)){
+					//如果多个,instert多条语句；
+					foreach($comp_node_error as $comp_row){
+						//$comp_node_error=implode(";",$comp_node_error);
+						$comp_id=$comp_row['id'];
+						$arr=explode(',', $comp_row);
+						$arr_ip=explode('(', $arr[1]);
+						$ip=$arr_ip[0];
+						$arr_port=explode(')', $arr_ip[1]);
+						$port=$arr_port[0];
+						$msg_data = urldecode(json_encode(array(
+							'cluster_id'=>$row['db_cluster_id'],
+							'message'=>urlencode($comp_row),
+							'ip'=>$ip,
+							'port'=>$port
+						)))	;
+						$select_comp_sql="select job_info from cluster_alarm_info where job_info='$msg_data' and status='unhandled' ";
+						$res_comp_select=$this->Cluster_model->getList($select_comp_sql);
+						if($res_comp_select==false){
+							$insert_comp_sql="insert into cluster_alarm_info(alarm_type,job_info,occur_timestamp,cluster_id,compnodeid) values ('comp_node_exception','$msg_data',now(),'$cluster_id','$comp_id');";
+							$res_comp_insert=$this->Cluster_model->updateList($insert_comp_sql);
+						}
+					}
+				}	
+				//主备延迟,存储节点异常
+				if(!empty($cluster_name)&&$shard_name){
+					$error=$this->shardError($row['db_cluster_id'],$row['shard_id'],$user_id,$shard_name,$cluster_name);
+					if(!empty($error)){
+						//如果多个,instert多条语句；
+						foreach($error as $error_row){
+							if(strpos($error_row,'主备延迟过大')!== false){
+								$arr=explode(',', $error_row);
+								$arr_ip=explode('(', $arr[1]);
+								$ip=$arr_ip[0];
+								$arr_port=explode(')', $arr_ip[1]);
+								$port=$arr_port[0];
+								$msg_data = urldecode(json_encode(array(
+									'cluster_id'=>$row['db_cluster_id'],
+									'shard_id'=>$row['shard_id'],
+									'message'=>urlencode($error_row),
+									'ip'=>$ip,
+									'port'=>$port
+								)));
+								$select_sql="select job_info from cluster_alarm_info where job_info='$msg_data' and status='unhandled' ";
+								$res_select=$this->Cluster_model->getList($select_sql);
+								if($res_select==false){
+									$insert_sql="insert into cluster_alarm_info(alarm_type,job_info,occur_timestamp,cluster_id,shardid) values ('standby_delay','$msg_data',now(),'$cluster_id','$shard_id');";
+									$res_insert=$this->Cluster_model->updateList($insert_sql);
+								}
+							}else if(strpos($error_row,'存储节点异常')!== false){
+								$arr=explode(',', $error_row);
+								$arr_ip=explode('(', $arr[1]);
+								$ip=$arr_ip[0];
+								$arr_port=explode(')', $arr_ip[1]);
+								$port=$arr_port[0];
+								$msg_data =urldecode(json_encode(array(
+									'cluster_id'=>$row['db_cluster_id'],
+									'shard_id'=>$row['shard_id'],
+									'message'=>urlencode($error_row),
+									'ip'=>$ip,
+									'port'=>$port
+								)));
+								$select_storage_sql="select job_info from cluster_alarm_info where job_info='$msg_data' and status='unhandled' ";
+								$res_storage_select=$this->Cluster_model->getList($select_storage_sql);
+								if($res_storage_select==false){
+									$insert_storage_sql="insert into cluster_alarm_info(alarm_type,job_info,occur_timestamp,cluster_id,shardid) values ('storage_node_exception','$msg_data',now(),'$cluster_id','$shard_id');";
+									$res_storage_insert=$this->Cluster_model->updateList($insert_storage_sql);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		//设备离线
+		$machine_error=$this->machineError();
+		if(!empty($machine_error)){
+			foreach($machine_error as $machine_row){
+				$arr=explode(',', $machine_row);
+				$ip=$arr[0];
+				$msg_data = urldecode(json_encode(array(
+					'message'=>urlencode($machine_row),
+					'ip'=>$ip
+				)));
+				$select_machine_sql="select job_info from cluster_alarm_info where job_info='$msg_data' and status='unhandled' ";
+				$res_machine_select=$this->Cluster_model->getList($select_machine_sql);
+				if($res_machine_select==false){
+					$insert_machine_sql="insert into cluster_alarm_info(alarm_type,job_info,occur_timestamp) values ('machine_offline','$msg_data',now());";
+					$res_machine_insert=$this->Cluster_model->updateList($insert_machine_sql);
+				}
+			}
+		}
+		//主备切换失败
+		$manual_switch_error=$this->manualSwitchError();
+		if(!empty($manual_switch_error)){
+			foreach($manual_switch_error as $switch_row){
+				//print_r($switch_row['shard_id']);exit;
+				$switch_cluster_id=$switch_row['cluster_id'];
+				$switch_shard_id=$switch_row['shard_id'];
+				$switch_row=json_encode($switch_row);
+				$select_switch_sql="select job_info from cluster_alarm_info where job_info='$switch_row' ";
+				$res_select_switch=$this->Cluster_model->getList($select_switch_sql);
+				if($res_select_switch==false){
+					$insert_switch_sql="insert into cluster_alarm_info(alarm_type,job_info,occur_timestamp,cluster_id,shardid) values ('manual_switch','$switch_row',now(),'$switch_cluster_id','$switch_shard_id');";
+					$res_insert_switch=$this->Cluster_model->updateList($insert_switch_sql);
+				}
+			}
+		}
+		//搬表失败
+		$table_move_error=$this->tableMoveError();
+		if(!empty($table_move_error)){
+			foreach($table_move_error as $move_row){
+				$move_cluster_id=$move_row['cluster_id'];
+				$move_job_id=$move_row['id'];
+				$move_shard_id=$move_row['src_shard_id'];
+				//print_r($move_row);exit;
+				$move_row=json_encode($move_row);
+				$select_move_sql="select job_info from cluster_alarm_info where job_id='$move_job_id' ";
+				$res_move=$this->Cluster_model->getList($select_move_sql);
+				if($res_move==false){
+					$insert_move_sql="insert into cluster_alarm_info(alarm_type,job_info,occur_timestamp,cluster_id,shardid,job_id) values ('expand_cluster','$move_row',now(),'$move_cluster_id','$move_shard_id','$move_job_id');";
+					$res_insert_move=$this->Cluster_model->updateList($insert_move_sql);
+				}
+			}
+		}
+		
+		//备份失败
+		$table_backup_error=$this->backupError();
+		//print_r($table_backup_error);exit;
+		if(!empty($table_backup_error)){
+			foreach($table_backup_error as $backup_row){
+				$backup_job_id=$backup_row['id'];
+				if(!empty($backup_row['cluster_id'])){
+					$backup_cluster_id=$backup_row['cluster_id'];
+					$backup_comp_id=$backup_row['compid'];
+					$backup_shard_id=$backup_row['shardid'];
+					$backup_row=json_encode($backup_row);
+					$select_backup_sql="select job_id from cluster_alarm_info where job_id='$backup_job_id' ";
+					$res_backup=$this->Cluster_model->getList($select_backup_sql);
+					if($res_backup==false){
+						$insert_backup_sql="insert into cluster_alarm_info(alarm_type,job_info,occur_timestamp,job_id,cluster_id,shardid,compnodeid) values ('shard_coldbackup','$backup_row',now(),'$backup_job_id','$backup_cluster_id','$backup_shard_id','$backup_comp_id');";
+						$res_insert_backup=$this->Cluster_model->updateList($insert_backup_sql);
+					}
+				}
+			}
+		}
+		//增删集群，增删shard，增删nodes，全量备份失败
+		$table_cluster_error=$this->clusterJobError();
+		if(!empty($table_cluster_error)){
+			foreach($table_cluster_error as $cluster_row){
+				if(isset($cluster_row['paras']['cluster_id'])){
+					$cluster_id=$cluster_row['paras']['cluster_id'];
+				}else{
+					$cluster_id=null;
+				}
+				$job_id=$cluster_row['id'];
+				$job_type=$cluster_row['job_type'];
+				if(isset($cluster_row['paras']['shard_id'])){
+					$shard_id=$cluster_row['paras']['shard_id'];
+				}else{
+					$shard_id=null;
+				}
+				$cluster_row=json_encode($cluster_row);
+				$select_cluster_sql="select job_id from cluster_alarm_info where job_id='$job_id' ";
+				$res_cluster=$this->Cluster_model->getList($select_cluster_sql);
+				if($res_cluster==false){
+					$insert_cluster_sql="insert into cluster_alarm_info(alarm_type,job_info,occur_timestamp,cluster_id,shardid,job_id) values ('$job_type','$cluster_row',now(),'$cluster_id','$shard_id','$job_id');";
+					$res_insert_cluster=$this->Cluster_model->updateList($insert_cluster_sql);
+				}
+			}
+		}
+		sleep(2);
+	}
+	public function storageNodeError($cluster_id,$id,$shard_name,$cluster_name){
+		$sql="select hostaddr,port from shard_nodes where shard_id='$id' and db_cluster_id='$cluster_id' and status='inactive'";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		$error=array();
+		if(!empty($res)){
+			foreach ($res as $row){
+				array_push($error,$cluster_name.'('.$cluster_id.')集群的'.$shard_name.'中,'.$row['hostaddr'].'('.$row['port'].')'.'存储节点异常');
+			}
+		}
+		return $error;
+	}
+	public function compNodeError($cluster_id,$cluster_name){
+		$sql="select id,hostaddr,port from comp_nodes where db_cluster_id='$cluster_id' and status='inactive'";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		$error=array();
+		if(!empty($res)){
+			foreach ($res as $row){
+				array_push($error,$cluster_name.'('.$cluster_id.')集群中,'.$row['hostaddr'].'('.$row['port'].')'.'计算节点异常');
+			}
+		}
+		return $error;
+	}
+	public function machineError(){
+		$this->load->model('Cluster_model');
+		$sql="select hostaddr from server_nodes where node_stats='dead' GROUP BY hostaddr ";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		$error=array();
+		if(!empty($res)){
+			foreach ($res as $row){
+				array_push($error,$row['hostaddr'].',该设备离线了');
+			}
+		}
+		return $error;
+	}
+	public function manualSwitchError(){
+		$this->load->model('Cluster_model');
+		$sql="select host,shard_id,cluster_id,taskid,err_msg as message,consfailover_msg from rbr_consfailover where err_code!=0 ";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		foreach ($res as $row=>$value){
+			foreach ($value as $key2 => $value2) {
+				$string = str_replace(PHP_EOL,'',$res[$row]['consfailover_msg']);
+				$string=json_decode($string	,true);
+				if(!empty($string['sw_type'])) {
+					$res[$row]['sw_type']=$string['sw_type'];
+				}else{
+					$res[$row]['sw_type']='';
+				}
+			}
+			unset($res[$row]['consfailover_msg']);
+		}
+		return $res;
+	}
+	public function tableMoveError(){
+		$this->load->model('Cluster_model');
+		$sql="select id,when_started,when_ended,memo,job_info,user_name from cluster_general_job_log where status='failed' and job_type='expand_cluster'";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		foreach ($res as $row=>$value){
+			foreach ($value as $key2 => $value2) {
+				$string = str_replace(PHP_EOL,'', $res[$row]['memo']);
+				$string=json_decode($string	,true);
+				if(!empty($string['error_info'])) {
+					$res[$row]['message']=$string['error_info'];
+				}else{
+					$res[$row]['message']='';
+				}
+				$job_info = str_replace(PHP_EOL,'', $res[$row]['job_info']);
+				$job_info=json_decode($job_info	,true);
+				if(!empty($job_info)){
+					$res[$row]['cluster_id']=$job_info['paras']['cluster_id'];
+					$res[$row]['drop_old_table']=$job_info['paras']['drop_old_table'];
+					$res[$row]['dst_shard_id']=$job_info['paras']['dst_shard_id'];
+					$res[$row]['src_shard_id']=$job_info['paras']['src_shard_id'];
+					$res[$row]['table_list']=$job_info['paras']['table_list'];
+				}	
+			}
+			unset($res[$row]['memo']);
+			unset($res[$row]['job_info']);
+		}
+		return $res;
+	}
+	public function backupError(){
+		$this->load->model('Cluster_model');
+		$sql="select id,job_type,memo,when_started,when_ended,job_info,user_name from cluster_general_job_log where status='failed' and job_type='shard_coldbackup'; ";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		//print_r($res);exit;
+		foreach ($res as $row=>$value){
+			foreach ($value as $key2 => $value2) {
+				$string = str_replace(PHP_EOL,'', $res[$row]['memo']);
+				$string=json_decode($string	,true);
+				if(!empty($string['error_info'])) {
+					$res[$row]['message']=$string['error_info'];
+				}else{
+					$res[$row]['message']='';
+				}
+				$job_info = str_replace(PHP_EOL,'', $res[$row]['job_info']);
+				$job_info=json_decode($job_info	,true);
+				if(!empty($job_info)){
+					//取出ip，port去查shard_node和comp_nodes表是否存在
+					$if_exist=$this->getIpPort($job_info['paras']['ip'],$job_info['paras']['port']);
+					if($if_exist){
+						if($if_exist[0]['type']=='compute'){
+							$res[$row]['ip']=$job_info['paras']['ip'];
+							$res[$row]['port']=$job_info['paras']['port'];
+							$res[$row]['compid']=$if_exist[0]['id'];
+							$res[$row]['shardid']=null;
+							$res[$row]['cluster_id']=$if_exist[0]['db_cluster_id'];
+						}else{
+							$res[$row]['ip']=$job_info['paras']['ip'];
+							$res[$row]['port']=$job_info['paras']['port'];
+							$res[$row]['compid']=null;
+							$res[$row]['shardid']=$if_exist[0]['id'];
+							$res[$row]['cluster_id']=$if_exist[0]['db_cluster_id'];
+						}
+					}else{
+						$res[$row]['ip']='';
+						$res[$row]['port']='';
+						$res[$row]['compid']='';
+						$res[$row]['shardid']='';
+						$res[$row]['cluster_id']='';
+					}
+				}	
+			}
+			unset($res[$row]['memo']);
+			unset($res[$row]['job_info']);
+		}
+		return $res;
+	}
+	public function clusterJobError(){
+		$this->load->model('Cluster_model');
+		$sql="select id,job_type,memo,when_started,when_ended,job_info,user_name from cluster_general_job_log where status='failed' and job_type in('create_cluster','delete_cluster','add_shards','delete_shard','add_comps','delete_comp','add_nodes','delete_node','manual_backup_cluster');";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		foreach ($res as $row=>$value){
+			foreach ($value as $key2 => $value2) {
+				$string = str_replace(PHP_EOL,'', $res[$row]['memo']);
+				$string=json_decode($string	,true);
+				//if($value2!=='manual_backup_cluster'){
+					if(!empty($string['error_info'])) {
+						$res[$row]['message']=$string['error_info'];
+					}else{
+						$res[$row]['message']='';	
+					}
+				//}
+				$job_info = str_replace(PHP_EOL,'',$res[$row]['job_info']);
+				$job_info=json_decode($job_info	,true);
+				//if($value2!=='manual_backup_cluster'){
+					if(!empty($job_info['paras'])) {
+						$res[$row]['paras']=$job_info['paras'];
+					}else{
+						$res[$row]['paras']='';	
+					}
+				//}
+			}
+			unset($res[$row]['memo']);
+			unset($res[$row]['job_info']);
+		}
+		return $res;
+	}
+	public function getIpPort($ip,$port){
+		$sql="select db_cluster_id,id from comp_nodes where hostaddr='$ip' and port='$port' and status!='deleted'";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		if(!empty($res)) {
+			foreach ($res as $row=>$value){
+				$res[$row]['type']='compute';
+			}
+			return $res;
+		}else{
+			$sql_shard="select db_cluster_id,shard_id as id from shard_nodes where hostaddr='$ip' and port='$port' and status!='deleted'";
+			$res_shard=$this->Cluster_model->getList($sql_shard);
+			if(!empty($res_shard)) {
+				foreach ($res_shard as $row1=>$value1){
+					$res_shard[$row1]['type']='storage';
+				}
+				return $res_shard;
+			}else{
+				return '';
+			}
+		}
 	}
 }

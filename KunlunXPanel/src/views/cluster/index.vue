@@ -2,7 +2,7 @@
   <div class="icons-container">
     <el-tabs type="border-card" v-model="activeName" @tab-click="handleClick"  @tab-remove="removeTab">
       <el-tab-pane label="集群列表信息" name="second" >
-          <List v-if="tabs.second" @updateActiveName="updateActiveName"  :comment="editableTabs"/>
+          <List v-if="tabs.second" @updateActiveName="updateActiveName"  :comment="clusterTab"/>
       </el-tab-pane>
       <el-tab-pane label="集群展示" name="first">
         <Cshow v-if="tabs.first"/> 
@@ -22,7 +22,7 @@
         :name="item.name"
         closable
       >
-        <OneClusterList v-if="item.name" :oneList="InfoList"/>
+        <OneClusterList v-if="item.name" :oneList="InfoList" @getId="clusterId"/>
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -47,6 +47,11 @@ export default {
       InfoList:[],
       cluster_id:'',
       editableTabs:[],
+      active:'',
+      clusterTab:{
+        editableTabs:[],
+        active:'',
+      }
     }
   },
   methods: {
@@ -69,6 +74,10 @@ export default {
       this.editableTabs = tabs.filter(tab => tab.name !== targetName);
       if(this.activeName=='second'){
         this.tabs.second=true;
+      }
+      this.clusterTab={
+        active:this.active,
+        editableTabs:this.editableTabs
       }
     },
      handleClick(tab) {
@@ -116,7 +125,16 @@ export default {
       })
       this.activeName = data.tab[aticeindex].name
       this.editableTabs=data.tab;
+      this.clusterTab={
+        active:this.active,
+        editableTabs:this.editableTabs
+      }
     },
+    clusterId(value){
+      this.removeTab(value);
+      this.tabs.second=true;
+      this.active='delcluster';
+    }
   }
 }
 </script>
