@@ -307,7 +307,7 @@ class AlarmRecord extends CI_Controller {
 											}
 											$arr.='<div>选择计算机：<div style="margin-left:30px;">'.$child.'</div></div>';
 										}
-										$res[$row]['list']='<div>job_id：'.$string["id"].'</div><div>业务名称：'.$string["paras"]["nick_name"].'</div><div>集群ID：'.$string["paras"]["cluster_id"].'</div><div>计算节点个数：'.$string["paras"]["comps"].'</div>'.$arrs;
+										$res[$row]['list']='<div>job_id：'.$string["id"].'</div><div>业务名称：'.$string["paras"]["nick_name"].'</div><div>集群ID：'.$string["paras"]["cluster_id"].'</div><div>计算节点个数：'.$string["paras"]["comps"].'</div>'.$arr;
 									}
 									if($value2=='add_nodes'){
 										$cluster_name=$this->getClusterName($string['paras']['cluster_id']);

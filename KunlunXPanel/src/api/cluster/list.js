@@ -417,6 +417,20 @@ export function getShardsName(query) {
       params:query
   });
 }
+export function getCompDBName(query) {
+  return request({
+      url: '/user/Cluster/getCompDBName',
+      method: 'get',
+      params:query
+  });
+}
+export function getCompDBTable(query) {
+  return request({
+      url: '/user/Cluster/getCompDBTable',
+      method: 'get',
+      params:query
+  });
+}
 export function getShardTable(query) {
   return request({
       url: '/user/Cluster/getShardTable',

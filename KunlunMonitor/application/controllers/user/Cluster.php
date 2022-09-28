@@ -2547,6 +2547,74 @@ class Cluster extends CI_Controller {
 		$data['list'] = $res ;
 		print_r(json_encode($data));
 	}
+	public function getCompDBName(){
+		//GET请求
+		$serve=$_SERVER['QUERY_STRING'];
+		$string=preg_split('/[=&]/',$serve);
+		$arr=array();
+		for($i=0;$i<count($string);$i+=2) {
+			$arr[$string[$i]] = $string[$i + 1];
+		}
+		$cluster_id=$arr['id'];
+		//取任意一个计算节点
+		$ip='';
+		$port='';
+		$name='';
+		$result=false;
+		$sql="select port,hostaddr,user_name from comp_nodes where db_cluster_id='$cluster_id' and status='active' ";
+		$this->load->model('Cluster_model');
+		$res=$this->Cluster_model->getList($sql);
+		$res_count=count($res);
+		if(!empty($res)){
+			foreach($res as $knode=>$vnode) {
+				//连接该计算节点取库名
+				$res_main=$this->getDBName($vnode['hostaddr'],$vnode['port'],$vnode['user_name']);
+				if($res_main['code']==500){
+					if($res_count==($knode+1)){
+						$data['code']=500;
+						$data['message']='计算节点连接异常';
+						print_r(json_encode($data));return;
+					}else{
+						continue;
+					}
+				}else{
+					$ip = $vnode['hostaddr'];
+					$port = $vnode['port'];
+					$name=$vnode['user_name'];
+					$result=$res_main;break;
+				}
+			}
+		}else{
+			$data['code']=500;
+			$data['message']='该集群无可用的计算节点';
+			print_r(json_encode($data));return;
+		}
+		$data['code'] = 200;
+		$data['list'] = $result;
+		$data['ip'] =$ip ;
+		$data['port'] = $port;
+		$data['name'] = $name;
+		print_r(json_encode($data));
+	}
+	public function getCompDBTable(){
+		//GET请求
+		$serve=$_SERVER['QUERY_STRING'];
+		$string=preg_split('/[=&]/',$serve);
+		$arr=array();
+		for($i=0;$i<count($string);$i+=2) {
+			$arr[$string[$i]] = $string[$i + 1];
+		}
+		$database=$arr['database'];
+		$ip=$arr['ip'];
+		$port=$arr['port'];
+		$username=$arr['name'];
+		$this->load->model('Cluster_model');
+		$sql_main="select relname,n.nspname,relshardid From pg_class,pg_namespace n where relnamespace = n.oid and relshardid != 0;";
+		$res=$this->Cluster_model->getResult($sql_main,$ip,$port,$username,$database);
+		$data['code'] = 200;
+		$data['list'] = $res ;
+		print_r(json_encode($data));
+	}
 	public function getShardTable(){
 		//GET请求
 		$serve=$_SERVER['QUERY_STRING'];
@@ -3242,7 +3310,6 @@ class Cluster extends CI_Controller {
 				if(!empty($comp_node_error)){
 					//如果多个,instert多条语句；
 					foreach($comp_node_error as $comp_row){
-						//$comp_node_error=implode(";",$comp_node_error);
 						$comp_id=$comp_row['id'];
 						$arr=explode(',', $comp_row);
 						$arr_ip=explode('(', $arr[1]);
@@ -3356,7 +3423,7 @@ class Cluster extends CI_Controller {
 				$move_shard_id=$move_row['src_shard_id'];
 				//print_r($move_row);exit;
 				$move_row=json_encode($move_row);
-				$select_move_sql="select job_info from cluster_alarm_info where job_id='$move_job_id' ";
+				$select_move_sql="select job_id from cluster_alarm_info where job_id='$move_job_id' ";
 				$res_move=$this->Cluster_model->getList($select_move_sql);
 				if($res_move==false){
 					$insert_move_sql="insert into cluster_alarm_info(alarm_type,job_info,occur_timestamp,cluster_id,shardid,job_id) values ('expand_cluster','$move_row',now(),'$move_cluster_id','$move_shard_id','$move_job_id');";
@@ -3367,7 +3434,6 @@ class Cluster extends CI_Controller {
 		
 		//备份失败
 		$table_backup_error=$this->backupError();
-		//print_r($table_backup_error);exit;
 		if(!empty($table_backup_error)){
 			foreach($table_backup_error as $backup_row){
 				$backup_job_id=$backup_row['id'];
@@ -3410,7 +3476,7 @@ class Cluster extends CI_Controller {
 				}
 			}
 		}
-		sleep(2);
+		//sleep(2);
 	}
 	public function storageNodeError($cluster_id,$id,$shard_name,$cluster_name){
 		$sql="select hostaddr,port from shard_nodes where shard_id='$id' and db_cluster_id='$cluster_id' and status='inactive'";
@@ -3456,7 +3522,7 @@ class Cluster extends CI_Controller {
 		$res=$this->Cluster_model->getList($sql);
 		foreach ($res as $row=>$value){
 			foreach ($value as $key2 => $value2) {
-				$string = str_replace(PHP_EOL,'',$res[$row]['consfailover_msg']);
+				$string = preg_replace('/\r|\n/','\n',trim($res[$row]['consfailover_msg']));
 				$string=json_decode($string	,true);
 				if(!empty($string['sw_type'])) {
 					$res[$row]['sw_type']=$string['sw_type'];
@@ -3475,14 +3541,14 @@ class Cluster extends CI_Controller {
 		$res=$this->Cluster_model->getList($sql);
 		foreach ($res as $row=>$value){
 			foreach ($value as $key2 => $value2) {
-				$string = str_replace(PHP_EOL,'', $res[$row]['memo']);
+				$string = preg_replace('/\r|\n/','\n',trim($res[$row]['memo']));
 				$string=json_decode($string	,true);
 				if(!empty($string['error_info'])) {
 					$res[$row]['message']=$string['error_info'];
 				}else{
 					$res[$row]['message']='';
 				}
-				$job_info = str_replace(PHP_EOL,'', $res[$row]['job_info']);
+				$job_info = preg_replace('/\r|\n/','\n',trim($res[$row]['job_info']));
 				$job_info=json_decode($job_info	,true);
 				if(!empty($job_info)){
 					$res[$row]['cluster_id']=$job_info['paras']['cluster_id'];
@@ -3502,17 +3568,16 @@ class Cluster extends CI_Controller {
 		$sql="select id,job_type,memo,when_started,when_ended,job_info,user_name from cluster_general_job_log where status='failed' and job_type='shard_coldbackup'; ";
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
-		//print_r($res);exit;
 		foreach ($res as $row=>$value){
 			foreach ($value as $key2 => $value2) {
-				$string = str_replace(PHP_EOL,'', $res[$row]['memo']);
+				$string = preg_replace('/\r|\n/','\n',trim($res[$row]['memo']));
 				$string=json_decode($string	,true);
 				if(!empty($string['error_info'])) {
 					$res[$row]['message']=$string['error_info'];
 				}else{
 					$res[$row]['message']='';
 				}
-				$job_info = str_replace(PHP_EOL,'', $res[$row]['job_info']);
+				$job_info = preg_replace('/\r|\n/','\n',trim($res[$row]['job_info']));
 				$job_info=json_decode($job_info	,true);
 				if(!empty($job_info)){
 					//取出ip，port去查shard_node和comp_nodes表是否存在
@@ -3552,7 +3617,7 @@ class Cluster extends CI_Controller {
 		$res=$this->Cluster_model->getList($sql);
 		foreach ($res as $row=>$value){
 			foreach ($value as $key2 => $value2) {
-				$string = str_replace(PHP_EOL,'', $res[$row]['memo']);
+				$string = preg_replace('/\r|\n/','\n',trim($res[$row]['memo']));
 				$string=json_decode($string	,true);
 				//if($value2!=='manual_backup_cluster'){
 					if(!empty($string['error_info'])) {
@@ -3561,7 +3626,7 @@ class Cluster extends CI_Controller {
 						$res[$row]['message']='';	
 					}
 				//}
-				$job_info = str_replace(PHP_EOL,'',$res[$row]['job_info']);
+				$job_info = preg_replace('/\r|\n/','\n',trim($res[$row]['job_info']));
 				$job_info=json_decode($job_info	,true);
 				//if($value2!=='manual_backup_cluster'){
 					if(!empty($job_info['paras'])) {
@@ -3597,5 +3662,11 @@ class Cluster extends CI_Controller {
 				return '';
 			}
 		}
+	}
+	public  function getDBName($ip,$port,$user_name){
+		$this->load->model('Cluster_model');
+		$sql_main="select datname from pg_database where datname not in('template0','template1');";
+		$res=$this->Cluster_model->DB($sql_main,$ip,$port,$user_name);
+		return $res;
 	}
 }

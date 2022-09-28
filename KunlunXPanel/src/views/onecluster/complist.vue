@@ -119,7 +119,7 @@
       </el-table-column>
     </el-table>
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
-      <!-- 添加shard-->
+      <!-- 添加计算节点-->
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogNodeVisible" custom-class="single_dal_view"  :close-on-click-modal="false">
       <el-form
         ref="dataForm"
@@ -144,8 +144,8 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="副本数:" prop="nodes" >
-          <el-input  v-model="temp.nodes" class="right_input" placeholder="请输入副本数">
+        <el-form-item label="计算节点个数:" prop="nodes" >
+          <el-input  v-model="temp.nodes" class="right_input" placeholder="请输入计算节点个数">
             <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">个</i>
           </el-input>
         </el-form-item>
