@@ -111,10 +111,7 @@
         </template>
       </el-table-column>
     </el-table>
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
-    <el-dialog title="详情" :visible.sync="dialogInfo" custom-class="single_dal_view" :close-on-click-modal="false">
-      <json-viewer :value="alarmJobInfo"></json-viewer>
-    </el-dialog>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" /> 
   </div>
 </template>
 <script>
@@ -123,10 +120,9 @@
  import {alarm_type_arr,alarm_level_arr} from "@/utils/global_variable"
  import Pagination from '@/components/Pagination' 
  import {getClusterMonitor} from '@/api/cluster/list'
- import JsonViewer from 'vue-json-viewer'
 export default {
   name: "alarmrecord",
-  components: { Pagination ,JsonViewer},
+  components: { Pagination },
   data() {
     return {
       tableKey: 0,
@@ -185,7 +181,7 @@ export default {
         this.total = response.total;
         this.listLoading = false
       });
-    }, 60000)//1m
+    }, 60000)//1min
   } ,
   destroyed() {
     clearInterval(this.timer)

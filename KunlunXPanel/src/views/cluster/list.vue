@@ -1437,6 +1437,7 @@ export default {
                     label="序号"
                     width="50">
                 </el-table-column>
+                <!-- TABLE_SCHEMA,TABLE_NAME -->
                 <el-table-column   
                 prop="TABLE_SCHEMA" 
                 label="数据库名称"
@@ -1449,7 +1450,7 @@ export default {
                 </el-table-column>
               </el-table>
               <el-form-item label="原shard:" prop="shard_name">
-                <el-input v-model="expandtemp.shard_name"  :disabled="true" />
+                <el-input v-model="expandtemp.shard_name" :disabled="true" />
               </el-form-item>
               <el-form-item label="是否保留原表:" prop="if_save">
                 <el-radio v-model="expandtemp.if_save" label="0">是</el-radio>
@@ -1457,7 +1458,6 @@ export default {
               </el-form-item>
               <el-form-item label="已选原shard表:" prop="table_list" v-if="expandtemp.table_list.length">
                 <template>
-                  <!-- v-infinite-scroll="load"  -->
                   <ul class="infinite-list" style="max-height:200px;overflow:auto">
                     <li v-for="(item,index) in expandtemp.table_list" :key="index" class="infinite-list-item">{{ item.TABLE_SCHEMA+'.'+item.TABLE_NAME }}</li>
                   </ul>
@@ -1561,7 +1561,6 @@ export default {
         border
         highlight-current-row
         style="width: 100%;margin-bottom: 20px;">
-          <!-- :selectable='checkboxInit' -->
           <el-table-column type="selection" width="55"></el-table-column>
           <el-table-column
               type="index"
@@ -1608,6 +1607,35 @@ export default {
         <el-button type="primary" @click="autoExpandInfo(autoexpandtemp)">提交</el-button>
       </div>
     </el-dialog>
+    <!-- 扩容选库 -->
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="expandSelectDBVisible" custom-class="single_dal_view"  :close-on-click-modal="false">
+      <el-form
+        ref="selectExpandForm"
+        :model="selectdbtemp"
+        :rules="rules"
+        label-position="left"
+        label-width="100px"
+      >
+        <el-form-item label="集群ID:">
+          <span>{{selectdbtemp.cluster_id}}</span>
+        </el-form-item>
+        <el-form-item label="选择数据库:" prop="database">
+        <el-select v-model="selectdbtemp.database" clearable placeholder="请选择">
+            <el-option
+              v-for="item in databases"
+              :key="item.id"
+              :label="item.datname"
+              :value="item.datname">
+            </el-option>
+          </el-select>
+      </el-form-item>
+      </el-form>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="expandSelectDBVisible = false">关闭</el-button>
+        <el-button type="primary" @click="expandTable(selectdbtemp)">确定</el-button>
+      </div>
+    </el-dialog>
     <!--状态框 -->
     <el-dialog :visible.sync="dialogStatusVisible" custom-class="single_dal_view" width="400px"  :close-on-click-modal="false" :before-close="beforeSyncDestory">
       <div class="block">
@@ -1626,71 +1654,6 @@ export default {
       </div>
     </el-dialog>
     <el-dialog :title="job_id" :visible.sync="dialogStatusShowVisible" custom-class="single_dal_view" :close-on-click-modal="false" :before-close="beforeDestory">
-      <!-- <div style="height: 400px;">
-        <el-steps direction="vertical" :active="active" finish-status="success">
-          <el-step
-              v-for="(item,index) of stepParams"
-              :key="index"
-              :title="item.title"
-              :icon="item.icon"
-              :status="item.status"
-              :description="item.description"
-              :class="stepSuc.includes(index) ? 'stepSuc':'stepErr'"
-              @click.native="handleStep(index)"
-          />
-        </el-steps>
-      </div> -->
-     <!-- <div class="stepComponent" >
-    <div class="approvalProcess" >
-        <el-steps :active="active" finish-status="success" direction="vertical" >
-           <el-step :title="item.label"  v-for="item in approvalProcessProject" :id="item.id">
-            <template slot="description" >
-             <div class="step-row" v-for="item in approvalProcessProject">
-               <table width="100%" border="0" cellspacing="0" cellpadding="0" class="processing_content">
-                         <tr>
-                            <td style="color:#98A6BE">
-                                <div class="processing_content_detail" style="float:left;width:70%"><span >192.168.0.136_47001</span></div> 
-                              <div class="processing_content_detail" style="float:right;"><span ><i class="el-icon-time"></i>&nbsp;&nbsp;昨天12:24</span> </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                                <div class="processing_content_detail" style="float:left;width:70%">
-                                <div style="float:left;width: 2px;height: 20px; background:#C7D4E9;margin-left:10px;margin-right:10px"></div> 
-                                <span style="color:#919FB8">ongoing</span></div> 
-                            </td>
-                          </tr>
-                </table>
-           </div>
-         </template>
- 
-           </el-step>
-        </el-steps>
-         <el-button style="margin-top: 12px;" @click="next">下一步</el-button>
- 
-  </div>
- 
-</div> -->
-      
-      <!-- <div style="width: 100%;background: #fff;padding:20px; ">
-      <el-steps class="hoverSteps" direction="vertical" :space="80" :active="2">
-        <el-step v-for="(value, key) in lists" :key="key">
-          <template slot="description">
-              <div @mouseover="mouseOver(key)"
-                   @mouseleave="mouseLeave(key)" :id="key">
-                   <div class="stepNoBtn" :class="current===key? 'stepBtn':''">
-                      <div class="step-title-font">{{ value.title }}</div>
-                    <div>{{value.description}}</div>
-                    <div class="btnPosition">
-                      <el-button v-if="current===key" size="mini" type="primary">详情</el-button>
-                    </div>
-                   </div>
-            </div>
-          </template>
-        </el-step>
-      </el-steps>
-    </div> -->
-
       <div style="width: 100%;background: #fff;padding:0 20px;">
         <el-steps direction="vertical" :active="init_active">
           <el-step :title="init_title" icon="el-icon-more" v-if="init_show"></el-step>
@@ -1764,7 +1727,7 @@ export default {
  import { messageTip,handleCofirm,getNowDate,getNextMonth,createCode,gotoCofirm } from "@/utils";
  import Pagination from '@/components/Pagination' 
  import {ha_mode_arr,c_ha_mode_arr,shards_arr,per_shard_arr,norepshards_arr,node_type_arr,c_node_type_arr,version_arr,storage_type_arr,timestamp_arr,policy_arr} from "@/utils/global_variable"
- import {getClusterList,ifBackUp,getAllMachine,getShards,uAssign,getStroMachine,getCompMachine,createCluster,delCluster,backeUpCluster,addShards,addComps,addNodes,restoreCluster,getBackUpStorage,getEvStatus,getShardsJobLog,getOldCluster, getShardsCount,getShardsName,getShardTable,getOtherShards,expandCluster,getExpandTableList } from '@/api/cluster/list'
+ import {getClusterList,ifBackUp,getAllMachine,getShards,uAssign,getStroMachine,getCompMachine,createCluster,delCluster,backeUpCluster,addShards,addComps,addNodes,restoreCluster,getBackUpStorage,getEvStatus,getShardsJobLog,getOldCluster, getShardsCount,getShardsName,getShardTable,getOtherShards,expandCluster,getExpandTableList,getCompDBName,getCompDBTable } from '@/api/cluster/list'
  import JsonViewer from 'vue-json-viewer'
 export default {
   name: "list",
@@ -1962,6 +1925,13 @@ export default {
         callback(new Error("请选择需要扩容的表"));
       }
       else {
+        callback();
+      }
+    };
+    const validateDatabase = (rule, value, callback) => {
+     if(value.length==0){
+        callback(new Error("请选择数据库"));
+      }else {
         callback();
       }
     };
@@ -2233,6 +2203,16 @@ export default {
       checkedColumns: ['集群ID','业务名称','状态','计算节点','shard分配'],
       statusDetailVisible:false,
       abnormal:'',
+      databases:[],
+      selectdbtemp:{
+        database:'',
+        cluster_id:'',
+        ip:'',
+        port:'',
+        name:''
+      },
+      expandSelectDBVisible:false,
+      expandTableList:null,
       rules: {
         // machinelist: [
         //   { required: true, trigger: "blur",validator: validatemachine },
@@ -2293,6 +2273,9 @@ export default {
         ],
         table_list:[
           {required: true, trigger: "blur",validator: validateTableList }
+        ],
+        database:[
+          {required: true, trigger: "blur",validator: validateDatabase }
         ]
       },
   
@@ -2313,7 +2296,6 @@ export default {
           return !UnData.includes(item)
         })
       }
-      //console.log(this.checkedColumns);
   },
   watch: {
     'temp.machinelist': {
@@ -2366,9 +2348,50 @@ export default {
     clearInterval(this.timer)
     this.timer = null
   },
+  // computed:{
+  //   listCmputed(){
+  //     // console.log(this.expandtemp.list.shard_id);
+  //    this.shardTable.filter(function(item){
+  //     return item.relshardid==this.expandtemp.list.shard_id
+  //    })
+  //   }
+  //  },
   methods: {
+    expandTable(row){
+       this.$refs["selectExpandForm"].validate((valid) => {
+        if (valid) {
+          //查表
+          let temp={database:row.database,ip:row.ip,port:row.port,name:row.name};
+          getCompDBTable(temp).then((res) => {
+            if(res.code==200){
+              let arr=res.list.arr;
+              if(arr.length>0){
+                for (let i = 0; i < arr.length; i++) {
+                  let param =arr[i];
+                  this.$set(param, 'nspname', row.database+'_$$_'+param.nspname)
+                }
+              }
+              let result = arr.map(item => ({
+                TABLE_SCHEMA: item.nspname,
+                TABLE_NAME: item.relname,
+                relshardid: item.relshardid
+              }));
+              this.expandTableList=result;
+              this.shardTable=result.filter((item, index) => {
+                return item.relshardid == this.expandtemp.list.shard_id;
+              });
+              this.dialogExpandVisible=true;
+              this.expandSelectDBVisible = false;
+            }else{
+              this.message_tips = res.message;
+              this.message_type = 'error';
+              messageTip(this.message_tips,this.message_type);
+            }
+          });
+        }
+      });
+    },
     statusDetail(row){
-      console.log(row);
       this.dialogStatus = 'statusDetail';
       this.statusDetailVisible=true;
       let arr='';
@@ -2424,6 +2447,9 @@ export default {
       paras.cluster_id = this.autoexpandtemp.list.cluster_id;
       paras.shard_id=value;
       paras.policy=this.autoexpandtemp.policy;
+      paras.compute_ip=this.selectdbtemp.ip;
+      paras.compute_port=this.selectdbtemp.port;
+      paras.compute_database=this.selectdbtemp.database;
       tempData.paras=paras;
       if(this.autoexpandtemp.policy){
         this.autoexpandtemp.tables=[];
@@ -2448,7 +2474,6 @@ export default {
             }else{
               this.autoexpandtemp.tables = false;
             }
-            
             //this.autoexpandtemp.table_list = ress.attachment.table_list;
           }else{
             this.message_tips = ress.error_info;
@@ -2475,6 +2500,9 @@ export default {
       paras.cluster_id = this.autoexpandtemp.list.cluster_id;
       paras.shard_id=this.autoexpandtemp.auto_shard_id;
       paras.policy=value;
+      paras.compute_ip=this.selectdbtemp.ip;
+      paras.compute_port=this.selectdbtemp.port;
+      paras.compute_database=this.selectdbtemp.database;
       tempData.paras=paras;
       if(this.autoexpandtemp.auto_shard_id){
         this.autoexpandtemp.tables=[];
@@ -2546,18 +2574,21 @@ export default {
         this.expandtemp.list.shard_name=tab.name;
         //this.expandtemp.shard_name=tab.name;
         this.expandtemp.dst_shard_id='';
-        //console.log(this.expandtemp.list);
+        //console.log(this.expandtemp.list.shard_id);return;
         //获取shard下的table
         this.shardTable=[];
-        let table={cluster_id:ids[1],id:ids[0]}
-        getShardTable(table).then((res) => {
-         if(res.code==200){
-            this.shardTable = res.list;
-          }else{
-            this.message_tips = res.message;
-            this.message_type = 'error';
-            messageTip(this.message_tips,this.message_type);
-          }
+        //let table={cluster_id:ids[1],id:ids[0]}
+        // getShardTable(table).then((res) => {
+        //  if(res.code==200){
+        //     this.shardTable = res.list;
+        //   }else{
+        //     this.message_tips = res.message;
+        //     this.message_type = 'error';
+        //     messageTip(this.message_tips,this.message_type);
+        //   }
+        // });
+        this.shardTable=this.expandTableList.filter((item, index) => {
+          return item.relshardid == this.expandtemp.list.shard_id;
         });
         if(this.expandtemp.shard_name){
         //获取shards名称
@@ -2697,6 +2728,15 @@ export default {
         name:'',
         nick_name:'',
         nodes:''
+      };
+    },
+    resetSelectDBTemp(){
+      this.selectdbtemp = {
+         database:'',
+        cluster_id:'',
+        ip:'',
+        port:'',
+        name:''
       };
     },
     handleCreate() {
@@ -3435,6 +3475,8 @@ export default {
       this.$emit('updateActiveName', temp)
     },
     handleExpand(row) {
+      this.resetSelectDBTemp();
+      this.databases=[];
       this.dialogStatus = "expand";
       this.dialogFormVisible = false;
       this.dialogDetail = false;
@@ -3447,37 +3489,50 @@ export default {
           this.message_type = 'error';
           messageTip(this.message_tips,this.message_type);
         }else{
-          this.shardNameList = res.list;
-          this.activeName=res.list[0].name;
-          //this.expandtemp.list.cluster_id=res.list[0].cluster_id;
-          this.expandtemp.list.shard_id=res.list[0].id;
-          this.expandtemp.list.shard_name=res.list[0].name;
-          //this.expandtemp.shard_name=res.list[0].name;
-          //获取shard下的table
-          this.shardTable=[]
-          let table={cluster_id:res.list[0].cluster_id,id:res.list[0].id}
-          getShardTable(table).then((ress) => {
-            if(ress.code==200){
-              this.shardTable = ress.list;
-              this.dialogExpandVisible=true;
+          //从计算节点中获取库名选择
+          getCompDBName(temp).then((response) => {
+            //选择数据库
+            if(response.code==200){
+              this.databases=response.list;
+              this.expandSelectDBVisible=true;
+              this.selectdbtemp.cluster_id=row.id;
+              this.selectdbtemp.ip=response.ip;
+              this.selectdbtemp.port=response.port;
+              this.selectdbtemp.name=response.name;
             }else{
-              this.message_tips = ress.message;
+              this.message_tips = response.message;
               this.message_type = 'error';
               messageTip(this.message_tips,this.message_type);
             }
           });
+          this.shardNameList = res.list;
+          this.activeName=res.list[0].name;
+          this.expandtemp.list.shard_id=res.list[0].id;
+          this.expandtemp.list.shard_name=res.list[0].name;
+          // //获取shard下的table
+          // this.shardTable=[]
+          // let table={cluster_id:res.list[0].cluster_id,id:res.list[0].id}
+          // getShardTable(table).then((ress) => {
+          //   if(ress.code==200){
+          //     this.shardTable = ress.list;
+          //     this.dialogExpandVisible=true;
+          //   }else{
+          //     this.message_tips = ress.message;
+          //     this.message_type = 'error';
+          //     messageTip(this.message_tips,this.message_type);
+          //   }
+          //  });
         }
       });
     },
     showExpandInfo(row){
-      console.log(row);
       if(this.expandtemp.title=='自动扩容'){
-        console.log(11);
         this.autoExpandTemp();
         this.dialogExpandVisible = false;
         this.dialogDetail = false;
         this.dialogStatus = "outoExpand";
         this.dialogExpandInfoVisible=false;
+        this.expandSelectDBVisible=false;
         this.outoExpandInfoVisible=true;
         this.autoexpandtemp.list.cluster_id=row.list.cluster_id;
         //查看该集群下有多少个shard
@@ -3498,6 +3553,7 @@ export default {
           this.dialogDetail = false;
           this.dialogStatus = "expandInfo";
           this.dialogExpandInfoVisible=true;
+          this.expandSelectDBVisible=false;
           //参数赋值
           this.expandInfoTemp.shard_name=row.shard_name;
           this.expandInfoTemp.list=row.list;
@@ -3510,8 +3566,10 @@ export default {
       }
     },
     expandClose(){
+      this.dialogStatus = "expand";
       this.dialogExpandVisible = true;
       this.dialogExpandInfoVisible=false;
+      this.expandSelectDBVisible=false;
     },
     autoExpandInfo(row){
       this.$refs["autoExpandForm"].validate((valid) => {
@@ -3519,6 +3577,7 @@ export default {
           this.dialogStatus = "expandInfo";
           this.outoExpandInfoVisible = false;
           this.dialogExpandInfoVisible=true;
+          this.expandSelectDBVisible=false;
           //参数赋值
           this.expandInfoTemp.shard_name=row.shard_name;
           this.expandInfoTemp.table_list=row.table_list;
@@ -3561,6 +3620,7 @@ export default {
           this.dialogExpondInfo=true;
           this.dialogExpandVisible=false;
           this.dialogExpandInfoVisible=false;
+          this.expandSelectDBVisible=false;
           this.computer=[];this.shard=[];this.computer_state='';this.storage_state='';this.computer_title='';this.computer_icon='';this.shard_icon='';this.shard_title='';this.comp_active=0;this.shard_active=0;this.strogemachines=[];this.init_title='';this.init_active=0;this.finish_title='';this.finish_icon='';this.finish_description='';this.computer_description='';this.shard_description='';this.job_id='';this.timer=null;
           this.expondSatus=false; this.expondResult=false;this.expondInit=true;this.expand_init='';this.expand_end='';this.expondInfo=[];this.finish_show=false;this.finish_state='';
           let info='扩容'

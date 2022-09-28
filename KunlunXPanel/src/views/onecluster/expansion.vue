@@ -1,8 +1,9 @@
 <template>
   <div class="app-container">
-    <el-form ref="expandForm" :model="expandtemp" label-width="120px" :rules="rules">
-        <div class="icons-container">
-          <el-tabs type="border-card" v-model="activeName" @tab-click="handleClick">
+    <el-form ref="selectExpandForm" :model="selectdbtemp" label-width="120px" :rules="rules">
+          <!--
+            <div class="icons-container"> 
+            <el-tabs type="border-card" v-model="activeName" @tab-click="handleClick">
             <el-tab-pane  v-for="(item,index) in shardNameList" :key="index" :label="item.name" :name="item.name" :value="item.id+'_'+item.cluster_id">
              <el-table
               :key="tableKey"
@@ -13,7 +14,6 @@
               border
               highlight-current-row
               style="width: 100%;margin-bottom: 20px;">
-                <!-- :selectable='checkboxInit' -->
                 <el-table-column type="selection" width="55"></el-table-column>
                 <el-table-column
                     type="index"
@@ -41,7 +41,6 @@
               </el-form-item>
               <el-form-item label="已选原shard表:" prop="table_list" v-if="expandtemp.table_list.length">
                 <template>
-                  <!-- v-infinite-scroll="load"  -->
                   <ul class="infinite-list" style="max-height:200px;overflow:auto">
                     <li v-for="(item,index) in expandtemp.table_list" :key="index" class="infinite-list-item">{{ item.TABLE_SCHEMA+'.'+item.TABLE_NAME }}</li>
                   </ul>
@@ -61,9 +60,100 @@
                 <el-button type="primary" @click="showExpandInfo(expandtemp)">{{expandtemp.title}}</el-button>
               </el-form-item> 
             </el-tab-pane>
+          </el-tabs> 
+          </div>
+          -->
+          <el-form-item label="集群ID:">
+            <span>{{selectdbtemp.cluster_id}}</span>
+          </el-form-item>
+          <el-form-item label="选择数据库:" prop="database">
+            <el-select v-model="selectdbtemp.database" clearable placeholder="请选择">
+                <el-option
+                  v-for="item in databases"
+                  :key="item.id"
+                  :label="item.datname"
+                  :value="item.datname">
+                </el-option>
+              </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="expandTable(selectdbtemp)">扩容</el-button>
+        </el-form-item>
+    </el-form>
+    <!-- 扩容-->
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogExpandVisible" custom-class="single_dal_view expand"  :close-on-click-modal="false" >
+      <el-form
+        ref="expandForm"
+        :model="expandtemp"
+        :rules="rules"
+        label-position="left"
+        label-width="130px">
+        <div class="icons-container">
+          <el-tabs type="border-card" v-model="activeName" @tab-click="handleClick" >
+            <el-tab-pane  v-for="(item,index) in shardNameList" :key="index" :label="item.name" :name="item.name" :value="item.id+'_'+item.cluster_id">
+             <el-table
+              :key="tableKey"
+              v-loading="listLoading"
+              :data="shardTable"
+              max-height="240"
+              @selection-change="selectionChangeHandle"
+              border
+              highlight-current-row
+              style="width: 100%;margin-bottom: 20px;">
+                <el-table-column type="selection" width="55"></el-table-column>
+                <el-table-column
+                    type="index"
+                    align="center"
+                    label="序号"
+                    width="50">
+                </el-table-column>
+                <!-- TABLE_SCHEMA,TABLE_NAME -->
+                <el-table-column   
+                prop="TABLE_SCHEMA" 
+                label="数据库名称"
+                align="center">
+                </el-table-column>
+                <el-table-column  
+                prop="TABLE_NAME" 
+                label="表名称" 
+                align="center">
+                </el-table-column>
+              </el-table>
+              <el-form-item label="原shard:" prop="shard_name">
+                <el-input v-model="expandtemp.shard_name" :disabled="true" />
+              </el-form-item>
+              <el-form-item label="是否保留原表:" prop="if_save">
+                <el-radio v-model="expandtemp.if_save" label="0">是</el-radio>
+                <el-radio v-model="expandtemp.if_save" label="1">否</el-radio>
+              </el-form-item>
+              <el-form-item label="已选原shard表:" prop="table_list" v-if="expandtemp.table_list.length">
+                <template>
+                  <ul class="infinite-list" style="max-height:200px;overflow:auto">
+                    <li v-for="(item,index) in expandtemp.table_list" :key="index" class="infinite-list-item">{{ item.TABLE_SCHEMA+'.'+item.TABLE_NAME }}</li>
+                  </ul>
+                </template>
+              </el-form-item>
+              <el-form-item label="目标shard:" prop="dst_shard_id" v-if="expandtemp.dsc_flag">
+                <el-select v-model="expandtemp.dst_shard_id" clearable placeholder="请选择目标shard" style="width:100%;" @change="ChangeShardName">
+                  <el-option
+                    v-for="item in shardsList"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+              
+            </el-tab-pane>
           </el-tabs>
         </div>
-    </el-form>
+      </el-form>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogExpandVisible = false">关闭</el-button>
+        <el-button type="primary" @click="showExpandInfo(expandtemp)">{{expandtemp.title}}</el-button>
+      </div>
+    </el-dialog>
     <!--自动扩容 -->
      <el-dialog :title="textMap[dialogStatus]" :visible.sync="outoExpandInfoVisible" custom-class="single_dal_view"  :close-on-click-modal="false">
       <el-form
@@ -193,12 +283,37 @@
       <json-viewer :value="expondInfo" v-if="expondSatus"></json-viewer>
       <span v-if="expondResult">{{expand_end}}</span>
     </el-dialog>
+    <!-- 扩容选库 -->
+    <!-- <el-dialog :title="textMap[dialogStatus]" :visible.sync="expandSelectDBVisible" custom-class="single_dal_view"  :close-on-click-modal="false" >
+      <el-form
+        ref="autoExpandForm"
+        :model="selectdbtemp"
+        :rules="rules"
+        label-position="left"
+        label-width="130px"
+      >
+        <el-form-item label="选择数据库:" prop="database">
+        <el-select v-model="selectdbtemp.database" clearable placeholder="请选择">
+            <el-option
+              v-for="item in databases"
+              :key="item.id"
+              :label="item.datname"
+              :value="item.datname">
+            </el-option>
+          </el-select>
+      </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="expandSelectDBVisible = false">关闭</el-button>
+        <el-button type="primary" @click="expandTable(selectdbtemp)">确定</el-button>
+      </div>
+    </el-dialog> -->
   </div>
 </template>
 
 <script>
 import {messageTip} from "@/utils";
-import {getShardTable,getOtherShards,expandCluster,getExpandTableList,getShardsName,getEvStatus  } from '@/api/cluster/list'
+import {getShardTable,getOtherShards,expandCluster,getExpandTableList,getShardsName,getEvStatus,getCompDBName,getCompDBTable } from '@/api/cluster/list'
 import {version_arr,timestamp_arr,policy_arr} from "@/utils/global_variable"
 import JsonViewer from 'vue-json-viewer'
 export default {
@@ -245,6 +360,13 @@ export default {
         callback(new Error("请选择需要扩容的表"));
       }
       else {
+        callback();
+      }
+    };
+    const validateDatabase = (rule, value, callback) => {
+     if(value.length==0){
+        callback(new Error("请选择数据库"));
+      }else {
         callback();
       }
     };
@@ -312,6 +434,16 @@ export default {
       expondInit:true,
       expondResult:false,
       expondInfo:'',
+      databases:[],
+      selectdbtemp:{
+        database:'',
+        cluster_id:'',
+        ip:'',
+        port:'',
+        name:''
+      },
+      // expandSelectDBVisible:false,
+      expandTableList:null,
       rules: {
         shard_name: [
           { required: true, trigger: "blur",validator: validateShardName},
@@ -327,6 +459,9 @@ export default {
         ],
         table_list:[
           {required: true, trigger: "blur",validator: validateTableList }
+        ],
+        database:[
+          {required: true, trigger: "blur",validator: validateDatabase }
         ]
       }
     }
@@ -350,22 +485,40 @@ export default {
           this.expandtemp.list.cluster_id=this.listsent.id;
           this.expandtemp.list.shard_id=res.list[0].id;
           this.expandtemp.list.shard_name=res.list[0].name;
-          //获取shard下的table
-          this.shardTable=[]
-          let table={cluster_id:res.list[0].cluster_id,id:res.list[0].id}
-          getShardTable(table).then((ress) => {
-            if(ress.code==200){
-              this.shardTable = ress.list;
-              this.dialogExpandVisible=true;
+          getCompDBName(temp).then((response) => {
+            //选择数据库
+            if(response.code==200){
+              this.databases=response.list;
+              // this.expandSelectDBVisible=true;
+              this.selectdbtemp.cluster_id=this.listsent.id;
+              this.selectdbtemp.ip=response.ip;
+              this.selectdbtemp.port=response.port;
+              this.selectdbtemp.name=response.name;
               setTimeout(() => {
                 this.listLoading = false
               }, 0.5 * 1000)
             }else{
-              this.message_tips = ress.message;
+              this.message_tips = response.message;
               this.message_type = 'error';
               messageTip(this.message_tips,this.message_type);
             }
           });
+          //获取shard下的table
+          // this.shardTable=[]
+          // let table={cluster_id:res.list[0].cluster_id,id:res.list[0].id}
+          // getShardTable(table).then((ress) => {
+          //   if(ress.code==200){
+          //     this.shardTable = ress.list;
+          //     this.dialogExpandVisible=true;
+          //     setTimeout(() => {
+          //       this.listLoading = false
+          //     }, 0.5 * 1000)
+          //   }else{
+          //     this.message_tips = ress.message;
+          //     this.message_type = 'error';
+          //     messageTip(this.message_tips,this.message_type);
+          //   }
+          // });
         }
       });
   },
@@ -397,6 +550,40 @@ export default {
     },
   },
   methods:{
+    expandTable(row){
+      this.$refs["selectExpandForm"].validate((valid) => {
+        if (valid) {
+          //查表
+          let temp={database:row.database,ip:row.ip,port:row.port,name:row.name};
+          getCompDBTable(temp).then((res) => {
+            if(res.code==200){
+              let arr=res.list.arr;
+              if(arr.length>0){
+                for (let i = 0; i < arr.length; i++) {
+                  let param =arr[i];
+                  this.$set(param, 'nspname', row.database+'_$$_'+param.nspname)
+                }
+              }
+              let result = arr.map(item => ({
+                TABLE_SCHEMA: item.nspname,
+                TABLE_NAME: item.relname,
+                relshardid: item.relshardid
+              }));
+              this.expandTableList=result;
+              this.shardTable=result.filter((item, index) => {
+                return item.relshardid == this.expandtemp.list.shard_id;
+              });
+              this.dialogExpandVisible=true;
+
+            }else{
+              this.message_tips = res.message;
+              this.message_type = 'error';
+              messageTip(this.message_tips,this.message_type);
+            }
+          });
+        }
+      });
+    },
     onSubmit(row) {
         console.log(row);
     },
@@ -412,15 +599,18 @@ export default {
         //console.log(this.expandtemp.list);
         //获取shard下的table
         this.shardTable=[];
-        let table={cluster_id:ids[1],id:ids[0]}
-        getShardTable(table).then((res) => {
-          if(res.code==200){
-            this.shardTable = res.list;
-          }else{
-            this.message_tips = res.message;
-            this.message_type = 'error';
-            messageTip(this.message_tips,this.message_type);
-          }
+        // let table={cluster_id:ids[1],id:ids[0]}
+        // getShardTable(table).then((res) => {
+        //   if(res.code==200){
+        //     this.shardTable = res.list;
+        //   }else{
+        //     this.message_tips = res.message;
+        //     this.message_type = 'error';
+        //     messageTip(this.message_tips,this.message_type);
+        //   }
+        // });
+        this.shardTable=this.expandTableList.filter((item, index) => {
+          return item.relshardid == this.expandtemp.list.shard_id;
         });
         if(this.expandtemp.shard_name){
           //获取shards名称
@@ -617,7 +807,11 @@ export default {
       paras.cluster_id = this.autoexpandtemp.list.cluster_id;
       paras.shard_id=value;
       paras.policy=this.autoexpandtemp.policy;
+      paras.compute_ip=this.selectdbtemp.ip;
+      paras.compute_port=this.selectdbtemp.port;
+      paras.compute_database=this.selectdbtemp.database;
       tempData.paras=paras;
+      //console.log(tempData);return;
       if(this.autoexpandtemp.policy){
         this.autoexpandtemp.tables=[];
         getExpandTableList(tempData).then((ress) => {
@@ -668,6 +862,9 @@ export default {
       paras.cluster_id = this.autoexpandtemp.list.cluster_id;
       paras.shard_id=this.autoexpandtemp.auto_shard_id;
       paras.policy=value;
+      paras.compute_ip=this.selectdbtemp.ip;
+      paras.compute_port=this.selectdbtemp.port;
+      paras.compute_database=this.selectdbtemp.database;
       tempData.paras=paras;
       if(this.autoexpandtemp.auto_shard_id){
         this.autoexpandtemp.tables=[];
@@ -718,6 +915,7 @@ export default {
       clearInterval(this.timer)
       this.dialogExpondInfo=false;
       this.timer = null;
+      // this.expandSelectDBVisible=true;
     },
     getFStatus (timer,data,i,info) {
       setTimeout(()=>{
