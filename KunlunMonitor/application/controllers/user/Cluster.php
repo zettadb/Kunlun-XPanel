@@ -3336,7 +3336,7 @@ class Cluster extends CI_Controller {
 					if(!empty($error)){
 						//如果多个,instert多条语句；
 						foreach($error as $error_row){
-							if(strpos($error_row,'主备延迟过大')!== false){
+							if(strpos($error_row,'延迟')!== false){
 								$arr=explode(',', $error_row);
 								$arr_ip=explode('(', $arr[1]);
 								$ip=$arr_ip[0];
