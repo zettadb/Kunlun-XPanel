@@ -222,7 +222,7 @@ export default {
         },
         resetform(){
             this.form={
-                 name: this.listsent.name,
+                name: this.listsent.name,
                 nick_name: this.listsent.nick_name,
                 id:this.listsent.id,
                 primary_node:'',

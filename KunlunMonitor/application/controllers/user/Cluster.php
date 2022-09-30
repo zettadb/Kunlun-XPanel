@@ -589,6 +589,7 @@ class Cluster extends CI_Controller {
 					$status.=$i['name'].'('.$i['ip'].'_'.$i['port'].')'.'延迟过大;';
 				}
 			}
+			$data['status']=$status;
 		}elseif ($count>1){
 			$node='';
 			foreach ($res as $key){
@@ -3080,9 +3081,9 @@ class Cluster extends CI_Controller {
 											$master='false';
 										}
 										if($res_rbr[0]['status']=='active'){
-											$status='online';
+											$status=$res_rbr[0]['status'];
 										}elseif($res_rbr[0]['status']=='manual_stop'){
-											$status='offline';
+											$status=$res_rbr[0]['status'];
 										}else{
 											$status=$res_rbr[0]['status'];
 										}

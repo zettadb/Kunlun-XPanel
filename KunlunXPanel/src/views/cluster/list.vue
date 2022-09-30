@@ -462,7 +462,7 @@
       </div>
     </el-dialog>
     <!-- 扩容-->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogExpandVisible" custom-class="single_dal_view"  :close-on-click-modal="false" >
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogExpandVisible" custom-class="single_dal_view expand"  :close-on-click-modal="false" >
       <el-form
         ref="expandForm"
         :model="expandtemp"
@@ -4134,33 +4134,8 @@ export default {
   
 
 </style>
-<style lang="less" scoped>
-
-
-//  .hoverSteps{
-//     /deep/ .ai-step__description{
-//       padding-right:0 !important;
-//     }
-//   }
-//   .stepNoBtn{
-//     padding:12px 12px;
-//     box-sizing: border-box;
-//     margin-bottom:10px;
-//     .step-title-font{
-//       font-size:14px; font-weight: bold;;
-//     }
-//   }
-//   .stepBtn{
-//     box-sizing: border-box;
-//     background: #fff;
-//     /*width: 90%;*/
-//     border-radius: 4px;
-//     border: 1px solid #ebeef5;
-//     line-height: 1.4;
-//     box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
-//     word-break: break-all;
-//     .btnPosition{
-//       text-align: right;
-//     }
-//   }
+<style lang="less">
+.expand .el-tabs__content{
+  height:100% !important;
+}
 </style>

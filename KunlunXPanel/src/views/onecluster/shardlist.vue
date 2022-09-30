@@ -82,7 +82,7 @@
             </el-table-column>
             <el-table-column label="操作" align="center" width="380" class-name="small-padding fixed-width">
               <template slot-scope="{row,$index}">
-                <el-button size="mini" type="primary" v-if="row.status=='creating'"  @click="nodeMonitor(row)">节点监控</el-button>
+                <el-button size="mini" type="primary" v-if="row.status=='creating'||row.status=='active'"  @click="nodeMonitor(row)">节点监控</el-button>
                 <!-- <el-button size="mini" type="primary" v-if="row.status!=='online'"  @click="handleControlNode(row,'start')">启用</el-button>
                 <el-button size="mini" type="primary" v-if="row.master!=='true'&&row.status!=='offline'" @click="handleControlNode(row,'stop')">禁用</el-button>
                 <el-button size="mini" type="primary" v-if="row.master!=='true'"  @click="handleControlNode(row,'restart')">重启</el-button> -->

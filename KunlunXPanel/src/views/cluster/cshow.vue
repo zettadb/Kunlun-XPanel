@@ -2277,7 +2277,7 @@ export default {
               if(this.statusList.length==0){
                 let statusgoing={}
                 if(res.status=='failed'){
-                  statusgoing={title:info+'失败',icon:'el-icon-circle-close',status:'error',description:res.error_code,second:[]}
+                  statusgoing={title:info+'失败',icon:'el-icon-circle-close',status:'error',description:res.error_info,second:[]}
                   this.statusList.push(statusgoing)
                   clearInterval(timer);
                 }else{

@@ -103,11 +103,11 @@
         label-width="140px"
       >
         <el-form-item label="集群名称:" prop="nick_name" >
-          <div style="max-height: 100px;overflow-y: auto;">
+          <div style="max-height: 200px;overflow-y: auto;">
          <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">all<span style="font-size: 12px;color: #F56C6C;">（勾选all表示所有的集群+所有shard都设置免切）</span></el-checkbox>
           <div style="margin: 15px 0;"></div>
           <el-checkbox-group v-model="checkedCluster" prop="checkedCluster" @change="handleCheckedCitiesChange">
-            <el-checkbox v-for="cluster in clusters" :label="cluster.id" :key="cluster.id">{{cluster.nick_name}}</el-checkbox>
+            <el-checkbox v-for="cluster in clusters" :label="cluster.id" :key="cluster.id">{{cluster.nick_name+"("+cluster.name+")"}}</el-checkbox>
           </el-checkbox-group>
           </div>
         </el-form-item>
@@ -235,7 +235,8 @@ export default {
           return y + '-' + MM + '-' + d + ' ' + h + ':' + m + ':' + s;
         },
         compareTime:function(value){
-          if(value<timestamp_arr[0].time){
+          let date = parseInt(new Date().getTime()/1000);
+          if(value<date){
             return '是'
           }else{
             return '否'
@@ -323,6 +324,9 @@ export default {
         checkedCluster: [],
         shard_id:''
       };
+      this.checkAll= false;
+      this.isIndeterminate= false;
+      this.checkedCluster= [];
     },
     handleCreate() {
       this.resetTemp();
@@ -343,7 +347,8 @@ export default {
           tempData.timestamp=timestamp_arr[0].time+'';
           tempData.user_name=sessionStorage.getItem('login_username');
           let paras={}
-          if(this.temp.checkedCluster.length==this.clusters.length){
+          //console.log(this.temp.checkedCluster.length);
+          if(this.temp.checkedCluster.length==this.clusters.length&&this.clusters.length!==1){
             paras.cluster_id='all';
             if(this.temp.shard_id!==''){
               paras.shard_id=this.temp.shard_id;

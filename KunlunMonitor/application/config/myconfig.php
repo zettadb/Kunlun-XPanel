@@ -1,5 +1,5 @@
 <?php 
-	$config['post_url'] = 'http://192.168.0.132:54002/HttpService/Emit';
+	$config['post_url'] = 'http://192.168.0.136:54002/HttpService/Emit';
 	$config['key']='zetta@509';
 	$config['pg_username'] = 'abc';
 	$config['default_username'] = 'player';

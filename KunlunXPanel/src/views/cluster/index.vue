@@ -81,6 +81,7 @@ export default {
       }
     },
      handleClick(tab) {
+      //console.log(tab);
       this.activeName = tab.name;
       switch (this.activeName) {
         case "first":
@@ -101,6 +102,7 @@ export default {
     },
     switchTab(tab) {
       for (let key in this.tabs) {
+        console.log(key);
         if (key === tab) {
          this.tabs[key] = true;
         } else {
@@ -134,6 +136,7 @@ export default {
       this.removeTab(value);
       this.tabs.second=true;
       this.active='delcluster';
+      //this.activeName='second'
     }
   }
 }

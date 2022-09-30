@@ -105,7 +105,7 @@
         width="300"
         class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
-          <el-button size="mini" type="primary" v-if="row.status=='active'"  @click="nodeMonitor(row)">节点监控</el-button>
+          <el-button size="mini" type="primary" v-if="row.status=='active'||row.status=='creating'"  @click="nodeMonitor(row)">节点监控</el-button>
           <!-- <el-button size="mini" type="primary" v-if="row.status!=='active'"  @click="handleControlNode(row,'start')">启用</el-button>
           <el-button size="mini" type="primary" v-if="row.status!=='manual_stop'" @click="handleControlNode(row,'stop')">禁用</el-button>
           <el-button size="mini" type="primary"   @click="handleControlNode(row,'restart')">重启</el-button> -->

@@ -670,8 +670,8 @@ export default {
               this.activities.push(newArr)
               let i=0;
               let info='新增';
-              let timer = setInterval(() => {
-                this.getStatus(timer,res.job_id,i++,info)
+              this.timer = setInterval(() => {
+                this.getStatus(this.timer,res.job_id,i++,info)
               }, 1000)
 
               //重启promentheus
@@ -812,8 +812,8 @@ export default {
               this.activities.push(newArr)
               let info='删除';
               let i=0;
-              let timer = setInterval(() => {
-                this.getStatus(timer,res.job_id,i++,info)
+              this.timer = setInterval(() => {
+                this.getStatus(this.timer,res.job_id,i++,info)
               }, 1000)
                 //重启promentheus
               // const prometheus = {};
