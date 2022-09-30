@@ -2358,7 +2358,7 @@ export default {
   //  },
   methods: {
     expandTable(row){
-       this.$refs["selectExpandForm"].validate((valid) => {
+      this.$refs["selectExpandForm"].validate((valid) => {
         if (valid) {
           //查表
           let temp={database:row.database,ip:row.ip,port:row.port,name:row.name};
