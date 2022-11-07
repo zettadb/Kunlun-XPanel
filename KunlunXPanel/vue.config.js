@@ -30,6 +30,7 @@ module.exports = {
   lintOnSave: false,
   productionSourceMap: false,
   devServer: {
+    disableHostCheck:true,
     port: port,
     open: true,
     overlay: {
@@ -42,7 +43,7 @@ module.exports = {
         changOrigin: true,  //允许跨域
         logLevel:'debug',
         pathRewrite: {
-          '^/api': '' 
+          '^/api': ''
         }
       },
     }

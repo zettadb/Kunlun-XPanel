@@ -1,8 +1,8 @@
 import axios from 'axios'
 // import JSONbig from 'json-bigint'
-import { Message } from 'element-ui'
+import {Message} from 'element-ui'
 import store from '@/store'
-import { getCookie } from '@/utils/auth'
+import {getCookie} from '@/utils/auth'
 // 引入加解密方法
 // import { decrypt } from '@/utils/crypto.js'
 //docker环境
@@ -12,10 +12,13 @@ import { getCookie } from '@/utils/auth'
 // baseURL:process.env.VUE_APP_BASE_API
 
 // create an axios instance
-var host = window.document.location.href.substring(0, window.document.location.href.indexOf(window.document.location.pathname));
+let baseUrl = window.document.location.href.substring(0, window.document.location.href.indexOf(window.document.location.pathname)) + '/KunlunMonitor/index.php';
+if (process.env.NODE_ENV === 'development') {
+  baseUrl = process.env.VUE_APP_BASE_API
+
+}
 const service = axios.create({
-  // baseURL:process.env.VUE_APP_BASE_API,
-  baseURL:host+'/KunlunMonitor/index.php',
+  baseURL: baseUrl,
   timeout: 60000
 })
 
@@ -27,16 +30,16 @@ const err = (error) => {//eslint-disable-line
     console.log('------异常响应------', error.response.status)
     switch (error.response.status) {
       case 403:
-        Message({ message: '拒绝访问', type: 'error', duration: 4 })
+        Message({message: '拒绝访问', type: 'error', duration: 4})
         break
       case 404:
-        Message({ message: '系统提示', type: 'error', duration: 4 })
+        Message({message: '系统提示', type: 'error', duration: 4})
         break
       case 504:
-        Message({ message: '网络超时', type: 'error', duration: 4 })
+        Message({message: '网络超时', type: 'error', duration: 4})
         break
       case 401:
-        Message({ message: '未授权，请重新登录', type: 'error', duration: 4 })
+        Message({message: '未授权，请重新登录', type: 'error', duration: 4})
         if (token) {
           store.dispatch('Logout').then(() => {
             setTimeout(() => {
@@ -46,7 +49,7 @@ const err = (error) => {//eslint-disable-line
         }
         break
       default:
-        Message({ message: data.message, type: 'error', duration: 4 })
+        Message({message: data.message, type: 'error', duration: 4})
         break
     }
   }
