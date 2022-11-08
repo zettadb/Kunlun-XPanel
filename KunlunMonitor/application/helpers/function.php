@@ -20,3 +20,17 @@ if (!function_exists('rewrite_config')) {
 	}
 
 }
+
+
+if (!function_exists('get_pg_con')) {
+	function get_pg_con($host, $port, $user, $pwd, $db)
+	{
+		$db = pg_connect("host={$host} port={$port} dbname={$db} user={$user} password={$pwd}");
+		if (!$db) {
+			throw new ApiException("pg 连接失败:{$host}");
+		}
+
+		return $db;
+	}
+}
+

@@ -25,7 +25,7 @@
             <i class="el-icon-setting"></i>
             <span slot="title">集群扩容</span>
           </el-menu-item>
-           <el-menu-item index="6">
+          <el-menu-item index="6">
             <i class="el-icon-setting"></i>
             <span slot="title">主备切换</span>
           </el-menu-item>
@@ -68,20 +68,20 @@
             <i class="el-icon-setting"></i>
             <span slot="title">获取实例变量</span>
           </el-menu-item>
-          <!-- <el-menu-item index="14">
+          <el-menu-item index="14">
             <i class="el-icon-setting"></i>
             <span slot="title">表重分布</span>
-          </el-menu-item> -->
+          </el-menu-item>
         </el-menu>
       </el-col>
     </div>
-    <div class="rightmenu"> 
-     <component :is="componted" :listsent="listsent"  @clusterId="clusterId" />
+    <div class="rightmenu">
+      <component :is="componted" :listsent="listsent" @clusterId="clusterId"/>
     </div>
   </div>
-  </template>
+</template>
 
-  <script>
+<script>
   import CompList from '../onecluster/complist.vue'
   import CommonSet from '../onecluster/commonset.vue'
   import AllBackeUp from '../onecluster/allbackeup.vue'
@@ -95,102 +95,129 @@
   import SetAlarmTime from '../onecluster/set_alarm_time.vue'
   import SetVariable from '../onecluster/setvariable.vue'
   import GetVariable from '../onecluster/getvariable.vue'
+  import TableRepartition from '../onecluster/table_repartition.vue'
   import Error from '../404.vue'
+
   export default {
-    components: {CompList,CommonSet,AllBackeUp,Expansion,Restore,SwitchOver,BackUp,StandbySwitch,ShardList,RedoMachine,SetAlarmTime,SetVariable,GetVariable,Error},
-    props:{
-      oneList:{typeof:Object}
+    components: {
+      CompList,
+      CommonSet,
+      AllBackeUp,
+      Expansion,
+      Restore,
+      SwitchOver,
+      BackUp,
+      StandbySwitch,
+      ShardList,
+      RedoMachine,
+      SetAlarmTime,
+      SetVariable,
+      GetVariable,
+      TableRepartition,
+      Error
+    },
+    props: {
+      oneList: {typeof: Object}
     },
     data() {
       return {
-        listsent:[],
-        componted:"CommonSet"
+        listsent: [],
+        componted: "CommonSet"
       }
     },
-    created(){
-      this.listsent=this.oneList;
+    created() {
+      this.listsent = this.oneList;
     },
-    methods:{
-      selected(index){
-        if(index==1){
-          this.componted="CommonSet"
-        }else if(index==2){
-          this.componted="AllBackeUp"
-        }else if(index==3){
-          this.componted="BackUp"
-        }else if(index==4){
-            this.componted="Restore"   
-        }else if(index==5){
-            this.componted="Expansion"   
-        }else if(index==6){
-          this.componted="StandbySwitch"   
-        }else if(index==7){
-          this.componted="SwitchOver"   
-        }else if(index==8){
-          this.componted="RedoMachine"
-        }else if(index==9){
-          this.componted="ShardList"
-        }else if(index==10){
-          this.componted="CompList"
-        }else if(index==11){
-          this.componted="SetAlarmTime"
-        }else if(index==12){
-          this.componted="SetVariable"
-        }else if(index==13){
-          this.componted="GetVariable"
-        }
-        else{
-          this.componted="Error"
+    methods: {
+      selected(index) {
+        if (index == 1) {
+          this.componted = "CommonSet"
+        } else if (index == 2) {
+          this.componted = "AllBackeUp"
+        } else if (index == 3) {
+          this.componted = "BackUp"
+        } else if (index == 4) {
+          this.componted = "Restore"
+        } else if (index == 5) {
+          this.componted = "Expansion"
+        } else if (index == 6) {
+          this.componted = "StandbySwitch"
+        } else if (index == 7) {
+          this.componted = "SwitchOver"
+        } else if (index == 8) {
+          this.componted = "RedoMachine"
+        } else if (index == 9) {
+          this.componted = "ShardList"
+        } else if (index == 10) {
+          this.componted = "CompList"
+        } else if (index == 11) {
+          this.componted = "SetAlarmTime"
+        } else if (index == 12) {
+          this.componted = "SetVariable"
+        } else if (index == 13) {
+          this.componted = "GetVariable"
+        } else if (index == 14) {
+          this.componted = "TableRepartition"
+        } else {
+          this.componted = "Error"
         }
       },
-      clusterId(value){
-        this.$emit('getId',value);
+      clusterId(value) {
+        this.$emit('getId', value);
       }
     }
   }
-  </script>
+</script>
 
-  <style lang="less">
-  .el-tabs--border-card>.el-tabs__content{
+<style lang="less">
+  .el-tabs--border-card > .el-tabs__content {
     padding: 0px;
   }
-  .all{
+
+  .all {
     height: 100%;
     position: absolute;
     width: 100%;
     display: flex;
   }
-  .el-tabs__content{
-      height: calc(100vh - 102px);
-      overflow-y: auto;
-    }
-    .leftmenu{
-      /*width: 13%;*/
-      height: 100%;
-      min-width: 145px;
-      overflow:auto;
-    }
-    .rightmenu{
-      width: 87%;
-      height: 100%;
-      overflow: auto;
-    }
-    .el-col-3{
-      width: 100%;
-      height: 100%;
-    }
-    .el-menu{
-      height: 100%;
-    }
-    /* 修改滚动条宽度 */
-    ::-webkit-scrollbar {
-      width: 5px;
-      height: 5px;
-    }
-    ::-webkit-scrollbar-thumb{
-      border-radius: 5px;
-      -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
-              box-shadow: inset 0 0 6px rgba(0,0,0,.3);
-      background-color: rgba(0,0,0,0.1);
-    }
-  </style>
+
+  .el-tabs__content {
+    height: calc(100vh - 102px);
+    overflow-y: auto;
+  }
+
+  .leftmenu {
+    /*width: 13%;*/
+    height: 100%;
+    min-width: 145px;
+    overflow: auto;
+  }
+
+  .rightmenu {
+    width: 87%;
+    height: 100%;
+    overflow: auto;
+  }
+
+  .el-col-3 {
+    width: 100%;
+    height: 100%;
+  }
+
+  .el-menu {
+    height: 100%;
+  }
+
+  /* 修改滚动条宽度 */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+</style>
