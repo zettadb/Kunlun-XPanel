@@ -54,12 +54,12 @@ class Cluster extends CI_Controller {
 		for($i=0;$i<count($string);$i+=2) {
 			$arr[$string[$i]] = $string[$i + 1];
 		}
-		$pageNo=$arr['pageNo'];
-		$pageSize=$arr['pageSize'];
+		$pageNo=$arr['pageNo'] ?? 1;
+		$pageSize=$arr['pageSize'] ?? 10;
 		$username=$arr['name'];
 		$user_name=$arr['user_name'];
 		$effectCluster=$arr['effectCluster'];
-		$apply_all_cluster=$arr['apply_all_cluster'];
+		$apply_all_cluster=$arr['apply_all_cluster'] ?? 1;
 		$start=($pageNo - 1) * $pageSize;
 		//获取用户数据
 		if($apply_all_cluster==1){

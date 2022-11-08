@@ -1,11 +1,11 @@
 <?php
-$config['post_url'] = 'http://127.0.0.1:28000/HttpService/Emit';
+$config['post_url'] = '{{post_url}}';
 $config['key'] = 'zetta@509';
 $config['pg_username'] = 'abc';
 $config['default_username'] = 'player';
 $config['pg_database'] = 'postgres';
 $config['db_prefix'] = 'kunlundb_';
-$config['grafana_key'] = '';
+$config['grafana_key'] = '{{grafana_key}}';
 $config['job_type'] = [
 	['code' => 'create_cluster', 'name' => '新增集群'],
 	['code' => 'delete_cluster', 'name' => '删除集群'],

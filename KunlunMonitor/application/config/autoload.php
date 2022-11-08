@@ -1,6 +1,8 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
+
+require_once APPPATH . 'helpers/function.php';
 /*
 | -------------------------------------------------------------------
 | AUTO-LOADER
@@ -133,3 +135,4 @@ $autoload['language'] = array();
 |	$autoload['model'] = array('first_model' => 'first');
 */
 $autoload['model'] = array();
+
