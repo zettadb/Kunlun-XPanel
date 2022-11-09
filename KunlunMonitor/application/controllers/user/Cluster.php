@@ -84,7 +84,7 @@ class Cluster extends CI_Controller {
 			}
 		}
 		$sql .=" order by id desc limit ".$pageSize." offset ".$start;
-		//print_r($sql);exit;
+//		print_r($sql);exit;
 		$this->load->model('Cluster_model');
 		$res=$this->Cluster_model->getList($sql);
 		//total

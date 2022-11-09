@@ -657,3 +657,12 @@ export function tableRepartition(data) {
     params: data
   });
 }
+
+//getPGTableList 获取PG数据表列表
+export function getPGTableList(data) {
+  return request({
+    url: '/user/ClusterSetting/getPGTableList',
+    method: 'get',
+    params: data
+  });
+}

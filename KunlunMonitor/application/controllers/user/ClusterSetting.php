@@ -20,13 +20,9 @@ class ClusterSetting extends CI_Controller
 	 */
 	public function getPGTableList()
 	{
-		$username = $this->input->get('name');
 		$clusterId = $this->input->get('cluster_id');
 
 		$sql = "select id,name from db_clusters where memo!='' and memo is not null and status!='deleted' and id = '{$clusterId}'";
-		if (!empty($username)) {
-			$sql .= " and nick_name like '%$username%'";
-		}
 		$this->load->model('Cluster_model');
 		$res = $this->Cluster_model->getList($sql);
 		if ($res === false) {
@@ -81,7 +77,6 @@ class ClusterSetting extends CI_Controller
 			$list['children'] = $children;
 			$data[] = $list;
 		}
-
 		echo json_encode([
 			'code' => 200,
 			'list' => $data,
