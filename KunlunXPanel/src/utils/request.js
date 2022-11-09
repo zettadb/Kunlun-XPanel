@@ -79,6 +79,14 @@ service.interceptors.response.use(
     //console.log(response);
     let res = response.data;//eslint-disable-line
     // res.code += ''
+    if (res.code !== undefined && res.code !== 200) {
+      Message({
+        'title': '错误',
+        'message': res.message,
+        'type': 'error',
+        'dangerouslyUseHTMLString': true,
+      });
+    }
     return res
   },
   error => {

@@ -118,7 +118,6 @@ class ClusterSetting extends CI_Controller
 	 */
 	public function tableRepartition()
 	{
-		throw new ApiException('我的');
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
 		$token = $arr["Token"];
@@ -131,8 +130,12 @@ class ClusterSetting extends CI_Controller
 		$this->load->model('Cluster_model');
 		$post_data = str_replace("\\/", "/", json_encode($string));
 		$post_arr = $this->Cluster_model->postData($post_data, $this->post_url);
-		$post_arr = json_decode($post_arr, true);
-		$data = $post_arr;
+		$data = json_decode($post_arr, true);
+		$data['code'] = 200;
+		if ($data['error_code'] !== '0') {
+			$data['code'] = 500;
+			$data['message'] = $data['error_info'] ?? '系统错误';
+		}
 		echo json_encode($data);
 	}
 }

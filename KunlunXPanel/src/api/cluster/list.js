@@ -654,7 +654,7 @@ export function tableRepartition(data) {
   return request({
     url: '/user/ClusterSetting/tableRepartition',
     method: 'post',
-    params: data
+    data
   });
 }
 

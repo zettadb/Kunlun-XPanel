@@ -24,8 +24,12 @@
       <el-row v-for="(table, index) in form.repartition_tables"
               :key="table.key">
         <el-col :span="10">
-          <el-form-item label="源表:" :prop="'repartition_tables.' + index + '.srcTable'">
+          <el-form-item label="源表:" :prop="'repartition_tables.' + index + '.srcTable'"
+                        :rules="{
+                                    required: true, message: '源表不能为空', trigger: 'blur'}"
+          >
             <el-cascader
+              :key="'srcTable' + index"
               style="width: 100%"
               v-model="form.repartition_tables[index].srcTable"
               clearable
@@ -35,8 +39,12 @@
           </el-form-item>
         </el-col>
         <el-col :span="10">
-          <el-form-item label="目标表:" :prop="'repartition_tables.' + index + '.ditTable'">
+          <el-form-item label="目标表:" :prop="'repartition_tables.' + index + '.ditTable'"
+                        :rules="{
+                                    required: true, message: '目标表不能为空', trigger: 'blur'}"
+          >
             <el-cascader
+              :key="'ditTable' + index"
               style="width: 100%"
               clearable
               v-model="form.repartition_tables[index].ditTable"
@@ -47,8 +55,8 @@
         </el-col>
         <el-col :span="4" style="margin-top: 4px;">
           <div style="margin-left: 3px">
-            <el-button icon="el-icon-plus" @click="onPush(index)" size="small"></el-button>
-            <el-button icon="el-icon-minus" @click="onRemove(index)" size="small"></el-button>
+            <el-button icon="el-icon-plus" v-if="index === 0" @click="onPush(index)" size="small"></el-button>
+            <el-button icon="el-icon-minus" v-else @click="onRemove(index)" size="small"></el-button>
           </div>
         </el-col>
       </el-row>
@@ -133,12 +141,17 @@
       onDstClusterChange(val) {
         if (val === '') {
           this.ditTableOptions = []
+        } else {
+          let loading = Loading.service({target: 'form'});
+          getPGTableList({cluster_id: val}).then(res => {
+            this.ditTableOptions = res.list;
+          }).finally(function () {
+            loading.close()
+          })
         }
-        let loading = Loading.service({target: 'form'});
-        getPGTableList({cluster_id: val}).then(res => {
-          this.ditTableOptions = res.list;
-        }).finally(function () {
-          loading.close()
+
+        this.form.repartition_tables.forEach((v, i) => {
+          this.form.repartition_tables[i].ditTable = []
         })
       },
       beforeRestoreDestory() {
@@ -151,17 +164,29 @@
         this.$refs["form"].validate((valid) => {
           if (valid) {
             //const tempData = Object.assign({}, this.row);
-            const restoreData = {};
-            restoreData.user_name = sessionStorage.getItem('login_username');
-            restoreData.job_id = '';
-            restoreData.version = version_arr[0].ver;
-            restoreData.job_type = 'cluster_restore';
-            restoreData.timestamp = timestamp_arr[0].time + '';
+            const data = {};
+            data.user_name = sessionStorage.getItem('login_username');
+            data.job_id = '';
+            data.version = version_arr[0].ver;
+            data.job_type = 'table_repartition';
+            data.timestamp = timestamp_arr[0].time + '';
             const paras = {}
-            paras.src_cluster_id = row.old_cluster_id;
-            paras.dst_cluster_id = row.id;
-            paras.restore_time = row.retreated_time;
-            restoreData.paras = paras;
+            let repartition_tables = this.form.repartition_tables.map(v => {
+              return v.srcTable[0] + '_$$_' + v.srcTable[1] + '.' + v.srcTable[2] + '=>' +
+                v.ditTable[0] + '_$$_' + v.ditTable[1] + '.' + v.ditTable[2]
+
+            }).join(',')
+            paras.src_cluster_id = this.form.src_cluster_id;
+            paras.dst_cluster_id = this.form.dst_cluster_id;
+            paras.repartition_tables = repartition_tables;
+            data.paras = paras
+            tableRepartition(data).then(res => {
+              if (res.code === 200) {
+                this.$message.info('提交成功')
+                this.$refs["form"].resetFields()
+              }
+
+            })
           }
         })
       },
