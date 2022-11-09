@@ -35,16 +35,19 @@ class ClusterSetting extends CI_Controller
 		}
 		$node = current($res);
 		$con = get_pg_con($node['hostaddr'], $node['port'], $node['user_name'], $node['passwd'], 'postgres');
-		// 查询所有库
-		$databases = pg_find($con, 'SELECT datname FROM pg_database WHERE datistemplate = false');
-		if (empty($databases)) {
-			throw new ApiException('PG数据库为空');
+		// 获取所有分区表
+		$zoneTables = pg_find($con, "SELECT oid, relname from pg_class where relkind = 'p'");
+		if ($zoneTables === false) {
+			$zoneTables = [];
 		}
 		// 遍历查询所有表信息
-		$tableOwners = implode("','", array_column($databases, 'datname'));
-		$tableOwners = "'" . $tableOwners . "'";
-		$sql = "select schemaname as schema,tablename as table,tableowner as db from pg_tables where tableowner in ({$tableOwners})";
+		$zoneTables = implode("','", array_column($zoneTables, 'relname'));
+		if($zoneTables){
+			$zoneTables = "'" . $zoneTables . "'";
+		}
+		$sql = "select schemaname as schema,tablename as table,tableowner as db from pg_tables where tablename in ({$zoneTables})";
 		$tables = pg_find($con, $sql);
+
 		$tableNodes = [];
 		foreach ($tables as $table) {
 			$tableNodes[$table['db']][$table['schema']][$table['table']] = $table['table'];
