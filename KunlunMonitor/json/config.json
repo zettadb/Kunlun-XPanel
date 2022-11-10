@@ -1,0 +1,42 @@
+{
+  "machines": [
+	{
+	  "ip": "192.168.0.136",
+	  "basedir": "/kunlun",
+	  "user": "kunlun"
+	}
+  ],
+  "meta": {
+	"ha_mode": "mgr",
+	"nodes": [
+	  {
+		"ip": "192.168.0.136"
+	  }
+	]
+  },
+  "cluster_manager": {
+	"nodes": [
+	  {
+		"ip": "192.168.0.136"
+	  }
+	]
+  },
+  "node_manager": {
+	"nodes": [
+	  {
+		"ip": "192.168.0.136"
+	  },
+	  {
+		"ip": "192.168.0.136"
+	  },
+	  {
+		"ip": "192.168.0.136"
+	  }
+	]
+  },
+  "xpanel": {
+	"ip": "192.168.0.136",
+	"image": "registry.cn-hangzhou.aliyuncs.com/kunlundb/kunlun-xpanel:1.1.1",
+	"port": "13680"
+  }
+}

@@ -246,11 +246,32 @@
             </el-option>
           </el-select>
         </el-form-item>
-
+        <div v-show="dialogStatus==='create'">
+          <el-form-item prop="install_proxysql">
+            <template slot="label">
+              <span>是否安装proxysql</span>
+              <el-tooltip effect="dark"
+                          placement="top">
+                <div slot="content" class="tips-content text-tips-content">
+                  <span>如果安装proxysql，则只能是单shard模式</span>
+                </div>
+                <i class="el-icon-question" style="color:#2c68ff"/>
+              </el-tooltip>
+              <span>:</span>
+            </template>
+            <el-radio-group v-model="temp.install_proxysql"
+                            class="right_input"
+                            @change="installProxySqlChange"
+                            :disabled="dialogStatus==='detail'">
+              <el-radio label="1" border>是</el-radio>
+              <el-radio label="0" border>否</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </div>
         <div v-show="dialogStatus==='create'">
           <el-form-item label="shard个数:" prop="shards_count">
             <el-input v-model="temp.shards_count" class="right_input" placeholder="请输入shard个数"
-                      :disabled="dialogStatus==='detail'">
+                      :disabled="dialogStatus==='detail' || temp.install_proxysql === '1'">
               <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">个</i>
             </el-input>
           </el-form-item>
@@ -1098,7 +1119,7 @@
           computer_user: '',
           computer_password: '',
           fullsync_level: '1',
-          install_proxysql: '1'
+          install_proxysql: '0'
         },
         restoretemp: {
           old_cluster_name: '',
@@ -1352,6 +1373,9 @@
           shards_count: [
             {required: true, trigger: "blur", validator: validateShardsCount},
           ],
+          install_proxysql: [
+            {required: true, trigger: 'blur', 'message': '是否安装proxysql必选'}
+          ],
           snode_count: [
             {required: true, trigger: "blur", validator: validateSnodeCount},
           ],
@@ -1486,6 +1510,11 @@
     //   }
     //  },
     methods: {
+      installProxySqlChange(val){
+          if(val === '1'){
+              this.temp.shards_count = 1;
+          }
+      },
       expandTable(row) {
         this.$refs["selectExpandForm"].validate((valid) => {
           if (valid) {
@@ -1811,6 +1840,7 @@
         this.temp = {
           ha_mode: sessionStorage.getItem('work_mode') == 'enterprise' ? 'rbr' : 'mgr',
           shards_count: '1',
+          install_proxysql: '0',
           snode_count: '3',
           comp_count: '1',
           buffer_pool: '1024',

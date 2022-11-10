@@ -666,3 +666,12 @@ export function getPGTableList(data) {
     params: data
   });
 }
+
+//clusterOptions 获取集群选项列表
+export function clusterOptions(data) {
+  return request({
+    url: '/user/ClusterSetting/clusterOptions',
+    method: 'get',
+    params: data
+  });
+}

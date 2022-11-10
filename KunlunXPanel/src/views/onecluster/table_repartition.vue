@@ -14,7 +14,7 @@
           style="width:100%;"
         >
           <el-option
-            v-for="item in oldClusterList"
+            v-for="item in clusterOptions"
             :key="item.id"
             :label="item.name"
             :value="item.id">
@@ -69,7 +69,7 @@
 </template>
 
 <script>
-  import {getClusterList, tableRepartition, getPGTableList} from '@/api/cluster/list'
+  import {tableRepartition, getPGTableList,clusterOptions} from '@/api/cluster/list'
   import {messageTip, handleCofirm, getNowDate} from "@/utils";
   import {version_arr, timestamp_arr} from "@/utils/global_variable"
   import {Loading} from "element-ui";
@@ -94,7 +94,7 @@
           nick_name: '',
           id: '',
         },
-        oldClusterList: [],
+        clusterOptions: [],
         srcTable: [],
         srcTableOptions: [],
         ditTableOptions: [],
@@ -112,8 +112,8 @@
       let temp = {cluster_id: this.listsent.id}
       let username = sessionStorage.getItem('login_username');
       //获取原集群名称
-      getClusterList(temp).then((res) => {
-        this.oldClusterList = res.list;
+      clusterOptions({filter_id: this.listsent.id}).then((res) => {
+        this.clusterOptions = res.list;
       });
       getPGTableList({name: username, cluster_id: this.form.src_cluster_id}).then(res => {
         this.srcTableOptions = res.list;
