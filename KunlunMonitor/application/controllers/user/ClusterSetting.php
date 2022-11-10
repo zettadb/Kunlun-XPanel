@@ -21,6 +21,7 @@ class ClusterSetting extends CI_Controller
 	public function getPGTableList()
 	{
 		$clusterId = $this->input->get('cluster_id');
+		$all = $this->input->get('all');
 
 		$sql = "select id,name from db_clusters where memo!='' and memo is not null and status!='deleted' and id = '{$clusterId}'";
 		$this->load->model('Cluster_model');
@@ -42,7 +43,7 @@ class ClusterSetting extends CI_Controller
 		}
 		// 遍历查询所有表信息
 		$zoneTables = implode("','", array_column($zoneTables, 'relname'));
-		if(!$zoneTables){
+		if(!$zoneTables && $all !== '1'){
 			$zoneTables = 1;
 		}
 		$sql = "select schemaname as schema,tablename as table,tableowner as db from pg_tables";

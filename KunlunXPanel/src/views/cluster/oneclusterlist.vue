@@ -72,6 +72,14 @@
             <i class="el-icon-setting"></i>
             <span slot="title">表重分布</span>
           </el-menu-item>
+          <el-menu-item index="15">
+            <i class="el-icon-setting"></i>
+            <span slot="title">逻辑备份</span>
+          </el-menu-item>
+          <el-menu-item index="16">
+            <i class="el-icon-setting"></i>
+            <span slot="title">逻辑恢复</span>
+          </el-menu-item>
         </el-menu>
       </el-col>
     </div>
@@ -96,6 +104,7 @@
   import SetVariable from '../onecluster/setvariable.vue'
   import GetVariable from '../onecluster/getvariable.vue'
   import TableRepartition from '../onecluster/table_repartition.vue'
+  import LogicalBackup from '../onecluster/logical_backup.vue'
   import Error from '../404.vue'
 
   export default {
@@ -114,6 +123,7 @@
       SetVariable,
       GetVariable,
       TableRepartition,
+      LogicalBackup,
       Error
     },
     props: {
@@ -130,34 +140,36 @@
     },
     methods: {
       selected(index) {
-        if (index == 1) {
+        if (index === '1') {
           this.componted = "CommonSet"
-        } else if (index == 2) {
+        } else if (index === '2') {
           this.componted = "AllBackeUp"
-        } else if (index == 3) {
+        } else if (index === '3') {
           this.componted = "BackUp"
-        } else if (index == 4) {
+        } else if (index === '4') {
           this.componted = "Restore"
-        } else if (index == 5) {
+        } else if (index === '5') {
           this.componted = "Expansion"
-        } else if (index == 6) {
+        } else if (index === '6') {
           this.componted = "StandbySwitch"
-        } else if (index == 7) {
+        } else if (index === '7') {
           this.componted = "SwitchOver"
-        } else if (index == 8) {
+        } else if (index === '8') {
           this.componted = "RedoMachine"
-        } else if (index == 9) {
+        } else if (index === '9') {
           this.componted = "ShardList"
-        } else if (index == 10) {
+        } else if (index === '10') {
           this.componted = "CompList"
-        } else if (index == 11) {
+        } else if (index === '11') {
           this.componted = "SetAlarmTime"
-        } else if (index == 12) {
+        } else if (index === '12') {
           this.componted = "SetVariable"
-        } else if (index == 13) {
+        } else if (index === '13') {
           this.componted = "GetVariable"
-        } else if (index == 14) {
+        } else if (index === '14') {
           this.componted = "TableRepartition"
+        }else if (index === '15'){
+          this.componted = 'LogicalBackup'
         } else {
           this.componted = "Error"
         }
