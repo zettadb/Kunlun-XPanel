@@ -321,6 +321,16 @@
           <el-form-item label="每个计算节点的cpu核数:" prop="per_computing_node_cpu_cores">
             <el-input v-model="temp.per_computing_node_cpu_cores" class="right_input" placeholder="请输入每个计算节点的cpu核数"/>
           </el-form-item>
+          <el-form-item label="每个计算节点的cpu限制模式:" prop="cpu_limit_mode">
+            <el-select v-model="temp.cpu_limit_mode" placeholder="请选择">
+              <el-option
+                v-for="item in cpuLimitMode"
+                :key="item.id"
+                :label="item.label"
+                :value="item.id">
+              </el-option>
+            </el-select>
+          </el-form-item>
           <el-form-item label="每个计算节点最大的存储值:" prop="per_computing_node_max_mem_size">
             <el-input v-model="temp.per_computing_node_max_mem_size" class="right_input" placeholder="请输入每个计算节点最大的存储值">
               <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">MB</i>
@@ -861,9 +871,9 @@
     node_type_arr,
     c_node_type_arr,
     version_arr,
-    storage_type_arr,
     timestamp_arr,
-    policy_arr
+    policy_arr,
+    cpu_limit_mode,
   } from "@/utils/global_variable"
   import {
     getClusterList,
@@ -1104,6 +1114,7 @@
           buffer_pool: '1024',
           max_connections: '6',
           per_computing_node_cpu_cores: '8',
+          cpu_limit_mode: 'quota',
           per_computing_node_max_mem_size: '',
           per_storage_node_cpu_cores: '8',
           per_storage_node_innodb_buffer_pool_size: '',
@@ -1208,6 +1219,7 @@
         user_edit_priv: '',
         row: {},
         hamodeData: sessionStorage.getItem('work_mode') == 'enterprise' ? ha_mode_arr : c_ha_mode_arr,
+        cpuLimitMode: cpu_limit_mode,
         shardsDate: shards_arr,
         norepshardsDate: norepshards_arr,
         pershardDate: per_shard_arr,
@@ -1510,10 +1522,10 @@
     //   }
     //  },
     methods: {
-      installProxySqlChange(val){
-          if(val === '1'){
-              this.temp.shards_count = 1;
-          }
+      installProxySqlChange(val) {
+        if (val === '1') {
+          this.temp.shards_count = 1;
+        }
       },
       expandTable(row) {
         this.$refs["selectExpandForm"].validate((valid) => {
@@ -1846,6 +1858,7 @@
           buffer_pool: '1024',
           max_connections: '6',
           per_computing_node_cpu_cores: '8',
+          cpu_limit_mode: 'quota',
           per_computing_node_max_mem_size: '',
           per_storage_node_cpu_cores: '8',
           per_storage_node_innodb_buffer_pool_size: '',
@@ -1961,6 +1974,7 @@
             paras.nodes = tempData.snode_count;
             paras.innodb_size = tempData.buffer_pool;
             paras.install_proxysql = tempData.install_proxysql;
+            paras.cpu_limit_mode = tempData.cpu_limit_mode;
             paras.ha_mode = tempData.ha_mode;
             paras.nick_name = tempData.nick_name;
             paras.fullsync_level = tempData.fullsync_level;
