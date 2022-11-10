@@ -109,10 +109,9 @@
       this.form.src_cluster_id = this.listsent.id;
       this.form.name = this.listsent.name;
       this.form.nick_name = this.listsent.nick_name;
-      let temp = {cluster_id: this.listsent.id}
       let username = sessionStorage.getItem('login_username');
       //获取原集群名称
-      clusterOptions({filter_id: this.listsent.id}).then((res) => {
+      clusterOptions({}).then((res) => {
         this.clusterOptions = res.list;
       });
       getPGTableList({name: username, cluster_id: this.form.src_cluster_id}).then(res => {
