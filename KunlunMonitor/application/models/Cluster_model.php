@@ -48,6 +48,7 @@ class Cluster_model extends CI_Model
 		}
 	}
 
+	
 	public function postData($post_data, $url)
 	{
 		$ch = curl_init($url);
@@ -140,7 +141,7 @@ class Cluster_model extends CI_Model
 				// 一条条获取
 				while ($row = mysqli_fetch_row($result)) {
 					$row_num = ['TABLE_SCHEMA' => $row[0], 'TABLE_NAME' => $row[1]];
-					array_push($list, $row_num);
+					$list[] = $row_num;
 				}
 				// 释放结果集合
 				mysqli_free_result($result);

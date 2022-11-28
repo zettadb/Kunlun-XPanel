@@ -1,0 +1,10 @@
+
+
+# IDE Files
+#-------------------------
+info.php
+/nbproject/
+.idea/*
+
+/KunlunMonitor/json/meta.json
+/KunlunMonitor/application/config/config.php

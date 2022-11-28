@@ -38,9 +38,10 @@ class ClusterSetting extends CI_Controller
 		$con = get_pg_con($node['hostaddr'], $node['port'], $node['user_name'], $node['passwd'], 'postgres');
 		// 获取所有分区表
 		$zoneTables = pg_find($con, "SELECT oid, relname from pg_class where relkind = 'p'");
-		if ($zoneTables === false) {
+		if (!$zoneTables) {
 			$zoneTables = [];
 		}
+
 		// 遍历查询所有表信息
 		$zoneTables = implode("','", array_column($zoneTables, 'relname'));
 		if(!$zoneTables && $all !== '1'){
@@ -51,6 +52,7 @@ class ClusterSetting extends CI_Controller
 			$zoneTables = "'" . $zoneTables . "'";
 			$sql .= " where tablename in ({$zoneTables})";
 		}
+
 		$tables = pg_find($con, $sql);
 
 		$tableNodes = [];
@@ -142,7 +144,7 @@ class ClusterSetting extends CI_Controller
 		$data['code'] = 200;
 		if ($data['error_code'] !== '0') {
 			$data['code'] = 500;
-			$data['message'] = $data['error_info'] ?? '系统错误';
+			$data['message'] = isset($data['error_info']) ? $data['error_info'] : '系统错误';
 		}
 		echo json_encode($data);
 	}
