@@ -5,18 +5,18 @@
     <breadcrumb class="breadcrumb-container" />
 
     <div class="right-menu">
-      <el-tooltip class="item" effect="dark" content="查看功能简介" >
-        <a class="right-menu-item" @click="showDocument"><i class="el-icon-question"></i></a>
+      <el-tooltip class="item" effect="dark" content="查看功能简介">
+        <a class="right-menu-item" @click="showDocument"><i class="el-icon-question" /></a>
       </el-tooltip>
-      <span class="right-menu-item" v-if="!login_auth">|</span>
+      <span v-if="!login_auth" class="right-menu-item">|</span>
       <el-tooltip class="item" effect="dark" content="查看机器监控信息">
-        <a class="right-menu-item" @click="showMachine"><i class="el-icon-monitor"></i></a>
+        <a class="right-menu-item" @click="showMachine"><i class="el-icon-monitor" /></a>
       </el-tooltip>
-      <span class="right-menu-item" v-if="!login_auth">|</span>
-      <a @click="changePaasword" class="right-menu-item right-border">当前账户：{{name}}</a>
-      <span class="right-menu-item" v-if="!login_auth">|</span>
+      <span v-if="!login_auth" class="right-menu-item">|</span>
+      <a class="right-menu-item right-border" @click="changePaasword">当前账户：{{ name }}</a>
+      <span v-if="!login_auth" class="right-menu-item">|</span>
 
-      <a @click="logout" class="right-menu-item" v-if="!login_auth">退出登录</a>
+      <a v-if="!login_auth" class="right-menu-item" @click="logout">退出登录</a>
 
     </div>
   </div>
@@ -26,58 +26,59 @@
 import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
-import {ip_arr} from "@/utils/global_variable"
-import {nodeDashboard} from '@/api/grafana/list'
+import { ip_arr } from '@/utils/global_variable'
+import { nodeDashboard } from '@/api/grafana/list'
+
 export default {
   components: {
     Breadcrumb,
-     Hamburger
+    Hamburger
   },
   computed: {
     ...mapGetters([
-      'sidebar',
-    ]),
-    
+      'sidebar'
+    ])
+
   },
-  data(){
+  data() {
     return {
-      villageName:'',
-      name:'',
-      login_auth:'',
-      websock: null,
+      villageName: '',
+      name: '',
+      login_auth: '',
+      websock: null
     }
   },
-  created:function(){
+  created: function() {
     this.getVillageName()
-    this.login_auth = sessionStorage.getItem('login_auth');
+    this.login_auth = sessionStorage.getItem('login_auth')
   },
   methods: {
-   
-    getVillageName(){
-        this.villageName = sessionStorage.getItem('villageName')
-        this.name = sessionStorage.getItem('zettadb_vue_name');
+
+    getVillageName() {
+      this.villageName = sessionStorage.getItem('villageName')
+      this.name = sessionStorage.getItem('zettadb_vue_name')
     },
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
     },
-    async logout() { 
-      sessionStorage.clear();
+    async logout() {
+      sessionStorage.clear()
       this.$router.push(`/login`)
     },
-    changePaasword(){
+    changePaasword() {
       this.$router.push(`/alteration`)
     },
-    showMachine(){
+    showMachine() {
       nodeDashboard().then((pyres) => {
-        if(pyres.code=='200'){
-          window.open(ip_arr[0].ip+pyres.url+'?orgId=1&refresh=5s');
+        if (pyres.code === '200') {
+          window.open(ip_arr[0].ip + pyres.url + '?orgId=1&refresh=5s')
         }
       })
-      //window.open('http://'+ip_arr[0].ip+'/d/c8W2b01Zz/node-exporter-for-prometheus-dashboard-zhong-wen-jian-rong-ban?orgId=1');
-      //window.open(ip_arr[0].ip+'/d/c8W2b01Zz/node-exporter-for-prometheus-dashboard-zhong-wen-jian-rong-ban?orgId=1');
+      // window.open('http://'+ip_arr[0].ip+'/d/c8W2b01Zz/node-exporter-for-prometheus-dashboard-zhong-wen-jian-rong-ban?orgId=1');
+      // window.open(ip_arr[0].ip+'/d/c8W2b01Zz/node-exporter-for-prometheus-dashboard-zhong-wen-jian-rong-ban?orgId=1');
     },
-    showDocument(){
-       window.open('http://www.kunlunbase.com:8181/docs/kunlundb/XPanel_user_privilege');
+    showDocument() {
+      window.open('http://zettadb.com:8181/docs/kunlundb/XPanel_Manual')
     }
   }
 }
@@ -89,7 +90,7 @@ export default {
   overflow: hidden;
   position: relative;
   background: #fff;
-  box-shadow: 0 1px 4px rgba(0,21,41,.08);
+  box-shadow: 0 1px 4px rgba(0, 21, 41, .08);
 
   .hamburger-container {
     line-height: 46px;
@@ -97,7 +98,7 @@ export default {
     float: left;
     cursor: pointer;
     transition: background .3s;
-    -webkit-tap-highlight-color:transparent;
+    -webkit-tap-highlight-color: transparent;
 
     &:hover {
       background: rgba(0, 0, 0, .025)
@@ -150,9 +151,9 @@ export default {
       .el-badge__content {
         height: 20px;
         line-height: 20px;
-        width:20px;
+        width: 20px;
         top: 40px;
-        padding: 0 ;
+        padding: 0;
         right: 6px;
       }
 
