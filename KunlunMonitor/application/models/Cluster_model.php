@@ -33,7 +33,7 @@ class Cluster_model extends CI_Model
 		return $this->db->affected_rows();
 	}
 
-	public function create_uuid($prefix = "")
+	public function create_uuid($prefix = ""): string
 	{
 		if (PATH_SEPARATOR == ':') {
 			return uuid_create(1);

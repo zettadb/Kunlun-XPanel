@@ -213,8 +213,8 @@ class Machine extends CI_Controller
 							}
 							$shard_node = array('id' => $shard_node_id, 'text' => $value2, 'data' => array('shard_name' => $shard_arr_name, 'cluster_name' => $cluster_arr_name, 'ip' => $ip));
 							$shard_link = array('from' => $storage_id, 'to' => $shard_node_id);
-							array_push($nodes, $shard_node);
-							array_push($links, $shard_link);
+							$nodes[] = $shard_node;
+							$links[] = $shard_link;
 						}
 					}
 					//shard名称
