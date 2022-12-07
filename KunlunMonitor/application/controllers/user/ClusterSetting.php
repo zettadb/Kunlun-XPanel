@@ -44,11 +44,11 @@ class ClusterSetting extends CI_Controller
 
 		// 遍历查询所有表信息
 		$zoneTables = implode("','", array_column($zoneTables, 'relname'));
-		if(!$zoneTables && $all !== '1'){
+		if (!$zoneTables && $all !== '1') {
 			$zoneTables = 1;
 		}
 		$sql = "select schemaname as schema,tablename as table,tableowner as db from pg_tables";
-		if ($zoneTables){
+		if ($zoneTables) {
 			$zoneTables = "'" . $zoneTables . "'";
 			$sql .= " where tablename in ({$zoneTables})";
 		}

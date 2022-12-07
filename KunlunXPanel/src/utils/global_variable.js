@@ -46,6 +46,7 @@ const datatree_arr = [{
     label: '删除计算机'
   }]
 }]
+
 // const ha_mode_arr=[{id:'mgr',label:'mgr'},{id:'rbr',label:'rbr'},{id:'no_rep',label:'no_rep'}];
 const ha_mode_arr = [{ id: 'rbr', label: 'rbr' }]
 const c_ha_mode_arr = [{ id: 'mgr', label: 'mgr' }]
@@ -69,7 +70,7 @@ const node_type_arr = [{ id: 'add_shards', label: 'shard' }, { id: 'add_comps', 
 const c_node_type_arr = [{ id: 'add_shards', label: 'shard' }, { id: 'add_comps', label: '计算节点' }]
 const machine_type_arr = [{ id: 'storage', label: '储存' }, { id: 'computer', label: '计算' }]
 const version_arr = [{ ver: '1.0' }]
-const storage_type_arr = [{ id: 'HDFS', name: 'HDFS' }]
+const storage_type_arr = [{ id: 'HDFS', name: 'HDFS' }, { id: 'SSH', name: 'SSH' }]
 const ip_arr = [{ ip: ip }]
 // const ip_arr=[{ip:'http://'+ip+':3000'}];
 const timestamp_arr = [{ time: new Date().getTime() }]

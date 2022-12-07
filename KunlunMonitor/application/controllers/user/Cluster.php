@@ -1627,6 +1627,7 @@ class Cluster extends CI_Controller
 		}
 	}
 
+
 	public function getShardCount()
 	{
 		//获取token
@@ -2036,7 +2037,7 @@ class Cluster extends CI_Controller
 				$arr = array('sql' => $sql, 'result' => $result, 'time' => $now, 'ms' => $time1, 'lines' => $count1);
 				array_push($history, $arr);
 				if (!empty($res_date1)) {
-					array_push($res_date, $res_date1);
+					$res_date[] = $res_date1;
 				}
 				$len .= $len1;
 				//$time+=$time1;

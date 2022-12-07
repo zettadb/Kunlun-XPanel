@@ -50,7 +50,9 @@ class Cluster_model extends CI_Model
 
 
 	public function postData($post_data, $url)
+
 	{
+
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);

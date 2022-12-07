@@ -274,8 +274,8 @@ class Machine extends CI_Controller
 							}
 							$shard_node = array('id' => $shard_node_id, 'text' => $value2, 'data' => array('cluster_name' => $cluster_arr_name, 'ip' => $ip));
 							$shard_link = array('from' => $comp_id, 'to' => $shard_node_id);
-							array_push($nodes, $shard_node);
-							array_push($links, $shard_link);
+							$nodes[] = $shard_node;
+							$links[] = $shard_link;
 //							$shard_comp_id='comp_name'.$res_comp[$row]['id'];
 //							$shard_node1=array('id'=>$shard_comp_id, 'text'=>$res_comp[$row]['name']);
 //							$shard_link1=array('from'=>$shard_node_id, 'to'=>$shard_comp_id);

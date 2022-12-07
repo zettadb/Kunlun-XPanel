@@ -690,6 +690,7 @@ class Login extends CI_Controller
 		// $res_count=count($res);
 		// $data['list'] = $res;
 		// $data['count'] = $res_count ;
+
 		return $res;
 	}
 
