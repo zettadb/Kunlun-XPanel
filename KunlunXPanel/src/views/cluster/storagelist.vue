@@ -73,8 +73,8 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{row,$index}">
-          <el-button v-if="user_name=='super_dba'" type="primary" size="mini" @click="handleUpdate(row)">编辑
-          </el-button>
+<!--          <el-button v-if="user_name=='super_dba'" type="primary" size="mini" @click="handleUpdate(row)">编辑-->
+<!--          </el-button>-->
           <el-button
             v-if="user_name=='super_dba'"
             size="mini"
