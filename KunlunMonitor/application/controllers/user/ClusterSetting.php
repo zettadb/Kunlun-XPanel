@@ -13,6 +13,15 @@ class ClusterSetting extends CI_Controller
 		$this->post_url = $this->config->item('post_url');
 	}
 
+
+	public function getDBName($ip, $port, $user_name)
+	{
+		$this->load->model('Cluster_model');
+		$sql_main = "select datname from pg_database where datname not in('template0','template1');";
+		$res = $this->Cluster_model->DB($sql_main, $ip, $port, $user_name);
+		return $res;
+	}
+
 	/**
 	 * 获取PG的表列表
 	 * @throws
@@ -23,9 +32,74 @@ class ClusterSetting extends CI_Controller
 		$clusterId = $this->input->get('cluster_id');
 		$all = $this->input->get('all');
 
+		$result = [];
+		$sql = "select port,hostaddr,user_name from comp_nodes where db_cluster_id='$clusterId' and status='active' ";
+		$this->load->model('Cluster_model');
+		$res = $this->Cluster_model->getList($sql);
+		$res_count = count($res);
+		if (!empty($res)) {
+			foreach ($res as $knode => $vnode) {
+				//连接该计算节点取库名
+				$res_main = $this->getDBName($vnode['hostaddr'], $vnode['port'], $vnode['user_name']);
+				if ($res_main['code'] == 500) {
+					if ($res_count == ($knode + 1)) {
+						$data['code'] = 500;
+						$data['message'] = '计算节点连接异常';
+						print_r(json_encode($data));
+						return;
+					} else {
+						continue;
+					}
+				} else {
+					$ip = $vnode['hostaddr'];
+					$port = $vnode['port'];
+					$name = $vnode['user_name'];
+
+					foreach ($res_main as $knode => $item) {
+						$tmp = [];
+						$tmp["ip"] = $ip;
+						$tmp["port"] = $port;
+						$tmp["user"] = $name;
+						$tmp["value"] = $item->datname;
+						$tmp["desc"] = $item->datname;
+						$tmp["label"] = $item->datname;
+						$this->load->model('Cluster_model');
+						$sql_main = "select relname,n.nspname,relshardid From pg_class,pg_namespace n where relnamespace = n.oid and relshardid != 0;";
+						$res = $this->Cluster_model->getResult($sql_main, $ip, $port, $name, $item->datname);
+						if ($res["code"] == 200) {
+							$tmp["children"] = [];
+							foreach ($res["arr"] as $v => $val) {
+								$_t = [];
+								if (strpos($val["relname"], 'pkey') == 0) {
+									$_t["label"] = $val["relname"];
+									$_t["value"] = $val["relname"];
+									$_t["desc"] = $val["relname"];
+									$tmp["children"][] = $_t;
+								}
+							}
+						}
+						$result[] = $tmp;
+					}
+					break;
+				}
+			}
+		} else {
+			$data['code'] = 500;
+			$data['message'] = '该集群无可用的计算节点';
+			print_r(json_encode($data));
+			return;
+		}
+
+		echo json_encode([
+			'code' => 200,
+			'list' => $result,
+		]);
+		exit();
 		$sql = "select id,name from db_clusters where memo!='' and memo is not null and status!='deleted' and id = '{$clusterId}'";
 		$this->load->model('Cluster_model');
 		$res = $this->Cluster_model->getList($sql);
+
+
 		if ($res === false) {
 			throw new ApiException('所选集群不存在');
 		}
@@ -35,12 +109,16 @@ class ClusterSetting extends CI_Controller
 			throw new ApiException('未查询到PG节点');
 		}
 		$node = current($res);
+
+		//print_r($node);
+
 		$con = get_pg_con($node['hostaddr'], $node['port'], $node['user_name'], $node['passwd'], 'postgres');
 		// 获取所有分区表
 		$zoneTables = pg_find($con, "SELECT oid, relname from pg_class where relkind = 'p'");
 		if (!$zoneTables) {
 			$zoneTables = [];
 		}
+
 
 		// 遍历查询所有表信息
 		$zoneTables = implode("','", array_column($zoneTables, 'relname'));
@@ -55,6 +133,8 @@ class ClusterSetting extends CI_Controller
 
 		$tables = pg_find($con, $sql);
 
+		//print_r($tables);
+		//exit();
 		$tableNodes = [];
 		foreach ($tables as $table) {
 			$tableNodes[$table['db']][$table['schema']][$table['table']] = $table['table'];

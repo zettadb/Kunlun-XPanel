@@ -5,7 +5,7 @@ export function getClusterList(query) {
     url: '/user/Cluster/clusterList',
     method: 'get',
     params: query
-  });
+  })
 }
 
 export function getEffectComp(data) {
@@ -60,7 +60,7 @@ export function ifBackUp(id) {
   return request({
     url: '/user/Cluster/ifBackUp',
     method: 'post',
-    data: {id: id}
+    data: { id: id }
   })
 }
 
@@ -84,9 +84,8 @@ export function getShards(id) {
   return request({
     url: '/user/Cluster/getShards',
     method: 'post',
-    data: {id: id}
+    data: { id: id }
   })
-
 }
 
 export function addShards(data) {
@@ -254,7 +253,7 @@ export function getAllClusterStatus(data) {
     url: '/user/Cluster/clusterStatus',
     method: 'post',
     data
-  });
+  })
 }
 
 export function getAllMachineStatus(data) {
@@ -262,7 +261,7 @@ export function getAllMachineStatus(data) {
     url: '/user/Cluster/machineStatus',
     method: 'post',
     data
-  });
+  })
 }
 
 export function getNodes(data) {
@@ -270,7 +269,7 @@ export function getNodes(data) {
     url: '/user/Cluster/getNode',
     method: 'post',
     data
-  });
+  })
 }
 
 export function getSnodeTotal(data) {
@@ -278,7 +277,7 @@ export function getSnodeTotal(data) {
     url: '/user/Cluster/getShardCount',
     method: 'post',
     data
-  });
+  })
 }
 
 export function getStandbyNode(data) {
@@ -293,7 +292,7 @@ export function getClusterShards(id) {
   return request({
     url: '/user/Cluster/getClusterShards',
     method: 'post',
-    data: {id: id}
+    data: { id: id }
   })
 }
 
@@ -302,7 +301,7 @@ export function getSwitcheOverList(query) {
     url: '/user/Cluster/getSwitcheOverList',
     method: 'get',
     params: query
-  });
+  })
 }
 
 export function getTaskList(query) {
@@ -310,7 +309,7 @@ export function getTaskList(query) {
     url: '/user/Cluster/getTaskList',
     method: 'get',
     params: query
-  });
+  })
 }
 
 export function getShardPrimary(data) {
@@ -422,7 +421,7 @@ export function getShardsCount(query) {
     url: '/user/Cluster/getShardsCount',
     method: 'get',
     params: query
-  });
+  })
 }
 
 export function getCompsCount(query) {
@@ -430,7 +429,7 @@ export function getCompsCount(query) {
     url: '/user/Cluster/getCompsCount',
     method: 'get',
     params: query
-  });
+  })
 }
 
 export function getNodesCount(query) {
@@ -438,7 +437,7 @@ export function getNodesCount(query) {
     url: '/user/Cluster/getNodesCount',
     method: 'get',
     params: query
-  });
+  })
 }
 
 export function getOldCluster(query) {
@@ -446,7 +445,7 @@ export function getOldCluster(query) {
     url: '/user/Cluster/getOldCluster',
     method: 'get',
     params: query
-  });
+  })
 }
 
 export function getBackupStorageList() {
@@ -454,7 +453,7 @@ export function getBackupStorageList() {
     url: '/user/Cluster/getBackupStorageList',
     method: 'get',
     params: ''
-  });
+  })
 }
 
 export function clusterListError(query) {
@@ -462,7 +461,7 @@ export function clusterListError(query) {
     url: '/user/Cluster/clusterListError',
     method: 'get',
     params: query
-  });
+  })
 }
 
 export function getShardsName(query) {
@@ -470,7 +469,7 @@ export function getShardsName(query) {
     url: '/user/Cluster/getShardsName',
     method: 'get',
     params: query
-  });
+  })
 }
 
 export function getCompDBName(query) {
@@ -478,7 +477,7 @@ export function getCompDBName(query) {
     url: '/user/Cluster/getCompDBName',
     method: 'get',
     params: query
-  });
+  })
 }
 
 export function getCompDBTable(query) {
@@ -486,7 +485,7 @@ export function getCompDBTable(query) {
     url: '/user/Cluster/getCompDBTable',
     method: 'get',
     params: query
-  });
+  })
 }
 
 export function getShardTable(query) {
@@ -494,7 +493,7 @@ export function getShardTable(query) {
     url: '/user/Cluster/getShardTable',
     method: 'get',
     params: query
-  });
+  })
 }
 
 export function getOtherShards(query) {
@@ -502,7 +501,7 @@ export function getOtherShards(query) {
     url: '/user/Cluster/getOtherShards',
     method: 'get',
     params: query
-  });
+  })
 }
 
 export function expandCluster(data) {
@@ -542,7 +541,7 @@ export function getMetaCluster(query) {
     url: '/user/Cluster/getMetaCluster',
     method: 'get',
     params: query
-  });
+  })
 }
 
 export function getBackStorageList(query) {
@@ -550,7 +549,7 @@ export function getBackStorageList(query) {
     url: '/user/Cluster/getBackStorageList',
     method: 'get',
     params: query
-  });
+  })
 }
 
 export function setVariable(data) {
@@ -590,7 +589,7 @@ export function computeList(query) {
     url: '/user/Cluster/computeList',
     method: 'get',
     params: query
-  });
+  })
 }
 
 export function shardList(query) {
@@ -598,7 +597,7 @@ export function shardList(query) {
     url: '/user/Cluster/shardList',
     method: 'get',
     params: query
-  });
+  })
 }
 
 export function getNoSwitchList(data) {
@@ -606,7 +605,7 @@ export function getNoSwitchList(data) {
     url: '/user/Cluster/getNoSwitchList',
     method: 'post',
     data
-  });
+  })
 }
 
 export function setNoSwitch(data) {
@@ -646,32 +645,32 @@ export function getClusterMonitor(query) {
     url: '/user/Cluster/getClusterMonitor',
     method: 'get',
     params: query
-  });
+  })
 }
 
-//表重分布
+// 表重分布
 export function tableRepartition(data) {
   return request({
     url: '/user/ClusterSetting/tableRepartition',
     method: 'post',
     data
-  });
+  })
 }
 
-//getPGTableList 获取PG数据表列表
+// getPGTableList 获取PG数据表列表
 export function getPGTableList(data) {
   return request({
     url: '/user/ClusterSetting/getPGTableList',
     method: 'get',
     params: data
-  });
+  })
 }
 
-//clusterOptions 获取集群选项列表
+// clusterOptions 获取集群选项列表
 export function clusterOptions(data) {
   return request({
     url: '/user/ClusterSetting/clusterOptions',
     method: 'get',
     params: data
-  });
+  })
 }
