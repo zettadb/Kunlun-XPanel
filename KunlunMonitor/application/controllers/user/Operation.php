@@ -1125,6 +1125,12 @@ class Operation extends CI_Controller
 									$res[$row]['object'] = '';
 								}
 							}
+							if ($value2 == "logical_backup") {
+								$res[$row]['job_type'] = '表逻辑备份';
+
+								//$data=json_decode()
+
+							}
 						} else {
 							$res[$row]['job_type'] = '';
 						}
