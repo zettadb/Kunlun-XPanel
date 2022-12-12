@@ -172,6 +172,8 @@ export default {
         this.componted = 'TableRepartition'
       } else if (index === '15') {
         this.componted = 'LogicalBackup'
+      } else if (index === '16') {
+        this.componted = 'Expansion'
       } else {
         this.componted = 'Error'
       }

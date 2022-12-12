@@ -239,6 +239,7 @@ export default {
         callback(new Error('请输入手机号'))
       } else if (!(/^1[0-9]\d{9}$/.test(value))) {
         callback(new Error('手机号格式不对'))
+        // eslint-disable-next-line brace-style
       }
       // 通过验证之后,还要调取后台的一个接口,来验证手机号是否重复
       else {
@@ -389,7 +390,8 @@ export default {
           // 发送接口
           addAccount(tempData).then(response => {
             const res = response
-            if (res.code == 200) {
+            // eslint-disable-next-line eqeqeq
+            if (res.code === 200) {
               this.getList()
               this.dialogFormVisible = false
               this.message_tips = '新增成功'
@@ -427,7 +429,7 @@ export default {
           const tempData = Object.assign({}, this.temp)
           update(tempData).then((response) => {
             const res = response
-            if (res.code == 200) {
+            if (res.code === 200) {
               this.dialogFormVisible = false
               this.message_tips = '编辑成功'
               this.message_type = 'success'
@@ -447,7 +449,7 @@ export default {
         delAccount(row.id).then((response) => {
           console.log(response)
           const res = response
-          if (res.code == 200) {
+          if (res.code === 200) {
             this.dialogFormVisible = false
             this.message_tips = '删除成功'
             this.message_type = 'success'
@@ -467,12 +469,12 @@ export default {
     changeconfirmType() {
       this.pwdconfirmType = this.pwdconfirmType === 'password' ? 'text' : 'password'
       const e = document.getElementsByClassName('el-icon-view')[1]
-      this.pwdconfirmType == 'text' ? e.setAttribute('style', 'color: #409EFF') : e.setAttribute('style', 'color: #c0c4cc')
+      this.pwdconfirmType === 'text' ? e.setAttribute('style', 'color: #409EFF') : e.setAttribute('style', 'color: #c0c4cc')
     },
     changeType() {
       this.pwdType = this.pwdType === 'password' ? 'text' : 'password'
       const e = document.getElementsByClassName('el-icon-view')[0]
-      this.pwdType == 'text' ? e.setAttribute('style', 'color: #409EFF') : e.setAttribute('style', 'color: #c0c4cc')
+      this.pwdType === 'text' ? e.setAttribute('style', 'color: #409EFF') : e.setAttribute('style', 'color: #c0c4cc')
     }
   }
 }
