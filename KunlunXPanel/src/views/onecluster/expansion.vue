@@ -569,7 +569,8 @@ export default {
         this.expandtemp.list.shard_name = res.list[0].name
         getCompDBName(temp).then((response) => {
           // 选择数据库
-          if (response.code == 200) {
+          // eslint-disable-next-line eqeqeq
+          if (response.code === 200) {
             this.databases = response.list
             // this.expandSelectDBVisible=true;
             this.selectdbtemp.cluster_id = this.listsent.id

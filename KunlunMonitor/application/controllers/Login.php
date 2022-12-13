@@ -508,6 +508,7 @@ class Login extends CI_Controller
 					}
 				}
 
+				//exit(print_r($res));
 				//修改配置文件myconfig.php
 				$post_url = 'http://' . $res[0] . ':' . $res[1] . '/HttpService/Emit';
 

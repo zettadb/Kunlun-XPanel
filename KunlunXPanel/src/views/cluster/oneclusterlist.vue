@@ -107,6 +107,7 @@ import SetVariable from '../onecluster/setvariable.vue'
 import GetVariable from '../onecluster/getvariable.vue'
 import TableRepartition from '../onecluster/table_repartition.vue'
 import LogicalBackup from '../onecluster/logical_backup.vue'
+import LogicalRecv from '../onecluster/logical_restore.vue'
 import Error from '../404.vue'
 
 export default {
@@ -126,6 +127,7 @@ export default {
     GetVariable,
     TableRepartition,
     LogicalBackup,
+    LogicalRecv,
     Error
   },
   props: {
@@ -173,7 +175,7 @@ export default {
       } else if (index === '15') {
         this.componted = 'LogicalBackup'
       } else if (index === '16') {
-        this.componted = 'Expansion'
+        this.componted = 'LogicalRecv'
       } else {
         this.componted = 'Error'
       }
