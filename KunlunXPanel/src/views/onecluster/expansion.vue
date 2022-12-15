@@ -616,7 +616,7 @@ export default {
           // 查表
           const temp = { database: row.database, ip: row.ip, port: row.port, name: row.name }
           getCompDBTable(temp).then((res) => {
-            if (res.code == 200) {
+            if (res.code === 200) {
               const arr = res.list.arr
               if (arr.length > 0) {
                 for (let i = 0; i < arr.length; i++) {

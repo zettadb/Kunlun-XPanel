@@ -234,7 +234,6 @@ export default {
         }
       })
     },
-
     getStatus(timer, data, i) {
       setTimeout(() => {
         const postarr = {}
