@@ -478,6 +478,7 @@ class Cluster extends CI_Controller
 
 	public function getShards()
 	{
+
 		//获取token
 		$arr = apache_request_headers();//获取请求头数组
 		$token = $arr["Token"];

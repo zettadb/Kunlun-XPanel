@@ -63,7 +63,6 @@ define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : 'developm
  * Different environments will require different levels of error reporting.
  * By default development will show errors but testing and live will hide them.
  */
-
 switch (ENVIRONMENT) {
 	case 'development':
 		error_reporting(-1);
@@ -191,6 +190,22 @@ $view_folder = '';
 if (defined('STDIN')) {
 	chdir(dirname(__FILE__));
 }
+
+
+if (!function_exists('apache_request_headers')) {
+	eval(' 
+         function apache_request_headers() { 
+             foreach($_SERVER as $key=>$value) { 
+                 if (substr($key,0,5)=="HTTP_") { 
+                     $key=str_replace(" ","-",ucwords(strtolower(str_replace("_"," ",substr($key,5))))); 
+                     $out[$key]=$value; 
+                 } 
+             } 
+             return $out; 
+         } 
+     ');
+}
+
 
 if (($_temp = realpath($system_path)) !== FALSE) {
 	$system_path = $_temp . DIRECTORY_SEPARATOR;
