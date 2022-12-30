@@ -360,6 +360,14 @@ export function switchShard(data) {
   })
 }
 
+export function SetCpuCgroup(data) {
+  return request({
+    url: '/user/Cluster/SetCpuCgroup',
+    method: 'post',
+    data
+  })
+}
+
 export function getStorageList(data) {
   return request({
     url: '/user/Cluster/getStorageList',

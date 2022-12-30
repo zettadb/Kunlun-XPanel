@@ -71,7 +71,7 @@ class Cluster extends CI_Controller
 		//获取用户数据
 		if ($apply_all_cluster == 1) {
 			if (empty($effectCluster)) {
-				$sql = "select id,name,when_created,nick_name,ha_mode,memo from db_clusters where memo!='' and memo is not null and status!='deleted'";
+				$sql = "select * from db_clusters where memo!='' and memo is not null and status!='deleted'";
 				if (!empty($username)) {
 					$sql .= " and nick_name like '%$username%'";
 				}
@@ -528,6 +528,32 @@ class Cluster extends CI_Controller
 		print_r(json_encode($data));
 	}
 
+
+	public function SetCpuCgroup()
+	{
+		//获取token
+		$arr = apache_request_headers();//获取请求头数组
+		$token = $arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));
+			return;
+		}
+		//判断参数
+		$string = json_decode(@file_get_contents('php://input'), true);
+		//验证该账户是否有新增计算节点的权限
+		$this->load->model('Login_model');
+		//调接口
+		$this->load->model('Cluster_model');
+		$post_data = str_replace("\\/", "/", json_encode($string));
+		$post_arr = $this->Cluster_model->postData($post_data, $this->post_url);
+		$post_arr = json_decode($post_arr, TRUE);
+		$data = $post_arr;
+		print_r(json_encode($data));
+
+	}
+
 	public function addComps()
 	{
 		//获取token
@@ -588,7 +614,7 @@ class Cluster extends CI_Controller
 
 	public function getThisShards($id, $user_name)
 	{
-		$sql = "select id,name from shards where db_cluster_id='$id' and status!='deleted'";
+		$sql = "select * from shards where db_cluster_id='$id' and status!='deleted'";
 		$this->load->model('Cluster_model');
 		$res = $this->Cluster_model->getList($sql);
 		$count = 0;
@@ -647,7 +673,7 @@ class Cluster extends CI_Controller
 					$item['name'] = $key['name'];
 				}
 				foreach ($resnode as $i) {
-					array_push($list, $i);
+					$list[] = $i;
 					if ($i['status'] == 'inactive') {
 						$status .= $i['name'] . '(' . $i['ip'] . '_' . $i['port'] . ')' . '异常;';
 					}
@@ -709,7 +735,7 @@ class Cluster extends CI_Controller
 
 	public function getThisNodes($id, $shard_id)
 	{
-		$sql = "select hostaddr as ip,port,status,replica_delay,member_state from shard_nodes where db_cluster_id='$id' and shard_id='$shard_id' and status!='deleted'";
+		$sql = "select * from shard_nodes where db_cluster_id='$id' and shard_id='$shard_id' and status!='deleted'";
 		$this->load->model('Cluster_model');
 		$res = $this->Cluster_model->getList($sql);
 		return $res;
@@ -3242,7 +3268,7 @@ class Cluster extends CI_Controller
 		//print_r($pageSize);exit;
 		//获取用户数据
 		$this->load->model('Cluster_model');
-		$sql = "select id,name,hostaddr,port,db_cluster_id,status,cpu_cores,max_mem_MB,max_conns from comp_nodes where status!='deleted' and db_cluster_id='$id'";
+		$sql = "select * from comp_nodes where status!='deleted' and db_cluster_id='$id'";
 		if (!empty($username)) {
 			$sql .= " and  hostaddr like '%$username%'";
 		}
@@ -3284,7 +3310,7 @@ class Cluster extends CI_Controller
 		$status_all = $arr['status'];
 		$start = ($pageNo - 1) * $pageSize;
 		$this->load->model('Cluster_model');
-		$sql = "select id,name,num_nodes,db_cluster_id from shards where status!='deleted' and db_cluster_id='$id'";
+		$sql = "select * from shards where status!='deleted' and db_cluster_id='$id'";
 		if (!empty($user_name) || !empty($master_all) || !empty($status_all)) {
 			//通过ip查出shard_id
 			$sql_shard = "select shard_id from shard_nodes where db_cluster_id='$id'  and status!='deleted' ";

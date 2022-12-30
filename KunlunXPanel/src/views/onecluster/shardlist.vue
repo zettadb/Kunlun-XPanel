@@ -68,6 +68,7 @@
             <el-table-column type="index" label="序号" align="center" width="50" />
             <el-table-column prop="hostaddr" label="IP" align="center" />
             <el-table-column prop="port" label="端口" align="center" />
+            <el-table-column prop="cpu_cores" label="CPU个数" align="center" />
             <el-table-column prop="master" label="主/备节点" align="center">
               <template slot-scope="scope">
                 <span v-if="scope.row.master==='true'" style="color: #409eff;">主</span>
@@ -92,6 +93,8 @@
             <el-table-column label="操作" align="center" width="380" class-name="small-padding fixed-width">
               <template slot-scope="{row,$index}">
                 <el-button v-if="row.status=='online'" size="mini" type="primary" @click="nodeMonitor(row)">节点监控
+                </el-button>
+                <el-button v-if="row.status=='online'" size="mini" type="primary" @click="handleSetCpu(row)">设置
                 </el-button>
                 <el-button
                   v-if="row.status!=='online'"
@@ -252,24 +255,6 @@
       <div style="width: 100%;background: #fff;padding:0 20px;">
         <el-steps direction="vertical" :active="init_active">
           <el-step v-if="init_show" :title="init_title" icon="el-icon-more" />
-          <!-- <el-step :title="computer_title" :status="computer_state" :icon="computer_icon" :description="computer_description" v-if="computer_show">
-            <template slot="description">
-              <span>{{computer_description}}</span>
-            <div style="padding:20px;">
-              <el-steps direction="vertical" :active="comp_active" >
-                <el-step
-                    v-for="(item,index) of computer"
-                    :key="index"
-                    :title="item.title"
-                    :icon="item.icon"
-                    :status="item.status"
-                    :description="item.description"
-                >
-                </el-step>
-              </el-steps>
-            </div>
-            </template>
-          </el-step> -->
           <el-step
             v-if="shard_show"
             :title="shard_title"
@@ -481,6 +466,42 @@
         </el-steps>
       </div>
     </el-dialog>
+    <!--  cpu 隔离设置  -->
+    <el-dialog title="CPU资源设置" :visible.sync="dialogCpuVisible" custom-class="single_dal_view">
+      <el-form
+        ref="cpuForm"
+        :model="cpu_paras"
+        :rules="rules"
+        label-position="left"
+        label-width="100px"
+      >
+        <el-form-item label="节点IP:" prop="cpu_paras.hostaddr">
+          <span>{{ cpu_paras.hostaddr }}</span>
+        </el-form-item>
+        <el-form-item label="端口:" prop="cpu_paras.port">
+          <span>{{ cpu_paras.port }}</span>
+        </el-form-item>
+        <el-form-item label="cpu 个数:" prop="cpu_paras.cpu_cores">
+          <el-input v-model="cpu_paras.cpu_cores" class="right_input" placeholder="请输入cpu个数">
+            <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">个</i>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="cpu模式:" prop="cpu_paras.cgroup_mode">
+          <el-select v-model="cpu_paras.cgroup_mode" clearable placeholder="资源限制模式">
+            <el-option
+              v-for="item in cpu_paras_option"
+              :key="item.value"
+              :label="item.label"
+              :value="item.label"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogCpuVisible = false">关闭</el-button>
+        <el-button type="primary" @click="SaveCpuSetData(cpu_paras)">确认</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -502,7 +523,7 @@ import {
   getShardPrimary,
   switchShard,
   getBackupStorageList,
-  rebuildNode
+  rebuildNode, SetCpuCgroup
 } from '@/api/cluster/list'
 import { version_arr, timestamp_arr, ip_arr } from '@/utils/global_variable'
 import Pagination from '@/components/Pagination'
@@ -582,6 +603,7 @@ export default {
         callback()
       }
     }
+
     return {
       tableKey: 0,
       // list: null,
@@ -621,6 +643,23 @@ export default {
         shard_id: '',
         cluster_id: ''
       },
+      cpu_paras: {
+        hostaddr: '',
+        port: '',
+        type: 'mysql',
+        cpu_cores: '5',
+        cgroup_mode: 'quota'
+      },
+      cpu_paras_option: [
+        {
+          value: 'share',
+          label: 'share'
+        },
+        {
+          value: 'quota',
+          label: 'quota'
+        }
+      ],
       options: [],
       hdfs_options: [],
       active: 0,
@@ -636,6 +675,7 @@ export default {
       dialogEditVisible: false,
       dialogUploadVisible: false,
       dialogSwitchOVisible: false,
+      dialogCpuVisible: false,
       dialogRedoVisible: false,
       dialogStatusFVisible: false,
       dialogStatusRedoVisible: false,
@@ -817,6 +857,52 @@ export default {
         }
       })
     },
+    SaveCpuSetData(row) {
+      this.$refs['cpuForm'].validate((valid) => {
+        if (valid) {
+          console.log(valid)
+          const tempData = {
+            version: '1.0',
+            job_id: '',
+            job_type: 'update_instance_cgroup',
+            timestamp: timestamp_arr[0].time + '',
+            user_name: sessionStorage.getItem('login_username'),
+            paras: {
+              ip: row.hostaddr,
+              port: row.port,
+              type: 'mysql',
+              cpu_cores: row.cpu_cores,
+              cgroup_mode: row.cgroup_mode
+            }
+          }
+          // 发送接口
+          SetCpuCgroup(tempData).then(response => {
+            const res = response
+            if (res.status == 'accept') {
+              let i = 0
+              this.dialogSwitchOVisible = false
+              this.job_id = ''
+              this.timer = null
+              const info = '重做备机节点'
+              this.timer = setInterval(() => {
+                this.getFStatus(this.timer, res.job_id, i++, info, '')
+              }, 1000)
+
+              setTimeout(() => {
+                this.dialogCpuVisible = false
+                this.message_type = 'success'
+                this.message_tips = '修改成功'
+                messageTip(this.message_tips, this.message_type)
+              }, 1000)
+            } else {
+              this.message_tips = res.error_info
+              this.message_type = 'error'
+              messageTip(this.message_tips, this.message_type)
+            }
+          })
+        }
+      })
+    },
     switchData(row) {
       this.$refs['switchForm'].validate((valid) => {
         if (valid) {
@@ -951,6 +1037,13 @@ export default {
           }
         }
       })
+    },
+    handleSetCpu(row) {
+      console.log(row)
+      this.dialogCpuVisible = true
+      // 获取主节点
+      this.cpu_paras = Object.assign(this.cpu_paras, row)
+      console.log(this.cpu_paras)
     },
     nodeMonitor(row) {
       const mparas = {}
