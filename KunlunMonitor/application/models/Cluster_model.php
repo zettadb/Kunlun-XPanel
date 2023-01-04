@@ -18,6 +18,7 @@ class Cluster_model extends CI_Model
 	//查询数据
 	public function getList($sql)
 	{
+
 		$q = $this->db->query($sql); //自动转义
 		if ($q->num_rows() > 0) {
 			$arr = $q->result_array();

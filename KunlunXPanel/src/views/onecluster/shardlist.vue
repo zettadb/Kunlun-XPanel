@@ -893,6 +893,7 @@ export default {
                 this.message_type = 'success'
                 this.message_tips = '修改成功'
                 messageTip(this.message_tips, this.message_type)
+                this.getList()
               }, 1000)
             } else {
               this.message_tips = res.error_info

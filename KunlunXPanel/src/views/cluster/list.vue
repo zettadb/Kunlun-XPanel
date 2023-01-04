@@ -85,12 +85,13 @@
         v-if="colData[3].istrue"
         align="center"
         label="计算节点"
-        width="290"
+        width="400"
       >
         <template slot-scope="scope">
-          <el-table border :data="scope.row.compList" max-height="150px">
-            <el-table-column prop="ip" label="ip" align="center" />
+          <el-table border :data="scope.row.compList" max-height="200px">
+            <el-table-column prop="hostaddr" label="ip" align="center" />
             <el-table-column prop="port" label="端口" align="center" width="70" />
+            <el-table-column prop="cpu_cores" label="cpu个数" align="center" width="90" />
             <el-table-column prop="status" label="状态" align="center" width="80" sortable>
               <template slot-scope="scope">
                 <span v-if="scope.row.status==='active'" style="color: #00ed37">运行中</span>
@@ -108,14 +109,14 @@
         prop="shardtotal"
         align="center"
         label="shard分配"
-        width="600"
+        width="650"
       >
         <template slot-scope="scope">
-          <el-table border :data="scope.row.shardList" max-height="150px">
+          <el-table border :data="scope.row.shardList" max-height="250px">
             <el-table-column prop="name" label="名称" align="center" width="80" />
-            <el-table-column prop="hostaddr" label="ip" align="center" />
+            <el-table-column prop="hostaddr" label="ip" align="center" width="130" />
             <el-table-column prop="port" label="端口" align="center" width="70" />
-            <el-table-column prop="cpu_cores" label="cpu个数" align="center" width="70" />
+            <el-table-column prop="cpu_cores" label="cpu个数" align="center" width="100" />
             <el-table-column prop="member_state" label="主/备节点" align="center" sortable>
               <template slot-scope="scope">
                 <span v-if="scope.row.member_state==='source'" style="color: #409eff;">主</span>
