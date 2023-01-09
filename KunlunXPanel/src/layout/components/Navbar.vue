@@ -78,7 +78,7 @@ export default {
       // window.open(ip_arr[0].ip+'/d/c8W2b01Zz/node-exporter-for-prometheus-dashboard-zhong-wen-jian-rong-ban?orgId=1');
     },
     showDocument() {
-      window.open('http://zettadb.com:8181/docs/kunlundb/XPanel_Manual')
+      window.open('http://doc.kunlunbase.com/')
     }
   }
 }

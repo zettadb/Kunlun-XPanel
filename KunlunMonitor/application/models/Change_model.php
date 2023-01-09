@@ -17,7 +17,10 @@ class Change_model extends CI_Model
 
 		mysqli_report(MYSQLI_REPORT_STRICT);
 		try {
+			//exit(print_r([$host, $port, $username, $pwd, $dbname, $sql]));
 			$conn = mysqli_connect("{$host}:{$port}", $username, $pwd, $dbname);
+
+
 			$query = mysqli_query($conn, $sql);
 			$arr = mysqli_fetch_row($query);
 			$arr['code'] = 200;

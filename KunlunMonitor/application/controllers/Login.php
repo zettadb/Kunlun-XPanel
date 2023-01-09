@@ -452,12 +452,15 @@ class Login extends CI_Controller
 
 		//改成到meta.json文件中取值
 		$string = file_get_contents('./json/meta.json');
+
 		$string = json_decode($string, true);
 		$meta_count = count($string['nodes']);
 		//遍历所有ip，分别连上去看是否找到cluster_mgr的主
 		$res = '';
 		$ip = '';
 		$port = '';
+
+		//exit(print_r($string));
 		foreach ($string['nodes'] as $knode => $vnode) {
 			if (empty($vnode['ip']) || empty($vnode['port'])) {
 				$data['code'] = 500;
@@ -688,9 +691,7 @@ class Login extends CI_Controller
 		$sql = "select hostaddr,port from cluster_mgr_nodes where member_state='source'";
 		$this->load->model('Change_model');
 		$res = $this->Change_model->getMysql($ip, $port, 'pgx', 'pgx_pwd', 'kunlun_metadata_db', $sql);
-		// $res_count=count($res);
-		// $data['list'] = $res;
-		// $data['count'] = $res_count ;
+
 
 		return $res;
 	}

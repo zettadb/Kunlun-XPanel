@@ -51,18 +51,25 @@
             :prop="'backup.' + index"
             :rules="rules.time"
           >
-            <el-time-select
-              :key="'startTime' + index"
+
+            <el-date-picker
               v-model="form.backup[index].startTime"
-              style="width: 48%"
+              type="datetime"
+              value-format="yyyy-MM-dd HH:mm:ss"
               placeholder="起始时间"
-              :arrow-control="true"
-              :picker-options="{
-                start: '00:00',
-                step: '00:30',
-                end: '24:00'
-              }"
             />
+<!--            <el-time-select-->
+<!--              :key="'startTime' + index"-->
+<!--              v-model="form.backup[index].startTime"-->
+<!--              style="width: 48%"-->
+<!--              placeholder="起始时间"-->
+<!--              :arrow-control="true"-->
+<!--              :picker-options="{-->
+<!--                start: '00:00',-->
+<!--                step: '00:30',-->
+<!--                end: '24:00'-->
+<!--              }"-->
+<!--            />-->
           </el-form-item>
         </el-col>
 
@@ -186,7 +193,7 @@ export default {
           const backup = this.form.backup.map(v => {
             return {
               db_table: v.db_table[0] + '_$$_public.' + v.db_table[1],
-              backup_time: v.startTime + ':00' + '-' + v.endTime + ':00'
+              backup_time: v.startTime
             }
           })
           console.log(backup)

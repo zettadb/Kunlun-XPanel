@@ -30,24 +30,24 @@ module.exports = {
   lintOnSave: false,
   productionSourceMap: false,
   devServer: {
-    disableHostCheck:true,
+    disableHostCheck: true,
     port: port,
     open: true,
     overlay: {
       warnings: false,
       errors: true
     },
-    proxy:{
+    proxy: {
       '/api': {
-        target: process.env.VUE_APP_BASE_API,  //真实的后台接口
-        changOrigin: true,  //允许跨域
-        logLevel:'debug',
+        target: process.env.VUE_APP_BASE_API, // 真实的后台接口
+        changOrigin: true, // 允许跨域
+        logLevel: 'debug',
         pathRewrite: {
           '^/api': ''
         }
-      },
+      }
     }
-    //before: require('./mock/mock-server.js')
+    // before: require('./mock/mock-server.js')
   },
   configureWebpack: {
     // provide the app's title in webpack's name field, so that
@@ -98,7 +98,7 @@ module.exports = {
             .plugin('ScriptExtHtmlWebpackPlugin')
             .after('html')
             .use('script-ext-html-webpack-plugin', [{
-            // `runtime` must same as runtimeChunk name. default is `runtime`
+              // `runtime` must same as runtimeChunk name. default is `runtime`
               inline: /runtime\..*\.js$/
             }])
             .end()
@@ -130,33 +130,34 @@ module.exports = {
           config.optimization.runtimeChunk('single')
         }
       )
-      if (process.env.NODE_ENV === 'production') {
-        // 给js和css配置Timestamp
-        config.output.filename('static/js/[name].' + Timestamp + '.js').end()
-        config.output.chunkFilename('static/js/[name].' + Timestamp + '.js').end()
-        config.plugin('extract-css').tap(args => [{
-          filename: `static/css/[name].${Timestamp}.css`,
-          chunkFilename: `static/css/[name].${Timestamp}.css`
-        }])
-        // 给img配置Timestamp
-        config.module.rule('images').use('url-loader').tap(options => {
-          options.name = `static/img/[name].${Timestamp}.[ext]`
-          options.fallback = {
-            loader: 'file-loader',
-            options: {
-              name: `static/img/[name].${Timestamp}.[ext]`
-            }
+
+    if (process.env.NODE_ENV === 'production') {
+      // 给js和css配置Timestamp
+      config.output.filename('static/js/[name].' + Timestamp + '.js').end()
+      config.output.chunkFilename('static/js/[name].' + Timestamp + '.js').end()
+      config.plugin('extract-css').tap(args => [{
+        filename: `static/css/[name].${Timestamp}.css`,
+        chunkFilename: `static/css/[name].${Timestamp}.css`
+      }])
+      // 给img配置Timestamp
+      config.module.rule('images').use('url-loader').tap(options => {
+        options.name = `static/img/[name].${Timestamp}.[ext]`
+        options.fallback = {
+          loader: 'file-loader',
+          options: {
+            name: `static/img/[name].${Timestamp}.[ext]`
           }
-          return options
-        })
-      }
-      // Timestamp 时间设置的一个变量 直接在module.exports 上面 const Timestamp = new Date().getTime()
+        }
+        return options
+      })
+    }
+    // Timestamp 时间设置的一个变量 直接在module.exports 上面 const Timestamp = new Date().getTime()
   },
   css: {
     loaderOptions: {
-        less: {
-            javascriptEnabled: true
-        }
+      less: {
+        javascriptEnabled: true
+      }
     }
-}
+  }
 }
