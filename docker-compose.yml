@@ -1,19 +1,19 @@
 version: "3"
 services:
-#  KunlunXPanel:
-#    image: "kunlun-xpanel:1.1.1"
-#    build:
-#      context: ./
-#      dockerfile: ./KunlunXPanel/Dockerfile
-#    restart: always
-#    container_name: "kunlun-xpanel-dev"
-#    ports:
-#      - "8989:9528"
-#    volumes:
-#      - /Users/helayd/Documents/GitHub/Kunlun-XPanel/KunlunXPanel:/KunlunXPanel:rw
-#    environment:
-#      TZ: "Asia/Shanghai"
-#    command: npm run dev
+  KunlunXPanel:
+    image: "kunlun-xpanel:1.1.1"
+    build:
+      context: ./
+      dockerfile: ./KunlunXPanel/Dockerfile
+    restart: always
+    container_name: "kunlun-xpanel-dev"
+    ports:
+      - "8989:9528"
+    volumes:
+      - /Users/helayd/Documents/GitHub/Kunlun-XPanel/KunlunXPanel:/KunlunXPanel:rw
+    environment:
+      TZ: "Asia/Shanghai"
+    command: npm run dev
   php:
     image: php:7.4.11-fpm-alpine3.12
     build: './KunlunMonitor'
