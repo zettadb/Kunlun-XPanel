@@ -41,6 +41,7 @@ class ClusterSetting extends CI_Controller
 			foreach ($res as $knode => $vnode) {
 				//连接该计算节点取库名
 				$res_main = $this->getDBName($vnode['hostaddr'], $vnode['port'], $vnode['user_name']);
+
 				if ($res_main['code'] == 500) {
 					if ($res_count == ($knode + 1)) {
 						$data['code'] = 500;
@@ -63,9 +64,13 @@ class ClusterSetting extends CI_Controller
 						$tmp["value"] = $item->datname;
 						$tmp["desc"] = $item->datname;
 						$tmp["label"] = $item->datname;
+
+						//exit(print_r($tmp));
+
 						$this->load->model('Cluster_model');
-						$sql_main = "select relname,n.nspname,relshardid From pg_class,pg_namespace n where relnamespace = n.oid and relshardid != 0;";
+						$sql_main = "select relname,n.nspname,relshardid From pg_class,pg_namespace n where relnamespace = n.oid and nspname = 'public';";
 						$res = $this->Cluster_model->getResult($sql_main, $ip, $port, $name, $item->datname);
+						//exit(print_r($res));
 						if ($res["code"] == 200) {
 							$tmp["children"] = [];
 							foreach ($res["arr"] as $v => $val) {

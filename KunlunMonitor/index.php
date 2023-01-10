@@ -96,6 +96,7 @@ switch (ENVIRONMENT) {
  */
 $system_path = 'system';
 
+//exit(phpinfo());
 /*
  *---------------------------------------------------------------
  * APPLICATION DIRECTORY NAME

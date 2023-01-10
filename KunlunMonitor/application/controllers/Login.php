@@ -460,7 +460,6 @@ class Login extends CI_Controller
 		$ip = '';
 		$port = '';
 
-		//exit(print_r($string));
 		foreach ($string['nodes'] as $knode => $vnode) {
 			if (empty($vnode['ip']) || empty($vnode['port'])) {
 				$data['code'] = 500;
