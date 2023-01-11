@@ -50,6 +50,7 @@ export default {
   name: 'ClusterMgr',
   components: { SeeksRelationGraph },
   data() {
+
     return {
       compnode: require('@/assets/images/compnode.png'),
       comps: require('@/assets/images/compnode.png'),

@@ -8,68 +8,37 @@
         <span>{{ form.nick_name }}</span>
       </el-form-item>
       <el-form-item label="目标表集群:" prop="dst_cluster_id">
-        <el-select
-          v-model="form.dst_cluster_id"
-          clearable
-          placeholder="请选择目标表集群"
-          style="width:100%;"
-          @change="onDstClusterChange"
-        >
-          <el-option
-            v-for="item in clusterOptions"
-            :key="item.id"
-            :label="item.name"
-            :value="item.id"
-          />
+        <el-select v-model="form.dst_cluster_id" clearable placeholder="请选择目标表集群" style="width:100%;"
+          @change="onDstClusterChange">
+          <el-option v-for="item in clusterOptions" :key="item.id" :label="item.name" :value="item.id" />
         </el-select>
       </el-form-item>
-      <el-row
-        v-for="(table, index) in form.backup"
-        :key="table.key"
-      >
+      <el-row v-for="(table, index) in form.backup" :key="table.key">
         <el-col :span="10">
-          <el-form-item
-            label="备份表:"
-            :prop="'backup.' + index + '.db_table'"
-            :rules="{
-              required: true, message: '备份表不能为空', trigger: 'blur'}"
-          >
-            <el-cascader
-              :key="'srcTable' + index"
-              v-model="form.backup[index].db_table"
-              style="width: 100%"
-              clearable
-              placeholder="请选择 库名/模式/表"
-              :options="tableOptions"
-              filterable
-            />
+          <el-form-item label="备份表:" :prop="'backup.' + index + '.db_table'" :rules="{
+            required: true, message: '备份表不能为空', trigger: 'blur'
+          }">
+            <el-cascader :key="'srcTable' + index" v-model="form.backup[index].db_table" style="width: 100%" clearable
+              placeholder="请选择 库名/模式/表" :options="tableOptions" filterable />
           </el-form-item>
         </el-col>
         <el-col :span="10">
-          <el-form-item
-            label="恢复开始时间:"
-            :prop="'backup.' + index"
-            :rules="rules.time"
-          >
+          <el-form-item label="恢复开始时间:" :prop="'backup.' + index" :rules="rules.time">
 
-            <el-date-picker
-              v-model="form.backup[index].startTime"
-              type="datetime"
-              value-format="yyyy-MM-dd HH:mm:ss"
-              placeholder="起始时间"
-            />
-<!--            <el-time-select-->
-<!--              :key="'startTime' + index"-->
-<!--              v-model="form.backup[index].startTime"-->
-<!--              style="width: 48%"-->
-<!--              placeholder="起始时间"-->
-<!--              :arrow-control="true"-->
-<!--              :picker-options="{-->
-<!--                start: '00:00',-->
-<!--                step: '00:30',-->
-<!--                end: '24:00'-->
-<!--              }"-->
-<!--            />-->
+            <el-date-picker v-model="form.backup[index].startTime" type="datetime" value-format="yyyy-MM-dd HH:mm:ss"
+              placeholder="起始时间" />
+            <!--            <el-time-select-->
+            <!--              :key="'startTime' + index"-->
+            <!--              v-model="form.backup[index].startTime"-->
+            <!--              style="width: 48%"-->
+            <!--              placeholder="起始时间"-->
+            <!--              :arrow-control="true"-->
+            <!--              :picker-options="{-->
+            <!--                start: '00:00',-->
+            <!--                step: '00:30',-->
+            <!--                end: '24:00'-->
+            <!--              }"-->
+            <!--            />-->
           </el-form-item>
         </el-col>
 
@@ -80,24 +49,12 @@
       </el-form-item>
     </el-form>
 
-    <el-dialog
-      :visible.sync="dialogStatusVisible"
-      custom-class="single_dal_view"
-      width="400px"
-      :close-on-click-modal="false"
-      :before-close="beforeRestoreDestory"
-    >
+    <el-dialog :visible.sync="dialogStatusVisible" custom-class="single_dal_view" width="400px"
+      :close-on-click-modal="false" :before-close="beforeRestoreDestory">
       <div class="block">
         <el-timeline>
-          <el-timeline-item
-            v-for="(activity, index) in activities"
-            :key="index"
-            :icon="activity.icon"
-            :type="activity.type"
-            :color="activity.color"
-            :size="activity.size"
-            :timestamp="activity.timestamp"
-          >
+          <el-timeline-item v-for="(activity, index) in activities" :key="index" :icon="activity.icon"
+            :type="activity.type" :color="activity.color" :size="activity.size" :timestamp="activity.timestamp">
             {{ activity.content }}
           </el-timeline-item>
         </el-timeline>
@@ -276,14 +233,14 @@ export default {
               // this.installStatus = true;
             }
           } else {
-            if (error_info) {
-              const newArrgoing = {
-                content: error_info,
-                timestamp: getNowDate(),
-                color: '#0bbd87'
-              }
-              this.activities.push(newArrgoing)
-            }
+            // if (error_info) {
+            //   const newArrgoing = {
+            //     content: error_info,
+            //     timestamp: getNowDate(),
+            //     color: '#0bbd87'
+            //   }
+            //   this.activities.push(newArrgoing)
+            // }
             // this.info=res.error_info;
             // this.installStatus = true;
           }
