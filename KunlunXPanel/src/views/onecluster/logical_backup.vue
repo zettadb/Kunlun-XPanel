@@ -7,62 +7,36 @@
       <el-form-item label="业务名称">
         <span>{{ form.nick_name }}</span>
       </el-form-item>
-      <el-row
-        v-for="(table, index) in form.backup"
-        :key="table.key"
-      >
+      <el-row v-for="(table, index) in form.backup" :key="table.key">
         <el-col :span="10">
-          <el-form-item
-            label="备份表:"
-            :prop="'backup.' + index + '.db_table'"
-            :rules="{
-              required: true, message: '备份表不能为空', trigger: 'blur'}"
-          >
-            <el-cascader
-              :key="'srcTable' + index"
-              v-model="form.backup[index].db_table"
-              style="width: 100%"
-              clearable
-              placeholder="请选择 库名/模式/表"
-              :options="tableOptions"
-              filterable
-            />
+          <el-form-item label="备份表:" :prop="'backup.' + index + '.db_table'" :rules="{
+            required: true,
+            message: '备份表不能为空',
+            trigger: 'blur',
+          }">
+            <el-cascader :key="'srcTable' + index" v-model="form.backup[index].db_table" style="width: 100%" clearable
+              placeholder="请选择 库名/模式/表" :options="tableOptions" filterable />
           </el-form-item>
         </el-col>
         <el-col :span="10">
-          <el-form-item
-            label="备份时间范围:"
-            :prop="'backup.' + index"
-            :rules="rules.time"
-          >
-            <el-time-select
-              :key="'startTime' + index"
-              v-model="form.backup[index].startTime"
-              style="width: 48%"
-              placeholder="起始时间"
-              :arrow-control="true"
-              :picker-options="{
-                start: '00:00',
-                step: '00:30',
-                end: '24:00'
-              }"
-            />
-            <span>-</span>
-            <el-time-select
-              :key="'endTime' + index"
-              v-model="form.backup[index].endTime"
-              style="width: 48%"
-              placeholder="结束时间"
-              :picker-options="{
+          <el-form-item label="备份时间范围:" :prop="'backup.' + index" :rules="rules.time">
+            <el-time-select :key="'startTime' + index" v-model="form.backup[index].startTime" style="width: 48%"
+              placeholder="起始时间" :arrow-control="true" :picker-options="{
                 start: '00:00',
                 step: '00:30',
                 end: '24:00',
-                minTime: form.backup[index].startTime
-              }"
-            />
+              }" />
+            <span>-</span>
+            <el-time-select :key="'endTime' + index" v-model="form.backup[index].endTime" style="width: 48%"
+              placeholder="结束时间" :picker-options="{
+                start: '00:00',
+                step: '00:30',
+                end: '24:00',
+                minTime: form.backup[index].startTime,
+              }" />
           </el-form-item>
         </el-col>
-        <el-col :span="4" style="margin-top: 4px;">
+        <el-col :span="4" style="margin-top: 4px">
           <div style="margin-left: 3px">
             <el-button v-if="index === 0" icon="el-icon-plus" size="small" @click="onPush(index)" />
             <el-button v-else icon="el-icon-minus" size="small" @click="onRemove(index)" />
@@ -74,92 +48,190 @@
         <!-- <el-button>取消</el-button> -->
       </el-form-item>
     </el-form>
+    <el-dialog :visible.sync="dialogStatusVisible" custom-class="single_dal_view" width="400px"
+      :close-on-click-modal="false" :before-close="beforeRestoreDestory">
+      <div class="block">
+        <el-timeline>
+          <el-timeline-item v-for="(activity, index) in activities" :key="index" :icon="activity.icon"
+            :type="activity.type" :color="activity.color" :size="activity.size" :timestamp="activity.timestamp">
+            {{ activity.content }}
+          </el-timeline-item>
+        </el-timeline>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { getPGTableList, tableRepartition } from '@/api/cluster/list'
-import { timestamp_arr, version_arr } from '@/utils/global_variable'
-
+import { getPGTableList, tableRepartition, getEvStatus } from "@/api/cluster/list";
+import { timestamp_arr, version_arr } from "@/utils/global_variable";
+import { getNowDate, messageTip } from "@/utils";
 export default {
-  name: 'LogicalBackup',
+  name: "LogicalBackup",
   props: {
-    listsent: { typeof: Object }
+    listsent: { typeof: Object },
   },
   data() {
     const checkTimeRange = (rule, value, cb) => {
-      if (value.startTime === '' || value.endTime === '') {
-        return cb(new Error('请选择备份时间范围'))
+      if (value.startTime === "" || value.endTime === "") {
+        return cb(new Error("请选择备份时间范围"));
       }
 
-      cb()
-    }
+      cb();
+    };
     return {
       form: {
-        name: '',
-        nick_name: '',
-        backup: [
-          { db_table: [], backup_time: '', startTime: '', endTime: '' }
-        ],
-        id: ''
+        name: "",
+        nick_name: "",
+        backup: [{ db_table: [], backup_time: "", startTime: "", endTime: "" }],
+        id: "",
       },
+      dialogStatusVisible: false,
+      activities: [],
       rules: {
-        time: [
-          { validator: checkTimeRange, trigger: 'blur' }
-        ]
+        time: [{ validator: checkTimeRange, trigger: "blur" }],
       },
-      tableOptions: []
-    }
+      tableOptions: [],
+    };
   },
   mounted() {
-    this.form.name = this.listsent.name
-    this.form.nick_name = this.listsent.nick_name
-    this.form.id = this.listsent.id
-    getPGTableList({ cluster_id: this.form.id, all: '1' }).then(res => {
-      this.tableOptions = res.list
-    })
+    this.form.name = this.listsent.name;
+    this.form.nick_name = this.listsent.nick_name;
+    this.form.id = this.listsent.id;
+    getPGTableList({ cluster_id: this.form.id, all: "1" }).then((res) => {
+      this.tableOptions = res.list;
+    });
   },
 
   methods: {
+    beforeRestoreDestory() {
+      clearInterval(this.timer);
+      this.dialogStatusVisible = false;
+      this.timer = null;
+    },
     onPush(index) {
-      this.form.backup.push({ db_table: [], backup_time: '', startTime: '', endTime: '' })
+      this.form.backup.push({
+        db_table: [],
+        backup_time: "",
+        startTime: "",
+        endTime: "",
+      });
     },
     onRemove(index) {
-      this.form.backup.splice(index, 1)
+      this.form.backup.splice(index, 1);
     },
     onSubmit(row) {
-      console.info(this.form)
+      console.info(this.form);
 
-      this.$refs['form'].validate((valid) => {
+      this.$refs["form"].validate((valid) => {
         if (valid) {
-          const data = {}
-          data.user_name = sessionStorage.getItem('login_username')
-          data.job_id = ''
-          data.version = version_arr[0].ver
-          data.job_type = 'logical_backup'
-          data.timestamp = timestamp_arr[0].time + ''
-          const paras = {}
-          const backup = this.form.backup.map(v => {
+          const data = {};
+          data.user_name = sessionStorage.getItem("login_username");
+          data.job_id = "";
+          data.version = version_arr[0].ver;
+          data.job_type = "logical_backup";
+          data.timestamp = timestamp_arr[0].time + "";
+          const paras = {};
+          const backup = this.form.backup.map((v) => {
             return {
-              db_table: v.db_table[0] + '_$$_public.' + v.db_table[1],
-              backup_time: v.startTime + ':00' + '-' + v.endTime + ':00'
-            }
-          })
-          paras.cluster_id = this.form.id
-          paras.backup = backup
-          data.paras = paras
-          console.info(data)
-          tableRepartition(data).then(res => {
+              db_table: v.db_table[0] + "_$$_public." + v.db_table[1],
+              backup_time: v.startTime + ":00" + "-" + v.endTime + ":00",
+            };
+          });
+          paras.cluster_id = this.form.id;
+          paras.backup = backup;
+          data.paras = paras;
+          console.info(data);
+          tableRepartition(data).then((res) => {
             if (res.code === 200) {
-              this.$message.info('保存')
+              this.$message.info("保存");
               this.form.backup = [
-                { db_table: [], backup_time: '', startTime: '', endTime: '' }
-              ]
+                { db_table: [], backup_time: "", startTime: "", endTime: "" },
+              ];
+              if (res.status === "accept") {
+                this.dialogRetreatedVisible = false;
+                this.dialogStatusVisible = true;
+                this.activities = [];
+                const newArr = {
+                  content: "逻辑备份中...",
+                  timestamp: getNowDate(),
+                  size: "large",
+                  type: "primary",
+                  icon: "el-icon-more",
+                };
+                this.activities.push(newArr);
+                let i = 0;
+                this.timer = null;
+                this.timer = setInterval(() => {
+                  this.getStatus(this.timer, res.job_id, i++);
+                }, 1000);
+              } else if (res.status === "ongoing") {
+                this.message_tips = "系统正在操作中，请等待一会！";
+                this.message_type = "error";
+                messageTip(this.message_tips, this.message_type);
+              } else {
+                this.message_tips = res.error_info;
+                this.message_type = "error";
+                messageTip(this.message_tips, this.message_type);
+              }
             }
-          })
+          });
         }
-      })
-    }
-  }
-}
+      });
+    },
+
+    getStatus(timer, data, i) {
+      setTimeout(() => {
+        const postarr = {};
+        postarr.job_type = "get_status";
+        postarr.version = version_arr[0].ver;
+        postarr.job_id = data;
+        postarr.timestamp = timestamp_arr[0].time + "";
+        postarr.paras = {};
+        getEvStatus(postarr).then((res) => {
+          const error_info = res.error_info;
+          if (res.status === "done" || res.status === "failed") {
+            clearInterval(timer);
+            // this.info=res.error_info;
+            if (res.status === "done") {
+              const newArrdone = {
+                content: "逻辑备份成功",
+                timestamp: getNowDate(),
+                color: "#0bbd87",
+                icon: "el-icon-circle-check",
+              };
+              this.activities.push(newArrdone);
+              // }
+              this.getList();
+              // this.dialogStatusVisible=false;
+            } else {
+              const newArr = {
+                content: error_info,
+                timestamp: getNowDate(),
+                color: "red",
+                icon: "el-icon-circle-close",
+              };
+              this.activities.push(newArr);
+              // this.installStatus = true;
+            }
+          } else {
+            // if (error_info) {
+            //   const newArrgoing = {
+            //     content: error_info,
+            //     timestamp: getNowDate(),
+            //     color: '#0bbd87'
+            //   }
+            //   this.activities.push(newArrgoing)
+            // }
+            // this.info=res.error_info;
+            // this.installStatus = true;
+          }
+        });
+        if (i >= 86400) {
+          clearInterval(timer);
+        }
+      }, 0);
+    },
+  },
+};
 </script>

@@ -2,11 +2,7 @@
   <div class="all">
     <div class="leftmenu">
       <el-col :span="3">
-        <el-menu
-          default-active="1"
-          class="el-menu-vertical-demo"
-          @select="selected"
-        >
+        <el-menu default-active="1" class="el-menu-vertical-demo" @select="selected">
           <el-menu-item index="1">
             <i class="el-icon-setting" />
             <span>基础设置</span>
@@ -92,23 +88,23 @@
 </template>
 
 <script>
-import CompList from '../onecluster/complist.vue'
-import CommonSet from '../onecluster/commonset.vue'
-import AllBackeUp from '../onecluster/allbackeup.vue'
-import Expansion from '../onecluster/expansion.vue'
-import Restore from '../onecluster/restore.vue'
-import SwitchOver from '../onecluster/switchover.vue'
-import BackUp from '../onecluster/backup.vue'
-import StandbySwitch from '../onecluster/standby_switch.vue'
-import ShardList from '../onecluster/shardlist.vue'
-import RedoMachine from '../onecluster/redomachine.vue'
-import SetAlarmTime from '../onecluster/set_alarm_time.vue'
-import SetVariable from '../onecluster/setvariable.vue'
-import GetVariable from '../onecluster/getvariable.vue'
-import TableRepartition from '../onecluster/table_repartition.vue'
-import LogicalBackup from '../onecluster/logical_backup.vue'
-import LogicalRecv from '../onecluster/logical_restore.vue'
-import Error from '../404.vue'
+import CompList from "../onecluster/complist.vue";
+import CommonSet from "../onecluster/commonset.vue";
+import AllBackeUp from "../onecluster/allbackeup.vue";
+import Expansion from "../onecluster/expansion.vue";
+import Restore from "../onecluster/restore.vue";
+import SwitchOver from "../onecluster/switchover.vue";
+import BackUp from "../onecluster/backup.vue";
+import StandbySwitch from "../onecluster/standby_switch.vue";
+import ShardList from "../onecluster/shardlist.vue";
+import RedoMachine from "../onecluster/redomachine.vue";
+import SetAlarmTime from "../onecluster/set_alarm_time.vue";
+import SetVariable from "../onecluster/setvariable.vue";
+import GetVariable from "../onecluster/getvariable.vue";
+import TableRepartition from "../onecluster/table_repartition.vue";
+import LogicalBackup from "../onecluster/logical_backup.vue";
+import LogicalRecv from "../onecluster/logical_restore.vue";
+import Error from "../404.vue";
 
 export default {
   components: {
@@ -128,68 +124,67 @@ export default {
     TableRepartition,
     LogicalBackup,
     LogicalRecv,
-    Error
+    Error,
   },
   props: {
-    oneList: { typeof: Object }
+    oneList: { typeof: Object },
   },
   data() {
     return {
       listsent: [],
-      componted: 'CommonSet'
-    }
+      componted: "CommonSet",
+    };
   },
   created() {
-    this.listsent = this.oneList
+    this.listsent = this.oneList;
   },
   methods: {
     selected(index) {
-      if (index === '1') {
-        this.componted = 'CommonSet'
-      } else if (index === '2') {
-        this.componted = 'AllBackeUp'
-      } else if (index === '3') {
-        this.componted = 'BackUp'
-      } else if (index === '4') {
-        this.componted = 'Restore'
-      } else if (index === '5') {
-        this.componted = 'Expansion'
-      } else if (index === '6') {
-        this.componted = 'StandbySwitch'
-      } else if (index === '7') {
-        this.componted = 'SwitchOver'
-      } else if (index === '8') {
-        this.componted = 'RedoMachine'
-      } else if (index === '9') {
-        this.componted = 'ShardList'
-      } else if (index === '10') {
-        this.componted = 'CompList'
-      } else if (index === '11') {
-        this.componted = 'SetAlarmTime'
-      } else if (index === '12') {
-        this.componted = 'SetVariable'
-      } else if (index === '13') {
-        this.componted = 'GetVariable'
-      } else if (index === '14') {
-        this.componted = 'TableRepartition'
-      } else if (index === '15') {
-        this.componted = 'LogicalBackup'
-      } else if (index === '16') {
-        this.componted = 'LogicalRecv'
+      if (index === "1") {
+        this.componted = "CommonSet";
+      } else if (index === "2") {
+        this.componted = "AllBackeUp";
+      } else if (index === "3") {
+        this.componted = "BackUp";
+      } else if (index === "4") {
+        this.componted = "Restore";
+      } else if (index === "5") {
+        this.componted = "Expansion";
+      } else if (index === "6") {
+        this.componted = "StandbySwitch";
+      } else if (index === "7") {
+        this.componted = "SwitchOver";
+      } else if (index === "8") {
+        this.componted = "RedoMachine";
+      } else if (index === "9") {
+        this.componted = "ShardList";
+      } else if (index === "10") {
+        this.componted = "CompList";
+      } else if (index === "11") {
+        this.componted = "SetAlarmTime";
+      } else if (index === "12") {
+        this.componted = "SetVariable";
+      } else if (index === "13") {
+        this.componted = "GetVariable";
+      } else if (index === "14") {
+        this.componted = "TableRepartition";
+      } else if (index === "15") {
+        this.componted = "LogicalBackup";
+      } else if (index === "16") {
+        this.componted = "LogicalRecv";
       } else {
-        this.componted = 'Error'
+        this.componted = "Error";
       }
     },
     clusterId(value) {
-      this.$emit('getId', value)
-    }
-  }
-}
-
+      this.$emit("getId", value);
+    },
+  },
+};
 </script>
 
 <style lang="less">
-.el-tabs--border-card > .el-tabs__content {
+.el-tabs--border-card>.el-tabs__content {
   padding: 0px;
 }
 
@@ -235,8 +230,8 @@ export default {
 
 ::-webkit-scrollbar-thumb {
   border-radius: 5px;
-  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
-  box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
   background-color: rgba(0, 0, 0, 0.1);
 }
 </style>
