@@ -15,7 +15,7 @@ RUN mkdir -p /KunlunXPanel
 WORKDIR /KunlunXPanel
 COPY . /KunlunXPanel
 RUN npm i
-expose 8080
+EXPOSE  8080
 
 
 

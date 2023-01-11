@@ -1855,8 +1855,8 @@ class Cluster extends CI_Controller
 //			}
 			//创建数据库
 			$db_name = $db_prefix . $user_name;
-			//var_dump($db_name);exit;
-			//$sqls="DO \$body$ BEGIN IF NOT EXISTS (select 1 from pg_database where datname ='$db_name' ) THEN CREATE DATABASE $db_name; END IF;END \$body$;";
+			//($db_name);exit;
+			//var_dump$sqls="DO \$body$ BEGIN IF NOT EXISTS (select 1 from pg_database where datname ='$db_name' ) THEN CREATE DATABASE $db_name; END IF;END \$body$;";
 			$selectdb = "select 1 from pg_database where datname ='$db_name';";
 			$res_user = $this->Cluster_model->DB($selectdb, $host, $port, $pgusername);
 			if (empty($res_user)) {

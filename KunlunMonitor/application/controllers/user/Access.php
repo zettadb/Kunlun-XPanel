@@ -177,6 +177,7 @@ class Access extends CI_Controller {
 					$data['message'] = 'token错误';
 					print_r(json_encode($data));
 				}else{
+					
 					//验证权限是否重复添加
 					$sql_role_assign="select count(role_id) as count from kunlun_role_assign where role_id='$role_name' and user_id='$username';";
 					$res_role_assign=$this->Login_model->getList($sql_role_assign);
