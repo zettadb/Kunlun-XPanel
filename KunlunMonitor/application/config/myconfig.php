@@ -1,11 +1,11 @@
 <?php
-$config['post_url'] = 'http://192.168.0.128:54002/HttpService/Emit';
+$config['post_url'] = 'http://192.168.0.113:54002/HttpService/Emit';
 $config['key'] = 'zetta@509';
 $config['pg_username'] = 'abc';
 $config['default_username'] = 'player';
 $config['pg_database'] = 'postgres';
 $config['db_prefix'] = 'kunlundb_';
-$config['grafana_key'] = '';
+$config['grafana_key'] = 'Bearer eyJrIjoidlRYZUdFVEJVbkxmUlRVYmU0dzVFOGdNMTlhbVJ4S0giLCJuIjoiYXBpa2V5Y3VybF8xMTAxIiwiaWQiOjF9';
 $config['job_type'] = [
 	['code' => 'create_cluster', 'name' => '新增集群'],
 	['code' => 'delete_cluster', 'name' => '删除集群'],
