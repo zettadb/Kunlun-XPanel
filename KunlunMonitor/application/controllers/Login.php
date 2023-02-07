@@ -12,13 +12,14 @@ class Login extends CI_Controller
 		header('Access-Control-Allow-Origin:*'); // *代表允许任何网址请求
 		header('Access-Control-Allow-Headers: Content-Type,Content-Length,Accept-Encoding,X-Requested-with, Origin'); // 设置允许自定义请求头的字段
 		header('Access-Control-Allow-Methods:POST,GET,OPTIONS,DELETE'); // 允许请求的类型
-		header('Access-Control-Allow-Headers:x-requested-with,content-type,Token');//允许接受token
+		header('Access-Control-Allow-Headers:x-requested-with,content-type,Token'); //允许接受token
 //		header('Access-Control-Allow-Private-Network:true');
 		//header('Content-Type: text/html;charset=utf-8');
 		//header('Access-Control-Allow-Credentials: true'); // 设置是否允许发送 cookies
 		$this->config->load('myconfig');
 		$this->key = $this->config->item('key');
 		$this->grafana_key = $this->config->item('grafana_key');
+		$this->grafana_svr = $this->config->item('grafana_svr');
 	}
 
 	public function userCheck()
@@ -359,7 +360,7 @@ class Login extends CI_Controller
 	{
 		header('content-type: application/json; charset=utf-8');
 		//获取token
-		$arr = apache_request_headers();//获取请求头数组
+		$arr = apache_request_headers(); //获取请求头数组
 		//print_r($arr) ;exit;//输出Token
 		$token = $arr["Token"];
 		if (empty($token)) {
@@ -433,9 +434,9 @@ class Login extends CI_Controller
 			return $str;
 		}
 		$arr = explode(',', $str);
-		$arr = array_unique($arr);//内置数组去重算法
+		$arr = array_unique($arr); //内置数组去重算法
 		$data = implode(',', $arr);
-		$data = trim($data, ',');//trim — 去除字符串首尾处的空白字符
+		$data = trim($data, ','); //trim — 去除字符串首尾处的空白字符
 		return $data;
 	}
 
@@ -488,19 +489,22 @@ class Login extends CI_Controller
 			if (!empty($res[0]) && !empty($res[1])) {
 				$key = $this->grafana_key;
 				//查grafana数据源
-				$get_url = 'http://admin:admin@127.0.0.1/api/datasources';
+				$get_url = 'http://admin:admin@' . $this->grafana_svr . '/api/datasources';
 				//调grafana的api查数据源
 				$this->load->model('Grafana_model');
 				$get_result = $this->Grafana_model->postDataSource($get_url);
-				if (!empty($get_result)) {
+				if ($get_result) {
 					$get_arr = json_decode($get_result, true);
+
 					if (is_array($get_arr) && count($get_arr) !== 0) {
 						if (array_key_exists('message', $get_arr)) {
 							if ($get_arr['message'] == 'invalid API key' || $get_arr['message'] == 'Unauthorized') {
 								//获取key
-								$post_keyDate = '{"name":"apikeycurl", "role": "Admin"}';
-								$post_keyurl = 'http://admin:admin@127.0.0.1:3000/api/auth/keys';
+								$post_keyDate = '{"name":"apikeycurl_002", "role": "Admin"}';
+								$post_keyurl = 'http://admin:admin@' . $this->grafana_svr . '/api/auth/keys';
 								$post_keyresult = $this->Grafana_model->getKey($post_keyDate, $post_keyurl);
+								//print_r($post_keyresult);
+								//exit($post_keyurl);
 								$post_keyresult = json_decode($post_keyresult, true);
 								if (array_key_exists('key', $post_keyresult)) {
 									$key = 'Bearer ' . $post_keyresult['key'];

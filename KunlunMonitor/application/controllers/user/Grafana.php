@@ -16,6 +16,7 @@ class Grafana extends CI_Controller
 		$this->config->load('myconfig');
 		$this->key = $this->config->item('key');
 		$this->post_url = $this->config->item('post_url');
+		$this->grafana_svr = $this->config->item('grafana_svr');
 
 	}
 
@@ -46,7 +47,7 @@ class Grafana extends CI_Controller
 			$url = 'http://' . $res[0]['hostaddr'] . ':' . $res[0]['prometheus_port'];
 		}
 		//查grafana数据源
-		$get_url = 'http://admin:admin@127.0.0.1/api/datasources';
+		$get_url = 'http://admin:admin@' . $this->grafana_svr . '/api/datasources';
 		//调grafana的api查数据源
 		$this->load->model('Grafana_model');
 		$get_result = $this->Grafana_model->postDataSource($get_url);
@@ -62,7 +63,7 @@ class Grafana extends CI_Controller
 						} else {
 							//url不一样需要调grafana接口更新数据源(PUT)
 							$update_data = '{"id":' . $pro_id . ',"orgId":"' . $row['typeLogoUrl'] . '","name":"Prometheus","type":"prometheus","typeLogoUrl":"' . $row['typeLogoUrl'] . '","access":"proxy","url":"' . $url . '","basicAuth":false,"isDefault":false,"jsonData":null}';
-							$put_url = "http://admin:admin@127.0.0.1:3000/api/datasources/" . $pro_id;
+							$put_url = 'http://admin:admin@' . $this->grafana_svr . '/api/datasources/' . $pro_id;
 							$put_result = $this->Grafana_model->putData($update_data, $put_url);
 							$put_result = json_decode($put_result, true);
 							if ($put_result['message'] == 'Datasource updated') {
@@ -72,7 +73,7 @@ class Grafana extends CI_Controller
 					} else {
 						//更新数据源
 						$put_data = '{"id":' . $pro_id . ',"orgId":"' . $row['typeLogoUrl'] . '","name":"Prometheus","type":"prometheus","typeLogoUrl":"' . $row['typeLogoUrl'] . '","access":"proxy","url":"' . $url . '","basicAuth":false,"isDefault":false,"jsonData":null}';
-						$put_url = "http://admin:admin@127.0.0.1:3000/api/datasources/" . $pro_id;
+						$put_url = 'http://admin:admin@' . $this->grafana_svr . '/api/datasources/' . $pro_id;
 						$put_result = $this->Grafana_model->putData($put_data, $put_url);
 						$put_result = json_decode($put_result, true);
 						if ($put_result['message'] == 'Datasource updated') {
@@ -81,7 +82,7 @@ class Grafana extends CI_Controller
 					}
 				}
 			} else {
-				$post_url = 'http://admin:admin@127.0.0.1:3000/api/datasources';
+				$post_url = 'http://admin:admin@' . $this->grafana_svr . '/api/datasources';
 				$post_data = '{"name":"Prometheus","type":"prometheus","access":"proxy","url":"' . $url . '","basicAuth":false}';
 				$post_result = $this->Grafana_model->postData($post_data, $post_url);
 				$post_result = json_decode($post_result, true);
@@ -97,7 +98,7 @@ class Grafana extends CI_Controller
 			//$mysqld_data='{"dashboard": {"id": null,"uid": null,"title": "Production Overview","tags": [ "templated" ],"timezone": "browser","schemaVersion": 16,"version": 0,"refresh": "25s"},"folderId": 0,"overwrite": false}';
 			//$mysqld_data = file_get_contents('./json/mysqld.json');
 			//print_r($mysqld_data);exit;
-			$postdb_url = "http://admin:admin@127.0.0.1:3000/api/dashboards/db";
+			$postdb_url = 'http://admin:admin@' . $this->grafana_svr . '/api/dashboards/db';
 			$postdb_result = $this->Grafana_model->postData($mysqld_data, $postdb_url);
 			$postdb_result = json_decode($postdb_result, true);
 			//print_r($postdb_result);exit;
@@ -108,7 +109,7 @@ class Grafana extends CI_Controller
 				print_r(json_encode($data));
 			} else if ($postdb_result['status'] == 'name-exists') {
 				//查dashboard的id
-				$getdb_url = 'http://admin:admin@127.0.0.1/api/search?folderIds=0';
+				$getdb_url = 'http://admin:admin@' . $this->grafana_svr . '/api/search?folderIds=0';
 				$getdb_result = $this->Grafana_model->postDataSource($getdb_url);
 				$db_id = '';
 				$db_uid = '';
@@ -126,7 +127,7 @@ class Grafana extends CI_Controller
 						}
 						if (!empty($db_id) && !empty($db_uid) && !empty($db_title)) {
 							//查dashboard的version
-							$getdbv_url = 'http://admin:admin@127.0.0.1//api/dashboards/uid/' . $db_uid;
+							$getdbv_url = 'http://admin:admin@' . $this->grafana_svr . '/api/dashboards/uid/' . $db_uid;
 							$getdbv_result = $this->Grafana_model->postDataSource($getdbv_url);
 							if (!empty($getdbv_result)) {
 								$getdbv_arr = json_decode($getdbv_result, true);
@@ -138,7 +139,7 @@ class Grafana extends CI_Controller
 							}
 							//更新
 							$update_mysqld_data = $this->Mysql_model->updateMysqlJSON($host, $db_id, $db_uid, $db_title, $db_version);
-							$update_postdb_url = "http://admin:admin@127.0.0.1:3000/api/dashboards/db";
+							$update_postdb_url = 'http://admin:admin@' . $this->grafana_svr . '/api/dashboards/db';
 							$update_postdb_result = $this->Grafana_model->postData($update_mysqld_data, $update_postdb_url);
 							$update_postdb_result = json_decode($update_postdb_result, true);
 							//print_r($update_postdb_result);exit;
@@ -164,7 +165,6 @@ class Grafana extends CI_Controller
 			$data['message'] = 'token不能为空';
 			print_r(json_encode($data));
 			return;
-
 		}
 		$this->load->model('Cluster_model');
 		$this->load->model('PGsql_model');
@@ -182,7 +182,7 @@ class Grafana extends CI_Controller
 			$url = 'http://' . $res[0]['hostaddr'] . ':' . $res[0]['prometheus_port'];
 		}
 		//查grafana数据源
-		$get_url = 'http://admin:admin@127.0.0.1/api/datasources';
+		$get_url = 'http://admin:admin@' . $this->grafana_svr . '/api/datasources';
 		//调grafana的api查数据源
 		$this->load->model('Grafana_model');
 		$get_result = $this->Grafana_model->postDataSource($get_url);
@@ -198,7 +198,7 @@ class Grafana extends CI_Controller
 						} else {
 							//url不一样需要调grafana接口更新数据源(PUT)
 							$update_data = '{"id":' . $pro_id . ',"orgId":"' . $row['typeLogoUrl'] . '","name":"Prometheus","type":"prometheus","typeLogoUrl":"' . $row['typeLogoUrl'] . '","access":"proxy","url":"' . $url . '","basicAuth":false,"isDefault":false,"jsonData":null}';
-							$put_url = "http://admin:admin@127.0.0.1:3000/api/datasources/" . $pro_id;
+							$put_url = 'http://admin:admin@' . $this->grafana_svr . '/api/datasources/' . $pro_id;
 							$put_result = $this->Grafana_model->putData($update_data, $put_url);
 							$put_result = json_decode($put_result, true);
 							if ($put_result['message'] == 'Datasource updated') {
@@ -208,7 +208,7 @@ class Grafana extends CI_Controller
 					} else {
 						//更新数据源
 						$put_data = '{"id":' . $pro_id . ',"orgId":"' . $row['typeLogoUrl'] . '","name":"Prometheus","type":"prometheus","typeLogoUrl":"' . $row['typeLogoUrl'] . '","access":"proxy","url":"' . $url . '","basicAuth":false,"isDefault":false,"jsonData":null}';
-						$put_url = "http://admin:admin@127.0.0.1:3000/api/datasources/" . $pro_id;
+						$put_url = 'http://admin:admin@' . $this->grafana_svr . '/api/datasources/' . $pro_id;
 						$put_result = $this->Grafana_model->putData($put_data, $put_url);
 						$put_result = json_decode($put_result, true);
 						if ($put_result['message'] == 'Datasource updated') {
@@ -217,7 +217,7 @@ class Grafana extends CI_Controller
 					}
 				}
 			} else {
-				$post_url = 'http://admin:admin@127.0.0.1:3000/api/datasources';
+				$post_url = 'http://admin:admin@' . $this->grafana_svr . '/api/datasources';
 				$post_data = '{"name":"Prometheus","type":"prometheus","access":"proxy","url":"' . $url . '","basicAuth":false}';
 				$post_result = $this->Grafana_model->postData($post_data, $post_url);
 				$post_result = json_decode($post_result, true);
@@ -232,8 +232,7 @@ class Grafana extends CI_Controller
 			$host = $ip . ':' . $port;
 			$pgsqld_data = $this->PGsql_model->pgsqlJSON($host);
 			//$pgsqld_data='{"dashboard": {"id": null,"uid": null,"title": "postgresql","tags": [ "templated" ],"timezone": "browser","schemaVersion": 16,"version": 0,"refresh": "5s"},"folderId": 0,"overwrite": false}';
-			print_r($pgsqld_data);
-			$postdb_url = "http://admin:admin@127.0.0.1:3000/api/dashboards/db";
+			$postdb_url = 'http://admin:admin@' . $this->grafana_svr . '/api/dashboards/db';
 			$postdb_result = $this->Grafana_model->postData($pgsqld_data, $postdb_url);
 			$postdb_result = json_decode($postdb_result, true);
 			//print_r($postdb_result);exit;
@@ -244,7 +243,7 @@ class Grafana extends CI_Controller
 				print_r(json_encode($data));
 			} else if ($postdb_result['status'] == 'name-exists') {
 				//查dashboard的id
-				$getdb_url = 'http://admin:admin@127.0.0.1/api/search?folderIds=0';
+				$getdb_url = 'http://admin:admin@' . $this->grafana_svr . '/api/search?folderIds=0';
 				$getdb_result = $this->Grafana_model->postDataSource($getdb_url);
 				$db_id = '';
 				$db_uid = '';
@@ -263,7 +262,7 @@ class Grafana extends CI_Controller
 						}
 						if (!empty($db_id) && !empty($db_uid) && !empty($db_title)) {
 							//查dashboard的version
-							$getdbv_url = 'http://admin:admin@127.0.0.1//api/dashboards/uid/' . $db_uid;
+							$getdbv_url = 'http://admin:admin@' . $this->grafana_svr . '/api/dashboards/uid/' . $db_uid;
 							$getdbv_result = $this->Grafana_model->postDataSource($getdbv_url);
 							if (!empty($getdbv_result)) {
 								$getdbv_arr = json_decode($getdbv_result, true);
@@ -276,7 +275,7 @@ class Grafana extends CI_Controller
 							//更新
 							$update_mysqld_data = $this->PGsql_model->updatePGsqlJSON($host, $db_id, $db_uid, $db_title, $db_version);
 							//$update_mysqld_data = file_get_contents('./json/pgsql.json');
-							$update_postdb_url = "http://admin:admin@127.0.0.1:3000/api/dashboards/db";
+							$update_postdb_url = 'http://admin:admin@' . $this->grafana_svr . '/api/dashboards/db';
 							$update_postdb_result = $this->Grafana_model->postData($update_mysqld_data, $update_postdb_url);
 							//print_r($update_mysqld_data);exit;
 							$update_postdb_result = json_decode($update_postdb_result, true);
@@ -329,10 +328,11 @@ class Grafana extends CI_Controller
 			$url = 'http://' . $res[0]['hostaddr'] . ':' . $res[0]['prometheus_port'];
 		}
 		//查grafana数据源
-		$get_url = 'http://admin:admin@127.0.0.1/api/datasources';
+		$get_url = 'http://admin:admin@' . $this->grafana_svr . '/api/datasources';
 		//调grafana的api查数据源
 		$this->load->model('Grafana_model');
 		$get_result = $this->Grafana_model->postDataSource($get_url);
+
 		if (!empty($get_result)) {
 			$get_arr = json_decode($get_result, true);
 			if (count($get_arr) !== 0) {
@@ -343,12 +343,11 @@ class Grafana extends CI_Controller
 						if ($grafana_url == $url) {
 							$if_addSource = false;
 						} else {
-
 							//url不一样需要调grafana接口更新数据源(PUT)
 							$update_data = '{"id":' . $pro_id . ',"orgId":"' . $row['typeLogoUrl'] . '","name":"Prometheus","type":"prometheus","typeLogoUrl":"' . $row['typeLogoUrl'] . '","access":"proxy","url":"' . $url . '","basicAuth":false,"isDefault":false,"jsonData":null}';
-							$put_url = "http://admin:admin@127.0.0.1:3000/api/datasources/" . $pro_id;
+							$put_url = 'http://admin:admin@' . $this->grafana_svr . '/api/datasources/' . $pro_id;
 							$put_result = $this->Grafana_model->putData($update_data, $put_url);
-							print_r($put_result);
+
 							$put_result = json_decode($put_result, true);
 							if ($put_result['message'] == 'Datasource updated') {
 								$if_addSource = false;
@@ -357,7 +356,7 @@ class Grafana extends CI_Controller
 					} else {
 						//更新数据源
 						$put_data = '{"id":' . $pro_id . ',"orgId":"' . $row['typeLogoUrl'] . '","name":"Prometheus","type":"prometheus","typeLogoUrl":"' . $row['typeLogoUrl'] . '","access":"proxy","url":"' . $url . '","basicAuth":false,"isDefault":false,"jsonData":null}';
-						$put_url = "http://admin:admin@127.0.0.1:3000/api/datasources/" . $pro_id;
+						$put_url = 'http://admin:admin@' . $this->grafana_svr . '/api/datasources/' . $pro_id;
 						$put_result = $this->Grafana_model->putData($put_data, $put_url);
 						$put_result = json_decode($put_result, true);
 						if ($put_result['message'] == 'Datasource updated') {
@@ -368,8 +367,7 @@ class Grafana extends CI_Controller
 				}
 			} else {
 
-				$post_url = 'http://admin:admin@127.0.0.1:5555/api/datasources';
-				exit($post_url);
+				$post_url = 'http://admin:admin@' . $this->grafana_svr . '/api/datasources';
 				$post_data = '{"name":"Prometheus","type":"prometheus","access":"proxy","url":"' . $url . '","basicAuth":false}';
 				$post_result = $this->Grafana_model->postData($post_data, $post_url);
 				$post_result = json_decode($post_result, true);
@@ -386,7 +384,7 @@ class Grafana extends CI_Controller
 			//$pgsqld_data='{"dashboard": {"id": null,"uid": null,"title": "node","tags": [ "templated" ],"timezone": "browser","schemaVersion": 16,"version": 0,"refresh": "5s"},"folderId": 0,"overwrite": false}';
 			//print_r($pgsqld_data);
 			$pgsqld_data = file_get_contents('./json/node.json');
-			$postdb_url = "http://admin:12345678@127.0.0.1/api/dashboards/db";
+			$postdb_url = 'http://admin:admin@' . $this->grafana_svr . '/api/dashboards/db';
 			$postdb_result = $this->Grafana_model->postData($pgsqld_data, $postdb_url);
 			$postdb_result = json_decode($postdb_result, true);
 
@@ -397,7 +395,7 @@ class Grafana extends CI_Controller
 				print_r(json_encode($data));
 			} else if ($postdb_result['status'] == 'name-exists') {
 				//查dashboard的id
-				$getdb_url = 'http://admin:admin@127.0.0.1/api/search?folderIds=0';
+				$getdb_url = 'http://admin:admin@' . $this->grafana_svr . '/api/search?folderIds=0';
 				$getdb_result = $this->Grafana_model->postDataSource($getdb_url);
 				$db_id = '';
 				$db_uid = '';
