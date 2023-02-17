@@ -645,7 +645,7 @@ class Cluster extends CI_Controller
 				if (!empty($res_user)) {
 					$user_id = $res_user[0]['id'];
 				}
-				$result = '100';
+				$result = 100;
 				//先查表是否存在
 				$sqldalay = "select TABLE_NAME from information_schema.TABLES where TABLE_NAME = 'shard_max_dalay';";
 				$resdalay = $this->Login_model->getList($sqldalay);
@@ -685,7 +685,7 @@ class Cluster extends CI_Controller
 					if (!empty($res_user)) {
 						$user_id = $res_user[0]['id'];
 					}
-					$result = '100';
+					$result = 100;
 					//先查表是否存在
 					$sqldalay = "select TABLE_NAME from information_schema.TABLES where TABLE_NAME = 'shard_max_dalay';";
 					$resdalay = $this->Login_model->getList($sqldalay);
@@ -3597,14 +3597,16 @@ class Cluster extends CI_Controller
 						$ip = $arr_ip[0];
 						$arr_port = explode(')', $arr_ip[1]);
 						$port = $arr_port[0];
-						$msg_data = urldecode(json_encode(
-							array(
-								'cluster_id' => $row['db_cluster_id'],
-								'message' => urlencode($comp_row),
-								'ip' => $ip,
-								'port' => $port
+						$msg_data = urldecode(
+							json_encode(
+								array(
+									'cluster_id' => $row['db_cluster_id'],
+									'message' => urlencode($comp_row),
+									'ip' => $ip,
+									'port' => $port
+								)
 							)
-						));
+						);
 						$select_comp_sql = "select job_info from cluster_alarm_info where job_info='$msg_data' and status='unhandled' ";
 						$res_comp_select = $this->Cluster_model->getList($select_comp_sql);
 						if ($res_comp_select == false) {
@@ -3625,15 +3627,17 @@ class Cluster extends CI_Controller
 								$ip = $arr_ip[0];
 								$arr_port = explode(')', $arr_ip[1]);
 								$port = $arr_port[0];
-								$msg_data = urldecode(json_encode(
-									array(
-										'cluster_id' => $row['db_cluster_id'],
-										'shard_id' => $row['shard_id'],
-										'message' => urlencode($error_row),
-										'ip' => $ip,
-										'port' => $port
+								$msg_data = urldecode(
+									json_encode(
+										array(
+											'cluster_id' => $row['db_cluster_id'],
+											'shard_id' => $row['shard_id'],
+											'message' => urlencode($error_row),
+											'ip' => $ip,
+											'port' => $port
+										)
 									)
-								));
+								);
 								$select_sql = "select job_info from cluster_alarm_info where job_info='$msg_data' and status='unhandled' ";
 								$res_select = $this->Cluster_model->getList($select_sql);
 								if ($res_select == false) {
@@ -3646,15 +3650,17 @@ class Cluster extends CI_Controller
 								$ip = $arr_ip[0];
 								$arr_port = explode(')', $arr_ip[1]);
 								$port = $arr_port[0];
-								$msg_data = urldecode(json_encode(
-									array(
-										'cluster_id' => $row['db_cluster_id'],
-										'shard_id' => $row['shard_id'],
-										'message' => urlencode($error_row),
-										'ip' => $ip,
-										'port' => $port
+								$msg_data = urldecode(
+									json_encode(
+										array(
+											'cluster_id' => $row['db_cluster_id'],
+											'shard_id' => $row['shard_id'],
+											'message' => urlencode($error_row),
+											'ip' => $ip,
+											'port' => $port
+										)
 									)
-								));
+								);
 								$select_storage_sql = "select job_info from cluster_alarm_info where job_info='$msg_data' and status='unhandled' ";
 								$res_storage_select = $this->Cluster_model->getList($select_storage_sql);
 								if ($res_storage_select == false) {
@@ -3673,12 +3679,14 @@ class Cluster extends CI_Controller
 			foreach ($machine_error as $machine_row) {
 				$arr = explode(',', $machine_row);
 				$ip = $arr[0];
-				$msg_data = urldecode(json_encode(
-					array(
-						'message' => urlencode($machine_row),
-						'ip' => $ip
+				$msg_data = urldecode(
+					json_encode(
+						array(
+							'message' => urlencode($machine_row),
+							'ip' => $ip
+						)
 					)
-				));
+				);
 				$select_machine_sql = "select job_info from cluster_alarm_info where job_info='$msg_data' and status='unhandled' ";
 				$res_machine_select = $this->Cluster_model->getList($select_machine_sql);
 				if ($res_machine_select == false) {
