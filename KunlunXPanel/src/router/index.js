@@ -59,76 +59,63 @@ export const constantRoutes = [
     component: Layout,
     redirect: '/cluster',
     name: 'Cluster',
-    meta: { 
+    roles: [],
+    meta: {
       title: '集群管理',
-      requiresAuth:true, 
-      icon: 'el-icon-s-help' },
+      requiresAuth: true,
+      icon: 'el-icon-s-help'
+    },
     children: [
       {
+        roles: [],
         path: 'cluster',
         name: 'cluster',
         component: () => import('@/views/cluster/index'),
         meta: {
           title: '集群列表',
-          requiresAuth:true, 
+          requiresAuth: true,
           // icon: 'table' 
         }
       },
       {
-        path: 'cshow',
-        name: 'Cshow',
-        // component: () => import('@/views/cluster/cshow1'),
-        // meta: {
-        //   title: '集群展示',
-        //   requiresAuth:true, 
-        //   // icon: 'table' 
-        // }
-      },
-      {
+        roles: ['super_dba'],
         path: 'NoSwitch',
         name: 'NoSwitch',
         component: () => import('@/views/cluster/noswitch'),
-        meta: { 
+        meta: {
           title: '集群免切设置',
-          requiresAuth:true, 
+          requiresAuth: true,
           //  icon: 'tree' 
-          }
+        }
       },
       {
+        roles: [],
         path: 'backup',
         name: 'Backup',
         component: () => import('@/views/cluster/backup'),
-        meta: { 
+        meta: {
           title: '集群备份列表',
-          requiresAuth:true, 
+          requiresAuth: true,
           //  icon: 'tree' 
-          }
+        }
       },
       {
         path: 'storage',
         name: 'Storage',
+        roles: [],
         component: () => import('@/views/cluster/storagelist'),
-        meta: { 
+        meta: {
           title: '备份存储目标管理',
-          requiresAuth:true, 
+          requiresAuth: true,
           //  icon: 'tree' 
-          }
+        }
       },
       {
+        roles: [],
         path: 'switchover',
         name: 'Switchover',
         component: () => import('@/views/cluster/switchover'),
       }
-      // {
-      //   path: 'tree',
-      //   name: 'Tree',
-      //   // component: () => import('@/views/cluster/upgrade'),
-      //   meta: { 
-      //     title: '集群扩容',
-      //     requiresAuth:true, 
-      //     // icon: 'tree'
-      //   }
-      // }
     ]
   },
   {
@@ -136,32 +123,25 @@ export const constantRoutes = [
     component: Layout,
     redirect: '/alarmRecord',
     name: 'AlarmRecord',
-    meta: { 
+    roles: [],
+    meta: {
       title: '告警管理',
-      requiresAuth:true, 
+      requiresAuth: true,
       icon: 'el-icon-warning-outline'
     },
     children: [
       {
+        roles: [],
         path: 'index',
         name: 'Index',
         component: () => import('@/views/alarmrecord/index'),
         meta: {
           title: '告警终端管理',
-          requiresAuth:true, 
+          requiresAuth: true,
           // icon: 'table' 
         }
       },
-      // {
-      //   path: 'NoSwitch',
-      //   name: 'NoSwitch',
-      //   component: () => import('@/views/cluster/noswitch'),
-      //   meta: { 
-      //     title: '告警配置',
-      //     requiresAuth:true, 
-      //     //  icon: 'tree' 
-      //   }
-      // },
+
     ]
   },
   {
@@ -169,20 +149,23 @@ export const constantRoutes = [
     component: Layout,
     redirect: '/meta',
     name: 'Meta',
+    roles: ['super_dba'],
     meta: {
       title: '元数据集群管理',
-      requiresAuth:true, 
-      icon: 'el-icon-set-up' 
+      requiresAuth: true,
+      icon: 'el-icon-set-up',
     },
     children: [
       {
         path: 'list',
         name: 'list',
+        roles: ['super_dba'],
         component: () => import('@/views/metacluster/list'),
         meta: {
           title: '元数据节点列表',
-          requiresAuth:true, 
+          requiresAuth: true,
           // icon: 'table'
+
         }
       },
       {
@@ -197,19 +180,21 @@ export const constantRoutes = [
       }
     ]
   },
- 
+
   {
     path: '/ClusterMgr',
     component: Layout,
+    roles: ['super_dba'],
     children: [
       {
         path: 'node',
         name: 'ClusterMgr',
+        roles: ['super_dba'],
         component: () => import('@/views/cluster_mgr/node'),
-        meta: { 
+        meta: {
           title: 'cluster_mgr状态',
-          requiresAuth:true, 
-          icon: 'el-icon-aim'
+          requiresAuth: true,
+          icon: 'el-icon-aim',
         },
       }
     ]
@@ -217,14 +202,16 @@ export const constantRoutes = [
   {
     path: '/operation',
     component: Layout,
+    roles: [],
     children: [
       {
         path: 'index',
         name: 'Operation',
+        roles: [],
         component: () => import('@/views/operation/index'),
-        meta: { 
+        meta: {
           title: '操作记录',
-          requiresAuth:true, 
+          requiresAuth: true,
           icon: 'form'
         }
       }
@@ -235,10 +222,11 @@ export const constantRoutes = [
     component: Layout,
     redirect: '/machine',
     name: 'Machine',
+    roles: ['super_dba'],
     meta: {
       title: '计算机管理',
-      requiresAuth:true, 
-      icon: 'el-icon-s-platform' 
+      requiresAuth: true,
+      icon: 'el-icon-s-platform'
     },
     children: [
       {
@@ -247,7 +235,8 @@ export const constantRoutes = [
         component: () => import('@/views/machine/list'),
         meta: {
           title: '计算机列表',
-          requiresAuth:true, 
+          requiresAuth: true,
+          roles: ['super_dba'],
           // icon: 'table'
         }
       },
@@ -262,55 +251,49 @@ export const constantRoutes = [
         // }
       }
     ]
-  }, 
+  },
   {
     path: '/system',
     component: Layout,
     redirect: '/system/menu',
     name: 'menu',
+    roles: [],
     //hidden:true,
-    meta: { 
-      roles: ['super_dba'] ,
+    meta: {
       title: '系统管理',
-      //requiresAuth:true, 
       icon: 'el-icon-setting',
-      roles: ['super_dba']
     },
     children: [
       {
+        roles: [],
         path: 'account',
         name: 'account',
         component: () => import('@/views/system/account'),
         meta: {
-          roles: ['super_dba'] ,
           title: '用户管理',
-          //requiresAuth:true, 
           noCache: true,
-          roles: ['super_dba']
         }
       },
       {
         path: 'role',
         name: 'role',
+        roles: [],
         component: () => import('@/views/system/role'),
         meta: {
-          roles: ['super_dba'] ,
           title: '角色管理',
           //requiresAuth:true, 
           noCache: true,
-          roles: ['super_dba']
-         }
+        }
       },
       {
         path: 'access',
         name: 'access',
+        roles: [],
         component: () => import('@/views/system/access'),
         meta: {
-          roles: ['super_dba'] ,
           title: '授权管理',
           //requiresAuth:true, 
-          noCache: true ,
-          roles: ['super_dba']
+          noCache: true,
         }
       },
     ]
@@ -318,14 +301,16 @@ export const constantRoutes = [
   {
     path: '/experience',
     component: Layout,
+    roles: [],
     children: [
       {
+        roles: [],
         path: 'index',
         name: 'Experience',
         component: () => import('@/views/experience/index'),
-        meta: { 
+        meta: {
           title: '在线体验',
-          requiresAuth:true, 
+          requiresAuth: true,
           icon: 'el-icon-coin'
         }
       },
@@ -343,22 +328,23 @@ export const asyncRoutes = [
     redirect: '/system/menu',
     name: 'menu',
     //hidden:true,
-    meta: { 
-      roles: ['super_dba'] ,
+    roles: ['super_dba'],
+    meta: {
+
       title: '系统管理',
-      requiresAuth:true, 
+      requiresAuth: true,
       icon: 'el-icon-setting',
-      roles: ['super_dba']
+
     },
     children: [
       {
         path: 'account',
         name: 'account',
+        roles: ['super_dba'],
         component: () => import('@/views/system/account'),
         meta: {
-          roles: ['super_dba'] ,
           title: '用户管理',
-          requiresAuth:true, 
+          requiresAuth: true,
           noCache: true,
           roles: ['super_dba']
         }
@@ -366,24 +352,24 @@ export const asyncRoutes = [
       {
         path: 'role',
         name: 'role',
+        roles: ['super_dba'],
         component: () => import('@/views/system/role'),
         meta: {
-          roles: ['super_dba'] ,
           title: '角色管理',
-          requiresAuth:true, 
+          requiresAuth: true,
           noCache: true,
           roles: ['super_dba']
-         }
+        }
       },
       {
         path: 'access',
         name: 'access',
+        roles: ['super_dba'],
         component: () => import('@/views/system/access'),
         meta: {
-          roles: ['super_dba'] ,
           title: '授权管理',
-          requiresAuth:true, 
-          noCache: true ,
+          requiresAuth: true,
+          noCache: true,
           roles: ['super_dba']
         }
       },

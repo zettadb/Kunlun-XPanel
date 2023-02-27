@@ -4,8 +4,12 @@
       <div class="table-list-search-wrap">
         <el-input v-model="listQuery.name" class="list_search_keyword" placeholder="可输入集群名称搜索"
           @keyup.enter.native="handleFilter" />
-        <el-button icon="el-icon-search" @click="handleFilter"> 查询 </el-button>
-        <el-button icon="el-icon-refresh-right" @click="handleClear"> 重置 </el-button>
+        <el-button icon="el-icon-search" @click="handleFilter">
+          查询
+        </el-button>
+        <el-button icon="el-icon-refresh-right" @click="handleClear">
+          重置
+        </el-button>
         <el-button v-if="cluster_creata_priv === 'Y'" class="filter-item" type="primary" icon="el-icon-plus"
           @click="handleCreate">新增
         </el-button>
@@ -40,8 +44,7 @@
         <template slot-scope="scope">
           <span v-if="scope.row.status === '运行中'" style="color: #00ed37">运行中</span>
           <span v-else style="color: red; border-bottom: 1px red solid" @click="statusDetail(scope.row)">{{
-            scope.row.status
-          }}</span>
+            scope.row.status }}</span>
         </template>
       </el-table-column>
       <el-table-column v-if="colData[3].istrue" align="center" label="计算节点" width="500">
@@ -116,8 +119,8 @@
       " label="操作" align="center" width="100" fixed="right" class-name="small-padding fixed-width">
         <template slot-scope="{ row }">
           <!-- <el-button type="primary" size="mini" @click="handleUpdate(row)" v-if="storage_node_create_priv==='Y'&&shard_create_priv==='Y'&&compute_node_create_priv==='Y'">+</el-button> -->
-          <el-button v-if="restore_priv === 'Y'" type="primary" size="mini"
-            style="margin-left: 10px; margin-bottom: 2px" @click="handleRetreated(row)">回档
+          <el-button v-if="restore_priv === 'Y'" type="primary" size="mini" style="margin-left: 10px; margin-bottom: 2px"
+            @click="handleRetreated(row)">回档
           </el-button>
           <el-button type="primary" size="mini" style="margin-bottom: 2px" @click="handleExpand(row)">扩容</el-button>
           <el-button v-if="
@@ -205,9 +208,14 @@
         </div>
         <div v-show="dialogStatus === 'create'">
           <el-form-item label="shard个数:" prop="shards_count">
-            <el-input v-model="temp.shards_count" class="right_input" placeholder="请输入shard个数"
-              :disabled="dialogStatus === 'detail' || temp.install_proxysql === '1'">
-              <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">个</i>
+            <el-input v-model="temp.shards_count" class="right_input" placeholder="请输入shard个数" :disabled="
+              dialogStatus === 'detail' || temp.install_proxysql === '1'
+            ">
+              <i slot="suffix" style="
+                    font-style: normal;
+                    margin-right: 10px;
+                    line-height: 30px;
+                  ">个</i>
             </el-input>
           </el-form-item>
         </div>
@@ -261,7 +269,11 @@
           </el-form-item>
           <el-form-item label="每个计算节点最大的存储值:" prop="per_computing_node_max_mem_size">
             <el-input v-model="temp.per_computing_node_max_mem_size" class="right_input" placeholder="请输入每个计算节点最大的存储值">
-              <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">MB</i>
+              <i slot="suffix" style="
+                    font-style: normal;
+                    margin-right: 10px;
+                    line-height: 30px;
+                  ">MB</i>
             </el-input>
           </el-form-item>
           <el-form-item label="每个存储节点的cpu核数:" prop="per_storage_node_cpu_cores">
@@ -275,23 +287,34 @@
           <el-form-item label="每个存储节点rocksdb缓冲池大小:" prop="per_storage_node_rocksdb_buffer_pool_size">
             <el-input v-model="temp.per_storage_node_rocksdb_buffer_pool_size" class="right_input"
               placeholder="请输入每个存储节点rocksdb缓冲池大小">
-              <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">MB</i>
+              <i slot="suffix" style="
+                    font-style: normal;
+                    margin-right: 10px;
+                    line-height: 30px;
+                  ">MB</i>
             </el-input>
           </el-form-item>
           <el-form-item label="每个存储节点初始化存储值:" prop="per_storage_node_initial_storage_size">
             <el-input v-model="temp.per_storage_node_initial_storage_size" class="right_input"
               placeholder="请输入每个存储节点初始化存储值">
-              <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">GB</i>
+              <i slot="suffix" style="
+                    font-style: normal;
+                    margin-right: 10px;
+                    line-height: 30px;
+                  ">GB</i>
             </el-input>
           </el-form-item>
           <el-form-item label="每个存储节点最大存储值:" prop="per_storage_node_max_storage_size">
             <el-input v-model="temp.per_storage_node_max_storage_size" class="right_input" placeholder="请输入每个存储节点最大存储值">
-              <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">GB</i>
+              <i slot="suffix" style="
+                    font-style: normal;
+                    margin-right: 10px;
+                    line-height: 30px;
+                  ">GB</i>
             </el-input>
           </el-form-item>
         </div>
-        <div v-if="dialogStatus === 'create' ? true : false" :class="isShow === false ? 'ro-90' : 'ro90'"
-          @click="toggle">
+        <div v-if="dialogStatus === 'create' ? true : false" :class="isShow === false ? 'ro-90' : 'ro90'" @click="toggle">
           <i class="el-icon-d-arrow-left" />
         </div>
       </el-form>
@@ -425,8 +448,7 @@
             <el-tab-pane v-for="(item, index) in shardNameList" :key="index" :label="item.name" :name="item.name"
               :value="item.id + '_' + item.cluster_id">
               <el-table :key="tableKey" v-loading="listLoading" :data="shardTable" max-height="240" border
-                highlight-current-row style="width: 100%; margin-bottom: 20px"
-                @selection-change="selectionChangeHandle">
+                highlight-current-row style="width: 100%; margin-bottom: 20px" @selection-change="selectionChangeHandle">
                 <el-table-column type="selection" width="55" />
                 <el-table-column type="index" align="center" label="序号" width="50" />
                 <!-- TABLE_SCHEMA,TABLE_NAME -->
@@ -899,7 +921,8 @@ export default {
         user_name: sessionStorage.getItem("login_username"),
       },
       temp: {
-        ha_mode: sessionStorage.getItem("work_mode") == "enterprise" ? "rbr" : "mgr",
+        ha_mode:
+          sessionStorage.getItem("work_mode") == "enterprise" ? "rbr" : "mgr",
         shards_count: "1",
         snode_count: "3",
         comp_count: "1",
@@ -1010,7 +1033,9 @@ export default {
       user_edit_priv: "",
       row: {},
       hamodeData:
-        sessionStorage.getItem("work_mode") == "enterprise" ? ha_mode_arr : c_ha_mode_arr,
+        sessionStorage.getItem("work_mode") == "enterprise"
+          ? ha_mode_arr
+          : c_ha_mode_arr,
       cpuLimitMode: cpu_limit_mode,
       shardsDate: shards_arr,
       norepshardsDate: norepshards_arr,
@@ -1030,9 +1055,12 @@ export default {
       shardList: [],
       backup_priv: JSON.parse(sessionStorage.getItem("priv")).backup_priv,
       restore_priv: JSON.parse(sessionStorage.getItem("priv")).restore_priv,
-      cluster_creata_priv: JSON.parse(sessionStorage.getItem("priv")).cluster_creata_priv,
-      cluster_drop_priv: JSON.parse(sessionStorage.getItem("priv")).cluster_drop_priv,
-      shard_create_priv: JSON.parse(sessionStorage.getItem("priv")).shard_create_priv,
+      cluster_creata_priv: JSON.parse(sessionStorage.getItem("priv"))
+        .cluster_creata_priv,
+      cluster_drop_priv: JSON.parse(sessionStorage.getItem("priv"))
+        .cluster_drop_priv,
+      shard_create_priv: JSON.parse(sessionStorage.getItem("priv"))
+        .shard_create_priv,
       storage_node_create_priv: JSON.parse(sessionStorage.getItem("priv"))
         .storage_node_create_priv,
       compute_node_create_priv: JSON.parse(sessionStorage.getItem("priv"))
@@ -1176,25 +1204,43 @@ export default {
         // machinelist: [
         //   { required: true, trigger: "blur",validator: validatemachine },
         // ],
-        ha_mode: [{ required: true, trigger: "blur", validator: validateHaMode }],
+        ha_mode: [
+          { required: true, trigger: "blur", validator: validateHaMode },
+        ],
         shards_count: [
           { required: true, trigger: "blur", validator: validateShardsCount },
         ],
         install_proxysql: [
           { required: true, trigger: "blur", message: "是否安装proxysql必选" },
         ],
-        snode_count: [{ required: true, trigger: "blur", validator: validateSnodeCount }],
-        comp_count: [{ required: true, trigger: "blur", validator: validateCompCount }],
-        buffer_pool: [{ required: true, trigger: "blur", validator: validateBufferPool }],
-        now: [{ required: true, trigger: "blur", validator: validateRestoreTime }],
-        node_type: [{ required: true, trigger: "blur", validator: validateNodeType }],
-        shard_name: [{ required: true, trigger: "blur", validator: validateShardName }],
-        shards: [{ required: true, trigger: "blur", validator: validateNodeTotal }],
+        snode_count: [
+          { required: true, trigger: "blur", validator: validateSnodeCount },
+        ],
+        comp_count: [
+          { required: true, trigger: "blur", validator: validateCompCount },
+        ],
+        buffer_pool: [
+          { required: true, trigger: "blur", validator: validateBufferPool },
+        ],
+        now: [
+          { required: true, trigger: "blur", validator: validateRestoreTime },
+        ],
+        node_type: [
+          { required: true, trigger: "blur", validator: validateNodeType },
+        ],
+        shard_name: [
+          { required: true, trigger: "blur", validator: validateShardName },
+        ],
+        shards: [
+          { required: true, trigger: "blur", validator: validateNodeTotal },
+        ],
         nodes: [{ required: true, trigger: "blur", validator: validateNodes }],
         // cluster_name: [
         //     { required: true, trigger: "blur",validator: validateClusterName },
         // ],
-        nick_name: [{ required: true, trigger: "blur", validator: validateNickName }],
+        nick_name: [
+          { required: true, trigger: "blur", validator: validateNickName },
+        ],
         fullsync_level: [
           { required: true, trigger: "blur", validator: validateFullsyncLevel },
         ],
@@ -1207,12 +1253,18 @@ export default {
         dst_shard_id: [
           { required: true, trigger: "blur", validator: validateDstShardName },
         ],
-        policy: [{ required: true, trigger: "blur", validator: validatePolicy }],
+        policy: [
+          { required: true, trigger: "blur", validator: validatePolicy },
+        ],
         auto_shard_id: [
           { required: true, trigger: "blur", validator: validateAutoShardId },
         ],
-        table_list: [{ required: true, trigger: "blur", validator: validateTableList }],
-        database: [{ required: true, trigger: "blur", validator: validateDatabase }],
+        table_list: [
+          { required: true, trigger: "blur", validator: validateTableList },
+        ],
+        database: [
+          { required: true, trigger: "blur", validator: validateDatabase },
+        ],
       },
     };
   },
@@ -1313,7 +1365,11 @@ export default {
               if (arr.length > 0) {
                 for (let i = 0; i < arr.length; i++) {
                   const param = arr[i];
-                  this.$set(param, "nspname", row.database + "_$$_" + param.nspname);
+                  this.$set(
+                    param,
+                    "nspname",
+                    row.database + "_$$_" + param.nspname
+                  );
                 }
               }
               const result = arr.map((item) => ({
@@ -1340,7 +1396,9 @@ export default {
       this.dialogStatus = "statusDetail";
       this.statusDetailVisible = true;
       let arr = "";
-      const ab_arr = row.abnormal.substring(0, row.abnormal.length - 1).split(";");
+      const ab_arr = row.abnormal
+        .substring(0, row.abnormal.length - 1)
+        .split(";");
       for (let i = 0; i < ab_arr.length; i++) {
         arr += "<div>" + ab_arr[i] + "</div>";
       }
@@ -1620,7 +1678,8 @@ export default {
       this.listLoading = true;
       const queryParam = Object.assign({}, this.listQuery);
       queryParam.effectCluster = sessionStorage.getItem("affected_clusters");
-      queryParam.apply_all_cluster = sessionStorage.getItem("apply_all_cluster");
+      queryParam.apply_all_cluster =
+        sessionStorage.getItem("apply_all_cluster");
       // 模糊搜索
       getClusterList(queryParam).then((response) => {
         this.list = response.list;
@@ -1632,7 +1691,8 @@ export default {
     },
     resetTemp() {
       this.temp = {
-        ha_mode: sessionStorage.getItem("work_mode") == "enterprise" ? "rbr" : "mgr",
+        ha_mode:
+          sessionStorage.getItem("work_mode") == "enterprise" ? "rbr" : "mgr",
         shards_count: "1",
         install_proxysql: "0",
         snode_count: "3",
@@ -1703,7 +1763,9 @@ export default {
         let if_machines = false;
         let if_comp_machine = false;
         let createCond =
-          this.machines === null || this.machines.length === 0 || this.machines === false;
+          this.machines === null ||
+          this.machines.length === 0 ||
+          this.machines === false;
         if (createCond) {
           messageTip("请先添加计算机再新增集群!", "error");
         } else {
@@ -2126,7 +2188,8 @@ export default {
             this.message_type = "error";
             messageTip(this.message_tips, this.message_type);
           } else if (res.value == code) {
-            const apply_all_cluster = sessionStorage.getItem("apply_all_cluster");
+            const apply_all_cluster =
+              sessionStorage.getItem("apply_all_cluster");
             if (apply_all_cluster == 2) {
               const arrs = {};
               arrs.effectCluster = sessionStorage.getItem("affected_clusters");
@@ -2137,7 +2200,10 @@ export default {
                 const res_update = responses;
                 if (res_update.code == 200) {
                   this.dialogFormVisible = false;
-                  sessionStorage.setItem("affected_clusters", res_update.effectCluster);
+                  sessionStorage.setItem(
+                    "affected_clusters",
+                    res_update.effectCluster
+                  );
                 }
               });
             }
@@ -2286,7 +2352,10 @@ export default {
           const backupData = {};
           backupData.user_name = sessionStorage.getItem("login_username");
           backupData.job_id = "";
-          backupData.paras = { cluster_id: tempData.id, nick_name: tempData.nick_name };
+          backupData.paras = {
+            cluster_id: tempData.id,
+            nick_name: tempData.nick_name,
+          };
           backupData.version = version_arr[0].ver;
           backupData.timestamp = timestamp_arr[0].time + "";
           backupData.job_type = "manual_backup_cluster";
@@ -2453,7 +2522,9 @@ export default {
           // paras.machinelist=machinelist;
           restoreData.paras = paras;
           // console.log(restoreData);return;
-          handleCofirm(tempData.nick_name + "集群的数据将被覆盖，确定要进行回档操作么?")
+          handleCofirm(
+            tempData.nick_name + "集群的数据将被覆盖，确定要进行回档操作么?"
+          )
             .then(() => {
               restoreCluster(restoreData).then((response) => {
                 const res = response;
@@ -2756,14 +2827,21 @@ export default {
                 this.computer_title = info + steps[1] + "成功";
                 // 遍历计算节点改状态
                 if (this.computer.length > 0) {
-                  for (let b = 0; b < ress.attachment.computer_step.length; b++) {
-                    if (ress.attachment.computer_step[b].computer_state == "done") {
+                  for (
+                    let b = 0;
+                    b < ress.attachment.computer_step.length;
+                    b++
+                  ) {
+                    if (
+                      ress.attachment.computer_step[b].computer_state == "done"
+                    ) {
                       for (let c = 0; c < this.computer.length; c++) {
                         const arr = ress.attachment.computer_step[
                           b
                         ].computer_hosts.substr(
                           0,
-                          ress.attachment.computer_step[b].computer_hosts.length - 1
+                          ress.attachment.computer_step[b].computer_hosts
+                            .length - 1
                         );
                         const computer_hosts = arr.split(";");
                         for (let e = 0; e < computer_hosts.length; e++) {
@@ -2783,14 +2861,22 @@ export default {
                 this.computer_title = info + steps[1] + "失败";
                 // 遍历计算节点改状态
                 if (this.computer.length > 0) {
-                  for (let b = 0; b < ress.attachment.computer_step.length; b++) {
-                    if (ress.attachment.computer_step[b].computer_state == "failed") {
+                  for (
+                    let b = 0;
+                    b < ress.attachment.computer_step.length;
+                    b++
+                  ) {
+                    if (
+                      ress.attachment.computer_step[b].computer_state ==
+                      "failed"
+                    ) {
                       for (let c = 0; c < this.computer.length; c++) {
                         const arr = ress.attachment.computer_step[
                           b
                         ].computer_hosts.substr(
                           0,
-                          ress.attachment.computer_step[b].computer_hosts.length - 1
+                          ress.attachment.computer_step[b].computer_hosts
+                            .length - 1
                         );
                         const computer_hosts = arr.split(";");
                         for (let e = 0; e < computer_hosts.length; e++) {
@@ -2823,9 +2909,14 @@ export default {
                 if (this.shard.length > 0) {
                   for (let c = 0; c < this.shard.length; c++) {
                     if (ress.attachment.hasOwnProperty("shard_step")) {
-                      for (let b = 0; b < ress.attachment.shard_step.length; b++) {
+                      for (
+                        let b = 0;
+                        b < ress.attachment.shard_step.length;
+                        b++
+                      ) {
                         if (info == "新增") {
-                          const shard_ids = ress.attachment.shard_step[b].shard_ids;
+                          const shard_ids =
+                            ress.attachment.shard_step[b].shard_ids;
                           for (let e = 0; e < shard_ids.length; e++) {
                             for (var item in shard_ids[e]) {
                               var shard_idsValue = shard_ids[e][item];
@@ -2836,9 +2927,12 @@ export default {
                             }
                           }
                         } else if (info == "删除") {
-                          const arr = ress.attachment.shard_step[b].storage_hosts.substr(
+                          const arr = ress.attachment.shard_step[
+                            b
+                          ].storage_hosts.substr(
                             0,
-                            ress.attachment.shard_step[b].storage_hosts.length - 1
+                            ress.attachment.shard_step[b].storage_hosts.length -
+                            1
                           );
                           const shard_ids = arr.split(",");
                           for (let e = 0; e < shard_ids.length; e++) {
@@ -2863,9 +2957,14 @@ export default {
                 if (this.shard.length > 0) {
                   for (let c = 0; c < this.shard.length; c++) {
                     if (ress.attachment.hasOwnProperty("shard_step")) {
-                      for (let b = 0; b < ress.attachment.shard_step.length; b++) {
+                      for (
+                        let b = 0;
+                        b < ress.attachment.shard_step.length;
+                        b++
+                      ) {
                         if (info == "新增") {
-                          const shard_ids = ress.attachment.shard_step[b].shard_ids;
+                          const shard_ids =
+                            ress.attachment.shard_step[b].shard_ids;
                           for (let e = 0; e < shard_ids.length; e++) {
                             for (var item in shard_ids[e]) {
                               var shard_idsValue = shard_ids[e][item];
@@ -2876,9 +2975,12 @@ export default {
                             }
                           }
                         } else if (info == "删除") {
-                          const arr = ress.attachment.shard_step[b].storage_hosts.substr(
+                          const arr = ress.attachment.shard_step[
+                            b
+                          ].storage_hosts.substr(
                             0,
-                            ress.attachment.shard_step[b].storage_hosts.length - 1
+                            ress.attachment.shard_step[b].storage_hosts.length -
+                            1
                           );
                           const shard_ids = arr.split(",");
                           for (let e = 0; e < shard_ids.length; e++) {
@@ -2888,7 +2990,8 @@ export default {
                             }
                           }
                         }
-                        this.shard_description = ress.attachment.shard_step[b].error_info;
+                        this.shard_description =
+                          ress.attachment.shard_step[b].error_info;
                       }
                     } else {
                       this.shard[c].icon = "el-icon-circle-check";
@@ -2908,13 +3011,22 @@ export default {
               this.init_active = 3;
               if (this.computer.length == 0 && this.shard.length == 0) {
                 if (ress.attachment.hasOwnProperty("computer_step")) {
-                  for (let a = 0; a < ress.attachment.computer_step.length; a++) {
+                  for (
+                    let a = 0;
+                    a < ress.attachment.computer_step.length;
+                    a++
+                  ) {
                     if (
-                      ress.attachment.computer_step[a].hasOwnProperty("computer_hosts")
+                      ress.attachment.computer_step[a].hasOwnProperty(
+                        "computer_hosts"
+                      )
                     ) {
-                      const arr = ress.attachment.computer_step[a].computer_hosts.substr(
+                      const arr = ress.attachment.computer_step[
+                        a
+                      ].computer_hosts.substr(
                         0,
-                        ress.attachment.computer_step[a].computer_hosts.length - 1
+                        ress.attachment.computer_step[a].computer_hosts.length -
+                        1
                       );
                       const computer_hosts = arr.split(";");
                       // console.log(computer_hosts[e]);
@@ -2936,7 +3048,8 @@ export default {
                           newArrgoing.title = computer_hosts[e];
                           newArrgoing.icon = "el-icon-circle-close";
                           newArrgoing.status = "error";
-                          newArrgoing.description = ress.attachment.comp_error_info;
+                          newArrgoing.description =
+                            ress.attachment.comp_error_info;
                           newArrgoing.computer_id =
                             ress.attachment.computer_step[a].computer_id;
                           this.computer.push(newArrgoing);
@@ -2963,7 +3076,9 @@ export default {
                   for (let b = 0; b < ress.attachment.shard_step.length; b++) {
                     if (ress.attachment.storage_state == "done") {
                       if (info == "删除") {
-                        const arr = ress.attachment.shard_step[b].storage_hosts.substr(
+                        const arr = ress.attachment.shard_step[
+                          b
+                        ].storage_hosts.substr(
                           0,
                           ress.attachment.shard_step[b].storage_hosts.length - 1
                         );
@@ -2971,7 +3086,9 @@ export default {
                         for (let e = 0; e < shard_ids.length; e++) {
                           const shardgoing = {};
                           shardgoing.title =
-                            shard_ids !== "" ? shard_ids[e] : "正在" + info + steps[0];
+                            shard_ids !== ""
+                              ? shard_ids[e]
+                              : "正在" + info + steps[0];
                           shardgoing.icon = "el-icon-circle-check";
                           shardgoing.status = "success";
                           shardgoing.description = "";
@@ -2980,7 +3097,8 @@ export default {
                         }
                       }
                       if (info == "新增") {
-                        const shard_ids = ress.attachment.shard_step[b].shard_ids;
+                        const shard_ids =
+                          ress.attachment.shard_step[b].shard_ids;
                         for (let e = 0; e < shard_ids.length; e++) {
                           for (var item in shard_ids[e]) {
                             const shardgoing = {};
@@ -3000,7 +3118,9 @@ export default {
                       }
                     } else if (ress.attachment.storage_state == "failed") {
                       if (info == "删除") {
-                        const arr = ress.attachment.shard_step[b].storage_hosts.substr(
+                        const arr = ress.attachment.shard_step[
+                          b
+                        ].storage_hosts.substr(
                           0,
                           ress.attachment.shard_step[b].storage_hosts.length - 1
                         );
@@ -3008,16 +3128,20 @@ export default {
                         for (let e = 0; e < shard_ids.length; e++) {
                           const shardgoing = {};
                           shardgoing.title =
-                            shard_ids !== "" ? shard_ids[e] : "正在" + info + steps[0];
+                            shard_ids !== ""
+                              ? shard_ids[e]
+                              : "正在" + info + steps[0];
                           shardgoing.icon = "el-icon-circle-close";
                           shardgoing.status = "error";
-                          shardgoing.description = ress.attachment.shard_error_info;
+                          shardgoing.description =
+                            ress.attachment.shard_error_info;
                           shardgoing.shard_id = shard_ids[e];
                           this.shard.push(shardgoing);
                         }
                       }
                       if (info == "新增") {
-                        const shard_ids = ress.attachment.shard_step[b].shard_ids;
+                        const shard_ids =
+                          ress.attachment.shard_step[b].shard_ids;
                         for (let e = 0; e < shard_ids.length; e++) {
                           for (var item in shard_ids[e]) {
                             const shardgoing = {};
@@ -3029,7 +3153,8 @@ export default {
                                 : "正在" + info + steps[0];
                             shardgoing.icon = "el-icon-circle-close";
                             shardgoing.status = "error";
-                            shardgoing.description = ress.attachment.shard_error_info;
+                            shardgoing.description =
+                              ress.attachment.shard_error_info;
                             shardgoing.shard_id = shard_idsValue;
                             this.shard.push(shardgoing);
                           }
@@ -3038,17 +3163,24 @@ export default {
                     } else {
                       if (info == "删除") {
                         if (
-                          ress.attachment.shard_step[b].hasOwnProperty("storage_hosts")
+                          ress.attachment.shard_step[b].hasOwnProperty(
+                            "storage_hosts"
+                          )
                         ) {
-                          const arr = ress.attachment.shard_step[b].storage_hosts.substr(
+                          const arr = ress.attachment.shard_step[
+                            b
+                          ].storage_hosts.substr(
                             0,
-                            ress.attachment.shard_step[b].storage_hosts.length - 1
+                            ress.attachment.shard_step[b].storage_hosts.length -
+                            1
                           );
                           const shard_ids = arr.split(";");
                           for (let e = 0; e < shard_ids.length; e++) {
                             const shardgoing = {};
                             shardgoing.title =
-                              shard_ids !== "" ? shard_ids[e] : "正在" + info + steps[0];
+                              shard_ids !== ""
+                                ? shard_ids[e]
+                                : "正在" + info + steps[0];
                             shardgoing.icon = "el-icon-loading";
                             shardgoing.status = "process";
                             shardgoing.description = "";
@@ -3058,7 +3190,8 @@ export default {
                         }
                       }
                       if (info == "新增") {
-                        const shard_ids = ress.attachment.shard_step[b].shard_ids;
+                        const shard_ids =
+                          ress.attachment.shard_step[b].shard_ids;
                         for (let e = 0; e < shard_ids.length; e++) {
                           for (var item in shard_ids[e]) {
                             const shardgoing = {};
@@ -3097,14 +3230,22 @@ export default {
                   this.finish_description = ress.error_info;
                   // 遍历计算节点改状态
                   if (this.computer.length > 0) {
-                    for (let b = 0; b < ress.attachment.computer_step.length; b++) {
-                      if (ress.attachment.computer_step[b].computer_state == "failed") {
+                    for (
+                      let b = 0;
+                      b < ress.attachment.computer_step.length;
+                      b++
+                    ) {
+                      if (
+                        ress.attachment.computer_step[b].computer_state ==
+                        "failed"
+                      ) {
                         for (let c = 0; c < this.computer.length; c++) {
                           const arr = ress.attachment.computer_step[
                             b
                           ].computer_hosts.substr(
                             0,
-                            ress.attachment.computer_step[b].computer_hosts.length - 1
+                            ress.attachment.computer_step[b].computer_hosts
+                              .length - 1
                           );
                           const computer_hosts = arr.split(";");
                           for (let e = 0; e < computer_hosts.length; e++) {
@@ -3121,10 +3262,15 @@ export default {
                   }
                   // 遍历存储节点改状态
                   if (this.shard.length > 0) {
-                    for (let b = 0; b < ress.attachment.shard_step.length; b++) {
+                    for (
+                      let b = 0;
+                      b < ress.attachment.shard_step.length;
+                      b++
+                    ) {
                       for (let c = 0; c < this.shard.length; c++) {
                         if (info == "新增") {
-                          const shard_ids = ress.attachment.shard_step[b].shard_ids;
+                          const shard_ids =
+                            ress.attachment.shard_step[b].shard_ids;
                           for (let e = 0; e < shard_ids.length; e++) {
                             for (var item in shard_ids[e]) {
                               var shard_idsValue = shard_ids[e][item];
@@ -3135,9 +3281,12 @@ export default {
                             }
                           }
                         } else if (info == "删除") {
-                          const arr = ress.attachment.shard_step[b].storage_hosts.substr(
+                          const arr = ress.attachment.shard_step[
+                            b
+                          ].storage_hosts.substr(
                             0,
-                            ress.attachment.shard_step[b].storage_hosts.length - 1
+                            ress.attachment.shard_step[b].storage_hosts.length -
+                            1
                           );
                           const shard_ids = arr.split(";");
                           for (let e = 0; e < shard_ids.length; e++) {
@@ -3148,7 +3297,8 @@ export default {
                           }
                         }
                       }
-                      this.shard_description = ress.attachment.shard_step[b].error_info;
+                      this.shard_description =
+                        ress.attachment.shard_step[b].error_info;
                     }
                   }
                   clearInterval(timer);
@@ -3166,14 +3316,22 @@ export default {
                   // if(ress.attachment.computer_state=='ongoing'){
                   for (let k = 0; k < this.computer.length; k++) {
                     this.comp_active = k;
-                    for (let j = 0; j < ress.attachment.computer_step.length; j++) {
-                      if (ress.attachment.computer_step[j].computer_state == "ongoing") {
+                    for (
+                      let j = 0;
+                      j < ress.attachment.computer_step.length;
+                      j++
+                    ) {
+                      if (
+                        ress.attachment.computer_step[j].computer_state ==
+                        "ongoing"
+                      ) {
                         // console.log(22);
                         const arr = ress.attachment.computer_step[
                           j
                         ].computer_hosts.substr(
                           0,
-                          ress.attachment.computer_step[j].computer_hosts.length - 1
+                          ress.attachment.computer_step[j].computer_hosts
+                            .length - 1
                         );
                         const computer_hosts = arr.split(";");
                         for (let e = 0; e < computer_hosts.length; e++) {
@@ -3192,14 +3350,16 @@ export default {
                           }
                         }
                       } else if (
-                        ress.attachment.computer_step[j].computer_state == "failed"
+                        ress.attachment.computer_step[j].computer_state ==
+                        "failed"
                       ) {
                         console.log(23);
                         const arr = ress.attachment.computer_step[
                           j
                         ].computer_hosts.substr(
                           0,
-                          ress.attachment.computer_step[j].computer_hosts.length - 1
+                          ress.attachment.computer_step[j].computer_hosts
+                            .length - 1
                         );
                         const computer_hosts = arr.split(";");
                         for (let e = 0; e < computer_hosts.length; e++) {
@@ -3211,14 +3371,16 @@ export default {
                         this.computer_description =
                           ress.attachment.computer_step[j].error_info;
                       } else if (
-                        ress.attachment.computer_step[j].computer_state == "done"
+                        ress.attachment.computer_step[j].computer_state ==
+                        "done"
                       ) {
                         console.log(24);
                         const arr = ress.attachment.computer_step[
                           j
                         ].computer_hosts.substr(
                           0,
-                          ress.attachment.computer_step[j].computer_hosts.length - 1
+                          ress.attachment.computer_step[j].computer_hosts
+                            .length - 1
                         );
                         const computer_hosts = arr.split(";");
                         for (let e = 0; e < computer_hosts.length; e++) {
@@ -3235,8 +3397,15 @@ export default {
                   // 存储
                   if (this.shard.length > 0) {
                     for (let k = 0; k < this.shard.length; k++) {
-                      for (let j = 0; j < ress.attachment.shard_step.length; j++) {
-                        if (ress.attachment.shard_step[j].storage_state == "ongoing") {
+                      for (
+                        let j = 0;
+                        j < ress.attachment.shard_step.length;
+                        j++
+                      ) {
+                        if (
+                          ress.attachment.shard_step[j].storage_state ==
+                          "ongoing"
+                        ) {
                           if (
                             ress.attachment.shard_step[j].shard_hosts ==
                             this.shard[k].title
@@ -3253,7 +3422,8 @@ export default {
                             }
                           }
                         } else if (
-                          ress.attachment.shard_step[j].storage_state == "failed"
+                          ress.attachment.shard_step[j].storage_state ==
+                          "failed"
                         ) {
                           this.shard_active = k;
                           this.shard[k].icon = "el-icon-circle-close";
@@ -3270,18 +3440,26 @@ export default {
                       }
                     }
                   } else {
-                    if (ress.attachment.shard_step[0].hasOwnProperty("storage_hosts")) {
+                    if (
+                      ress.attachment.shard_step[0].hasOwnProperty(
+                        "storage_hosts"
+                      )
+                    ) {
                       if (info == "删除") {
                         if (ress.attachment.storage_state == "ongoing") {
-                          const arr = ress.attachment.shard_step[0].storage_hosts.substr(
-                            0,
-                            ress.attachment.shard_step[0].storage_hosts.length - 1
-                          );
+                          const arr =
+                            ress.attachment.shard_step[0].storage_hosts.substr(
+                              0,
+                              ress.attachment.shard_step[0].storage_hosts
+                                .length - 1
+                            );
                           const shard_ids = arr.split(";");
                           for (let e = 0; e < shard_ids.length; e++) {
                             const shardgoing = {};
                             shardgoing.title =
-                              shard_ids !== "" ? shard_ids[e] : "正在" + info + steps[0];
+                              shard_ids !== ""
+                                ? shard_ids[e]
+                                : "正在" + info + steps[0];
                             shardgoing.icon = "el-icon-loading";
                             shardgoing.status = "process";
                             shardgoing.description = "";
@@ -3289,15 +3467,19 @@ export default {
                             this.shard.push(shardgoing);
                           }
                         } else if (ress.attachment.storage_state == "failed") {
-                          const arr = ress.attachment.shard_step[0].storage_hosts.substr(
-                            0,
-                            ress.attachment.shard_step[0].storage_hosts.length - 1
-                          );
+                          const arr =
+                            ress.attachment.shard_step[0].storage_hosts.substr(
+                              0,
+                              ress.attachment.shard_step[0].storage_hosts
+                                .length - 1
+                            );
                           const shard_ids = arr.split(";");
                           for (let e = 0; e < shard_ids.length; e++) {
                             const shardgoing = {};
                             shardgoing.title =
-                              shard_ids !== "" ? shard_ids[e] : "正在" + info + steps[0];
+                              shard_ids !== ""
+                                ? shard_ids[e]
+                                : "正在" + info + steps[0];
                             shardgoing.icon = "el-icon-circle-close";
                             shardgoing.status = "error";
                             shardgoing.description = "";
@@ -3305,15 +3487,19 @@ export default {
                             this.shard.push(shardgoing);
                           }
                         } else if (ress.attachment.storage_state == "done") {
-                          const arr = ress.attachment.shard_step[0].storage_hosts.substr(
-                            0,
-                            ress.attachment.shard_step[0].storage_hosts.length - 1
-                          );
+                          const arr =
+                            ress.attachment.shard_step[0].storage_hosts.substr(
+                              0,
+                              ress.attachment.shard_step[0].storage_hosts
+                                .length - 1
+                            );
                           const shard_ids = arr.split(";");
                           for (let e = 0; e < shard_ids.length; e++) {
                             const shardgoing = {};
                             shardgoing.title =
-                              shard_ids !== "" ? shard_ids[e] : "正在" + info + steps[0];
+                              shard_ids !== ""
+                                ? shard_ids[e]
+                                : "正在" + info + steps[0];
                             shardgoing.icon = "el-icon-circle-check";
                             shardgoing.status = "success";
                             shardgoing.description = "";
@@ -3352,17 +3538,25 @@ export default {
                         this.shard[d].icon = "el-icon-circle-check";
                       }
                     } else {
-                      if (ress.attachment.shard_step[0].hasOwnProperty("storage_hosts")) {
+                      if (
+                        ress.attachment.shard_step[0].hasOwnProperty(
+                          "storage_hosts"
+                        )
+                      ) {
                         if (info == "删除") {
-                          const arr = ress.attachment.shard_step[0].storage_hosts.substr(
-                            0,
-                            ress.attachment.shard_step[0].storage_hosts.length - 1
-                          );
+                          const arr =
+                            ress.attachment.shard_step[0].storage_hosts.substr(
+                              0,
+                              ress.attachment.shard_step[0].storage_hosts
+                                .length - 1
+                            );
                           const shard_ids = arr.split(";");
                           for (let e = 0; e < shard_ids.length; e++) {
                             const shardgoing = {};
                             shardgoing.title =
-                              shard_ids !== "" ? shard_ids[e] : "正在" + info + steps[0];
+                              shard_ids !== ""
+                                ? shard_ids[e]
+                                : "正在" + info + steps[0];
                             shardgoing.icon = "el-icon-circle-check";
                             shardgoing.status = "success";
                             shardgoing.description = "";
@@ -3381,10 +3575,12 @@ export default {
                   this.finish_show = true;
                   clearInterval(timer);
                   if (info == "新增") {
-                    const apply_all_cluster = sessionStorage.getItem("apply_all_cluster");
+                    const apply_all_cluster =
+                      sessionStorage.getItem("apply_all_cluster");
                     if (apply_all_cluster == 2) {
                       const arrs = {};
-                      arrs.effectCluster = sessionStorage.getItem("affected_clusters");
+                      arrs.effectCluster =
+                        sessionStorage.getItem("affected_clusters");
                       arrs.cluster_name = ress.attachment.cluster_name;
                       arrs.username = sessionStorage.getItem("login_username");
                       arrs.type = "add";
@@ -3419,15 +3615,23 @@ export default {
                     if (ress.attachment.computer_state == "failed") {
                       this.computer_state = "error";
                       this.computer_icon = "el-icon-circle-close";
-                      for (let b = 0; b < ress.attachment.computer_step.length; b++) {
+                      for (
+                        let b = 0;
+                        b < ress.attachment.computer_step.length;
+                        b++
+                      ) {
                         const arr = ress.attachment.computer_step[
                           b
                         ].computer_hosts.substr(
                           0,
-                          ress.attachment.computer_step[b].computer_hosts.length - 1
+                          ress.attachment.computer_step[b].computer_hosts
+                            .length - 1
                         );
                         const computer_hosts = arr.split(";");
-                        if (ress.attachment.computer_step[b].computer_state == "done") {
+                        if (
+                          ress.attachment.computer_step[b].computer_state ==
+                          "done"
+                        ) {
                           this.comp_active = b;
                           for (let c = 0; c < this.computer.length; c++) {
                             for (let e = 0; e < computer_hosts.length; e++) {
@@ -3438,7 +3642,8 @@ export default {
                             }
                           }
                         } else if (
-                          ress.attachment.computer_step[b].computer_state == "failed"
+                          ress.attachment.computer_step[b].computer_state ==
+                          "failed"
                         ) {
                           for (let c = 0; c < this.computer.length; c++) {
                             for (let e = 0; e < computer_hosts.length; e++) {
@@ -3454,19 +3659,29 @@ export default {
                       }
                     } else if (ress.attachment.computer_state == "done") {
                       // let current_id=0;
-                      for (let b = 0; b < ress.attachment.computer_step.length; b++) {
+                      for (
+                        let b = 0;
+                        b < ress.attachment.computer_step.length;
+                        b++
+                      ) {
                         const arr = ress.attachment.computer_step[
                           b
                         ].computer_hosts.substr(
                           0,
-                          ress.attachment.computer_step[b].computer_hosts.length - 1
+                          ress.attachment.computer_step[b].computer_hosts
+                            .length - 1
                         );
                         const computer_hosts = arr.split(";");
-                        if (ress.attachment.computer_step[b].computer_state == "done") {
+                        if (
+                          ress.attachment.computer_step[b].computer_state ==
+                          "done"
+                        ) {
                           this.comp_active = b;
                           for (let c = 0; c < this.computer.length; c++) {
                             for (let e = 0; e < computer_hosts.length; e++) {
-                              if ((this.computer[c].title = computer_hosts[e])) {
+                              if (
+                                (this.computer[c].title = computer_hosts[e])
+                              ) {
                                 this.computer[c].icon = "el-icon-circle-check";
                                 this.computer[c].status = "success";
                                 // current_id=c;
@@ -3474,7 +3689,8 @@ export default {
                             }
                           }
                         } else if (
-                          ress.attachment.computer_step[b].computer_state == "failed"
+                          ress.attachment.computer_step[b].computer_state ==
+                          "failed"
                         ) {
                           for (let c = 0; c < this.computer.length; c++) {
                             for (let e = 0; e < computer_hosts.length; e++) {
@@ -3505,16 +3721,25 @@ export default {
                     if (ress.attachment.storage_state == "failed") {
                       this.storage_state = "error";
                       this.shard_icon = "el-icon-circle-close";
-                      for (let b = 0; b < ress.attachment.shard_step.length; b++) {
-                        if (ress.attachment.shard_step[b].storage_state == "done") {
+                      for (
+                        let b = 0;
+                        b < ress.attachment.shard_step.length;
+                        b++
+                      ) {
+                        if (
+                          ress.attachment.shard_step[b].storage_state == "done"
+                        ) {
                           this.shard_active = b;
                           for (let c = 0; c < this.shard.length; c++) {
                             if (info == "新增") {
-                              const shard_ids = ress.attachment.shard_step[b].shard_ids;
+                              const shard_ids =
+                                ress.attachment.shard_step[b].shard_ids;
                               for (let e = 0; e < shard_ids.length; e++) {
                                 for (var item in shard_ids[e]) {
                                   var shard_idsValue = shard_ids[e][item];
-                                  if (this.shard[c].shard_id == shard_idsValue) {
+                                  if (
+                                    this.shard[c].shard_id == shard_idsValue
+                                  ) {
                                     this.shard[c].icon = "el-icon-circle-check";
                                     this.shard[c].status = "success";
                                   }
@@ -3525,7 +3750,8 @@ export default {
                                 b
                               ].storage_hosts.substr(
                                 0,
-                                ress.attachment.shard_step[b].storage_hosts.length - 1
+                                ress.attachment.shard_step[b].storage_hosts
+                                  .length - 1
                               );
                               const shard_ids = arr.split(",");
                               for (let e = 0; e < shard_ids.length; e++) {
@@ -3537,15 +3763,19 @@ export default {
                             }
                           }
                         } else if (
-                          ress.attachment.shard_step[b].storage_state == "failed"
+                          ress.attachment.shard_step[b].storage_state ==
+                          "failed"
                         ) {
                           for (let c = 0; c < this.shard.length; c++) {
                             if (info == "新增") {
-                              const shard_ids = ress.attachment.shard_step[b].shard_ids;
+                              const shard_ids =
+                                ress.attachment.shard_step[b].shard_ids;
                               for (let e = 0; e < shard_ids.length; e++) {
                                 for (var item in shard_ids[e]) {
                                   var shard_idsValue = shard_ids[e][item];
-                                  if (this.shard[c].shard_id == shard_idsValue) {
+                                  if (
+                                    this.shard[c].shard_id == shard_idsValue
+                                  ) {
                                     this.shard[c].icon = "el-icon-circle-close";
                                     this.shard[c].status = "error";
                                   }
@@ -3556,7 +3786,8 @@ export default {
                                 b
                               ].storage_hosts.substr(
                                 0,
-                                ress.attachment.shard_step[b].storage_hosts.length - 1
+                                ress.attachment.shard_step[b].storage_hosts
+                                  .length - 1
                               );
                               const shard_ids = arr.split(",");
                               for (let e = 0; e < shard_ids.length; e++) {
@@ -3573,8 +3804,14 @@ export default {
                       }
                     } else if (ress.attachment.storage_state == "done") {
                       // let current_id=0;
-                      for (let b = 0; b < ress.attachment.shard_step.length; b++) {
-                        if (ress.attachment.shard_step[b].storage_state == "done") {
+                      for (
+                        let b = 0;
+                        b < ress.attachment.shard_step.length;
+                        b++
+                      ) {
+                        if (
+                          ress.attachment.shard_step[b].storage_state == "done"
+                        ) {
                           this.shard_active = b;
                           for (let c = 0; c < this.shard.length; c++) {
                             if (
@@ -3587,7 +3824,8 @@ export default {
                             }
                           }
                         } else if (
-                          ress.attachment.shard_step[b].storage_state == "failed"
+                          ress.attachment.shard_step[b].storage_state ==
+                          "failed"
                         ) {
                           for (let c = 0; c < this.shard.length; c++) {
                             if (
@@ -3604,7 +3842,8 @@ export default {
                     } else {
                       for (let c = 0; c < this.shard.length; c++) {
                         if (info == "新增") {
-                          const shard_ids = ress.attachment.shard_step[b].shard_ids;
+                          const shard_ids =
+                            ress.attachment.shard_step[b].shard_ids;
                           for (let e = 0; e < shard_ids.length; e++) {
                             for (var item in shard_ids[e]) {
                               var shard_idsValue = shard_ids[e][item];
@@ -3615,9 +3854,12 @@ export default {
                             }
                           }
                         } else if (info == "删除") {
-                          const arr = ress.attachment.shard_step[b].storage_hosts.substr(
+                          const arr = ress.attachment.shard_step[
+                            b
+                          ].storage_hosts.substr(
                             0,
-                            ress.attachment.shard_step[b].storage_hosts.length - 1
+                            ress.attachment.shard_step[b].storage_hosts.length -
+                            1
                           );
                           const shard_ids = arr.split(",");
                           for (let e = 0; e < shard_ids.length; e++) {

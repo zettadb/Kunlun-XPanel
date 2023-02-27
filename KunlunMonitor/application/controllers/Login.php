@@ -41,6 +41,7 @@ class Login extends CI_Controller
 			if ($res_super[0]['count'] == 1) {
 				$token = $this->Login_model->getToken($user_name, 'E', $this->key);
 				$data['Token'] = $token;
+				$data['sys'] = 1;
 				$data['num'] = 2;
 				$data['code'] = 200;
 				$data['userName'] = $user_name;
@@ -334,6 +335,7 @@ class Login extends CI_Controller
 					$data['Token'] = $token;
 					$data['code'] = 200;
 					$data['num'] = 1;
+					$data['sys'] = 1;
 					$data['userName'] = $user_name;
 					$data['apply_all_cluster'] = $apply_all_cluster;
 					$data['affected_clusters'] = $affected_clusters;

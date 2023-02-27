@@ -1,115 +1,56 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <div v-show="role_add_priv==='Y'" class="table-list-wrap">
-        <el-button
-          class="filter-item"
-          type="primary"
-          icon="el-icon-plus"
-          @click="handleCreate"
-        >新增
+      <div v-show="role_add_priv === 'Y'" class="table-list-wrap">
+        <el-button class="filter-item" type="primary" icon="el-icon-plus" @click="handleCreate">新增
         </el-button>
       </div>
     </div>
 
-    <el-table
-      :key="tableKey"
-      v-loading="listLoading"
-      :data="list"
-      border
-      highlight-current-row
-      style="width: 100%;margin-bottom: 20px;"
-    >
+    <el-table :key="tableKey" v-loading="listLoading" :data="list" border highlight-current-row
+      style="width: 100%;margin-bottom: 20px;">
       >
-      <el-table-column
-        type="index"
-        align="center"
-        label="序号"
-        width="50"
-      />
+      <el-table-column type="index" align="center" label="序号" width="50" />
 
       <el-table-column label="角色名称" align="center">
         <template slot-scope="{row}">
           <span class="link-type" @click="handleDetail(row)">{{ row.role_name }}</span>
         </template>
       </el-table-column>
-      <el-table-column
-        prop="priv"
-        align="center"
-        :show-overflow-tooltip="true"
-        label="拥有权限"
-      />
-      <el-table-column
-        prop="update_time"
-        align="center"
-        label="更新时间"
-      />
+      <el-table-column prop="priv" align="center" :show-overflow-tooltip="true" label="拥有权限" />
+      <el-table-column prop="update_time" align="center" label="更新时间" />
 
-      <el-table-column
-        v-if="role_edit_priv==='Y'&&role_drop_priv==='Y'"
-        label="操作"
-        align="center"
-        width="230"
-        class-name="small-padding fixed-width"
-      >
+      <el-table-column v-if="role_edit_priv === 'Y' && role_drop_priv === 'Y'" label="操作" align="center" width="230"
+        class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
-          <el-button
-            v-show="role_edit_priv==='Y'&&row.role_name!=='super_dba'"
-            type="primary"
-            size="mini"
-            @click="handleUpdate(row)"
-          >编辑
+          <el-button v-show="role_edit_priv === 'Y' && row.role_name !== 'super_dba'" type="primary" size="mini"
+            @click="handleUpdate(row)">编辑
           </el-button>
-          <el-button
-            v-show="role_drop_priv==='Y'&&row.role_name!=='super_dba'"
-            size="mini"
-            type="danger"
-            @click="handleDelete(row,$index)"
-          >删除
+          <el-button v-show="role_drop_priv === 'Y' && row.role_name !== 'super_dba'" size="mini" type="danger"
+            @click="handleDelete(row, $index)">删除
           </el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-show="total>0"
-      :total="total"
-      :page.sync="listQuery.pageNo"
-      :limit.sync="listQuery.pageSize"
-      @pagination="getList"
-    />
+    <pagination v-show="total > 0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize"
+      @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" custom-class="single_dal_view">
-      <el-form
-        ref="dataForm"
-        :rules="rules"
-        :model="temp"
-        label-position="left"
-        label-width="110px"
-      >
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="110px">
         <el-form-item label="角色名称:" prop="role_name">
-          <el-input
-            v-model="temp.role_name"
-            placeholder="请输入角色名称"
-            :disabled="dialogStatus==='detail'||temp.role_name=='super_dba'"
-          />
+          <el-input v-model="temp.role_name" placeholder="请输入角色名称"
+            :disabled="dialogStatus === 'detail' || temp.role_name == 'super_dba'" />
         </el-form-item>
         <!-- 角色权限 -->
-        <el-form-item label="拥有权限:" prop="checkkeys" :disabled="dialogStatus==='detail'">
-          <el-tree
-            ref="tree"
-            :data="datatree"
-            show-checkbox
-            node-key="id"
-            :default-expanded-keys="[3]"
-            :default-checked-keys="checkkeys"
-            :props="defaultProps1"
-          />
+        <el-form-item label="拥有权限:" prop="checkkeys" :disabled="dialogStatus === 'detail'">
+          <el-tree ref="tree" :data="datatree" show-checkbox node-key="id" :default-expanded-keys="[3]"
+            :default-checked-keys="checkkeys" :props="defaultProps1" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button v-show="!dialogDetail" @click="dialogFormVisible = false">关闭</el-button>
-        <el-button v-show="!dialogDetail" type="primary" @click="dialogStatus==='create'?createData():updateData(row)">
+        <el-button v-show="!dialogDetail" type="primary" @click="dialogStatus === 'create' ? createData() : updateData(row)">
           确认
         </el-button>
       </div>
@@ -352,6 +293,7 @@ export default {
         this.$refs['dataForm'].clearValidate()
       })
     },
+
     updateData(row) {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {

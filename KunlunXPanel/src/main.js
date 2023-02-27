@@ -4,7 +4,6 @@ import 'normalize.css/normalize.css' // A modern alternative to CSS resets
 
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
-import locale from 'element-ui/lib/locale/lang/en' // lang i18n
 
 import '@/styles/index.scss' // global css
 import '@/styles/iconfont.css' // global css
@@ -22,16 +21,14 @@ import './assets/less/index.less';
 import * as echarts from 'echarts'
 import img from './lib/img'
 import utils from "./lib/utils";
-import sqlFormatter from 'sql-formatter'
 Vue.prototype.$echarts = function (el) {
-  return echarts.init(el, null, {renderer: 'svg'})
+  return echarts.init(el, null, { renderer: 'svg' })
 }
 Vue.prototype.$images = img
 Vue.config.productionTip = false;
 Vue.use(iView);
 Vue.use(utils)
 //uuid
-import { v4 as uuidv4 } from 'uuid';
 //导入无缝滚动插件
 import scroll from 'vue-seamless-scroll'
 Vue.use(scroll)
@@ -53,7 +50,7 @@ if (process.env.NODE_ENV === 'production') {
 // set ElementUI lang to EN
 //Vue.use(ElementUI, { locale })
 // 如果想要中文版 element-ui，按如下方式声明
- Vue.use(ElementUI)
+Vue.use(ElementUI)
 
 Vue.config.productionTip = false
 new Vue({
@@ -62,4 +59,8 @@ new Vue({
   store,
   render: h => h(App)
 }).$mount('#app')
+
+
+
+
 
