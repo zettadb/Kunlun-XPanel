@@ -7,35 +7,35 @@
             <i class="el-icon-setting" />
             <span>基础设置</span>
           </el-menu-item>
-          <el-menu-item index="2">
+          <el-menu-item index="2" v-if="showButton()">
             <i class="el-icon-setting" />
             <span slot="title">全量备份</span>
           </el-menu-item>
-          <el-menu-item index="3">
+          <el-menu-item index="3" v-if="showButton()">
             <i class="el-icon-setting" />
             <span slot="title">全量备份记录</span>
           </el-menu-item>
-          <el-menu-item index="4">
+          <el-menu-item index="4" v-if="showButton()">
             <i class="el-icon-setting" />
             <span slot="title">集群回档</span>
           </el-menu-item>
-          <el-menu-item index="5">
+          <el-menu-item index="5" v-if="showButton()">
             <i class="el-icon-setting" />
             <span slot="title">集群扩容</span>
           </el-menu-item>
-          <el-menu-item index="6">
+          <el-menu-item index="6" v-if="showButton()">
             <i class="el-icon-setting" />
             <span slot="title">主备切换</span>
           </el-menu-item>
-          <el-menu-item index="7">
+          <el-menu-item index="7" v-if="showButton()">
             <i class="el-icon-setting" />
             <span slot="title">主备切换记录</span>
           </el-menu-item>
-          <el-menu-item index="8">
+          <el-menu-item index="8" v-if="showButton()">
             <i class="el-icon-setting" />
             <span slot="title">重做备机节点</span>
           </el-menu-item>
-          <el-menu-item index="9">
+          <el-menu-item index="9" v-if="showButton()">
             <i class="el-icon-setting" />
             <span slot="title">shard列表</span>
           </el-menu-item>
@@ -50,19 +50,19 @@
               <el-menu-item index="6-2">重做备机节点</el-menu-item>
             </el-menu-item-group>
           </el-submenu> -->
-          <el-menu-item index="10">
+          <el-menu-item index="10" v-if="showButton()">
             <i class="el-icon-setting" />
             <span slot="title">计算节点列表</span>
           </el-menu-item>
-          <el-menu-item index="11">
+          <el-menu-item index="11" v-if="showButton()">
             <i class="el-icon-setting" />
             <span slot="title">设置延迟告警时间</span>
           </el-menu-item>
-          <el-menu-item index="12">
+          <el-menu-item index="12" v-if="showButton()">
             <i class="el-icon-setting" />
             <span slot="title">设置实例变量</span>
           </el-menu-item>
-          <el-menu-item index="13">
+          <el-menu-item index="13" v-if="showButton()">
             <i class="el-icon-setting" />
             <span slot="title">获取实例变量</span>
           </el-menu-item>
@@ -139,6 +139,19 @@ export default {
     this.listsent = this.oneList;
   },
   methods: {
+
+    showButton() {
+      try {
+        const username = sessionStorage.getItem("login_username");
+        if (username == "super_dba") {
+          return true
+        } else {
+          return false
+        }
+      } catch (e) {
+        return false
+      }
+    },
     selected(index) {
       if (index === "1") {
         this.componted = "CommonSet";

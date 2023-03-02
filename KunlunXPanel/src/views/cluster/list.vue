@@ -10,8 +10,8 @@
         <el-button icon="el-icon-refresh-right" @click="handleClear">
           重置
         </el-button>
-        <el-button v-if="cluster_creata_priv === 'Y'" class="filter-item" type="primary" icon="el-icon-plus"
-          @click="handleCreate">新增
+        <el-button v-if="cluster_creata_priv === 'Y' && showButtn()" class="filter-item" type="primary"
+          icon="el-icon-plus" @click="handleCreate">新增
         </el-button>
         <el-popover placement="right" title="列筛选" trigger="click" width="420" style="float: right">
           <el-checkbox-group v-model="checkedColumns" size="mini">
@@ -53,7 +53,7 @@
             <el-table-column prop="hostaddr" label="ip" align="center" />
             <el-table-column prop="port" label="端口" align="center" width="70" />
             <el-table-column prop="cpu_cores" label="cpu个数" align="center" width="90" />
-            <el-table-column prop="mysql_port" label="MySQL端口" align="center" width="110" />
+            <el-table-column prop="mysql_port" label="MySQL端口" align="center" width="110" v-if="showButtn()" />
             <el-table-column prop="status" label="状态" align="center" width="80" sortable>
               <template slot-scope="scope">
                 <span v-if="scope.row.status === 'active'" style="color: #00ed37">运行中</span>
@@ -119,14 +119,15 @@
       " label="操作" align="center" width="100" fixed="right" class-name="small-padding fixed-width">
         <template slot-scope="{ row }">
           <!-- <el-button type="primary" size="mini" @click="handleUpdate(row)" v-if="storage_node_create_priv==='Y'&&shard_create_priv==='Y'&&compute_node_create_priv==='Y'">+</el-button> -->
-          <el-button v-if="restore_priv === 'Y'" type="primary" size="mini" style="margin-left: 10px; margin-bottom: 2px"
-            @click="handleRetreated(row)">回档
+          <el-button v-if="restore_priv === 'Y' && showButtn()" type="primary" size="mini"
+            style="margin-left: 10px; margin-bottom: 2px" @click="handleRetreated(row)">回档
           </el-button>
-          <el-button type="primary" size="mini" style="margin-bottom: 2px" @click="handleExpand(row)">扩容</el-button>
+          <el-button v-if="showButtn()" type="primary" size="mini" style="margin-bottom: 2px"
+            @click="handleExpand(row)">扩容</el-button>
           <el-button v-if="
             storage_node_create_priv === 'Y' &&
             shard_create_priv === 'Y' &&
-            compute_node_create_priv === 'Y'
+            compute_node_create_priv === 'Y' && showButtn()
           " type="primary" size="mini" style="margin-bottom: 2px" @click="handleUpdate(row)">+
           </el-button>
           <!-- <el-button type="primary" size="mini" @click="handleRedo(row)"  style="margin-bottom:2px;">重做备机</el-button> -->
@@ -212,10 +213,10 @@
               dialogStatus === 'detail' || temp.install_proxysql === '1'
             ">
               <i slot="suffix" style="
-                    font-style: normal;
-                    margin-right: 10px;
-                    line-height: 30px;
-                  ">个</i>
+                                    font-style: normal;
+                                    margin-right: 10px;
+                                    line-height: 30px;
+                                  ">个</i>
             </el-input>
           </el-form-item>
         </div>
@@ -270,10 +271,10 @@
           <el-form-item label="每个计算节点最大的存储值:" prop="per_computing_node_max_mem_size">
             <el-input v-model="temp.per_computing_node_max_mem_size" class="right_input" placeholder="请输入每个计算节点最大的存储值">
               <i slot="suffix" style="
-                    font-style: normal;
-                    margin-right: 10px;
-                    line-height: 30px;
-                  ">MB</i>
+                                    font-style: normal;
+                                    margin-right: 10px;
+                                    line-height: 30px;
+                                  ">MB</i>
             </el-input>
           </el-form-item>
           <el-form-item label="每个存储节点的cpu核数:" prop="per_storage_node_cpu_cores">
@@ -287,30 +288,26 @@
           <el-form-item label="每个存储节点rocksdb缓冲池大小:" prop="per_storage_node_rocksdb_buffer_pool_size">
             <el-input v-model="temp.per_storage_node_rocksdb_buffer_pool_size" class="right_input"
               placeholder="请输入每个存储节点rocksdb缓冲池大小">
-              <i slot="suffix" style="
-                    font-style: normal;
-                    margin-right: 10px;
-                    line-height: 30px;
-                  ">MB</i>
+              <i slot="suffix" style="font-style: normal; margin-right: 10px;line-height: 30px; ">MB</i>
             </el-input>
           </el-form-item>
           <el-form-item label="每个存储节点初始化存储值:" prop="per_storage_node_initial_storage_size">
             <el-input v-model="temp.per_storage_node_initial_storage_size" class="right_input"
               placeholder="请输入每个存储节点初始化存储值">
               <i slot="suffix" style="
-                    font-style: normal;
-                    margin-right: 10px;
-                    line-height: 30px;
-                  ">GB</i>
+                                    font-style: normal;
+                                    margin-right: 10px;
+                                    line-height: 30px;
+                                  ">GB</i>
             </el-input>
           </el-form-item>
           <el-form-item label="每个存储节点最大存储值:" prop="per_storage_node_max_storage_size">
             <el-input v-model="temp.per_storage_node_max_storage_size" class="right_input" placeholder="请输入每个存储节点最大存储值">
               <i slot="suffix" style="
-                    font-style: normal;
-                    margin-right: 10px;
-                    line-height: 30px;
-                  ">GB</i>
+                                    font-style: normal;
+                                    margin-right: 10px;
+                                    line-height: 30px;
+                                  ">GB</i>
             </el-input>
           </el-form-item>
         </div>
@@ -1344,6 +1341,18 @@ export default {
   //   }
   //  },
   methods: {
+    showButtn() {
+      try {
+        const username = sessionStorage.getItem("login_username");
+        if (username == "super_dba") {
+          return true
+        } else {
+          return false
+        }
+      } catch (e) {
+        return false
+      }
+    },
     installProxySqlChange(val) {
       if (val === "1") {
         this.temp.shards_count = 1;
@@ -1678,8 +1687,8 @@ export default {
       this.listLoading = true;
       const queryParam = Object.assign({}, this.listQuery);
       queryParam.effectCluster = sessionStorage.getItem("affected_clusters");
-      queryParam.apply_all_cluster =
-        sessionStorage.getItem("apply_all_cluster");
+      queryParam.apply_all_cluster = 1
+      sessionStorage.getItem("apply_all_cluster");
       // 模糊搜索
       getClusterList(queryParam).then((response) => {
         this.list = response.list;

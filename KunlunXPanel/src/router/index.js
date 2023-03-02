@@ -21,7 +21,11 @@ export const constantRoutes = [
     path: '/alteration',
     component: () => import('@/views/login/alteration'),
     hidden: true
-
+  },
+  {
+    path: '/register',
+    component: () => import('@/views/login/register'),
+    hidden: true
   },
   {
     path: '/404',
@@ -123,7 +127,7 @@ export const constantRoutes = [
     component: Layout,
     redirect: '/alarmRecord',
     name: 'AlarmRecord',
-    roles: [],
+    roles: ['super_dba'],
     meta: {
       title: '告警管理',
       requiresAuth: true,
@@ -277,7 +281,7 @@ export const constantRoutes = [
       {
         path: 'role',
         name: 'role',
-        roles: [],
+        roles: ['super_dba'],
         component: () => import('@/views/system/role'),
         meta: {
           title: '角色管理',
@@ -288,7 +292,7 @@ export const constantRoutes = [
       {
         path: 'access',
         name: 'access',
-        roles: [],
+        roles: ['super_dba'],
         component: () => import('@/views/system/access'),
         meta: {
           title: '授权管理',
@@ -301,7 +305,7 @@ export const constantRoutes = [
   {
     path: '/experience',
     component: Layout,
-    roles: [],
+    roles: ['super_dba'],
     children: [
       {
         roles: [],
@@ -346,7 +350,7 @@ export const asyncRoutes = [
           title: '用户管理',
           requiresAuth: true,
           noCache: true,
-          roles: ['super_dba']
+          roles: []
         }
       },
       {

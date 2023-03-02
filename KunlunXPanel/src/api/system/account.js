@@ -16,6 +16,14 @@ export function addAccount(data) {
   })
 }
 
+export function getVcode(data) {
+  return request({
+    url: '/user/User/getVcode',
+    method: 'post',
+    data
+  })
+}
+
 export function update(data) {
   return request({
     url: '/user/User/edit',

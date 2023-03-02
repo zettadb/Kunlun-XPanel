@@ -4,7 +4,7 @@
     <div class="login-panel">
     <!-- <div class="head-text align_center">
           <img src="../../assets/images/login_bg.jpg">
-            </div> -->
+              </div> -->
     <!-- <el-form class="login-form" size="medium" :model="form" :rules="rules" ref="form">
           <el-form-item prop="username">
             <el-input placeholder="请输入账户名：" autofocus v-model="form.username"/>
@@ -15,7 +15,7 @@
           <el-form-item>
             <el-button type="primary" class="width_100" icon="el-icon-check" :loading="submitLoad"/>
           </el-form-item>
-            </el-form> -->
+              </el-form> -->
       <Loginheader />
       <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on"
         label-position="left">
@@ -47,7 +47,7 @@
               @keyup.enter.native="handleLogin"
               :title="msg"
             />
-              </el-form-item> -->
+                </el-form-item> -->
       <!-- <el-form-item prop="meta">
             <el-select v-model="loginForm.meta" placeholder="请选择元数据">
               <el-option
@@ -58,7 +58,7 @@
               </el-option>
             </el-select>
             <i class="el-icon-plus" style="margin-left: 15px;font-size: 20px;"></i>
-              </el-form-item> -->
+                </el-form-item> -->
         <div class="oh change_password_wrap">
           <el-checkbox v-model="checked" class="remember">记住密码</el-checkbox>
           <router-link :to="{ path: '/alteration' }" class="change_password">忘记密码</router-link>
@@ -184,6 +184,7 @@ export default {
   watch: {
     $route: {
       handler: function (route) {
+        console.log(route)
         this.redirect = route.query && route.query.redirect;
       },
       immediate: true

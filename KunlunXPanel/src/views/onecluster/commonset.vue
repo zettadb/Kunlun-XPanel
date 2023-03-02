@@ -30,35 +30,19 @@
         <!-- <el-button @click="onDel()">取消</el-button> -->
       </el-form-item>
     </el-form>
-    <el-dialog
-      :title="job_id"
-      :visible.sync="dialogStatusShowVisible"
-      custom-class="single_dal_view"
-      :close-on-click-modal="false"
-      :before-close="beforeDestory"
-    >
+    <el-dialog :title="job_id" :visible.sync="dialogStatusShowVisible" custom-class="single_dal_view"
+      :close-on-click-modal="false" :before-close="beforeDestory">
       <div style="width: 100%;background: #fff;padding:0 20px;">
         <el-steps direction="vertical" :active="init_active">
           <el-step v-if="init_show" :title="init_title" icon="el-icon-more" />
-          <el-step
-            v-if="computer_show"
-            :title="computer_title"
-            :status="computer_state"
-            :icon="computer_icon"
-            :description="computer_description"
-          >
+          <el-step v-if="computer_show" :title="computer_title" :status="computer_state" :icon="computer_icon"
+            :description="computer_description">
             <template slot="description">
               <span>{{ computer_description }}</span>
               <div style="padding:20px;">
                 <el-steps direction="vertical" :active="comp_active">
-                  <el-step
-                    v-for="(item,index) of computer"
-                    :key="index"
-                    :title="item.title"
-                    :icon="item.icon"
-                    :status="item.status"
-                    :description="item.description"
-                  >
+                  <el-step v-for="(item, index) of computer" :key="index" :title="item.title" :icon="item.icon"
+                    :status="item.status" :description="item.description">
                     <!-- <template slot="description">
                   <el-button size="mini" type="primary"  @click="thisDetail(item.computer_id)">详情</el-button>
                 </template> -->
@@ -67,26 +51,14 @@
               </div>
             </template>
           </el-step>
-          <el-step
-            v-if="shard_show"
-            :title="shard_title"
-            :status="storage_state"
-            :icon="shard_icon"
-            :description="shard_description"
-          >
+          <el-step v-if="shard_show" :title="shard_title" :status="storage_state" :icon="shard_icon"
+            :description="shard_description">
             <template slot="description">
               <span>{{ shard_description }}</span>
               <div style="padding:20px;">
                 <el-steps direction="vertical" :active="shard_active">
-                  <el-step
-                    v-for="(item,index) of shard"
-                    :key="index"
-                    :title="item.title"
-                    :icon="item.icon"
-                    :status="item.status"
-                    :description="item.description"
-                    @click.native="thisDetail(item.shard_id)"
-                  >
+                  <el-step v-for="(item, index) of shard" :key="index" :title="item.title" :icon="item.icon"
+                    :status="item.status" :description="item.description" @click.native="thisDetail(item.shard_id)">
                     <!-- <template slot="description">
                   <el-button size="mini" type="primary" @click="thisDetail(item.shard_id)">详情</el-button>
                 </template> -->
@@ -95,13 +67,8 @@
               </div>
             </template>
           </el-step>
-          <el-step
-            v-if="finish_show"
-            :title="finish_title"
-            :icon="finish_icon"
-            :description="finish_description"
-            :status="finish_state"
-          />
+          <el-step v-if="finish_show" :title="finish_title" :icon="finish_icon" :description="finish_description"
+            :status="finish_state" />
         </el-steps>
       </div>
     </el-dialog>
@@ -178,8 +145,21 @@ export default {
     this.form.comptotal = this.listsent.comp_count
     // this.form.shards_count=this.listsent.shards_count;
     this.form.shardtotal = this.listsent.shardtotal
+    this.showButton()
   },
   methods: {
+    showButton() {
+      try {
+        const username = sessionStorage.getItem("login_username");
+        if (username == "super_dba") {
+          this.delflag = true
+        } else {
+          this.delflag = false
+        }
+      } catch (e) {
+        this.delflag = false
+      }
+    },
     onSubmit(row) {
       const code = createCode()
       const string = '此操作将永久删除该数据, 是否继续?code=' + code
@@ -1110,5 +1090,4 @@ export default {
   }
 }
 </script>
-<style scoped>
-</style>
+<style scoped></style>

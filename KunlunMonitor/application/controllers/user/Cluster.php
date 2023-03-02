@@ -1269,10 +1269,7 @@ class Cluster extends CI_Controller
 		$res_token = $this->Login_model->getToken($token, 'D', $this->key);
 		if (!empty($res_token)) {
 			$sql = "select count(id) as count,id from kunlun_user where name='$res_token' group by id;";
-
 			$res = $this->Login_model->getList($sql);
-			//			print_r($sql);
-//			exit;
 			if (!empty($res)) {
 				if ($res[0]['count'] == 0) {
 					$data['code'] = 500;
@@ -1281,7 +1278,7 @@ class Cluster extends CI_Controller
 				} else {
 					//获取用户数据
 					if ($apply_all_cluster == "1") {
-						if ($effectCluster == 'null') {
+						if ($effectCluster == 'null' || $effectCluster == '') {
 							$sql_name = "select id,name,when_created,nick_name from db_clusters where  memo!='' and memo is not null and status!='deleted'";
 						}
 					}
@@ -1296,8 +1293,6 @@ class Cluster extends CI_Controller
 						}
 					}
 					$this->load->model('Cluster_model');
-
-					//exit($sql_name);
 					$res_name = $this->Cluster_model->getList($sql_name);
 					$data['code'] = 200;
 					$data['list'] = $res_name;

@@ -2,45 +2,25 @@
   <div class="app-container">
     <div class="filter-container">
       <div class="table-list-search-wrap">
-        <el-input
-          v-model="listQuery.username"
-          class="list_search_keyword"
-          placeholder="可输入用户账号搜索"
-          @keyup.enter.native="handleFilter"
-        />
+        <el-input v-model="listQuery.username" class="list_search_keyword" placeholder="可输入用户账号搜索"
+          @keyup.enter.native="handleFilter" />
         <el-button icon="el-icon-search" @click="handleFilter">
           查询
         </el-button>
         <el-button icon="el-icon-refresh-right" @click="handleClear">
           重置
         </el-button>
-        <el-button
-          v-show="user_add_priv==='Y'"
-          class="filter-item"
-          type="primary"
-          icon="el-icon-plus"
-          @click="handleCreate"
-        >新增
+        <el-button v-show="main_user === '1'" class="filter-item" type="primary" icon="el-icon-plus"
+          @click="handleCreate">新增
         </el-button>
       </div>
 
     </div>
 
-    <el-table
-      :key="tableKey"
-      v-loading="listLoading"
-      :data="list"
-      border
-      highlight-current-row
-      style="width: 100%;margin-bottom: 20px;"
-    >
+    <el-table :key="tableKey" v-loading="listLoading" :data="list" border highlight-current-row
+      style="width: 100%;margin-bottom: 20px;">
       >
-      <el-table-column
-        type="index"
-        align="center"
-        label="序号"
-        width="50"
-      />
+      <el-table-column type="index" align="center" label="序号" width="50" />
 
       <el-table-column label="用户账号" align="center">
         <template slot-scope="{row}">
@@ -48,118 +28,63 @@
         </template>
       </el-table-column>
 
-      <el-table-column
-        prop="email"
-        align="center"
-        label="邮箱地址"
-      />
+      <el-table-column prop="email" align="center" label="邮箱地址" />
 
-      <el-table-column
-        prop="phone_number"
-        align="center"
-        label="手机号"
-      />
+      <el-table-column prop="main_user" align="center" label="管理员">
+        <template slot-scope="scope">
+          {{ scope.row.main_user == 1 ? '是' : '否' }}
+        </template>
+      </el-table-column>
 
-      <el-table-column
-        prop="wechat_number"
-        align="center"
-        label="微信号"
-      />
-      <el-table-column
-        prop="update_time"
-        align="center"
-        label="更新时间"
-      />
+      <el-table-column prop="pg_dsn" align="center" width="500" label="DSN" />
 
-      <el-table-column
-        v-if="user_edit_priv==='Y' && user_drop_priv==='Y'"
-        label="操作"
-        align="center"
-        width="230"
-        class-name="small-padding fixed-width"
-      >
+      <el-table-column v-if="main_user === '1'" label="操作" align="center" width="230"
+        class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
-          <el-button v-show="user_edit_priv==='Y'" type="primary" size="mini" @click="handleUpdate(row)">编辑
+          <el-button v-show="main_user === '1'" type="primary" size="mini" @click="handleUpdate(row)">编辑
           </el-button>
-          <el-button
-            v-show="user_drop_priv==='Y'&&row.username!=='super_dba'"
-            size="mini"
-            type="danger"
-            @click="handleDelete(row,$index)"
-          >删除
+          <el-button v-show="main_user === '1'" size="mini" type="danger" @click="handleDelete(row, $index)">禁用
           </el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-show="total>0"
-      :total="total"
-      :page.sync="listQuery.pageNo"
-      :limit.sync="listQuery.pageSize"
-      @pagination="getList"
-    />
+    <pagination v-show="total > 0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize"
+      @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" custom-class="single_dal_view">
-      <el-form
-        ref="dataForm"
-        :rules="rules"
-        :model="temp"
-        label-position="left"
-        label-width="110px"
-      >
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="110px">
 
         <el-form-item label="用户账号:" prop="username">
-          <el-input
-            v-model="temp.username"
-            placeholder="请输入用户账号"
-            :disabled="dialogStatus==='detail'||temp.username=='super_dba'"
-          />
+          <el-input v-model="temp.username" placeholder="请输入用户账号"
+            :disabled="dialogStatus === 'detail' || temp.username == 'super_dba'" />
         </el-form-item>
 
-        <el-form-item v-if="dialogStatus==='create'?true:false" label="登录密码:" prop="password">
-          <el-input
-            v-model="temp.password"
-            :type="pwdType"
-            placeholder="登录密码，大小写字母/数字/特殊字符组合，长度8-12位"
-            autocomplete="new-password"
-          >
+        <el-form-item v-if="dialogStatus === 'create' ? true : false" label="登录密码:" prop="password">
+          <el-input v-model="temp.password" :type="pwdType" placeholder="登录密码，大小写字母/数字/特殊字符组合，长度8-12位"
+            autocomplete="new-password">
             <i slot="suffix" class="el-icon-view" @click="changeType" />
           </el-input>
         </el-form-item>
-        <el-form-item v-if="dialogStatus==='create'?true:false" label="重复密码:" prop="confirmPassword">
+        <el-form-item v-if="dialogStatus === 'create' ? true : false" label="重复密码:" prop="confirmPassword">
           <el-input v-model="temp.confirmPassword" :type="pwdconfirmType" placeholder="请再次输入登录密码">
             <i slot="suffix" class="el-icon-view" @click="changeconfirmType" />
           </el-input>
         </el-form-item>
 
-        <el-form-item label="手机号码:" prop="phone_number">
-          <el-input
-            v-model="temp.phone_number"
-            placeholder="请输入手机号码"
-            maxlength="11"
-            show-word-limit
-            clearable
-            :disabled="dialogStatus==='detail' || search_person_has_m "
-          />
-        </el-form-item>
-
         <el-form-item label="邮箱地址:" prop="email">
-          <el-input v-model="temp.email" type="email" placeholder="请输入邮箱地址" :disabled="dialogStatus==='detail'" />
+          <el-input v-model="temp.email" type="email" placeholder="请输入邮箱地址" :disabled="dialogStatus === 'detail'" />
         </el-form-item>
 
         <el-form-item label="微信号:" prop="wechat_number">
-          <el-input
-            v-model="temp.wechat_number"
-            type="wechat_number"
-            placeholder="请输入微信号"
-            :disabled="dialogStatus==='detail'"
-          />
+          <el-input v-model="temp.wechat_number" type="wechat_number" placeholder="请输入微信号"
+            :disabled="dialogStatus === 'detail'" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button v-show="!dialogDetail" @click="dialogFormVisible = false">关闭</el-button>
-        <el-button v-show="!dialogDetail" type="primary" @click="dialogStatus==='create'?createData():updateData(row)">
+        <el-button v-show="!dialogDetail" type="primary"
+          @click="dialogStatus === 'create' ? createData() : updateData(row)">
           确认
         </el-button>
       </div>
@@ -314,8 +239,11 @@ export default {
       user_drop_priv: JSON.parse(sessionStorage.getItem('priv')).user_drop_priv,
       user_edit_priv: JSON.parse(sessionStorage.getItem('priv')).user_edit_priv,
       row: {},
-      pwdType: 'password',
-      pwdconfirmType: 'password',
+      pwdType: 'text',
+      pwdconfirmType: 'text',
+      main_user: "0",
+      uid: 1,
+      user_tag: "",
       rules: {
         username: [
           { required: true, trigger: 'blur', validator: validateUsername }
@@ -356,6 +284,9 @@ export default {
       getAccountList(queryParam).then(response => {
         this.list = response.list
         this.total = response.total
+        this.main_user = response.main_user
+        this.uid = response.uid
+        this.user_tag = response.user_tag
         setTimeout(() => {
           this.listLoading = false
         }, 0.5 * 1000)
@@ -371,7 +302,10 @@ export default {
         email: '',
         wechat_number: '',
         old_mobile: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        pid: this.uid,
+        user_tag: this.user_tag,
+        MainUser: "0"
       }
     },
     handleCreate() {
@@ -390,7 +324,6 @@ export default {
           // 发送接口
           addAccount(tempData).then(response => {
             const res = response
-            // eslint-disable-next-line eqeqeq
             if (res.code === 200) {
               this.getList()
               this.dialogFormVisible = false
@@ -445,7 +378,7 @@ export default {
       })
     },
     handleDelete(row) {
-      handleCofirm('此操作将永久删除该数据, 是否继续?').then(() => {
+      handleCofirm('禁止账号使用, 是否继续?').then(() => {
         delAccount(row.id).then((response) => {
           console.log(response)
           const res = response
