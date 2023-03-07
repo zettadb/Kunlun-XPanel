@@ -6,7 +6,6 @@ services:
     volumes:
       - ./:/var/www/html/:rw
       - ./compose/meta.json:/var/www/html/KunlunMonitor/json/meta.json:rw
-      - ./compose/myconfig_tpl.php:/var/www/html/KunlunMonitor/application/config/myconfig_tpl.php:rw
     networks:
       csl:
         ipv4_address: 172.18.0.7
@@ -20,7 +19,6 @@ services:
     volumes:
       - ./:/var/www/html/:rw
       - ./compose/meta.json:/var/www/html/KunlunMonitor/json/meta.json:rw
-      - ./compose/myconfig_tpl.php:/var/www/html/KunlunMonitor/application/config/myconfig_tpl.php:rw
       - ./compose/apacheserver/:/usr/local/apache2/conf.d:rw
     networks:
       csl:
