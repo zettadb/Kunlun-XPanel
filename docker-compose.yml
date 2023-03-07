@@ -5,6 +5,7 @@ services:
     build: "./KunlunMonitor"
     volumes:
       - ./:/var/www/html/
+      - ./compose/meta.json:/var/www/html/KunlunMonitor/json/meta.json
     networks:
       csl:
         ipv4_address: 172.18.0.7
