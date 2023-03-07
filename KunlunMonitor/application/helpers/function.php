@@ -9,14 +9,13 @@ if (!function_exists('rewrite_config')) {
 	 */
 	function rewrite_config($data)
 	{
-		$f_p = fopen(APPPATH . 'config/myconfig.php', 'w+');
-		$newConfig = file_get_contents(APPPATH . 'config/myconfig_tpl.php');
 
+		//$f_p = fopen(APPPATH . 'config/myconfig.php', 'w+');
+		$newConfig = file_get_contents(APPPATH . 'config/myconfig_tpl.php');
 		foreach ($data as $key => $val) {
 			$newConfig = str_replace("{{{$key}}}", $val, $newConfig);
 		}
-		fwrite($f_p, $newConfig);
-		fgets($f_p);
+		file_put_contents(APPPATH . 'config/myconfig.php', $newConfig);
 	}
 
 }
@@ -46,4 +45,3 @@ if (!function_exists('pg_find')) {
 		return pg_fetch_all($res);
 	}
 }
-

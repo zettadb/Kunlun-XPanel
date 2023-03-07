@@ -5,10 +5,9 @@ $config['pg_username'] = 'abc';
 $config['default_username'] = 'player';
 $config['pg_database'] = 'postgres';
 $config['db_prefix'] = 'kunlundb_';
-$config['grafana_key'] = 'Bearer eyJrIjoiaWJRSWtuQnVkb2JJekRjbk5Pc29lN1B0VUtYcGsyYUYiLCJuIjoiYXBpa2V5Y3VybF8wMDIiLCJpZCI6MX0=';
+$config['grafana_key'] = '{{grafana_key}}';
 $config['grafana_svr'] = '127.0.0.1:3000';
 $config['aws_server'] = 'http://127.0.0.1:8888';
-
 $config['job_type'] = [
 	['code' => 'create_cluster', 'name' => '新增集群'],
 	['code' => 'delete_cluster', 'name' => '删除集群'],
