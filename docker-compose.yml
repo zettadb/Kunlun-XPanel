@@ -4,9 +4,9 @@ services:
     image: php:7.4.11-fpm-alpine3.12
     build: "./KunlunMonitor"
     volumes:
-      - ./:/var/www/html/
-      - ./compose/meta.json:/var/www/html/KunlunMonitor/json/meta.json
-      - ./compose/myconfig_tpl.php:/var/www/html/KunlunMonitor/application/config/myconfig_tpl.php
+      - ./:/var/www/html/:rw
+      - ./compose/meta.json:/var/www/html/KunlunMonitor/json/meta.json:rw
+      - ./compose/myconfig_tpl.php:/var/www/html/KunlunMonitor/application/config/myconfig_tpl.php:rw
     networks:
       csl:
         ipv4_address: 172.18.0.7
@@ -18,10 +18,10 @@ services:
     ports:
       - "8980:80"
     volumes:
-      - ./:/var/www/html/
-      - ./compose/meta.json:/var/www/html/KunlunMonitor/json/meta.json
-      - ./compose/myconfig_tpl.php:/var/www/html/KunlunMonitor/application/config/myconfig_tpl.php
-      - ./compose/apacheserver/:/usr/local/apache2/conf.d
+      - ./:/var/www/html/:rw
+      - ./compose/meta.json:/var/www/html/KunlunMonitor/json/meta.json:rw
+      - ./compose/myconfig_tpl.php:/var/www/html/KunlunMonitor/application/config/myconfig_tpl.php:rw
+      - ./compose/apacheserver/:/usr/local/apache2/conf.d:rw
     networks:
       csl:
         ipv4_address: 172.18.0.6
@@ -31,8 +31,8 @@ services:
     ports:
       - "8086:80"
     volumes:
-      - ./KunlunXPanel/dist:/var/www/html/
-      - ./compose/apacheclient/:/usr/local/apache2/conf.d
+      - ./KunlunXPanel/dist:/var/www/html/:rw
+      - ./compose/apacheclient/:/usr/local/apache2/conf.d:rw
     networks:
       csl:
         ipv4_address: 172.18.0.8
