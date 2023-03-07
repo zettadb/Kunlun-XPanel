@@ -14,6 +14,7 @@ class User extends CI_Controller
 		$this->config->load('myconfig');
 		$this->key = $this->config->item('key');
 		$this->db = $this->load->database('role', true);
+		$this->aws_server = $this->config->item('aws_server');
 	}
 	public function userList()
 	{
@@ -86,7 +87,7 @@ class User extends CI_Controller
 		curl_setopt_array(
 			$curl,
 			array(
-				CURLOPT_URL => 'http://127.0.0.1:8888/base/send-code-email',
+				CURLOPT_URL => $this->aws_server . '/base/send-code-email',
 				CURLOPT_RETURNTRANSFER => true,
 				CURLOPT_ENCODING => '',
 				CURLOPT_MAXREDIRS => 10,
@@ -137,7 +138,7 @@ class User extends CI_Controller
 		curl_setopt_array(
 			$curl,
 			array(
-				CURLOPT_URL => 'http://127.0.0.1:8888/base/register-pg-user',
+				CURLOPT_URL => $this->aws_server . '/base/register-pg-user',
 				CURLOPT_RETURNTRANSFER => true,
 				CURLOPT_ENCODING => '',
 				CURLOPT_MAXREDIRS => 10,
