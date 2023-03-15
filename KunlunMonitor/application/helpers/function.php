@@ -28,7 +28,6 @@ if (!function_exists('get_pg_con')) {
 		if (!$db) {
 			throw new ApiException("pg 连接失败:{$host}");
 		}
-
 		return $db;
 	}
 }

@@ -6,62 +6,30 @@
       </el-form-item>
 
       <el-form-item label="目标表集群:" prop="dst_cluster_id">
-        <el-select
-          v-model="form.dst_cluster_id"
-          clearable
-          placeholder="请选择目标表集群"
-          style="width: 100%"
-          @change="onDstClusterChange"
-        >
-          <el-option
-            v-for="item in clusterOptions"
-            :key="item.id"
-            :label="item.name"
-            :value="item.id"
-          />
+        <el-select v-model="form.dst_cluster_id" clearable placeholder="请选择目标表集群" style="width: 100%"
+          @change="onDstClusterChange">
+          <el-option v-for="item in clusterOptions" :key="item.id" :label="item.name" :value="item.id" />
         </el-select>
       </el-form-item>
       <el-row v-for="(table, index) in form.repartition_tables" :key="table.key">
         <el-col :span="10">
-          <el-form-item
-            label="源表:"
-            :prop="'repartition_tables.' + index + '.srcTable'"
-            :rules="{
-              required: true,
-              message: '源表不能为空',
-              trigger: 'blur',
-            }"
-          >
-            <el-cascader
-              :key="'srcTable' + index"
-              v-model="form.repartition_tables[index].srcTable"
-              style="width: 100%"
-              clearable
-              placeholder="请选择 库名/模式/表"
-              :options="srcTableOptions"
-              filterable
-            />
+          <el-form-item label="源表:" :prop="'repartition_tables.' + index + '.srcTable'" :rules="{
+            required: true,
+            message: '源表不能为空',
+            trigger: 'blur',
+          }">
+            <el-cascader :key="'srcTable' + index" v-model="form.repartition_tables[index].srcTable" style="width: 100%"
+              clearable placeholder="请选择 库名/模式/表" :options="srcTableOptions" filterable />
           </el-form-item>
         </el-col>
         <el-col :span="10">
-          <el-form-item
-            label="目标表:"
-            :prop="'repartition_tables.' + index + '.ditTable'"
-            :rules="{
-              required: true,
-              message: '目标表不能为空',
-              trigger: 'blur',
-            }"
-          >
-            <el-cascader
-              :key="'ditTable' + index"
-              v-model="form.repartition_tables[index].ditTable"
-              style="width: 100%"
-              clearable
-              placeholder="请选择 库名/模式/表"
-              :options="ditTableOptions"
-              filterable
-            />
+          <el-form-item label="目标表:" :prop="'repartition_tables.' + index + '.ditTable'" :rules="{
+            required: true,
+            message: '目标表不能为空',
+            trigger: 'blur',
+          }">
+            <el-cascader :key="'ditTable' + index" v-model="form.repartition_tables[index].ditTable" style="width: 100%"
+              clearable placeholder="请选择 库名/模式/表" :options="ditTableOptions" filterable />
           </el-form-item>
         </el-col>
       </el-row>
@@ -71,24 +39,12 @@
       </el-form-item>
     </el-form>
 
-    <el-dialog
-      :visible.sync="dialogStatusVisible"
-      custom-class="single_dal_view"
-      width="400px"
-      :close-on-click-modal="false"
-      :before-close="beforeRestoreDestory"
-    >
+    <el-dialog :visible.sync="dialogStatusVisible" custom-class="single_dal_view" width="400px"
+      :close-on-click-modal="false" :before-close="beforeRestoreDestory">
       <div class="block">
         <el-timeline>
-          <el-timeline-item
-            v-for="(activity, index) in activities"
-            :key="index"
-            :icon="activity.icon"
-            :type="activity.type"
-            :color="activity.color"
-            :size="activity.size"
-            :timestamp="activity.timestamp"
-          >
+          <el-timeline-item v-for="(activity, index) in activities" :key="index" :icon="activity.icon"
+            :type="activity.type" :color="activity.color" :size="activity.size" :timestamp="activity.timestamp">
             {{ activity.content }}
           </el-timeline-item>
         </el-timeline>
@@ -212,19 +168,9 @@ export default {
           data.job_type = "table_repartition";
           data.timestamp = timestamp_arr[0].time + "";
           const paras = {};
-          const repartition_tables = this.form.repartition_tables
-            .map((v) => {
-              return (
-                v.srcTable[0] +
-                "_$$_public." +
-                v.srcTable[1] +
-                "=>" +
-                v.ditTable[0] +
-                "_$$_public." +
-                v.ditTable[1]
-              );
-            })
-            .join(",");
+          const repartition_tables = this.form.repartition_tables.map((v) => {
+            return (v.srcTable[0] + "_$$_" + v.srcTable[1] + "." + v.srcTable[2] + "=>" + v.ditTable[0] + "_$$_" + v.ditTable[1] + "." + v.ditTable[2]);
+          }).join(",");
           paras.src_cluster_id = this.form.src_cluster_id;
           paras.dst_cluster_id = this.form.dst_cluster_id;
           paras.repartition_tables = repartition_tables;

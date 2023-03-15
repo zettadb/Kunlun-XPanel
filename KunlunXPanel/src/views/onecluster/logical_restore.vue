@@ -152,8 +152,9 @@ export default {
           data.timestamp = timestamp_arr[0].time + "";
           const paras = {};
           const backup = this.form.backup.map((v) => {
+            console.log(v)
             return {
-              db_table: v.db_table[0] + "_$$_public." + v.db_table[1],
+              db_table: v.db_table[0] + "_$$_" + v.db_table[1] + "." + v.db_table[2],
               backup_time: v.startTime,
             };
           });
@@ -236,17 +237,6 @@ export default {
               this.activities.push(newArr);
               // this.installStatus = true;
             }
-          } else {
-            // if (error_info) {
-            //   const newArrgoing = {
-            //     content: error_info,
-            //     timestamp: getNowDate(),
-            //     color: '#0bbd87'
-            //   }
-            //   this.activities.push(newArrgoing)
-            // }
-            // this.info=res.error_info;
-            // this.installStatus = true;
           }
         });
         if (i >= 86400) {

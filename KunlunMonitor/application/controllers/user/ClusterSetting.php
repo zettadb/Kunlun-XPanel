@@ -13,7 +13,6 @@ class ClusterSetting extends CI_Controller
 		$this->post_url = $this->config->item('post_url');
 	}
 
-
 	public function getDBName($ip, $port, $user_name)
 	{
 		$this->load->model('Cluster_model');
@@ -38,9 +37,12 @@ class ClusterSetting extends CI_Controller
 		$res = $this->Cluster_model->getList($sql);
 		$res_count = count($res);
 		if (!empty($res)) {
+
+
 			foreach ($res as $knode => $vnode) {
 				//连接该计算节点取库名
 				$res_main = $this->getDBName($vnode['hostaddr'], $vnode['port'], $vnode['user_name']);
+
 
 				if ($res_main['code'] == 500) {
 					if ($res_count == ($knode + 1)) {
@@ -55,7 +57,6 @@ class ClusterSetting extends CI_Controller
 					$ip = $vnode['hostaddr'];
 					$port = $vnode['port'];
 					$name = $vnode['user_name'];
-
 					foreach ($res_main as $knode => $item) {
 						$tmp = [];
 						$tmp["ip"] = $ip;
@@ -64,23 +65,30 @@ class ClusterSetting extends CI_Controller
 						$tmp["value"] = $item->datname;
 						$tmp["desc"] = $item->datname;
 						$tmp["label"] = $item->datname;
-
-						//exit(print_r($tmp));
-
 						$this->load->model('Cluster_model');
-						$sql_main = "select relname,n.nspname,relshardid From pg_class,pg_namespace n where relnamespace = n.oid and nspname = 'public';";
-						$res = $this->Cluster_model->getResult($sql_main, $ip, $port, $name, $item->datname);
-						//exit(print_r($res));
-						if ($res["code"] == 200) {
+						$schema = "select oid,* from pg_catalog.pg_namespace where nspname not in('pg_toast','pg_temp_1','pg_catalog','information_schema');";
+						$scheam = $this->Cluster_model->getResult($schema, $ip, $port, $name, $item->datname);
+						if ($scheam["code"] == 200) {
 							$tmp["children"] = [];
-							foreach ($res["arr"] as $v => $val) {
-								$_t = [];
-								if (strpos($val["relname"], 'pkey') == 0) {
-									$_t["label"] = $val["relname"];
-									$_t["value"] = $val["relname"];
-									$_t["desc"] = $val["relname"];
-									$tmp["children"][] = $_t;
+							foreach ($scheam["arr"] as $v => $s) {
+								$_schema = [];
+								$_schema["label"] = $s["nspname"];
+								$_schema["value"] = $s["nspname"];
+								$_schema["desc"] = $s["nspname"];
+								$_schema["children"] = [];
+								$sql_main = "select relname,n.nspname,relshardid From pg_class,pg_namespace n where relnamespace = n.oid and nspname = '" . $s['nspname'] . "';";
+								$res = $this->Cluster_model->getResult($sql_main, $ip, $port, $name, $item->datname);
+								if ($res["code"] == 200) {
+									foreach ($res["arr"] as $v => $val) {
+										$_table = [];
+										$_table["label"] = $val["relname"];
+										$_table["value"] = $val["relname"];
+										$_table["desc"] = $val["relname"];
+										$_schema["children"][] = $_table;
+										//print_r($_schema);
+									}
 								}
+								$tmp["children"][] = $_schema;
 							}
 						}
 						$result[] = $tmp;
@@ -123,7 +131,6 @@ class ClusterSetting extends CI_Controller
 		if (!$zoneTables) {
 			$zoneTables = [];
 		}
-
 
 		// 遍历查询所有表信息
 		$zoneTables = implode("','", array_column($zoneTables, 'relname'));
@@ -214,7 +221,7 @@ class ClusterSetting extends CI_Controller
 	public function tableRepartition()
 	{
 		//获取token
-		$arr = apache_request_headers();//获取请求头数组
+		$arr = apache_request_headers(); //获取请求头数组
 		$token = $arr["Token"];
 		if (empty($token)) {
 			throw new ApiException('token不能为空', 201);

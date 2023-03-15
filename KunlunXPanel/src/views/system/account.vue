@@ -75,11 +75,6 @@
         <el-form-item label="邮箱地址:" prop="email">
           <el-input v-model="temp.email" type="email" placeholder="请输入邮箱地址" :disabled="dialogStatus === 'detail'" />
         </el-form-item>
-
-        <el-form-item label="微信号:" prop="wechat_number">
-          <el-input v-model="temp.wechat_number" type="wechat_number" placeholder="请输入微信号"
-            :disabled="dialogStatus === 'detail'" />
-        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button v-show="!dialogDetail" @click="dialogFormVisible = false">关闭</el-button>

@@ -7,7 +7,7 @@ $config['pg_database'] = 'postgres';
 $config['db_prefix'] = 'kunlundb_';
 $config['grafana_key'] = '{{grafana_key}}';
 $config['grafana_svr'] = '127.0.0.1:3000';
-$config['aws_server'] = 'http://172.31.20.124:8888';
+$config['aws_server'] = 'http://127.0.0.1:8888';
 $config['job_type'] = [
 	['code' => 'create_cluster', 'name' => '新增集群'],
 	['code' => 'delete_cluster', 'name' => '删除集群'],

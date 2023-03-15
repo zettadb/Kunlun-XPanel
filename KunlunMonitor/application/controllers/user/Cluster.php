@@ -20,6 +20,7 @@ class Cluster extends CI_Controller
 		$this->default_username = $this->config->item('default_username');
 		$this->pg_username = $this->config->item('pg_username');
 		$this->db_prefix = $this->config->item('db_prefix');
+		$this->aws_server = $this->config->item('aws_server');
 	}
 
 	public function createCluster()
@@ -50,6 +51,114 @@ class Cluster extends CI_Controller
 			$data['error_info'] = '该帐户不具备新增集群权限';
 		}
 		print_r(json_encode($data));
+	}
+
+
+	public function DeleteSchema()
+	{
+		$curl = curl_init();
+		curl_setopt_array(
+			$curl,
+			array(
+				CURLOPT_URL => $this->aws_server . '/base/user-schema-delete',
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_ENCODING => '',
+				CURLOPT_MAXREDIRS => 10,
+				CURLOPT_TIMEOUT => 0,
+				CURLOPT_FOLLOWLOCATION => true,
+				CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+				CURLOPT_CUSTOMREQUEST => 'POST',
+				CURLOPT_POSTFIELDS => @file_get_contents('php://input'),
+				CURLOPT_HTTPHEADER => array(
+					'Content-Type: application/json'
+				),
+			)
+		);
+		$response = curl_exec($curl);
+		curl_close($curl);
+		print_r(json_encode(json_decode($response, true)));
+		return;
+	}
+
+	public function SchemaList()
+	{
+
+		$curl = curl_init();
+		curl_setopt_array(
+			$curl,
+			array(
+				CURLOPT_URL => $this->aws_server . '/base/user-schema-list',
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_ENCODING => '',
+				CURLOPT_MAXREDIRS => 10,
+				CURLOPT_TIMEOUT => 0,
+				CURLOPT_FOLLOWLOCATION => true,
+				CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+				CURLOPT_CUSTOMREQUEST => 'POST',
+				CURLOPT_POSTFIELDS => @file_get_contents('php://input'),
+				CURLOPT_HTTPHEADER => array(
+					'Content-Type: application/json'
+				),
+			)
+		);
+		$response = curl_exec($curl);
+		curl_close($curl);
+		print_r(json_encode(json_decode($response, true)));
+		return;
+	}
+
+	public function AddSchema()
+	{
+
+		$curl = curl_init();
+		curl_setopt_array(
+			$curl,
+			array(
+				CURLOPT_URL => $this->aws_server . '/base/user-schema-create',
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_ENCODING => '',
+				CURLOPT_MAXREDIRS => 10,
+				CURLOPT_TIMEOUT => 0,
+				CURLOPT_FOLLOWLOCATION => true,
+				CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+				CURLOPT_CUSTOMREQUEST => 'POST',
+				CURLOPT_POSTFIELDS => @file_get_contents('php://input'),
+				CURLOPT_HTTPHEADER => array(
+					'Content-Type: application/json'
+				),
+			)
+		);
+		$response = curl_exec($curl);
+		curl_close($curl);
+		print_r(json_encode(json_decode($response, true)));
+		return;
+	}
+
+
+	public function CreateSchemaRole()
+	{
+		$curl = curl_init();
+		curl_setopt_array(
+			$curl,
+			array(
+				CURLOPT_URL => $this->aws_server . '/base/user-schema-role',
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_ENCODING => '',
+				CURLOPT_MAXREDIRS => 10,
+				CURLOPT_TIMEOUT => 0,
+				CURLOPT_FOLLOWLOCATION => true,
+				CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+				CURLOPT_CUSTOMREQUEST => 'POST',
+				CURLOPT_POSTFIELDS => @file_get_contents('php://input'),
+				CURLOPT_HTTPHEADER => array(
+					'Content-Type: application/json'
+				),
+			)
+		);
+		$response = curl_exec($curl);
+		curl_close($curl);
+		print_r(json_encode(json_decode($response, true)));
+		return;
 	}
 
 	public function clusterList()

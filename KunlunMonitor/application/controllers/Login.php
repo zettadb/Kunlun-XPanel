@@ -58,10 +58,12 @@ class Login extends CI_Controller
 				$data['Token'] = $token;
 				$data['num'] = $res[0]['count'];
 				$data['code'] = 200;
+				$data['uid'] = $res[0]['id'];
 				$data['message'] = '用户重复';
 				print_r(json_encode($data));
 			} elseif ($res[0]['count'] == 1) {
 				$userId = $res[0]['id'];
+				$data['uid'] = $res[0]['id'];
 				//获取角色id
 				$sql_role = "select role_id,apply_all_cluster,affected_clusters from kunlun_role_assign where user_id='$userId' and valid_period='permanent' ";
 				$sql_role .= " union select role_id,apply_all_cluster,affected_clusters from kunlun_role_assign where user_id='$userId' and valid_period='from_to' and start_ts is not null and start_ts<now() and end_ts is null";
@@ -329,7 +331,6 @@ class Login extends CI_Controller
 					if ($affected_clusters != null) {
 						$affected_clusters = rtrim($affected_clusters, ',');
 					}
-
 					//字符串去重
 					$affected_clusters = $this->unique($affected_clusters);
 					$data['Token'] = $token;

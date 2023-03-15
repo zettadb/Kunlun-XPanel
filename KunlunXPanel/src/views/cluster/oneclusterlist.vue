@@ -66,6 +66,10 @@
             <i class="el-icon-setting" />
             <span slot="title">获取实例变量</span>
           </el-menu-item>
+          <el-menu-item index="17">
+            <i class="el-icon-setting" />
+            <span slot="title">Schema</span>
+          </el-menu-item>
           <el-menu-item index="14">
             <i class="el-icon-setting" />
             <span slot="title">表重分布</span>
@@ -97,6 +101,7 @@ import SwitchOver from "../onecluster/switchover.vue";
 import BackUp from "../onecluster/backup.vue";
 import StandbySwitch from "../onecluster/standby_switch.vue";
 import ShardList from "../onecluster/shardlist.vue";
+import Schema from "../onecluster/schema.vue";
 import RedoMachine from "../onecluster/redomachine.vue";
 import SetAlarmTime from "../onecluster/set_alarm_time.vue";
 import SetVariable from "../onecluster/setvariable.vue";
@@ -124,6 +129,7 @@ export default {
     TableRepartition,
     LogicalBackup,
     LogicalRecv,
+    Schema,
     Error,
   },
   props: {
@@ -185,6 +191,8 @@ export default {
         this.componted = "LogicalBackup";
       } else if (index === "16") {
         this.componted = "LogicalRecv";
+      } else if (index == "17") {
+        this.componted = "schema"
       } else {
         this.componted = "Error";
       }
