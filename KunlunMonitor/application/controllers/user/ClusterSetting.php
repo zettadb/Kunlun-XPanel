@@ -37,13 +37,9 @@ class ClusterSetting extends CI_Controller
 		$res = $this->Cluster_model->getList($sql);
 		$res_count = count($res);
 		if (!empty($res)) {
-
-
 			foreach ($res as $knode => $vnode) {
 				//连接该计算节点取库名
 				$res_main = $this->getDBName($vnode['hostaddr'], $vnode['port'], $vnode['user_name']);
-
-
 				if ($res_main['code'] == 500) {
 					if ($res_count == ($knode + 1)) {
 						$data['code'] = 500;
