@@ -5,7 +5,7 @@
 		$db_debug=TRUE;
 		$db['role']=array(
 			'dsn'	=> '',
-			'hostname' => '192.168.0.128',
+			'hostname' => '192.168.0.132',
 			'port' => 10016,
 			'username' => 'pgx',
 			'password' => 'pgx_pwd',
@@ -28,7 +28,7 @@
 		);
 		$db['default']=array(
 			'dsn'	=> '',
-			'hostname' => '192.168.0.128',
+			'hostname' => '192.168.0.132',
 			'port' => 10016,
 			'username' => 'pgx',
 			'password' => 'pgx_pwd',
