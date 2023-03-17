@@ -153,7 +153,7 @@ export default {
           const paras = {};
           const backup = this.form.backup.map((v) => {
             return {
-              db_table: v.db_table[0] + "_$$_public." + v.db_table[1],
+              db_table: v.db_table[0] + "_$$_" + v.db_table[1] + "." + v.db_table[2],
               backup_time: v.startTime,
             };
           });

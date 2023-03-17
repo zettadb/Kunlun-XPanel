@@ -58,14 +58,14 @@
             <i class="el-icon-setting" />
             <span slot="title">设置延迟告警时间</span>
           </el-menu-item>
-          <el-menu-item index="12">
+          <!-- <el-menu-item index="12">
             <i class="el-icon-setting" />
             <span slot="title">设置实例变量</span>
           </el-menu-item>
           <el-menu-item index="13">
             <i class="el-icon-setting" />
             <span slot="title">获取实例变量</span>
-          </el-menu-item>
+          </el-menu-item> -->
           <el-menu-item index="14">
             <i class="el-icon-setting" />
             <span slot="title">表重分布</span>
