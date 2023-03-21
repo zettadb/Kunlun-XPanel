@@ -40,7 +40,6 @@ if (!function_exists('pg_find')) {
 			$err = pg_last_error($con);
 			throw new ApiException('PG 查询失败:' . $err);
 		}
-
 		return pg_fetch_all($res);
 	}
 }
