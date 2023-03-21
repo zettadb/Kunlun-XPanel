@@ -520,7 +520,6 @@ class Login extends CI_Controller
 				//exit(print_r($res));
 				//修改配置文件myconfig.php
 				$post_url = 'http://' . $res[0] . ':' . $res[1] . '/HttpService/Emit';
-
 				rewrite_config([
 					'post_url' => $post_url,
 					'grafana_key' => $key,
@@ -600,7 +599,7 @@ class Login extends CI_Controller
 					$res_main = $this->Change_model->getMysql($ip, $port, 'pgx', 'pgx_pwd', 'kunlun_metadata_db', $sql_main);
 				}
 				if ($res_main['code'] == 200) {
-					$f = fopen('./application/config/database.php', 'w+');
+					$f = fopen(APPPATH . 'config/database.php', 'w+');
 					$file = "<?php
 		defined('BASEPATH') OR exit('No direct script access allowed');
 		\$active_group = 'default';
