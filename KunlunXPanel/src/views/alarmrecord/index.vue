@@ -1,5 +1,12 @@
 <template>
   <div class="app-container">
+    <el-drawer title="我嵌套了表格!" :visible.sync="table" direction="rtl" size="50%">
+      <el-table :data="gridData">
+        <el-table-column property="date" label="日期" width="150"></el-table-column>
+        <el-table-column property="name" label="姓名" width="200"></el-table-column>
+        <el-table-column property="address" label="地址"></el-table-column>
+      </el-table>
+    </el-drawer>
     <div class="filter-container">
       <div class="table-list-search-wrap">
         <el-select v-model="listQuery.job_type" placeholder="请选择告警类型" class="list_search_select" style="width: 150px"
@@ -22,6 +29,7 @@
         </el-select> -->
         <el-button icon="el-icon-search" @click="handleFilter"> 查询 </el-button>
         <el-button icon="el-icon-refresh-right" @click="handleClear"> 重置 </el-button>
+        <el-button type="text" @click="table = true"> 告警配置</el-button>
         <!-- <el-button
          class="filter-item"
          type="primary"
@@ -80,6 +88,7 @@ import { getAlarmRecordList, update } from "@/api/alarmrecord/list";
 import { alarm_type_arr, alarm_level_arr } from "@/utils/global_variable";
 import Pagination from "@/components/Pagination";
 import { getClusterMonitor } from "@/api/cluster/list";
+import { Drawer } from "element-ui";
 
 export default {
   name: "Alarmrecord",
@@ -123,6 +132,26 @@ export default {
       machine_priv: JSON.parse(sessionStorage.getItem("priv")).machine_priv,
       timer: null,
       rules: {},
+      gridData: [{
+        date: '2016-05-02',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+      }, {
+        date: '2016-05-04',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+      }, {
+        date: '2016-05-01',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+      }, {
+        date: '2016-05-03',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+      }],
+      table: false,
+      dialog: false,
+      loading: false,
     };
   },
 

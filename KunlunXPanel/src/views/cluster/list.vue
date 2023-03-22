@@ -16,12 +16,6 @@
           <el-button slot="reference" type="primary" size="small" plain><i class="el-icon-arrow-down el-icon-menu" />列筛选
           </el-button>
         </el-popover>
-        <!-- <el-button
-          class="filter-item"
-          type="primary"
-          icon="el-icon-plus"
-          @click="handleStatus"
-        >显示进度条</el-button> -->
         <div v-show="installStatus === true" class="info" v-text="info" />
       </div>
     </div>
@@ -115,9 +109,8 @@
         row.ha_mode === 'rbr'
       " label="操作" align="center" width="100" fixed="right" class-name="small-padding fixed-width">
         <template slot-scope="{ row }">
-          <!-- <el-button type="primary" size="mini" @click="handleUpdate(row)" v-if="storage_node_create_priv==='Y'&&shard_create_priv==='Y'&&compute_node_create_priv==='Y'">+</el-button> -->
-          <el-button v-if="restore_priv === 'Y'" type="primary" size="mini"
-            style="margin-left: 10px; margin-bottom: 2px" @click="handleRetreated(row)">回档
+          <el-button v-if="restore_priv === 'Y'" type="primary" size="mini" style="margin-left: 10px; margin-bottom: 2px"
+            @click="handleRetreated(row)">回档
           </el-button>
           <el-button type="primary" size="mini" style="margin-bottom: 2px" @click="handleExpand(row)">扩容</el-button>
           <el-button v-if="
@@ -126,17 +119,7 @@
             compute_node_create_priv === 'Y'
           " type="primary" size="mini" style="margin-bottom: 2px" @click="handleUpdate(row)">+
           </el-button>
-          <!-- <el-button type="primary" size="mini" @click="handleRedo(row)"  style="margin-bottom:2px;">重做备机</el-button> -->
-          <!-- <el-button type="primary" size="mini" @click="handleRestore(row)" v-if="restore_priv==='Y'">恢复</el-button> -->
-          <!-- <el-button type="primary" size="mini" @click="handleBackUp(row,$index)" v-if="backup_priv==='Y'">全量备份</el-button> -->
-          <!-- <el-button type="primary" size="mini" @click="handleSwitchOver(row,$index)" v-if="row.ha_mode==='rbr'">主备切换</el-button> -->
           <el-button type="primary" size="mini" @click="handleSetUp(row)">设置</el-button>
-          <!-- <el-button
-            size="mini"
-            type="danger"
-            @click="handleDelete(row,$index)"
-            v-if="cluster_drop_priv==='Y'"
-          >删除</el-button> -->
         </template>
       </el-table-column>
     </el-table>
@@ -154,12 +137,6 @@
         <el-form-item v-if="dialogStatus === 'create'" label="选择计算机:" prop="machinelist">
           <div style="margin-bottom: 10px">
             存储：
-            <!-- <el-checkbox-group
-        v-model="temp.machinelist"
-        :min="minMachine"
-        :max="machineTotal">
-          <el-checkbox v-for="machine in machines" :label="machine.hostaddr" :key="machine.id">{{machine.hostaddr}}</el-checkbox>
-        </el-checkbox-group> -->
             <el-select v-model="temp.machinelist" multiple placeholder="请选择">
               <el-option v-for="machine in machines" :key="machine.id" :label="machine.hostaddr"
                 :value="machine.hostaddr" />
@@ -167,12 +144,6 @@
           </div>
           <div>
             计算：
-            <!-- <el-checkbox-group
-        v-model="temp.comp_machinelist"
-        :min="comp_minMachine"
-        :max="comp_machineTotal">
-          <el-checkbox v-for="comp_machine in comp_machines" :label="comp_machine.hostaddr" :key="comp_machine.id">{{comp_machine.hostaddr}}</el-checkbox>
-        </el-checkbox-group> -->
             <el-select v-model="temp.comp_machinelist" multiple placeholder="请选择">
               <el-option v-for="comp_machine in comp_machines" :key="comp_machine.id" :label="comp_machine.hostaddr"
                 :value="comp_machine.hostaddr" />
@@ -238,6 +209,17 @@
             <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">个</i>
           </el-input>
         </el-form-item>
+        <el-form-item label="数据存储空间:" prop="per_storage_node_data_storage_MB">
+          <el-input v-model="temp.per_storage_node_data_storage_MB" class="right_input" placeholder="请输入数据存储空间">
+            <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">MB</i>
+          </el-input>
+        </el-form-item>
+
+        <el-form-item label="日志存储空间:" prop="per_storage_node_log_storage_MB">
+          <el-input v-model="temp.per_storage_node_log_storage_MB" class="right_input" placeholder="请输入日志存储空间">
+            <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">MB</i>
+          </el-input>
+        </el-form-item>
 
         <div v-show="isShow" v-if="dialogStatus === 'create' ? true : false">
           <el-form-item v-show="dialogStatus === 'create' || 'detail'" label="计算节点账号:" prop="computer_user">
@@ -267,11 +249,6 @@
           <el-form-item label="每个存储节点的cpu核数:" prop="per_storage_node_cpu_cores">
             <el-input v-model="temp.per_storage_node_cpu_cores" class="right_input" placeholder="请输入每个存储节点的cpu核数" />
           </el-form-item>
-          <!-- <el-form-item label="每个存储节点innodb缓冲池大小:" prop="per_storage_node_innodb_buffer_pool_size">
-            <el-input  v-model="temp.per_storage_node_innodb_buffer_pool_size" class="right_input"  placeholder="请输入每个存储节点innodb缓冲池大小">
-              <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">MB</i>
-            </el-input>
-          </el-form-item> -->
           <el-form-item label="每个存储节点rocksdb缓冲池大小:" prop="per_storage_node_rocksdb_buffer_pool_size">
             <el-input v-model="temp.per_storage_node_rocksdb_buffer_pool_size" class="right_input"
               placeholder="请输入每个存储节点rocksdb缓冲池大小">
@@ -289,9 +266,9 @@
               <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">GB</i>
             </el-input>
           </el-form-item>
+
         </div>
-        <div v-if="dialogStatus === 'create' ? true : false" :class="isShow === false ? 'ro-90' : 'ro90'"
-          @click="toggle">
+        <div v-if="dialogStatus === 'create' ? true : false" :class="isShow === false ? 'ro-90' : 'ro90'" @click="toggle">
           <i class="el-icon-d-arrow-left" />
         </div>
       </el-form>
@@ -317,12 +294,6 @@
           </el-select>
         </el-form-item>
         <el-form-item v-if="dialogStatus === 'update'" label="选择计算机:" prop="machinelist">
-          <!-- <el-checkbox-group
-        v-model="nodetemp.machinelist"
-        :min="minMachine"
-        :max="machineTotal">
-          <el-checkbox v-for="machine in machines" :label="machine.hostaddr" :key="machine.id">{{machine.hostaddr}}</el-checkbox>
-        </el-checkbox-group> -->
           <el-select v-model="nodetemp.machinelist" multiple placeholder="请选择">
             <el-option v-for="machine in strogemachines" :key="machine.id" :label="machine.hostaddr"
               :value="machine.hostaddr" />
@@ -347,16 +318,6 @@
             <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">个</i>
           </el-input>
         </el-form-item>
-        <!-- <el-form-item label="个数:" prop="shards" v-if="dialogStatus==='update'">
-            <el-select v-model="nodetemp.shards" placeholder="请选择个数" :disabled="dialogStatus==='detail'">
-            <el-option
-              v-for="item in shardsDate"
-              :key="item.id"
-              :label="item.label"
-              :value="item.id">
-            </el-option>
-          </el-select>
-        </el-form-item> -->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogNodeVisible = false">关闭</el-button>
@@ -425,8 +386,7 @@
             <el-tab-pane v-for="(item, index) in shardNameList" :key="index" :label="item.name" :name="item.name"
               :value="item.id + '_' + item.cluster_id">
               <el-table :key="tableKey" v-loading="listLoading" :data="shardTable" max-height="240" border
-                highlight-current-row style="width: 100%; margin-bottom: 20px"
-                @selection-change="selectionChangeHandle">
+                highlight-current-row style="width: 100%; margin-bottom: 20px" @selection-change="selectionChangeHandle">
                 <el-table-column type="selection" width="55" />
                 <el-table-column type="index" align="center" label="序号" width="50" />
                 <!-- TABLE_SCHEMA,TABLE_NAME -->
@@ -700,20 +660,9 @@ import JsonViewer from "vue-json-viewer";
 export default {
   name: "List",
   components: { Pagination, JsonViewer },
-  // props: ['data', 'defaultActive','comment'],
   props: { comment: { type: Object } },
   data() {
-    // const validatemachine = (rule, value, callback) => {
-    //  if(value.length === 0){
-    //     callback(new Error("请选择计算机"));
-    //   }
-    //   // else if(value.length <3){
-    //   //   callback(new Error("所选计算机数不能小于3"));
-    //   // }
-    //   else {
-    //     callback();
-    //   }
-    // };
+
     const validateHaMode = (rule, value, callback) => {
       if (!value) {
         callback(new Error("请选择高可用模式"));
@@ -721,6 +670,7 @@ export default {
         callback();
       }
     };
+
     const validateShardsCount = (rule, value, callback) => {
       if (!value) {
         callback(new Error("请输入shard个数"));
@@ -732,6 +682,27 @@ export default {
         callback();
       }
     };
+
+    const validateDataStorageMB = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error("请输入数据存储空间"));
+      } else if (!/^[0-9]+$/.test(value)) {
+        callback(new Error("只能输入数字"));
+      } else {
+        callback();
+      }
+    };
+
+    const valiLogStorageMB = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error("请输入日志存储空间"));
+      } else if (!/^[0-9]+$/.test(value)) {
+        callback(new Error("只能输入数字"));
+      } else {
+        callback();
+      }
+    };
+
     const validateSnodeCount = (rule, value, callback) => {
       if (!value) {
         callback(new Error("请输入副本数"));
@@ -913,6 +884,8 @@ export default {
         per_storage_node_rocksdb_buffer_pool_size: "",
         per_storage_node_initial_storage_size: "20",
         per_storage_node_max_storage_size: "20",
+        per_storage_node_data_storage_MB: "",
+        per_storage_node_log_storage_MB: "",
         nick_name: "",
         machinelist: [],
         comp_machinelist: [],
@@ -1046,68 +1019,9 @@ export default {
       // 已选步骤
       stepSuc: [0],
       // 步骤参数
-      stepParams: [
-        // {
-        //   title: 'submit',
-        //   icon: 'el-icon-circle-check',
-        //   status: 'success',
-        //   description:""
-        // },
-        // {
-        //   title: 'degrade_master',
-        //   icon: 'el-icon-circle-check',
-        //   status: 'success',
-        //   description:""
-        // },
-        // {
-        //   title: 'report_relaying',
-        //   icon: 'el-icon-circle-check',
-        //   status: 'success',
-        //   description:""
-        // },
-        // {
-        //   title: 'apply_relaylog',
-        //   icon: 'el-icon-circle-check',
-        //   status: 'success',
-        //   description:""
-        // },
-        // {
-        //   title: 'select_new_master',
-        //   icon: 'el-icon-circle-check',
-        //   status: 'success',
-        //   description:""
-        // },
-        // {
-        //   title: 'change_slave_sync',
-        //   icon: 'el-icon-circle-check',
-        //   status: 'success',
-        //   description:""
-        // },
-        // {
-        //   title: 'Done',
-        //   icon: 'el-icon-circle-check',
-        //   status: 'success',
-        //   description:""
-        // },
-      ],
-      computer: [
-        // {
-        //   title: '192.168.0.136_47001;',
-        //   icon: 'el-icon-loading',
-        //   status: 'process',
-        //   computer_id:'101',
-        //   description:''
-        // },
-      ],
-      shard: [
-        // {
-        //   title: '104',
-        //   icon: 'el-icon-circle-check',
-        //   status: 'success',
-        //   shard_id:'104',
-        //   description:''
-        // },
-      ],
+      stepParams: [],
+      computer: [],
+      shard: [],
       computer_state: "",
       storage_state: "",
       finish_state: "",
@@ -1197,6 +1111,12 @@ export default {
         nick_name: [{ required: true, trigger: "blur", validator: validateNickName }],
         fullsync_level: [
           { required: true, trigger: "blur", validator: validateFullsyncLevel },
+        ],
+        per_storage_node_data_storage_MB: [
+          { required: true, trigger: "blur", validator: validateDataStorageMB },
+        ],
+        per_storage_node_log_storage_MB: [
+          { required: true, trigger: "blur", validator: valiLogStorageMB },
         ],
         retreated_time: [
           { required: true, trigger: "blur", validator: validateretreatedTime },
@@ -1647,6 +1567,8 @@ export default {
         per_storage_node_rocksdb_buffer_pool_size: "",
         per_storage_node_initial_storage_size: "20",
         per_storage_node_max_storage_size: "20",
+        per_storage_node_data_storage_MB: "",
+        per_storage_node_log_storage_MB: "",
         nick_name: "",
         machinelist: [],
         comp_machinelist: [],
@@ -1763,6 +1685,9 @@ export default {
           paras.ha_mode = tempData.ha_mode;
           paras.nick_name = tempData.nick_name;
           paras.fullsync_level = tempData.fullsync_level;
+          paras.data_storage_MB = tempData.per_storage_node_data_storage_MB;
+          paras.log_storage_MB = tempData.per_storage_node_log_storage_MB;
+
           // 可选项
           if (tempData.per_storage_node_max_storage_size) {
             paras.max_storage_size = tempData.per_storage_node_max_storage_size;
@@ -1911,19 +1836,6 @@ export default {
             addShards(tempData).then((response) => {
               const res = response;
               if (res.status == "accept") {
-                // this.dialogNodeVisible = false;
-                // this.dialogStatusVisible=true;
-                // this.activities=[];
-                // const newArr={
-                //   content:'正在新增shard...',
-                //   timestamp: getNowDate(),
-                //   size: 'large',
-                //   type: 'primary',
-                //   icon: 'el-icon-more'
-                // };
-                // this.activities.push(newArr)
-                // this.message_tips = '正在新增shard...';
-                // this.message_type = 'success';
                 // 调获取状态接口
                 this.dialogNodeVisible = false;
                 this.dialogStatusShowVisible = true;

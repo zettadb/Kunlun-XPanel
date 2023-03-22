@@ -75,32 +75,40 @@ const ip_arr = [{ ip: ip }]
 // const ip_arr=[{ip:'http://'+ip+':3000'}];
 const timestamp_arr = [{ time: new Date().getTime() }]
 const policy_arr = [{ id: 'top_hit', label: '按热点排序' }, { id: 'top_size', label: '按数据量排序' }]
-const node_stats_arr = [{ id: 'running', label: '在线', color: '#00ed37' }, {
-  id: 'idle',
-  label: '不允许再装实例',
-  color: '#c7c9d1'
-}, { id: 'dead', label: '离线', color: 'red' }]
-const alarm_type_arr = [{ id: 'standby_delay', label: '主备延迟过大' }, {
-  id: 'storage_node_exception',
-  label: '存储节点异常'
-}, { id: 'comp_node_exception', label: '计算节点异常' }, { id: 'machine_offline', label: '设备离线' }, {
-  id: 'manual_switch',
-  label: '主备切换'
-}, { id: 'expand_cluster', label: '集群扩容' }, { id: 'shard_coldbackup', label: '自动备份' }, {
-  id: 'manual_backup_cluster',
-  label: '全量备份'
-}, { id: 'create_cluster', label: '新增集群' }, { id: 'delete_cluster', label: '删除集群' }, {
-  id: 'add_shards',
-  label: '新增shard'
-}, { id: 'delete_shard', label: '删除shard' }, { id: 'add_comps', label: '增加计算节点' }, {
-  id: 'delete_comp',
-  label: '删除计算节点'
-}, { id: 'add_nodes', label: '增加存储节点' }, { id: 'delete_node', label: '删除存储节点' }]
-const alarm_level_arr = [{ id: 'FATAL', label: 'FATAL' }, { id: 'ERROR', label: 'ERROR' }, {
-  id: 'WARNING',
-  label: 'WARNING'
-}]
-const cpu_limit_mode = [{ id: 'quota', label: 'quota' }, { id: 'share', label: 'share' }]
+
+const node_stats_arr = [
+  { id: 'running', label: '在线', color: '#00ed37' },
+  { id: 'idle', label: '不允许再装实例', color: '#c7c9d1' },
+  { id: 'dead', label: '离线', color: 'red' }
+]
+const alarm_type_arr = [
+  { id: 'standby_delay', label: '主备延迟过大' },
+  { id: 'storage_node_exception', label: '存储节点异常' },
+  { id: 'comp_node_exception', label: '计算节点异常' },
+  { id: 'machine_offline', label: '设备离线' },
+  { id: 'manual_switch', label: '主备切换' },
+  { id: 'expand_cluster', label: '集群扩容' },
+  { id: 'shard_coldbackup', label: '自动备份' },
+  { id: 'manual_backup_cluster', label: '全量备份' },
+  { id: 'create_cluster', label: '新增集群' },
+  { id: 'delete_cluster', label: '删除集群' },
+  { id: 'add_shards', label: '新增shard' },
+  { id: 'delete_shard', label: '删除shard' },
+  { id: 'add_comps', label: '增加计算节点' },
+  { id: 'delete_comp', label: '删除计算节点' },
+  { id: 'add_nodes', label: '增加存储节点' },
+  { id: 'delete_node', label: '删除存储节点' }
+]
+
+const alarm_level_arr = [
+  { id: 'FATAL', label: 'FATAL' },
+  { id: 'ERROR', label: 'ERROR' },
+  { id: 'WARNING', label: 'WARNING' }
+]
+const cpu_limit_mode = [
+  { id: 'quota', label: 'quota' },
+  { id: 'share', label: 'share' }
+]
 
 export {
   role_type_arr,
