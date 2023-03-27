@@ -1,39 +1,43 @@
 <?php
-class Login_model extends CI_Model {
-    public function __construct()
-    {
-    	parent::__construct();
-		$this->db=$this->load->database('role',true);
-    }
+class Login_model extends CI_Model
+{
+	public function __construct()
+	{
+		parent::__construct();
+		$this->db = $this->load->database('role', true);
+	}
 	//查询数据
-	public function getList($sql){
+	public function getList($sql)
+	{
 		$q = $this->db->query($sql); //自动转义
-		if ( $q && $q->num_rows() > 0 ) {
-			$arr=$q->result_array();
+		if ($q && $q->num_rows() > 0) {
+			$arr = $q->result_array();
 			return $arr;
 		}
 		return false;
 		//return $this->db->_error_message();
 	}
 	//更新数据
-	public function updateList($sql){
+	public function updateList($sql)
+	{
 		//先查看那个是主节点,根据主节点连接数据库todo
 		//$mysql="select * from performance_schema.replication_group_members;";
 		$this->db->query($sql);
-		$error=$this->db->error();
-		//print_r($error);exit;
-		if($error['code']!==0){
+		$error = $this->db->error();
+		// print_r($error);
+		// exit;
+		if ($error['code'] !== 0) {
 			//切换元数据主节点
-			$mysql="select MEMBER_HOST,MEMBER_PORT from performance_schema.replication_group_members where MEMBER_ROLE = 'PRIMARY' and MEMBER_STATE = 'ONLINE'";
-			$q=$this->db->query($mysql);
-			if ( $q->num_rows() > 0 ) {
-				$arr=$q->result_array();
-				if(!empty($arr)){
-					$host=$arr[0]['MEMBER_HOST'];
-					$port=$arr[0]['MEMBER_PORT'];
+			$mysql = "select MEMBER_HOST,MEMBER_PORT from performance_schema.replication_group_members where MEMBER_ROLE = 'PRIMARY' and MEMBER_STATE = 'ONLINE'";
+			$q = $this->db->query($mysql);
+			if ($q->num_rows() > 0) {
+				$arr = $q->result_array();
+				if (!empty($arr)) {
+					$host = $arr[0]['MEMBER_HOST'];
+					$port = $arr[0]['MEMBER_PORT'];
 					//print_r($host);exit;
 					$f = fopen('./application/config/database.php', 'w+');
-					$file="<?php
+					$file = "<?php
 		defined('BASEPATH') OR exit('No direct script access allowed');
 		\$active_group = 'default';
 		\$query_builder = TRUE;
@@ -88,7 +92,7 @@ class Login_model extends CI_Model {
 					fgets($f);
 					$this->db->query($sql);
 					return $this->db->affected_rows();
-				}else{
+				} else {
 					return $this->db->error();
 				}
 			}
@@ -96,7 +100,7 @@ class Login_model extends CI_Model {
 		}
 		return $this->db->affected_rows();
 	}
-	function getToken($string,$operation,$key)
+	function getToken($string, $operation, $key)
 	{
 		$key = md5($key);
 		$key_length = strlen($key);
@@ -132,49 +136,49 @@ class Login_model extends CI_Model {
 			return str_replace('=', '', base64_encode($result));
 		}
 	}
-	public function authority($user_name,$priv){
+	public function authority($user_name, $priv)
+	{
 		//user_id
-		$sql="select id from kunlun_user where name='$user_name' ";
-		$res=$this->getList($sql);
-		if(!empty($res)){
-			$user_id=$res[0]['id'];
-			$sql_role="select role_id from kunlun_role_assign where user_id='$user_id' and valid_period='permanent' ";
-			$sql_role.=" union select role_id from kunlun_role_assign where user_id='$user_id' and valid_period='from_to' and start_ts is not null and start_ts<now() and end_ts is null";
-			$sql_role.=" union select role_id from kunlun_role_assign where user_id='$user_id' and valid_period='from_to' and end_ts is not null and end_ts>now() and start_ts is null";
-			$sql_role.=" union select role_id from kunlun_role_assign where user_id='$user_id' and valid_period='from_to' and end_ts is not null  and start_ts is not null and start_ts<now() and end_ts>now();";
-			$res_role=$this->getList($sql_role);
-			if(!empty($res_role)){
+		$sql = "select id from kunlun_user where name='$user_name' ";
+		$res = $this->getList($sql);
+		if (!empty($res)) {
+			$user_id = $res[0]['id'];
+			$sql_role = "select role_id from kunlun_role_assign where user_id='$user_id' and valid_period='permanent' ";
+			$sql_role .= " union select role_id from kunlun_role_assign where user_id='$user_id' and valid_period='from_to' and start_ts is not null and start_ts<now() and end_ts is null";
+			$sql_role .= " union select role_id from kunlun_role_assign where user_id='$user_id' and valid_period='from_to' and end_ts is not null and end_ts>now() and start_ts is null";
+			$sql_role .= " union select role_id from kunlun_role_assign where user_id='$user_id' and valid_period='from_to' and end_ts is not null  and start_ts is not null and start_ts<now() and end_ts>now();";
+			$res_role = $this->getList($sql_role);
+			if (!empty($res_role)) {
 				//如果只有一条数据
-				$role_count=count($res_role);
-				if($role_count==1){
+				$role_count = count($res_role);
+				if ($role_count == 1) {
 					$role_id = $res_role[0]['role_id'];
-				}elseif($role_count>1){
-					$role_id='';
-					foreach ($res_role as $key=>$row){
-						foreach ($row as $key2=>$value2){
-							if($key2=='role_id'){
-								if(!empty($value2)){
-									$role_id.=$value2.',';
+				} elseif ($role_count > 1) {
+					$role_id = '';
+					foreach ($res_role as $key => $row) {
+						foreach ($row as $key2 => $value2) {
+							if ($key2 == 'role_id') {
+								if (!empty($value2)) {
+									$role_id .= $value2 . ',';
 								}
 							}
 						}
 					}
-					$role_id=substr($role_id,0,-1);
+					$role_id = substr($role_id, 0, -1);
 				}
 				//获取该用户权限（多条记录求并集）
-				$sql_priv="select count(*) as count from kunlun_role_privilege where id in($role_id) and $priv='Y';";
-				$res_priv=$this->getList($sql_priv);
-				if($res_priv[0]['count']>0){
+				$sql_priv = "select count(*) as count from kunlun_role_privilege where id in($role_id) and $priv='Y';";
+				$res_priv = $this->getList($sql_priv);
+				if ($res_priv[0]['count'] > 0) {
 					return true;
-				}else{
+				} else {
 					return false;
 				}
-			}else{
+			} else {
 				return false;
 			}
-		}else{
+		} else {
 			return false;
 		}
 	}
 }
-

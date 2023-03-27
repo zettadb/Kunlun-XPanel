@@ -1,11 +1,81 @@
 <template>
   <div class="app-container">
-    <el-drawer title="我嵌套了表格!" :visible.sync="table" direction="rtl" size="50%">
-      <el-table :data="gridData">
-        <el-table-column property="date" label="日期" width="150"></el-table-column>
-        <el-table-column property="name" label="姓名" width="200"></el-table-column>
-        <el-table-column property="address" label="地址"></el-table-column>
-      </el-table>
+    <el-dialog title="告警配置" :visible.sync="dialogRestoreVisible" custom-class="single_dal_view"
+      :close-on-click-modal="false">
+      <el-form ref="restoreForm" :model="restoretemp" :rules="rules" label-position="left">
+        <el-form-item label="告警类型:" prop="alrmType">
+          <el-select v-model="restoretemp.alrmType" placeholder="请选择告警类型" class="list_search_select" clearable>
+            <el-option v-for="item in alarmTypes" :key="item.id" :label="item.label" :value="item.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="用户名称:" prop="user">
+          <el-select v-model="restoretemp.user" placeholder="请选择告警类型" class="list_search_select" clearable>
+            <el-option v-for="item in userList" :key="item.id" :label="item.username" :value="item.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="提醒方式:" prop="alrm_to_user">
+          <el-select v-model="restoretemp.alrm_to_user" placeholder="提醒方式" multiple class="list_search_select" clearable>
+            <el-option key="0" label="系统提醒" value="system" />
+            <el-option key="1" label="短信提醒" value="phone_message" />
+            <el-option key="2" label="邮件提醒" value="mail" />
+            <el-option key="3" label="微信推送" value="wechat" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="是否生效:" prop="status">
+          <el-select v-model="restoretemp.status" placeholder="是否生效" class="list_search_select" clearable>
+            <el-option key="0" label="有效" value="1" />
+            <el-option key="1" label="禁用" value="0" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogRestoreVisible = false">关闭</el-button>
+        <el-button type="primary" @click="createData(restoretemp)">确认</el-button>
+      </div>
+    </el-dialog>
+
+    <el-drawer title="告警配置" :visible.sync="table" direction="rtl" size="50%">
+
+      <el-tabs v-model="activeName">
+        <el-tab-pane label="用户管理" name="first">
+          <el-table :data="gridData">
+            <el-table-column property="alarm_type" label="告警类型" width="150">
+              <template slot-scope="scope">
+                <span>{{ handleUserTypeName(scope.row.alarm_type) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column property="alarm_to_user" label="推送方式" width="200">
+              <template slot-scope="scope">
+                <span>{{ handleAlramTypeName(scope.row.alarm_to_user) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column property="uid" label="接受处理人">
+              <template slot-scope="scope">
+                <span>{{ handleUserName(scope.row.uid) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column property="status" label="是否是生效">
+              <template slot-scope="scope">
+                <span v-if="scope.row.status === '1'">生效中</span>
+                <span v-else-if="scope.row.status === '0'">禁用</span>
+              </template>
+            </el-table-column>
+            <el-table-column property="" label="操作">
+              <template slot-scope="{ row }">
+                <el-button type="primary" size="mini" @click="handleEditAlram(row)">编辑</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+        <el-tab-pane label="配置管理" name="second">
+          <el-tabs :tab-position="tabPosition" style="height: 200px;">
+            <el-tab-pane label="短信配置">短信配置</el-tab-pane>
+            <el-tab-pane label="服务号推送">
+            </el-tab-pane>
+            <el-tab-pane label="阿里云邮件">阿里云邮件</el-tab-pane>
+          </el-tabs>
+        </el-tab-pane>
+      </el-tabs>
     </el-drawer>
     <div class="filter-container">
       <div class="table-list-search-wrap">
@@ -19,23 +89,10 @@
           <el-option label="已处理" value="handled" />
           <el-option label="忽略" value="ignore" />
         </el-select>
-        <!-- <el-select v-model="listQuery.alarm_level" placeholder="请选择告警级别" class="list_search_select" style="width:150px;" clearable>
-           <el-option
-            v-for="item in alarmLevel"
-            :key="item.id"
-            :label="item.label"
-            :value="item.id">
-          </el-option>
-        </el-select> -->
         <el-button icon="el-icon-search" @click="handleFilter"> 查询 </el-button>
         <el-button icon="el-icon-refresh-right" @click="handleClear"> 重置 </el-button>
-        <el-button type="text" @click="table = true"> 告警配置</el-button>
-        <!-- <el-button
-         class="filter-item"
-         type="primary"
-         icon="el-icon-setting"
-         @click="handleSet"
-       >设置告警级别</el-button> -->
+        <el-button type="primary" icon="el-icon-plus" @click="addAlarm()"> 新增</el-button>
+        <el-button type="primary" icon="el-icon-plus" @click="table = true"> 告警管理</el-button>
       </div>
       <div class="table-list-wrap" />
     </div>
@@ -51,11 +108,6 @@
       </el-table-column>
 
       <el-table-column prop="object" align="center" label="告警对象" />
-      <!-- <el-table-column
-       prop="occur_timestamp"
-       align="center"
-       label="告警时间">
-     </el-table-column> -->
       <el-table-column prop="alarm_status" align="center" label="告警状态">
         <template slot-scope="scope">
           <span v-if="scope.row.status === 'handled'">已处理</span>
@@ -84,8 +136,9 @@
 </template>
 <script>
 import { messageTip, createCode, gotoCofirm } from "@/utils";
-import { getAlarmRecordList, update } from "@/api/alarmrecord/list";
+import { getAlarmRecordList, update, updateAlarmSet, getAlarmSetList } from "@/api/alarmrecord/list";
 import { alarm_type_arr, alarm_level_arr } from "@/utils/global_variable";
+import { getAccountList } from '@/api/system/account'
 import Pagination from "@/components/Pagination";
 import { getClusterMonitor } from "@/api/cluster/list";
 import { Drawer } from "element-ui";
@@ -94,7 +147,18 @@ export default {
   name: "Alarmrecord",
   components: { Pagination },
   data() {
+    const validateAlrmType = (rule, value, callback) => {
+      console.log(value)
+      if (!value) {
+        callback(new Error('请选择'))
+      } else {
+        callback()
+      }
+    }
     return {
+      activeName: "first",
+      tabPosition: 'left',
+      dialogRestoreVisible: false,
       tableKey: 0,
       list: null,
       listLoading: true,
@@ -113,12 +177,6 @@ export default {
       dialogEditVisible: false,
       dialogUploadVisible: false,
       dialogStatus: "",
-      // textMap: {
-      //   update: "编辑计算机",
-      //   create: "新增计算机",
-      //   detail: "详情",
-      //   upload:'批量导入'
-      // },
       dialogDetail: false,
       message_tips: "",
       message_type: "",
@@ -132,31 +190,39 @@ export default {
       machine_priv: JSON.parse(sessionStorage.getItem("priv")).machine_priv,
       timer: null,
       rules: {},
-      gridData: [{
-        date: '2016-05-02',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-04',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-01',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-03',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }],
+      gridData: [],
       table: false,
       dialog: false,
       loading: false,
+      userList: [],
+      restoretemp: {
+        id: 0,
+        alrmType: "",
+        user: "",
+        alrm_to_user: "",
+        status: "",
+      },
+      rules: {
+        alrmType: [
+          { required: true, trigger: 'blur', validator: validateAlrmType }
+        ],
+        user: [
+          { required: true, trigger: 'blur', validator: validateAlrmType }
+        ],
+        alrm_to_user: [
+          { required: true, trigger: 'blur', validator: validateAlrmType }
+        ],
+        status: [
+          { required: true, trigger: 'blur', validator: validateAlrmType }
+        ]
+      }
     };
   },
 
   created() {
     this.getList();
+    this.getUserList();
+    this.getAlarmSetList();
   },
   mounted() {
     let i = 0;
@@ -177,6 +243,71 @@ export default {
     this.timer = null;
   },
   methods: {
+    addAlarm() {
+      this.restoretemp = {
+        id: 0,
+        alrmType: "",
+        user: "",
+        alrm_to_user: "",
+        status: "",
+      }
+      this.dialogRestoreVisible = true;
+
+    },
+    handleEditAlram(row) {
+      console.log(row)
+      this.dialogRestoreVisible = true;
+      this.restoretemp.id = row.id;
+      this.restoretemp.alrmType = row.alarm_type;
+      this.restoretemp.user = row.uid;
+      this.restoretemp.alrm_to_user = row.alarm_to_user.split(",")
+      this.restoretemp.stauts = row.status;
+    },
+    handleAlramTypeName(name) {
+      let nameArr = name.split(",")
+      let type_name = [];
+      for (let i = 0; i < nameArr.length; i++) {
+        switch (nameArr[i]) {
+          case "system":
+            type_name.push("系统消息")
+            break
+          case "phone_message":
+            type_name.push("短信提醒")
+            break
+          case "mail":
+            type_name.push("邮件提醒")
+            break
+          case "wechat":
+            type_name.push("微信推送")
+            break
+        }
+      }
+      return type_name.join(",")
+    },
+
+    handleUserTypeName(name) {
+      let type_name = "";
+      for (let i = 0; i < this.alarmTypes.length; i++) {
+        if (this.alarmTypes[i].id == name) {
+          type_name = this.alarmTypes[i].label;
+          break
+        }
+      }
+      return type_name;
+    },
+    handleUserName(uid) {
+      if (this.userList.length == 0) {
+        this.getUserList()
+      }
+      let user_name = "";
+      for (let i = 0; i < this.userList.length; i++) {
+        if (this.userList[i].id == uid) {
+          user_name = this.userList[i].username;
+          break
+        }
+      }
+      return user_name;
+    },
     handleDetail(row) {
       this.$alert(row.list, "详细信息", {
         dangerouslyUseHTMLString: true,
@@ -192,6 +323,28 @@ export default {
       (this.listQuery.status = "unhandled"), (this.alarm_level = "");
       this.getList();
     },
+    getUserList() {
+
+      const queryParam = Object.assign({}, this.listQuery)
+      queryParam.user_name = sessionStorage.getItem('login_username')
+      // 模糊搜索
+      getAccountList(queryParam).then(response => {
+        this.userList = response.list
+      })
+    },
+
+    getAlarmSetList() {
+      const queryParam = {
+        pageNo: 1,
+        pageSize: 50,
+        user_name: sessionStorage.getItem("login_username")
+      }
+      getAlarmSetList(queryParam).then((response) => {
+        console.log(response)
+        this.gridData = response.list;
+      });
+    },
+
     getList() {
       this.listLoading = true;
       const queryParam = Object.assign({}, this.listQuery);
@@ -215,8 +368,7 @@ export default {
     },
     hanldeAlarm(row) {
       const code = createCode();
-      const string =
-        "将对" + row.object + row.job_type + "告警进行处理操作,是否继续?code=" + code;
+      const string = "将对" + row.object + row.job_type + "告警进行处理操作,是否继续?code=" + code;
       gotoCofirm(string)
         .then((res) => {
           // 先执行删权限
@@ -247,8 +399,7 @@ export default {
             this.message_type = "error";
             messageTip(this.message_tips, this.message_type);
           }
-        })
-        .catch(() => {
+        }).catch(() => {
           console.log("quxiao");
           messageTip("已取消删除", "info");
         });
@@ -271,6 +422,30 @@ export default {
         }
         messageTip(this.message_tips, this.message_type);
       });
+    },
+
+    createData() {
+      this.$refs['restoreForm'].validate((valid) => {
+        if (valid) {
+          const tempData = this.restoretemp
+          console.log(valid)
+          updateAlarmSet(tempData).then((response) => {
+            const res = response;
+            if (res.code == 200) {
+              this.message_tips = "成功";
+              this.message_type = "success";
+              this.getList();
+              this.getUserList();
+              this.getAlarmSetList();
+              this.dialogRestoreVisible = false;
+            } else {
+              this.message_tips = "忽略失败";
+              this.message_type = "error";
+            }
+            messageTip(this.message_tips, this.message_type);
+          })
+        }
+      })
     },
   },
 };

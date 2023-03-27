@@ -2,18 +2,9 @@
   <div class="app-container">
     <div class="filter-container">
       <div class="table-list-search-wrap">
-        <el-input
-          v-model="listQuery.hostaddr"
-          class="list_search_keyword"
-          placeholder="可输入ip搜索"
-          @keyup.enter.native="handleFilter"
-        />
-        <el-select
-          v-model="listQuery.master"
-          placeholder="请选择主/备节点"
-          class="list_search_select"
-          style="width:150px;"
-        >
+        <el-input v-model="listQuery.hostaddr" class="list_search_keyword" placeholder="可输入ip搜索"
+          @keyup.enter.native="handleFilter" />
+        <el-select v-model="listQuery.master" placeholder="请选择主/备节点" class="list_search_select" style="width:150px;">
           <el-option label="主节点" value="source" />
           <el-option label="备节点" value="replica" />
         </el-select>
@@ -29,40 +20,17 @@
         <el-button icon="el-icon-refresh-right" @click="handleClear">
           重置
         </el-button>
-        <el-button
-          v-if="shard_create_priv==='Y'"
-          class="filter-item"
-          type="primary"
-          icon="el-icon-plus"
-          @click="handleCreate"
-        >添加shard
+        <el-button v-if="shard_create_priv === 'Y'" class="filter-item" type="primary" icon="el-icon-plus"
+          @click="handleCreate">添加shard
         </el-button>
-        <el-button
-          v-if="storage_node_create_priv==='Y'"
-          class="filter-item"
-          type="primary"
-          icon="el-icon-plus"
-          @click="handleCreateStorage"
-        >添加储存节点
+        <el-button v-if="storage_node_create_priv === 'Y'" class="filter-item" type="primary" icon="el-icon-plus"
+          @click="handleCreateStorage">添加储存节点
         </el-button>
       </div>
     </div>
-    <el-table
-      ref="multipleTable"
-      :key="tableKey"
-      v-loading="listLoading"
-      :data="list"
-      border
-      highlight-current-row
-      default-expand-all
-      style="width: 100%;margin-bottom: 20px;"
-    >
-      <el-table-column
-        type="expand"
-        align="center"
-        label=""
-        width="50"
-      >
+    <el-table ref="multipleTable" :key="tableKey" v-loading="listLoading" :data="list" border highlight-current-row
+      default-expand-all style="width: 100%;margin-bottom: 20px;">
+      <el-table-column type="expand" align="center" label="" width="50">
         <template slot-scope="scope">
           <el-table class="sectable" :data="scope.row.shardList" stripe style="width: 100%">
             <el-table-column type="index" label="序号" align="center" width="50" />
@@ -71,8 +39,8 @@
             <el-table-column prop="cpu_cores" label="CPU个数" align="center" />
             <el-table-column prop="master" label="主/备节点" align="center">
               <template slot-scope="scope">
-                <span v-if="scope.row.master==='true'" style="color: #409eff;">主</span>
-                <span v-else-if="scope.row.master==='false'">备</span>
+                <span v-if="scope.row.master === 'true'" style="color: #409eff;">主</span>
+                <span v-else-if="scope.row.master === 'false'">备</span>
                 <span v-else />
               </template>
             </el-table-column>
@@ -83,50 +51,34 @@
             </el-table-column>
             <el-table-column prop="status" label="状态" align="center">
               <template slot-scope="scope">
-                <span v-if="scope.row.status==='online'" style="color: #00ed37">运行中</span>
-                <span v-if="scope.row.status==='creating'">安装中</span>
-                <span v-if="scope.row.status==='inactive'" style="color: red">异常</span>
-                <span v-else-if="scope.row.status==='offline'" style="color: #c7c9d1;">停止</span>
+                <span v-if="scope.row.status === 'online'" style="color: #00ed37">运行中</span>
+                <span v-if="scope.row.status === 'creating'">安装中</span>
+                <span v-if="scope.row.status === 'inactive'" style="color: red">异常</span>
+                <span v-else-if="scope.row.status === 'offline'" style="color: #c7c9d1;">停止</span>
                 <span v-else />
               </template>
             </el-table-column>
             <el-table-column label="操作" align="center" width="380" class-name="small-padding fixed-width">
               <template slot-scope="{row,$index}">
-                <el-button v-if="row.status=='online'" size="mini" type="primary" @click="nodeMonitor(row)">节点监控
+                <el-button v-if="row.status == 'online'" size="mini" type="primary" @click="nodeMonitor(row)">节点监控
                 </el-button>
-                <el-button v-if="row.status=='online'" size="mini" type="primary" @click="handleSetCpu(row)">设置
+                <el-button v-if="row.status == 'online'" size="mini" type="primary" @click="handleSetCpu(row)">设置
                 </el-button>
-                <el-button
-                  v-if="row.status!=='online'"
-                  size="mini"
-                  type="primary"
-                  @click="handleControlNode(row,'start')"
-                >启用
+                <el-button v-if="row.status !== 'online'" size="mini" type="primary"
+                  @click="handleControlNode(row, 'start')">启用
                 </el-button>
-                <el-button
-                  v-if="row.master!=='true'&&row.status!=='offline'"
-                  size="mini"
-                  type="primary"
-                  @click="handleControlNode(row,'stop')"
-                >禁用
+                <el-button v-if="row.master !== 'true' && row.status !== 'offline'" size="mini" type="primary"
+                  @click="handleControlNode(row, 'stop')">禁用
                 </el-button>
-                <el-button
-                  v-if="row.master!=='true'"
-                  size="mini"
-                  type="primary"
-                  @click="handleControlNode(row,'restart')"
-                >重启
+                <el-button v-if="row.master !== 'true'" size="mini" type="primary"
+                  @click="handleControlNode(row, 'restart')">重启
                 </el-button>
-                <el-button v-if="row.master=='true'" size="mini" type="primary" @click="handleSwitch(row)">主备切换
+                <el-button v-if="row.master == 'true'" size="mini" type="primary" @click="handleSwitch(row)">主备切换
                 </el-button>
-                <el-button v-if="row.master=='true'" size="mini" type="primary" @click="handleReDo(row)">重做备机节点
+                <el-button v-if="row.master == 'true'" size="mini" type="primary" @click="handleReDo(row)">重做备机节点
                 </el-button>
-                <el-button
-                  v-if="storage_node_drop_priv==='Y'&&row.master!=='true'"
-                  size="mini"
-                  type="danger"
-                  @click="handleDeleteStorage(row,$index)"
-                >删除
+                <el-button v-if="storage_node_drop_priv === 'Y' && row.master !== 'true'" size="mini" type="danger"
+                  @click="handleDeleteStorage(row, $index)">删除
                 </el-button>
               </template>
             </el-table-column>
@@ -134,70 +86,29 @@
         </template>
       </el-table-column>
 
-      <el-table-column
-        type="index"
-        align="center"
-        label="序号"
-        width="50"
-      />
+      <el-table-column type="index" align="center" label="序号" width="50" />
       <el-table-column prop="shardID" label="shardID" align="center">
         <template slot-scope="{row}">
           <span class="link-type" @click="handleDetail(row)">{{ row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column
-        prop="db_cluster_id"
-        align="center"
-        label=" 集群ID"
-      />
-      <el-table-column
-        prop="name"
-        align="center"
-        label="shard名称"
-      />
-      <el-table-column
-        prop="num_nodes"
-        align="center"
-        label="副本数"
-      />
-      <el-table-column
-        label="操作"
-        align="center"
-        width="100"
-        class-name="small-padding fixed-width"
-      >
+      <el-table-column prop="db_cluster_id" align="center" label=" 集群ID" />
+      <el-table-column prop="name" align="center" label="shard名称" />
+      <el-table-column prop="num_nodes" align="center" label="副本数" />
+      <el-table-column label="操作" align="center" width="100" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
-          <el-button
-            v-if="shard_drop_priv==='Y'"
-            size="mini"
-            type="danger"
-            @click="handleDelete(row,$index)"
-          >删除
+          <el-button v-if="shard_drop_priv === 'Y'" size="mini" type="danger" @click="handleDelete(row, $index)">删除
           </el-button>
         </template>
       </el-table-column>
     </el-table>
-    <pagination
-      v-show="total>0"
-      :total="total"
-      :page.sync="listQuery.pageNo"
-      :limit.sync="listQuery.pageSize"
-      @pagination="getList"
-    />
+
+    <pagination v-show="total > 0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize"
+      @pagination="getList" />
     <!--添加shard -->
-    <el-dialog
-      :title="textMap[dialogStatus]"
-      :visible.sync="dialogNodeVisible"
-      custom-class="single_dal_view"
-      :close-on-click-modal="false"
-    >
-      <el-form
-        ref="dataForm"
-        :model="temp"
-        :rules="rules"
-        label-position="left"
-        label-width="130px"
-      >
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogNodeVisible" custom-class="single_dal_view"
+      :close-on-click-modal="false">
+      <el-form ref="dataForm" :model="temp" :rules="rules" label-position="left" label-width="130px">
         <el-form-item label="集群名称:" prop="name">
           <span>{{ temp.name }}</span>
         </el-form-item>
@@ -206,29 +117,16 @@
         </el-form-item>
         <el-form-item label="选择计算机:" prop="machinelist">
           <el-select v-model="temp.machinelist" multiple placeholder="请选择">
-            <el-option
-              v-for="machine in strogemachines"
-              :key="machine.id"
-              :label="machine.hostaddr"
-              :value="machine.hostaddr"
-            />
+            <el-option v-for="machine in strogemachines" :key="machine.id" :label="machine.hostaddr"
+              :value="machine.hostaddr" />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="dialogStatus==='createstorage'" label="shard名称:" prop="shard_name">
-          <el-select
-            v-if="dialogStatus=== 'createstorage'?true:false"
-            v-model="temp.shard_name"
-            placeholder="请选择shard名称"
-          >
-            <el-option
-              v-for="shard in shard_arr"
-              :key="shard.id"
-              :label="shard.name"
-              :value="shard.id"
-            />
+        <el-form-item v-if="dialogStatus === 'createstorage'" label="shard名称:" prop="shard_name">
+          <el-select v-if="dialogStatus === 'createstorage' ? true : false" v-model="temp.shard_name" placeholder="请选择shard名称">
+            <el-option v-for="shard in shard_arr" :key="shard.id" :label="shard.name" :value="shard.id" />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="dialogStatus==='create'" label="shard个数:" prop="shards_count">
+        <el-form-item v-if="dialogStatus === 'create'" label="shard个数:" prop="shards_count">
           <el-input v-model="temp.shards_count" class="right_input" placeholder="请输入shard个数">
             <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">个</i>
           </el-input>
@@ -241,107 +139,58 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogNodeVisible = false">关闭</el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createData():createStorageData()">确认</el-button>
+        <el-button type="primary" @click="dialogStatus === 'create' ? createData() : createStorageData()">确认</el-button>
       </div>
     </el-dialog>
     <!--添加删除状态框 -->
-    <el-dialog
-      :title="job_id"
-      :visible.sync="dialogStatusShowVisible"
-      custom-class="single_dal_view"
-      :close-on-click-modal="false"
-      :before-close="beforeDestory"
-    >
+    <el-dialog :title="job_id" :visible.sync="dialogStatusShowVisible" custom-class="single_dal_view"
+      :close-on-click-modal="false" :before-close="beforeDestory">
       <div style="width: 100%;background: #fff;padding:0 20px;">
         <el-steps direction="vertical" :active="init_active">
           <el-step v-if="init_show" :title="init_title" icon="el-icon-more" />
-          <el-step
-            v-if="shard_show"
-            :title="shard_title"
-            :status="storage_state"
-            :icon="shard_icon"
-            :description="shard_description"
-          >
+          <el-step v-if="shard_show" :title="shard_title" :status="storage_state" :icon="shard_icon"
+            :description="shard_description">
             <template slot="description">
               <span>{{ shard_description }}</span>
               <div style="padding:20px;">
                 <el-steps direction="vertical" :active="shard_active">
-                  <el-step
-                    v-for="(item,index) of shard"
-                    :key="index"
-                    :title="item.title"
-                    :icon="item.icon"
-                    :status="item.status"
-                    :description="item.description"
-                    @click.native="thisDetail(item.shard_id)"
-                  />
+                  <el-step v-for="(item, index) of shard" :key="index" :title="item.title" :icon="item.icon"
+                    :status="item.status" :description="item.description" @click.native="thisDetail(item.shard_id)" />
                 </el-steps>
               </div>
             </template>
           </el-step>
-          <el-step
-            v-if="finish_show"
-            :title="finish_title"
-            :icon="finish_icon"
-            :description="finish_description"
-            :status="finish_state"
-          />
+          <el-step v-if="finish_show" :title="finish_title" :icon="finish_icon" :description="finish_description"
+            :status="finish_state" />
         </el-steps>
       </div>
     </el-dialog>
     <!--  状态框 -->
-    <el-dialog
-      :visible.sync="dialogStatusVisible"
-      custom-class="single_dal_view"
-      width="400px"
-      :close-on-click-modal="false"
-      :before-close="beforeSyncDestory"
-    >
+    <el-dialog :visible.sync="dialogStatusVisible" custom-class="single_dal_view" width="400px"
+      :close-on-click-modal="false" :before-close="beforeSyncDestory">
       <div class="block">
         <el-timeline>
-          <el-timeline-item
-            v-for="(activity, index) in activities"
-            :key="index"
-            :icon="activity.icon"
-            :type="activity.type"
-            :color="activity.color"
-            :size="activity.size"
-            :timestamp="activity.timestamp"
-          >
+          <el-timeline-item v-for="(activity, index) in activities" :key="index" :icon="activity.icon"
+            :type="activity.type" :color="activity.color" :size="activity.size" :timestamp="activity.timestamp">
             {{ activity.content }}
           </el-timeline-item>
         </el-timeline>
       </div>
     </el-dialog>
     <!--shard信息框 -->
-    <el-dialog
-      :title="dialogStatus"
-      :visible.sync="dialogShardInfo"
-      custom-class="single_dal_view"
-      :close-on-click-modal="false"
-    >
+    <el-dialog :title="dialogStatus" :visible.sync="dialogShardInfo" custom-class="single_dal_view"
+      :close-on-click-modal="false">
       <json-viewer :value="shardInfo" />
     </el-dialog>
     <!--主备切换-->
     <el-dialog title="主备切换" :visible.sync="dialogSwitchOVisible" custom-class="single_dal_view">
-      <el-form
-        ref="switchForm"
-        :model="switchtemp"
-        :rules="rules"
-        label-position="left"
-        label-width="100px"
-      >
+      <el-form ref="switchForm" :model="switchtemp" :rules="rules" label-position="left" label-width="100px">
         <el-form-item label="主节点:" prop="primary_node">
           <span>{{ switchtemp.primary_node }}</span>
         </el-form-item>
         <el-form-item label="备机节点:" prop="replica">
           <el-select v-model="switchtemp.replica" clearable placeholder="请选择备机节点">
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.label"
-            />
+            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.label" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -352,21 +201,10 @@
     </el-dialog>
     <!--重做备机节点-->
     <el-dialog title="重做备机节点" :visible.sync="dialogRedoVisible" custom-class="single_dal_view">
-      <el-form
-        ref="redoForm"
-        :model="redotemp"
-        :rules="rules"
-        label-position="left"
-        label-width="180px"
-      >
+      <el-form ref="redoForm" :model="redotemp" :rules="rules" label-position="left" label-width="180px">
         <el-form-item label="需重做的备机节点:" prop="redolist">
           <el-select v-model="redotemp.redolist" multiple placeholder="请选择" @change="change">
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.label"
-            />
+            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.label" />
           </el-select>
         </el-form-item>
 
@@ -374,7 +212,7 @@
           <el-radio v-model="redotemp.allow_pull_from_master" label="1">是</el-radio>
           <el-radio v-model="redotemp.allow_pull_from_master" label="0">否</el-radio>
         </el-form-item>
-        <el-form-item v-if="redotemp.allow_pull_from_master=='0'" label="主备延迟:" prop="allow_replica_delay">
+        <el-form-item v-if="redotemp.allow_pull_from_master == '0'" label="主备延迟:" prop="allow_replica_delay">
           <el-input v-model="redotemp.allow_replica_delay" class="right_input" placeholder="主备延迟">
             <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">s</i>
           </el-input>
@@ -383,14 +221,9 @@
           <el-radio v-model="redotemp.need_backup" label="1">是</el-radio>
           <el-radio v-model="redotemp.need_backup" label="0">否</el-radio>
         </el-form-item>
-        <el-form-item v-if="redotemp.need_backup=='1'" label="备份存储目标:" prop="hdfs_host">
+        <el-form-item v-if="redotemp.need_backup == '1'" label="备份存储目标:" prop="hdfs_host">
           <el-select v-model="redotemp.hdfs_host" placeholder="请选择">
-            <el-option
-              v-for="item in hdfs_options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.label"
-            />
+            <el-option v-for="item in hdfs_options" :key="item.value" :label="item.label" :value="item.label" />
           </el-select>
         </el-form-item>
         <el-form-item label="限速:" prop="pv_limit">
@@ -406,59 +239,30 @@
       </div>
     </el-dialog>
     <!-- 主备切换状态框 -->
-    <el-dialog
-      :title="job_id"
-      :visible.sync="dialogStatusFVisible"
-      custom-class="single_dal_view"
-      :close-on-click-modal="false"
-      :before-close="beforeSwitchDestory"
-    >
+    <el-dialog :title="job_id" :visible.sync="dialogStatusFVisible" custom-class="single_dal_view"
+      :close-on-click-modal="false" :before-close="beforeSwitchDestory">
       <div style="height: 400px;">
         <el-steps direction="vertical" :active="active" finish-status="success">
-          <el-step
-            v-for="(item,index) of stepParams"
-            :key="index"
-            :title="item.title"
-            :icon="item.icon"
-            :status="item.status"
-            :description="item.description"
-            :class="stepSuc.includes(index) ? 'stepSuc':'stepErr'"
-            @click.native="handleStep(index)"
-          />
+          <el-step v-for="(item, index) of stepParams" :key="index" :title="item.title" :icon="item.icon"
+            :status="item.status" :description="item.description" :class="stepSuc.includes(index) ? 'stepSuc' : 'stepErr'"
+            @click.native="handleStep(index)" />
         </el-steps>
       </div>
 
     </el-dialog>
     <!-- 重做备机状态框 -->
-    <el-dialog
-      :title="job_id"
-      :visible.sync="dialogStatusRedoVisible"
-      custom-class="single_dal_view"
-      :close-on-click-modal="false"
-      :before-close="beforeRedoDestory"
-    >
+    <el-dialog :title="job_id" :visible.sync="dialogStatusRedoVisible" custom-class="single_dal_view"
+      :close-on-click-modal="false" :before-close="beforeRedoDestory">
       <div style="width: 100%;background: #fff;padding:0 20px;" class="block">
         <el-steps direction="vertical" :active="init_active">
-          <el-step
-            v-for="(items, key) in statusList"
-            :key="key"
-            :title="items.title"
-            :icon="items.icon"
-            :status="items.status"
-            :description="items.description"
-          >
+          <el-step v-for="(items, key) in statusList" :key="key" :title="items.title" :icon="items.icon"
+            :status="items.status" :description="items.description">
             <template slot="description">
               <span>{{ items.description }}</span>
               <div style="padding:20px;">
                 <el-steps direction="vertical" :active="second_active">
-                  <el-step
-                    v-for="(item,index) of statusList[key].second"
-                    :key="index"
-                    :title="item.title"
-                    :icon="item.icon"
-                    :status="item.status"
-                    :description="item.description"
-                  />
+                  <el-step v-for="(item, index) of statusList[key].second" :key="index" :title="item.title"
+                    :icon="item.icon" :status="item.status" :description="item.description" />
                 </el-steps>
               </div>
             </template>
@@ -468,13 +272,7 @@
     </el-dialog>
     <!--  cpu 隔离设置  -->
     <el-dialog title="CPU资源设置" :visible.sync="dialogCpuVisible" custom-class="single_dal_view">
-      <el-form
-        ref="cpuForm"
-        :model="cpu_paras"
-        :rules="rules"
-        label-position="left"
-        label-width="100px"
-      >
+      <el-form ref="cpuForm" :model="cpu_paras" :rules="rules" label-position="left" label-width="100px">
         <el-form-item label="节点IP:" prop="cpu_paras.hostaddr">
           <span>{{ cpu_paras.hostaddr }}</span>
         </el-form-item>
@@ -488,12 +286,7 @@
         </el-form-item>
         <el-form-item label="cpu模式:" prop="cpu_paras.cgroup_mode">
           <el-select v-model="cpu_paras.cgroup_mode" clearable placeholder="资源限制模式">
-            <el-option
-              v-for="item in cpu_paras_option"
-              :key="item.value"
-              :label="item.label"
-              :value="item.label"
-            />
+            <el-option v-for="item in cpu_paras_option" :key="item.value" :label="item.label" :value="item.label" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -817,9 +610,9 @@ export default {
           const paras = {}
           if (this.redotemp.allow_pull_from_master == '1') {
             paras.shard_id = this.redotemp.shard_id,
-            paras.cluster_id = this.redotemp.cluster_id,
-            paras.allow_pull_from_master = this.redotemp.allow_pull_from_master,
-            paras.rb_nodes = rebuild
+              paras.cluster_id = this.redotemp.cluster_id,
+              paras.allow_pull_from_master = this.redotemp.allow_pull_from_master,
+              paras.rb_nodes = rebuild
           } else {
             paras.shard_id = this.redotemp.shard_id
             paras.cluster_id = this.redotemp.cluster_id
