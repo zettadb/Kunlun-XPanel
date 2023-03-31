@@ -24,7 +24,11 @@ class AlarmRecord extends CI_Controller
 		$sql_table = "CREATE TABLE IF NOT EXISTS `cluster_alarm_user` (`id` INT NOT NULL AUTO_INCREMENT,`uid` INT DEFAULT NULL,`alarm_type` VARCHAR (128) COLLATE utf8mb4_0900_as_cs DEFAULT NULL COMMENT '告警类型',`alarm_to_user` VARCHAR (255) COLLATE utf8mb4_0900_as_cs DEFAULT NULL COMMENT '提醒方式',`create_at` INT DEFAULT NULL,`update_at` INT DEFAULT NULL,`delete_at` INT DEFAULT NULL,`status` TINYINT DEFAULT NULL COMMENT '是否生效',PRIMARY KEY (`id`)) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;";
 		$this->Cluster_model->updateList($sql_table);
 
+		$push_comfig = "CREATE TABLE IF NOT EXISTS `cluster_alarm_message_config` (`id` INT NOT NULL AUTO_INCREMENT,`message` text COLLATE utf8mb4_0900_as_cs,`create_at` INT DEFAULT NULL,`update_at` INT DEFAULT NULL,`type` VARCHAR (64) COLLATE utf8mb4_0900_as_cs DEFAULT NULL,PRIMARY KEY (`id`)) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;";
+		$this->Cluster_model->updateList($push_comfig);
 
+		$push_log = "CREATE TABLE IF NOT EXISTS `cluster_alarm_push_log` (`id` INT NOT NULL AUTO_INCREMENT,`alarm_type` VARCHAR (128) COLLATE utf8mb4_0900_as_cs DEFAULT NULL,`push_type` VARCHAR (128) COLLATE utf8mb4_0900_as_cs DEFAULT NULL,`content` text COLLATE utf8mb4_0900_as_cs,`content_res` VARCHAR (255) COLLATE utf8mb4_0900_as_cs DEFAULT NULL,`create_at` INT DEFAULT NULL,PRIMARY KEY (`id`)) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;";
+		$this->Cluster_model->updateList($push_log);
 	}
 
 	public function getAlarmRecordList()
@@ -333,6 +337,44 @@ class AlarmRecord extends CI_Controller
 	}
 
 
+	public function deleteAlarmItem()
+	{
+		$arr = apache_request_headers(); //获取请求头数组
+		$token = $arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));
+			return;
+		}
+		//判断参数
+		$string = json_decode(@file_get_contents('php://input'), true);
+		//验证token
+		$this->load->model('Login_model');
+		$this->load->model('Cluster_model');
+		$res_token = $this->Login_model->getToken($token, 'D', $this->key);
+		if (!empty($res_token)) {
+			$sql = "select count(id) as count from kunlun_user where name='$res_token';";
+			$res = $this->Login_model->getList($sql);
+			if (!empty($res)) {
+				if ($res[0]['count'] == 0) {
+					$data['code'] = 500;
+					$data['message'] = 'token错误';
+					print_r(json_encode($data));
+				} else {
+					$sql = "delete from cluster_alarm_user where id=" . $string['id'];
+					$this->Cluster_model->updateList($sql);
+					$data['code'] = 200;
+					$data['message'] = '成功';
+					print_r(json_encode($data));
+				}
+			}
+		} else {
+			$data['code'] = 500;
+			$data['message'] = 'token错误';
+			print_r(json_encode($data));
+		}
+	}
 
 	public function getAlarmSetList()
 	{
@@ -355,6 +397,20 @@ class AlarmRecord extends CI_Controller
 		} else {
 			$sqldalay = "select * from cluster_alarm_user ";
 		}
+		$res = $this->Cluster_model->getList($sqldalay);
+		$data['code'] = 200;
+		$data['list'] = $res;
+		$data['total'] = 0;
+		print_r(json_encode($data));
+	}
+
+
+
+	public function getAlarmConfig()
+	{
+
+		$this->load->model('Cluster_model');
+		$sqldalay = "select * from cluster_alarm_message_config ";
 		$res = $this->Cluster_model->getList($sqldalay);
 		$data['code'] = 200;
 		$data['list'] = $res;
@@ -405,6 +461,68 @@ class AlarmRecord extends CI_Controller
 					} else {
 						//update
 						$updateSql = "UPDATE `kunlun_metadata_db`.`cluster_alarm_user` SET `uid` = " . $string['user'] . ", `alarm_type` = '" . $string['alrmType'] . "', `alarm_to_user` = '" . implode(",", $string["alrm_to_user"]) . "', `update_at` = " . time() . ", `status` = " . $string['status'] . " WHERE `id` = " . $string['id'];
+						$res_update = $this->Cluster_model->updateList($updateSql);
+						if ($res_update == 1) {
+							$data['code'] = 200;
+							$data['message'] = '成功';
+						} else {
+							$data['code'] = 501;
+							$data['message'] = '失败';
+						}
+						print_r(json_encode($data));
+					}
+				}
+			}
+		} else {
+			$data['code'] = 500;
+			$data['message'] = 'token错误';
+			print_r(json_encode($data));
+		}
+	}
+
+
+
+	public function updateAlarmConfig()
+	{
+		//获取token
+		$arr = apache_request_headers(); //获取请求头数组
+		$token = $arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));
+			return;
+		}
+		//判断参数
+		$string = json_decode(@file_get_contents('php://input'), true);
+		//验证token
+		$this->load->model('Login_model');
+		$this->load->model('Cluster_model');
+		$res_token = $this->Login_model->getToken($token, 'D', $this->key);
+		if (!empty($res_token)) {
+			$sql = "select count(id) as count from kunlun_user where name='$res_token';";
+			$res = $this->Login_model->getList($sql);
+			if (!empty($res)) {
+				if ($res[0]['count'] == 0) {
+					$data['code'] = 500;
+					$data['message'] = 'token错误';
+					print_r(json_encode($data));
+				} else {
+					if ($string['id'] == 0) {
+						//新增
+						$addSql = "INSERT INTO `kunlun_metadata_db`.`cluster_alarm_message_config` (`message`, `create_at`, `type`) VALUES ('" . json_encode($string) . "', " . time() . ", '" . $string['Type'] . "');";
+						$res_update = $this->Cluster_model->updateList($addSql);
+						if ($res_update == 1) {
+							$data['code'] = 200;
+							$data['message'] = '成功';
+						} else {
+							$data['code'] = 501;
+							$data['message'] = '失败';
+						}
+						print_r(json_encode($data));
+					} else {
+						//update
+						$updateSql = "UPDATE `kunlun_metadata_db`.`cluster_alarm_message_config` SET `message` = '" . json_encode($string) . "', `update_at` = " . time() . ", `type` = '" . $string['Type'] . "' WHERE `id` =" . $string['id'];
 						$res_update = $this->Cluster_model->updateList($updateSql);
 						if ($res_update == 1) {
 							$data['code'] = 200;

@@ -20,6 +20,8 @@ class Cluster extends CI_Controller
 		$this->default_username = $this->config->item('default_username');
 		$this->pg_username = $this->config->item('pg_username');
 		$this->db_prefix = $this->config->item('db_prefix');
+
+		$this->load->model('Cluster_model');
 	}
 
 	public function createCluster()
@@ -3543,6 +3545,105 @@ class Cluster extends CI_Controller
 		print_r(json_encode($data));
 	}
 
+
+
+	public function decodeUnicode($str)
+	{
+		return preg_replace_callback(
+			"#\\\u([0-9a-f]{4})#i",
+			function ($r) {
+				return iconv('UCS-2BE', 'UTF-8', pack('H4', $r[1]));
+			},
+			$str
+		);
+	}
+
+
+	public function SendSms($mobile, $content, $titel = "")
+	{
+		require_once(APPPATH . "helpers/Sms.php");
+		$sqldalay = "select * from cluster_alarm_message_config ";
+		$push_config = $this->Cluster_model->getList($sqldalay);
+		$phone_message_config = [];
+		foreach ($push_config as $res) {
+			if ($res['type'] == 'phone_message') {
+				$phone_message_config = json_decode($res['message'], true);
+			}
+		}
+
+		if (count($phone_message_config)) {
+			$SigId = str_replace('u', '\u', $phone_message_config['SigId']);
+			$SigId = $this->decodeUnicode($SigId);
+			$cofig = array(
+				'accessKeyId' => $phone_message_config['AccessKeyId'],
+				'accessKeySecret' => $phone_message_config['SecretKey'],
+				'signName' => $SigId,
+				'templateCode' => $phone_message_config['TemplateId'],
+			);
+			$sms = new Sms($cofig);
+			if ($sms) {
+				if ($cofig['signName'] == "云信发") {
+					$content = "4331";
+				}
+				$status = $sms->send_verify($mobile, urlencode($content));
+				$log_sql = "INSERT INTO `kunlun_metadata_db`.`cluster_alarm_push_log` (`alarm_type`, `push_type`, `content`, `content_res`, `create_at`) VALUES ( '" . $titel . "', 'phone_message', '" . $content . "', '" . $status . "', " . time() . ")";
+				$this->Cluster_model->updateList($log_sql);
+				return $status;
+			} else {
+				return true;
+			}
+		}
+	}
+
+	public function SendMail($mailAddress, $titel, $content)
+	{
+		require_once(APPPATH . "helpers/SendMail.php");
+		$sqldalay = "select * from cluster_alarm_message_config ";
+		$push_config = $this->Cluster_model->getList($sqldalay);
+		$email_config = [];
+		foreach ($push_config as $res) {
+			if ($res['type'] == 'email') {
+				$email_config = json_decode($res['message'], true);
+			}
+		}
+		$SendMail = new SendMail($email_config['AccessKeyId'], $email_config['SecretKey'], $email_config['AccountName']);
+		if ($SendMail) {
+			$SendMail->ToAddress = $mailAddress;
+			$SendMail->FromAlias = "kunlunbase";
+			$SendMail->TagName = "kunlunbase";
+			$SendMail->Subject = $titel;
+			$SendMail->HtmlBody = $content;
+			$EmailRes = $SendMail->send();
+			$log_sql = "INSERT INTO `kunlun_metadata_db`.`cluster_alarm_push_log` (`alarm_type`, `push_type`, `content`, `content_res`, `create_at`) VALUES ( '" . $titel . "', 'email', '" . $content . "', '" . json_encode($EmailRes) . "', " . time() . ")";
+			$this->Cluster_model->updateList($log_sql);
+			return $EmailRes;
+		}
+	}
+
+	public function getPushMessageType($alarm_type)
+	{
+		$sqldalay = "select * from cluster_alarm_user where `alarm_type`='" . $alarm_type . "'";
+		$res = $this->Cluster_model->getList($sqldalay);
+		if ($res && $res[0]['status'] == 1) {
+			$alarm_type_content = $res[0]['alarm_to_user'];
+			$sql_user = "select * from kunlun_user where id=" . $res[0]['uid'];
+			$res_user = $this->Login_model->getList($sql_user);
+			$resp = [];
+			if ($res_user) {
+				$alarm_type_Arr = explode(",", $alarm_type_content);
+				for ($i = 0; $i < count($alarm_type_Arr); $i++) {
+					$tmp = [];
+					$tmp['type'] = $alarm_type_Arr[$i];
+					$tmp['phone'] = $res_user[0]['phone_number'];
+					$tmp['email'] = $res_user[0]['email'];
+					$resp[] = $tmp;
+				}
+			}
+			return $resp;
+		}
+		return [];
+	}
+
 	//监控主备延迟，节点异常，机器离线，主备切换失败
 	public function getClusterMonitor()
 	{
@@ -3567,6 +3668,7 @@ class Cluster extends CI_Controller
 			print_r(json_encode($data));
 			return;
 		}
+
 		$sql = "select db_cluster_id,shard_id from shard_nodes where status!='deleted' group by db_cluster_id,shard_id;";
 		$this->load->model('Cluster_model');
 		$res = $this->Cluster_model->getList($sql);
@@ -3610,6 +3712,15 @@ class Cluster extends CI_Controller
 						$select_comp_sql = "select job_info from cluster_alarm_info where job_info='$msg_data' and status='unhandled' ";
 						$res_comp_select = $this->Cluster_model->getList($select_comp_sql);
 						if ($res_comp_select == false) {
+							$PushMessage = $this->getPushMessageType("comp_node_exception");
+							foreach ($PushMessage as $item) {
+								if ($item['type'] == 'phone_message') {
+									$this->SendSms($item['phone'], $msg_data);
+								}
+								if ($item['type'] == 'mail') {
+									$this->SendMail($item['email'], "comp_node_exception", $msg_data);
+								}
+							}
 							$insert_comp_sql = "insert into cluster_alarm_info(alarm_type,job_info,occur_timestamp,cluster_id,compnodeid) values ('comp_node_exception','$msg_data',now(),'$cluster_id','$comp_id');";
 							$res_comp_insert = $this->Cluster_model->updateList($insert_comp_sql);
 						}
@@ -3641,6 +3752,15 @@ class Cluster extends CI_Controller
 								$select_sql = "select job_info from cluster_alarm_info where job_info='$msg_data' and status='unhandled' ";
 								$res_select = $this->Cluster_model->getList($select_sql);
 								if ($res_select == false) {
+									$PushMessage = $this->getPushMessageType("standby_delay");
+									foreach ($PushMessage as $item) {
+										if ($item['type'] == 'phone_message') {
+											$this->SendSms($item['phone'], $msg_data);
+										}
+										if ($item['type'] == 'mail') {
+											$this->SendMail($item['email'], "延迟standby_delay", $msg_data);
+										}
+									}
 									$insert_sql = "insert into cluster_alarm_info(alarm_type,job_info,occur_timestamp,cluster_id,shardid) values ('standby_delay','$msg_data',now(),'$cluster_id','$shard_id');";
 									$res_insert = $this->Cluster_model->updateList($insert_sql);
 								}
@@ -3664,6 +3784,15 @@ class Cluster extends CI_Controller
 								$select_storage_sql = "select job_info from cluster_alarm_info where job_info='$msg_data' and status='unhandled' ";
 								$res_storage_select = $this->Cluster_model->getList($select_storage_sql);
 								if ($res_storage_select == false) {
+									$PushMessage = $this->getPushMessageType("storage_node_exception");
+									foreach ($PushMessage as $item) {
+										if ($item['type'] == 'phone_message') {
+											$this->SendSms($item['phone'], $msg_data);
+										}
+										if ($item['type'] == 'mail') {
+											$this->SendMail($item['email'], "存储节点异常storage_node_exception", $msg_data);
+										}
+									}
 									$insert_storage_sql = "insert into cluster_alarm_info(alarm_type,job_info,occur_timestamp,cluster_id,shardid) values ('storage_node_exception','$msg_data',now(),'$cluster_id','$shard_id');";
 									$res_storage_insert = $this->Cluster_model->updateList($insert_storage_sql);
 								}
@@ -3690,6 +3819,15 @@ class Cluster extends CI_Controller
 				$select_machine_sql = "select job_info from cluster_alarm_info where job_info='$msg_data' and status='unhandled' ";
 				$res_machine_select = $this->Cluster_model->getList($select_machine_sql);
 				if ($res_machine_select == false) {
+					$PushMessage = $this->getPushMessageType("machine_offline");
+					foreach ($PushMessage as $item) {
+						if ($item['type'] == 'phone_message') {
+							$this->SendSms($item['phone'], $msg_data);
+						}
+						if ($item['type'] == 'mail') {
+							$this->SendMail($item['email'], "设备离线machine_offline", $msg_data);
+						}
+					}
 					$insert_machine_sql = "insert into cluster_alarm_info(alarm_type,job_info,occur_timestamp) values ('machine_offline','$msg_data',now());";
 					$res_machine_insert = $this->Cluster_model->updateList($insert_machine_sql);
 				}
@@ -3706,6 +3844,15 @@ class Cluster extends CI_Controller
 				$select_switch_sql = "select job_info from cluster_alarm_info where job_info='$switch_row' ";
 				$res_select_switch = $this->Cluster_model->getList($select_switch_sql);
 				if ($res_select_switch == false) {
+					$PushMessage = $this->getPushMessageType("manual_switch");
+					foreach ($PushMessage as $item) {
+						if ($item['type'] == 'phone_message') {
+							$this->SendSms($item['phone'], $msg_data);
+						}
+						if ($item['type'] == 'mail') {
+							$this->SendMail($item['email'], "主备切换失败manual_switch", $msg_data);
+						}
+					}
 					$insert_switch_sql = "insert into cluster_alarm_info(alarm_type,job_info,occur_timestamp,cluster_id,shardid) values ('manual_switch','$switch_row',now(),'$switch_cluster_id','$switch_shard_id');";
 					$res_insert_switch = $this->Cluster_model->updateList($insert_switch_sql);
 				}
@@ -3723,6 +3870,15 @@ class Cluster extends CI_Controller
 				$select_move_sql = "select job_id from cluster_alarm_info where job_id='$move_job_id' ";
 				$res_move = $this->Cluster_model->getList($select_move_sql);
 				if ($res_move == false) {
+					$PushMessage = $this->getPushMessageType("expand_cluster");
+					foreach ($PushMessage as $item) {
+						if ($item['type'] == 'phone_message') {
+							$this->SendSms($item['phone'], $msg_data);
+						}
+						if ($item['type'] == 'mail') {
+							$this->SendMail($item['email'], "搬表失败expand_cluster", $msg_data);
+						}
+					}
 					$insert_move_sql = "insert into cluster_alarm_info(alarm_type,job_info,occur_timestamp,cluster_id,shardid,job_id) values ('expand_cluster','$move_row',now(),'$move_cluster_id','$move_shard_id','$move_job_id');";
 					$res_insert_move = $this->Cluster_model->updateList($insert_move_sql);
 				}
@@ -3742,6 +3898,15 @@ class Cluster extends CI_Controller
 					$select_backup_sql = "select job_id from cluster_alarm_info where job_id='$backup_job_id' ";
 					$res_backup = $this->Cluster_model->getList($select_backup_sql);
 					if ($res_backup == false) {
+						$PushMessage = $this->getPushMessageType("shard_coldbackup");
+						foreach ($PushMessage as $item) {
+							if ($item['type'] == 'phone_message') {
+								$this->SendSms($item['phone'], $msg_data);
+							}
+							if ($item['type'] == 'mail') {
+								$this->SendMail($item['email'], "备份失败shard_coldbackup", $msg_data);
+							}
+						}
 						$insert_backup_sql = "insert into cluster_alarm_info(alarm_type,job_info,occur_timestamp,job_id,cluster_id,shardid,compnodeid) values ('shard_coldbackup','$backup_row',now(),'$backup_job_id','$backup_cluster_id','$backup_shard_id','$backup_comp_id');";
 						$res_insert_backup = $this->Cluster_model->updateList($insert_backup_sql);
 					}
@@ -3768,6 +3933,15 @@ class Cluster extends CI_Controller
 				$select_cluster_sql = "select job_id from cluster_alarm_info where job_id='$job_id' ";
 				$res_cluster = $this->Cluster_model->getList($select_cluster_sql);
 				if ($res_cluster == false) {
+					$PushMessage = $this->getPushMessageType($job_type);
+					foreach ($PushMessage as $item) {
+						if ($item['type'] == 'phone_message') {
+							$this->SendSms($item['phone'], $cluster_row, "dd shard errors");
+						}
+						if ($item['type'] == 'mail') {
+							$this->SendMail($item['email'], 'add shard errors', $cluster_row);
+						}
+					}
 					$insert_cluster_sql = "insert into cluster_alarm_info(alarm_type,job_info,occur_timestamp,cluster_id,shardid,job_id) values ('$job_type','$cluster_row',now(),'$cluster_id','$shard_id','$job_id');";
 					$res_insert_cluster = $this->Cluster_model->updateList($insert_cluster_sql);
 				}

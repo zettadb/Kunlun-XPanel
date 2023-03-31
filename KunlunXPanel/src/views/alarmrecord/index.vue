@@ -18,7 +18,7 @@
             <el-option key="0" label="系统提醒" value="system" />
             <el-option key="1" label="短信提醒" value="phone_message" />
             <el-option key="2" label="邮件提醒" value="mail" />
-            <el-option key="3" label="微信推送" value="wechat" />
+            <!-- <el-option key="3" label="微信推送" value="wechat" /> -->
           </el-select>
         </el-form-item>
         <el-form-item label="是否生效:" prop="status">
@@ -63,16 +63,50 @@
             <el-table-column property="" label="操作">
               <template slot-scope="{ row }">
                 <el-button type="primary" size="mini" @click="handleEditAlram(row)">编辑</el-button>
+                <el-button type="danger" size="mini" @click="handleDeleteAlram(row)">删除</el-button>
               </template>
             </el-table-column>
           </el-table>
         </el-tab-pane>
         <el-tab-pane label="配置管理" name="second">
-          <el-tabs :tab-position="tabPosition" style="height: 200px;">
-            <el-tab-pane label="短信配置">短信配置</el-tab-pane>
-            <el-tab-pane label="服务号推送">
+          <el-tabs :tab-position="tabPosition">
+            <el-tab-pane label="短信配置">
+              <el-form :model="phone_message_config" label-width="120px" ref="phone_message_config" :rules="rules">
+                <el-form-item label="AccessKeyId:" prop="AccessKeyId">
+                  <el-input v-model="phone_message_config.AccessKeyId" placeholder="请输入AccessKeyId" />
+                </el-form-item>
+                <el-form-item label="SecretKey:" prop="SecretKey">
+                  <el-input v-model="phone_message_config.SecretKey" placeholder="请输入SecretKey" />
+                </el-form-item>
+                <el-form-item label="短信模版ID:" prop="TemplateId">
+                  <el-input v-model="phone_message_config.TemplateId" placeholder="请输入短信模版ID" />
+                </el-form-item>
+                <el-form-item label="短信签名ID:" prop="SigId">
+                  <el-input v-model="phone_message_config.SigId" placeholder="请输入短信签名ID" />
+                </el-form-item>
+                <el-form-item>
+                  <el-button type="primary" @click="SaveMessageConfig()">保存</el-button>
+                </el-form-item>
+              </el-form>
             </el-tab-pane>
-            <el-tab-pane label="阿里云邮件">阿里云邮件</el-tab-pane>
+            <el-tab-pane label="阿里云邮件">
+              <el-form :model="mail_config" label-width="120px" ref="mail_config" :rules="rules">
+                <el-form-item label="AccessKeyId:" prop="AccessKeyId">
+                  <el-input v-model="mail_config.AccessKeyId" placeholder="请输入AccessKeyId" />
+                </el-form-item>
+                <el-form-item label="SecretKey:" prop="SecretKey">
+                  <el-input v-model="mail_config.SecretKey" placeholder="请输入SecretKey" />
+                </el-form-item>
+                <el-form-item label="发件邮箱:" prop="AccountName">
+                  <el-input v-model="mail_config.AccountName" placeholder="请输入发件邮箱" />
+                </el-form-item>
+                <el-form-item>
+                  <el-button type="primary" @click="SaveMailConfig()">保存</el-button>
+                </el-form-item>
+              </el-form>
+            </el-tab-pane>
+            <!-- <el-tab-pane label="服务号推送">
+            </el-tab-pane> -->
           </el-tabs>
         </el-tab-pane>
       </el-tabs>
@@ -136,7 +170,7 @@
 </template>
 <script>
 import { messageTip, createCode, gotoCofirm } from "@/utils";
-import { getAlarmRecordList, update, updateAlarmSet, getAlarmSetList } from "@/api/alarmrecord/list";
+import { getAlarmRecordList, updateAlarmConfig, update, getAlarmConfig, updateAlarmSet, getAlarmSetList, DeleteAlarmItem } from "@/api/alarmrecord/list";
 import { alarm_type_arr, alarm_level_arr } from "@/utils/global_variable";
 import { getAccountList } from '@/api/system/account'
 import Pagination from "@/components/Pagination";
@@ -150,7 +184,7 @@ export default {
     const validateAlrmType = (rule, value, callback) => {
       console.log(value)
       if (!value) {
-        callback(new Error('请选择'))
+        callback(new Error('请输入，不能为空'))
       } else {
         callback()
       }
@@ -164,6 +198,21 @@ export default {
       listLoading: true,
       searchLoading: false,
       total: 0,
+      phone_message_config: {
+        AccessKeyId: "",
+        SecretKey: "",
+        TemplateId: "",
+        SigId: "",
+        Type: "phone_message",
+        id: 0,
+      },
+      mail_config: {
+        AccessKeyId: "",
+        SecretKey: "",
+        AccountName: "",
+        Type: "email",
+        id: 0,
+      },
       listQuery: {
         pageNo: 1,
         pageSize: 10,
@@ -214,7 +263,22 @@ export default {
         ],
         status: [
           { required: true, trigger: 'blur', validator: validateAlrmType }
-        ]
+        ],
+        AccessKeyId: [
+          { required: true, trigger: 'blur', validator: validateAlrmType }
+        ],
+        SecretKey: [
+          { required: true, trigger: 'blur', validator: validateAlrmType }
+        ],
+        AccountName: [
+          { required: true, trigger: 'blur', validator: validateAlrmType }
+        ],
+        TemplateId: [
+          { required: true, trigger: 'blur', validator: validateAlrmType }
+        ],
+        SigId: [
+          { required: true, trigger: 'blur', validator: validateAlrmType }
+        ],
       }
     };
   },
@@ -223,6 +287,7 @@ export default {
     this.getList();
     this.getUserList();
     this.getAlarmSetList();
+    this.getAlarmConfig();
   },
   mounted() {
     let i = 0;
@@ -243,6 +308,56 @@ export default {
     this.timer = null;
   },
   methods: {
+    SaveMailConfig() {
+      //保存邮件推送配置
+      this.$refs['mail_config'].validate((valid) => {
+        if (valid) {
+          const tempData = this.mail_config
+          console.log(tempData)
+          updateAlarmConfig(tempData).then((response) => {
+            const res = response;
+            if (res.code == 200) {
+              this.message_tips = "成功";
+              this.message_type = "success";
+              this.getList();
+              this.getUserList();
+              this.getAlarmSetList();
+              this.getAlarmConfig();
+              this.dialogRestoreVisible = false;
+            } else {
+              this.message_tips = "忽略失败";
+              this.message_type = "error";
+            }
+            messageTip(this.message_tips, this.message_type);
+          })
+        }
+      })
+    },
+    SaveMessageConfig() {
+      //保存短信推送配置
+      this.$refs['phone_message_config'].validate((valid) => {
+        if (valid) {
+          const tempData = this.phone_message_config
+          console.log(tempData)
+          updateAlarmConfig(tempData).then((response) => {
+            const res = response;
+            if (res.code == 200) {
+              this.message_tips = "成功";
+              this.message_type = "success";
+              this.getList();
+              this.getUserList();
+              this.getAlarmSetList();
+              this.getAlarmConfig();
+              this.dialogRestoreVisible = false;
+            } else {
+              this.message_tips = "忽略失败";
+              this.message_type = "error";
+            }
+            messageTip(this.message_tips, this.message_type);
+          })
+        }
+      })
+    },
     addAlarm() {
       this.restoretemp = {
         id: 0,
@@ -253,6 +368,45 @@ export default {
       }
       this.dialogRestoreVisible = true;
 
+    },
+
+    handleDeleteAlram(row) {
+      const code = createCode();
+      const string = "将对告警规则进行处理操作,是否继续?code=" + code;
+      gotoCofirm(string)
+        .then((res) => {
+          // 先执行删权限
+          if (!res.value) {
+            this.message_tips = "code不能为空！";
+            this.message_type = "error";
+            messageTip(this.message_tips, this.message_type);
+          } else if (res.value == code) {
+            const tempData = {};
+            tempData.id = row.id;
+            DeleteAlarmItem(tempData).then((response) => {
+              const res = response;
+              if (res.code == 200) {
+                this.dialogFormVisible = false;
+                this.message_tips = "处理成功";
+                this.message_type = "success";
+                this.getUserList();
+                this.getAlarmSetList();
+                this.getAlarmConfig();
+              } else {
+                this.message_tips = "处理失败";
+                this.message_type = "error";
+              }
+              messageTip(this.message_tips, this.message_type);
+            });
+          } else {
+            this.message_tips = "code输入有误";
+            this.message_type = "error";
+            messageTip(this.message_tips, this.message_type);
+          }
+        }).catch(() => {
+          console.log("quxiao");
+          messageTip("已取消删除", "info");
+        });
     },
     handleEditAlram(row) {
       console.log(row)
@@ -322,6 +476,36 @@ export default {
       this.listQuery.pageNo = 1;
       (this.listQuery.status = "unhandled"), (this.alarm_level = "");
       this.getList();
+    },
+
+
+    getAlarmConfig() {
+      const queryParam = {}
+      getAlarmConfig(queryParam).then(response => {
+        console.log(response)
+        const configItem = response.list
+        const _this = this;
+        for (let i = 0; i < configItem.length; i++) {
+          switch (configItem[i].type) {
+            case "email":
+              const email = JSON.parse(configItem[i].message)
+              _this.mail_config.AccessKeyId = email.AccessKeyId
+              _this.mail_config.SecretKey = email.SecretKey
+              _this.mail_config.AccountName = email.AccountName
+              _this.mail_config.id = configItem[i].id
+              break
+            case "phone_message":
+              const phone_message = JSON.parse(configItem[i].message)
+              _this.phone_message_config.AccessKeyId = phone_message.AccessKeyId
+              _this.phone_message_config.SecretKey = phone_message.SecretKey
+              _this.phone_message_config.TemplateId = phone_message.TemplateId
+              let str = phone_message.SigId.replace(/u/gi, "\\u")
+              _this.phone_message_config.SigId = eval("'" + str + "'")
+              _this.phone_message_config.id = configItem[i].id
+              break
+          }
+        }
+      })
     },
     getUserList() {
 
@@ -453,5 +637,9 @@ export default {
 <style>
 .right_input_min {
   width: 25%;
+}
+
+#el-drawer__title {
+  font-size: large;
 }
 </style>
