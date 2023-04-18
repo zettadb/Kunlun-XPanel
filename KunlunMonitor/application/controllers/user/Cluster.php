@@ -156,6 +156,15 @@ class Cluster extends CI_Controller
 							// }else{
 							// 	$res[$row]['snode_count'] = '';
 							// }
+
+							$res[$row]['is_proxysql_nodes'] = 0;
+							if ($string['install_proxysql'] == 1) {
+								$res[$row]['is_proxysql_nodes'] = 1;
+								$sql = "select * from proxysql_nodes";
+								$res_proxysql_nodes = $this->Cluster_model->getList($sql);
+								$res[$row]['res_proxysql_nodes'] = $res_proxysql_nodes;
+							}
+
 							if (!empty($string['innodb_size'])) {
 								$res[$row]['buffer_pool'] = $string['innodb_size'];
 							} else {
@@ -176,6 +185,7 @@ class Cluster extends CI_Controller
 							} else {
 								$res[$row]['fullsync_level'] = '';
 							}
+
 						} else {
 							// $res[$row]['snode_count'] = '';
 							$res[$row]['buffer_pool'] = '';
@@ -2723,7 +2733,6 @@ class Cluster extends CI_Controller
 							$res[$row]['shardtotal'] = $shardtotal['nodedetail'];
 							$res[$row]['comptotal'] = $comptotal['list'] !== false ? count($comptotal['list']) : 0;
 							$res[$row]['first_backup'] = $first_backup;
-
 						}
 					}
 					if ($key2 == 'memo') {

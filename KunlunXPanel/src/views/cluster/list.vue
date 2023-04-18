@@ -85,6 +85,12 @@
                 <span>{{ scope.row.replica_delay + "s" }}</span>
               </template>
             </el-table-column>
+            <el-table-column prop="replica_delay" label="proxysql" align="center" sortable>
+              <template slot-scope="scope">
+
+                <span>{{ scope.row }}</span>
+              </template>
+            </el-table-column>
           </el-table>
         </template>
       </el-table-column>
