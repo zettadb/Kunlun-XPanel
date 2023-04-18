@@ -539,51 +539,20 @@ class Login extends CI_Controller
 				}
 				if ($dbha_mode == 'rbr') {
 					//获取元数据的主节点
-					$sql_main = "select HOST, PORT from performance_schema.replication_connection_configuration where channel_name='kunlun_repl';";
-					$res_main = $this->Change_model->getMysql($ip, $port, 'pgx', 'pgx_pwd', 'kunlun_metadata_db', $sql_main);
-					$res_count = count($res_main);
-					if ($res_count == 1) {
-						//$res_rbr_main=$this->getRbrMain($ip,$port);
-						$sql_change = "select hostaddr,port from meta_db_nodes where hostaddr!='$ip' or port!='$port';";
-						$res_change = $this->Change_model->getAllMysql($ip, $port, 'pgx', 'pgx_pwd', 'kunlun_metadata_db', $sql_change);
-						$change_count = count($res_change['list']);
-						if ($change_count >= 1) {
-							//遍历所有ip，分别连上去看是否找到主节点
-							foreach ($res_change['list'] as $k2 => $v2) {
-								$res_rbr_main = $this->getRbrMain($v2['host'], $v2['port'], $sql_main);
-								if ($res_rbr_main['count'] == 3) {
-									$res_main = $res_rbr_main['list'];
-									break;
-								} else if ($change_count == ($k2 + 1)) {
-									if ($res_rbr_main['count'] == 1) {
-										$data['code'] = 500;
-										$data['message'] = 'rbr元数据找不到主节点';
-										print_r(json_encode($data));
-										return;
-									} else {
-										$data['code'] = 500;
-										$data['message'] = $res_rbr_main['list'][0];
-										print_r(json_encode($data));
-										return;
-									}
-								} else {
-									continue;
-								}
-							}
-
-						} else if ($change_count == 0) {
-							//连不上报错
-							$data['code'] = 500;
-							$data['message'] = 'rbr元数据找不到主节点';
-							print_r(json_encode($data));
-							return;
-						} else {
-							//连不上报错
-							$data['code'] = 500;
-							$data['message'] = $res_change[0];
-							print_r(json_encode($data));
-							return;
-						}
+					$sql_main = "select * from meta_db_nodes WHERE member_state='source';";
+					$res = $this->Change_model->getMysql($ip, $port, 'pgx', 'pgx_pwd', 'kunlun_metadata_db', $sql_main);
+					//print_r($res);
+					if ($res) {
+						$res_main = [];
+						$res_main['code'] = 200;
+						$res_main[0] = $res[1];
+						$res_main[1] = $res[2];
+					} else {
+						//连不上报错
+						$data['code'] = 500;
+						$data['message'] = 'rbr元数据找不到主节点';
+						print_r(json_encode($data));
+						return;
 					}
 				} else if ($dbha_mode == 'mgr') {
 					//获取元数据的主节点
