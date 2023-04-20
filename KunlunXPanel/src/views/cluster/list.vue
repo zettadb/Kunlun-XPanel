@@ -85,10 +85,12 @@
                 <span>{{ scope.row.replica_delay + "s" }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="replica_delay" label="proxysql" align="center" sortable>
+            <el-table-column prop="replica_delay" label="Proxy" align="left" width="150">
               <template slot-scope="scope">
-
-                <span>{{ scope.row }}</span>
+                <div v-if="scope.row.is_proxysql_nodes === 1">
+                  <p>host:{{ scope.row.res_proxysql_nodes.hostaddr }}</p>
+                  <p>port:{{ scope.row.res_proxysql_nodes.port }}</p>
+                </div>
               </template>
             </el-table-column>
           </el-table>
@@ -135,26 +137,89 @@
     <!-- 新增 -->
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" custom-class="single_dal_view"
       :close-on-click-modal="false">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="250px">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="200px">
         <el-form-item v-show="dialogStatus === 'create' || 'detail'" label="业务名称:" prop="nick_name">
           <el-input v-model="temp.nick_name" class="right_input" placeholder="请输入业务名称"
             :disabled="dialogStatus === 'detail'" />
         </el-form-item>
         <el-form-item v-if="dialogStatus === 'create'" label="选择计算机:" prop="machinelist">
-          <div style="margin-bottom: 10px">
-            存储：
-            <el-select v-model="temp.machinelist" multiple placeholder="请选择">
-              <el-option v-for="machine in machines" :key="machine.id" :label="machine.hostaddr"
-                :value="machine.hostaddr" />
-            </el-select>
-          </div>
-          <div>
-            计算：
-            <el-select v-model="temp.comp_machinelist" multiple placeholder="请选择">
-              <el-option v-for="comp_machine in comp_machines" :key="comp_machine.id" :label="comp_machine.hostaddr"
-                :value="comp_machine.hostaddr" />
-            </el-select>
-          </div>
+
+          <el-tabs type="border-card">
+            <el-tab-pane label="本地集群">
+              <div style="margin: 30px">
+                存储：
+                <el-select v-model="temp.machinelist" multiple placeholder="请选择">
+                  <el-option v-for="machine in machines" :key="machine.id" :label="machine.hostaddr"
+                    :value="machine.hostaddr" />
+                </el-select>
+              </div>
+              <div style="margin: 30px">
+                计算：
+                <el-select v-model="temp.comp_machinelist" multiple placeholder="请选择">
+                  <el-option v-for="comp_machine in comp_machines" :key="comp_machine.id" :label="comp_machine.hostaddr"
+                    :value="comp_machine.hostaddr" />
+                </el-select>
+              </div>
+            </el-tab-pane>
+            <el-tab-pane label="数据中心">
+              <div style="margin:30px">
+                <div>
+                  购买类型
+                  <el-select v-model="distribution_value" placeholder="请选择">
+                    <el-option v-for="item in distribution_type" :key="item.value" :label="item.label"
+                      :value="item.value">
+                    </el-option>
+                  </el-select>
+                </div>
+                <div>
+                  选择城市
+                  <el-cascader :options="data_center_city" clearable></el-cascader>
+                </div>
+                <div>存储：</div>
+                <el-table ref="multipleTable" :data="data_center_comps" border tooltip-effect="dark" style="width: 100%"
+                  size="min" @selection-change="handleSelectionChange">
+                  <el-table-column type="selection" width="55">
+                  </el-table-column>
+                  <el-table-column label="省/市" width="170">
+                    <template slot-scope="scope">
+                      {{ scope.row.province }}/{{ scope.row.city }}
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="name" label="idc" width="100">
+                  </el-table-column>
+                  <el-table-column prop="node_num" label="主节点" width="100">
+                    <template slot-scope="scope">
+                      <el-checkbox v-model="scope.row.master">主节点</el-checkbox>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="node_num" label="节点数" width="100">
+                    <template slot-scope="scope">
+                      <el-input v-model="scope.row.node_num"></el-input>
+                    </template>
+                  </el-table-column>
+                </el-table>
+
+                <div>计算</div>
+                <el-table ref="multipleTable" :data="data_center_comps" border tooltip-effect="dark" style="width: 100%"
+                  size="min" @selection-change="handleSelectionChange">
+                  <el-table-column type="selection" width="55">
+                  </el-table-column>
+                  <el-table-column label="省/市" width="170">
+                    <template slot-scope="scope">
+                      {{ scope.row.province }}/{{ scope.row.city }}
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="name" label="idc" width="100">
+                  </el-table-column>
+                  <el-table-column prop="node_num" label="节点数" width="100">
+                    <template slot-scope="scope">
+                      <el-input v-model="scope.row.node_num"></el-input>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </el-tab-pane>
+          </el-tabs>
         </el-form-item>
         <el-form-item v-show="dialogStatus === 'create' || 'detail'" label="高可用模式:" prop="ha_mode">
           <el-select v-model="temp.ha_mode" placeholder="请选择高可用模式" :disabled="dialogStatus === 'detail'">
@@ -608,7 +673,7 @@
       <div style="color: red" v-html="abnormal" />
     </el-dialog>
   </div>
-</template>
+</div></template>
 
 <script>
 import {
@@ -1092,6 +1157,88 @@ export default {
       },
       expandSelectDBVisible: false,
       expandTableList: null,
+      distribution_type: [
+        {
+          label: "同城购买",
+          value: "same_city",
+        },
+        {
+          label: "跨城购买",
+          value: "cross_city",
+        }
+      ],
+      distribution_value: "cross_city",
+      data_center_city: [
+        {
+          name: "guangdong",
+          label: "guangdong",
+          value: "guangdong",
+          children: [
+            {
+              name: "guangzhou",
+              label: "guangzhou",
+              value: "guangzhou",
+            },
+            {
+              name: "shenzhen",
+              label: "shenzhen",
+              value: "shenzhen",
+            }
+          ]
+        }
+      ],
+      data_center_nodes: [
+        {
+          id: "sz-dc1",
+          province: 'guangdong',
+          city: "shenzhen",
+          name: "sz-dc1",
+          node_num: 2,
+          master: false,
+        },
+        {
+          id: "sz-dc2",
+          province: 'guangdong',
+          city: "shenzhen",
+          name: "sz-dc1",
+          node_num: 2,
+          master: true,
+        },
+        {
+          id: "sz-dc3",
+          province: 'guangdong',
+          city: "shenzhen",
+          name: "sz-dc1",
+          node_num: 2,
+          master: false,
+        }
+      ],
+      data_center_comps: [
+        {
+          id: "sz-dc1",
+          province: 'guangdong',
+          city: "shenzhen",
+          name: "sz-dc1",
+          node_num: 2,
+          master: false,
+        },
+        {
+          id: "sz-dc2",
+          province: 'guangdong',
+          city: "shenzhen",
+          name: "sz-dc1",
+          node_num: 2,
+          master: true,
+        },
+        {
+          id: "sz-dc3",
+          province: 'guangdong',
+          city: "shenzhen",
+          name: "sz-dc1",
+          node_num: 2,
+          master: false,
+        }
+      ],
       rules: {
         // machinelist: [
         //   { required: true, trigger: "blur",validator: validatemachine },
@@ -1144,7 +1291,7 @@ export default {
   },
   watch: {
     "temp.machinelist": {
-      handler: function (val, oldVal) {
+      handler: function () {
         // 旧数据中包含时无需push
         //   this.temp.machinelist=[];
         //   this.temp.machinelist.forEach(item => {
@@ -1157,7 +1304,7 @@ export default {
       },
     },
     "expandtemp.table_list": {
-      handler: function (val, oldVal) {
+      handler: function (val) {
         if (val.length > 0) {
           this.expandtemp.dsc_flag = true;
           this.expandtemp.title = "提交";
@@ -1169,7 +1316,7 @@ export default {
       },
     },
     "autoexpandtemp.table_list": {
-      handler: function (val, oldVal) {
+      handler: function (val) {
         if (val.length > 0) {
           this.autoexpandtemp.dsc_flag = true;
         } else {
@@ -1177,7 +1324,7 @@ export default {
         }
       },
     },
-    checkedColumns(val, value) {
+    checkedColumns(val) {
       const arr = this.checkBoxGroup.filter((i) => !val.includes(i)); // 未选中
       localStorage.setItem(this.colTable, JSON.stringify(arr));
       this.colData.filter((i) => {
@@ -1193,7 +1340,7 @@ export default {
     this.getList();
     // this.getMode();
     // 列筛选
-    this.colData.forEach((item, index) => {
+    this.colData.forEach((item) => {
       this.checkBoxGroup.push(item.title);
     });
     this.checkedColumns = this.checkedColumns;
@@ -1248,7 +1395,7 @@ export default {
                 relshardid: item.relshardid,
               }));
               this.expandTableList = result;
-              this.shardTable = result.filter((item, index) => {
+              this.shardTable = result.filter((item) => {
                 return item.relshardid == this.expandtemp.list.shard_id;
               });
               this.dialogExpandVisible = true;
@@ -1464,7 +1611,7 @@ export default {
         //     messageTip(this.message_tips,this.message_type);
         //   }
         // });
-        this.shardTable = this.expandTableList.filter((item, index) => {
+        this.shardTable = this.expandTableList.filter((item) => {
           return item.relshardid == this.expandtemp.list.shard_id;
         });
         if (this.expandtemp.shard_name) {
@@ -2244,6 +2391,9 @@ export default {
         .catch(() => {
           messageTip("已取消全量备份", "info");
         });
+    },
+    handleSelectionChange(e) {
+      console.log(e)
     },
     handleRestore(row) {
       this.restoretempDate = Object.assign({}, row);
@@ -4227,7 +4377,6 @@ export default {
   },
 };
 </script>
-<style scoped>
 /* .right_input{
   width:8%;
 } */
@@ -4299,9 +4448,8 @@ export default {
      min-width:500px;
      margin-bottom:12px;
      margin-top:12px;
-  } */
+  } */  } */
 </style>
-<style lang="less">
 //  .hoverSteps{
 //     /deep/ .ai-step__description{
 //       padding-right:0 !important;
@@ -4330,5 +4478,5 @@ export default {
 //   }
 .expand .el-tabs__content {
   height: 100% !important;
-}
+}}
 </style>

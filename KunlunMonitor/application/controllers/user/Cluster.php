@@ -156,13 +156,19 @@ class Cluster extends CI_Controller
 							// }else{
 							// 	$res[$row]['snode_count'] = '';
 							// }
-
-							$res[$row]['is_proxysql_nodes'] = 0;
+							foreach ($res[$row]['shardList'] as $key => $value) {
+								$res[$row]['shardList'][$key]['is_proxysql_nodes'] = 0;
+							}
 							if ($string['install_proxysql'] == 1) {
 								$res[$row]['is_proxysql_nodes'] = 1;
 								$sql = "select * from proxysql_nodes";
 								$res_proxysql_nodes = $this->Cluster_model->getList($sql);
-								$res[$row]['res_proxysql_nodes'] = $res_proxysql_nodes;
+								if ($res_proxysql_nodes) {
+									foreach ($res[$row]['shardList'] as $key => $value) {
+										$res[$row]['shardList'][$key]['is_proxysql_nodes'] = 1;
+										$res[$row]['shardList'][$key]['res_proxysql_nodes'] = $res_proxysql_nodes[0];
+									}
+								}
 							}
 
 							if (!empty($string['innodb_size'])) {
@@ -3328,6 +3334,7 @@ class Cluster extends CI_Controller
 		$this->load->model('Cluster_model');
 		$sql = "select * from shards where status!='deleted' and db_cluster_id='$id'";
 		if (!empty($user_name) || !empty($master_all) || !empty($status_all)) {
+
 			//通过ip查出shard_id
 			$sql_shard = "select shard_id from shard_nodes where db_cluster_id='$id'  and status!='deleted' ";
 			if (!empty($user_name)) {
@@ -3465,7 +3472,26 @@ class Cluster extends CI_Controller
 				}
 			}
 		}
-		//print_r($res_total);exit;
+
+		//查询一下代理信息
+		$sql = "select * from db_clusters where id=" . $id;
+		$Cluster = $this->Cluster_model->getList($sql);
+		if ($Cluster) {
+			$momo = json_decode($Cluster[0]['memo'], true);
+			if ($momo['install_proxysql'] == 1) {
+				foreach ($res[0]['shardList'] as $key => $value) {
+					$res[0]['shardList'][$key]['is_install_proxysql'] = 1;
+					$res[0]['shardList'][$key]['install_proxysql_addr'] = $value['hostaddr'];
+					$res[0]['shardList'][$key]['install_proxysql_port'] = $value['port'];
+				}
+			} else {
+				foreach ($res[0]['shardList'] as $key => $value) {
+					$res[0]['shardList'][$key]['is_install_proxysql'] = 0;
+					$res[0]['shardList'][$key]['install_proxysql_addr'] = "";
+					$res[0]['shardList'][$key]['install_proxysql_port'] = "";
+				}
+			}
+		}
 		$data['code'] = 200;
 		$data['list'] = $res;
 		$data['total'] = $res_total ? (int) $res_total[0]['count'] : 0;

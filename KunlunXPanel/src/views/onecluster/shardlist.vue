@@ -34,7 +34,7 @@
         <template slot-scope="scope">
           <el-table class="sectable" :data="scope.row.shardList" stripe style="width: 100%">
             <el-table-column type="index" label="序号" align="center" width="50" />
-            <el-table-column prop="hostaddr" label="IP" align="center" />
+            <el-table-column prop="hostaddr" label="IP" align="center" width="120" />
             <el-table-column prop="port" label="端口" align="center" />
             <el-table-column prop="cpu_cores" label="CPU个数" align="center" />
             <el-table-column prop="master" label="主/备节点" align="center">
@@ -44,7 +44,7 @@
                 <span v-else />
               </template>
             </el-table-column>
-            <el-table-column prop="delay" label="延迟时间" align="center" sortable>
+            <el-table-column prop="delay" label="延迟时间" align="center">
               <template slot-scope="scope">
                 <span>{{ scope.row.delay + 's' }}</span>
               </template>
@@ -58,6 +58,8 @@
                 <span v-else />
               </template>
             </el-table-column>
+            <el-table-column prop="install_proxysql_addr" label="Proxy Address" align="center" width="120" />
+            <el-table-column prop="install_proxysql_port" label="Proxy PORT" align="center" width="120" />
             <el-table-column label="操作" align="center" width="380" class-name="small-padding fixed-width">
               <template slot-scope="{row,$index}">
                 <el-button v-if="row.status == 'online'" size="mini" type="primary" @click="nodeMonitor(row)">节点监控
@@ -122,7 +124,8 @@
           </el-select>
         </el-form-item>
         <el-form-item v-if="dialogStatus === 'createstorage'" label="shard名称:" prop="shard_name">
-          <el-select v-if="dialogStatus === 'createstorage' ? true : false" v-model="temp.shard_name" placeholder="请选择shard名称">
+          <el-select v-if="dialogStatus === 'createstorage' ? true : false" v-model="temp.shard_name"
+            placeholder="请选择shard名称">
             <el-option v-for="shard in shard_arr" :key="shard.id" :label="shard.name" :value="shard.id" />
           </el-select>
         </el-form-item>

@@ -175,7 +175,6 @@ import { alarm_type_arr, alarm_level_arr } from "@/utils/global_variable";
 import { getAccountList } from '@/api/system/account'
 import Pagination from "@/components/Pagination";
 import { getClusterMonitor } from "@/api/cluster/list";
-import { Drawer } from "element-ui";
 
 export default {
   name: "Alarmrecord",

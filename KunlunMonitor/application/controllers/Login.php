@@ -190,6 +190,7 @@ class Login extends CI_Controller
 									if ($key2 == 'backup_priv') {
 										if ($value2 == 'Y') {
 											$backup_priv = $value2;
+
 										}
 									}
 									if ($key2 == 'restore_priv') {
