@@ -13,7 +13,6 @@ class ClusterSetting extends CI_Controller
 		$this->post_url = $this->config->item('post_url');
 	}
 
-
 	public function getDBName($ip, $port, $user_name)
 	{
 		$this->load->model('Cluster_model');
@@ -182,6 +181,33 @@ class ClusterSetting extends CI_Controller
 		]);
 	}
 
+	public function getDataCenters()
+	{
+		$sql = "select * from data_centers";
+		$this->load->model('Cluster_model');
+		$res = $this->Cluster_model->getList($sql);
+		if ($res === false) {
+			$res = [];
+		}
+		$relation = [];
+		foreach ($res as $key => $value) {
+
+		}
+		foreach ($res as $key => $value) {
+			$res[$key]['node_num'] = 2;
+			$res[$key]['master'] = false;
+			$res[$key]['id'] = $value['name'];
+		}
+		;
+		echo json_encode([
+			'code' => 200,
+			'list' => [
+				'res' => $res,
+				'r' => $relation,
+			],
+			'message' => 'success',
+		]);
+	}
 
 	/**
 	 * 集群下拉选项

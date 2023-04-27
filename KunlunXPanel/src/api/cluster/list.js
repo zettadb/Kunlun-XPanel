@@ -682,3 +682,12 @@ export function clusterOptions(data) {
     params: data
   })
 }
+
+// 获取数据中心
+export function getDataCents(data) {
+  return request({
+    url: '/user/ClusterSetting/getDataCenters',
+    method: 'get',
+    params: data
+  })
+}
