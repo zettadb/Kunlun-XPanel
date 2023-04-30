@@ -1771,111 +1771,11 @@ export default {
         if (valid) {
           const tempData = Object.assign({}, this.temp)
 
-          console.log(this.$refs.data_center_nodes.selection);
-          console.log(this.$refs.data_center_comps.selection);
-          let data_center_nodes = this.$refs.data_center_nodes.selection;
-          let data_center_comps = this.$refs.data_center_comps.selection;
-
-          if (data_center_comps.length == 0) {
-            this.message_tips = "选择计算节点"
-            this.message_type = 'error'
-            messageTip(this.message_tips, this.message_type)
-            return false;
-          }
-
-          if (data_center_nodes.length == 0) {
-            this.message_tips = "选择计算节点"
-            this.message_type = 'error'
-            messageTip(this.message_tips, this.message_type)
-            return false;
-          }
-
-          if (data_center_nodes.length != data_center_comps.length) {
-            this.message_tips = "计算节点的数量和存储节点数量不一致"
-            this.message_type = 'error'
-            messageTip(this.message_tips, this.message_type)
-            return false;
-          }
-
-          const slave_idc = [];
-          data_center_nodes.forEach((v) => {
-            slave_idc.push({
-              idc: v.name,
-              node_num: v.node_num
-            })
-          })
-          //判断是否有主
-          const master_idc = null;
-          data_center_nodes.forEach((v) => {
-            if (v.master) {
-              master_idc = {
-                idc: v.name,
-                node_num: v.node_num
-              }
-            }
-          })
-
-          //有主的
-          const cross_city_master_node_distribution = {
-            "master_city": {
-              "city_name": "cname_11",
-              "master_idc": master_idc,
-              "slave_idc": []
-            },
-            "slave_city": {
-              "city_name": "cname_22",
-              "idcs": []
-            }
-          }
-
-          //跨city情况，主城不指定master_idc/slave_idc
-          const cross_city_no_maste_node_distribution = {
-            "master_city": {
-              "city_name": "cname_11",
-              "idcs": []
-            },
-            "slave_city": {
-              "city_name": "cname_22",
-              "idcs": []
-            }
-          }
-
-          // 同城 master
-          const same_city_master_node_distribution = {
-            "distribution_type": "same_city",
-            "master_idc": master_idc,
-            "slave_idc": []
-          }
-
-          // 同城 no_master 
-          const same_city_no_master_node_distribution = {
-            "distribution_type": "same_city",
-            "slave_idc": []
-          }
-
-          //
-          const slave_city = {
-            city_name: "",
-            idcs: [],
-          }
-          data_center_comps.forEach((v) => {
-            slave_city.idcs.push({
-              idc: v.name,
-              node_num: v.node_num
-            })
-          })
-
-          return false;
           // 处理储存机器的格式
           const machinelist = []
-          tempData.machinelist.forEach((item) => {
-            machinelist.push(item)
-          })
           // 处理计算机器的格式
           const comp_machinelist = []
-          tempData.comp_machinelist.forEach((item) => {
-            comp_machinelist.push(item)
-          })
+
           const clusterData = {}
           const paras = {}
           clusterData.user_name = sessionStorage.getItem('login_username')
@@ -1906,11 +1806,133 @@ export default {
           if (tempData.per_computing_node_cpu_cores) {
             paras.cpu_cores = tempData.per_computing_node_cpu_cores
           }
-          if (machinelist.length > 0) {
-            paras.storage_iplists = machinelist
+
+
+          console.log(this.$refs.data_center_nodes.selection);
+          console.log(this.$refs.data_center_comps.selection);
+          const data_center_nodes = this.$refs.data_center_nodes.selection;
+          const data_center_comps = this.$refs.data_center_comps.selection;
+
+          if (data_center_comps.length == 0) {
+            this.message_tips = "选择计算节点"
+            this.message_type = 'error'
+            messageTip(this.message_tips, this.message_type)
+            return false;
           }
-          if (comp_machinelist.length > 0) {
-            paras.computer_iplists = comp_machinelist
+
+          if (data_center_nodes.length == 0) {
+            this.message_tips = "选择计算节点"
+            this.message_type = 'error'
+            messageTip(this.message_tips, this.message_type)
+            return false;
+          }
+
+          if (data_center_nodes.length != data_center_comps.length) {
+            this.message_tips = "计算节点的数量和存储节点数量不一致"
+            this.message_type = 'error'
+            messageTip(this.message_tips, this.message_type)
+            return false;
+          }
+
+          //判断是否有主
+          let master_idc = null;
+          data_center_nodes.forEach((v) => {
+            if (v.master) {
+              master_idc = {
+                idc: v.name,
+                node_num: (v.node_num - 1) + ''
+              }
+            }
+          })
+
+          if (this.createTypes == 'datacenters') {
+            //数据中心购买
+            if (this.distribution_value == 'same_city') {
+              //同城购买
+              if (master_idc != null) {
+                // 同城 master
+                const same_city_master_node_distribution = {
+                  distribution_type: "same_city",
+                  master_idc: master_idc,
+                  slave_idc: []
+                }
+                data_center_nodes.forEach((v) => {
+                  if (!v.master) {
+                    same_city_master_node_distribution.slave_idc.push({
+                      idc: v.name,
+                      node_num: v.node_num + ''
+                    })
+                  }
+                })
+                paras.node_distribution = same_city_master_node_distribution;
+              } else {
+                // 同城 no_master 
+                const same_city_no_master_node_distribution = {
+                  distribution_type: "same_city",
+                  idcs: []
+                }
+                data_center_nodes.forEach((v) => {
+                  same_city_no_master_node_distribution.idcs.push({
+                    idc: v.name,
+                    node_num: v.node_num + ''
+                  })
+                })
+                paras.node_distribution = same_city_no_master_node_distribution;
+              }
+            } else {
+              //跨城
+              if (master_idc != null) {
+                //有主的
+                const cross_city_master_node_distribution = {
+                  "master_city": {
+                    "city_name": "cname_11",
+                    "master_idc": master_idc,
+                    "slave_idc": []
+                  },
+                  "slave_city": {
+                    "city_name": "cname_22",
+                    "idcs": []
+                  }
+                }
+              } else {
+
+                //跨city情况，主城不指定master_idc/slave_idc
+                const cross_city_no_maste_node_distribution = {
+                  master_city: {
+                    city_name: "cname_11",
+                    idcs: []
+                  },
+                  slave_city: {
+                    city_name: "cname_22",
+                    idcs: []
+                  }
+                }
+              }
+            }
+            const comp_distribution = []
+            data_center_comps.forEach((v) => {
+              comp_distribution.push({
+                idc: v.name,
+                node_num: (v.node_num - 1) + ''
+              })
+            })
+            paras.comp_distribution = comp_distribution;
+          } else {
+            //本地购买，
+            tempData.machinelist.forEach((item) => {
+              machinelist.push(item)
+            })
+
+            tempData.comp_machinelist.forEach((item) => {
+              comp_machinelist.push(item)
+            })
+
+            if (machinelist.length > 0) {
+              paras.storage_iplists = machinelist
+            }
+            if (comp_machinelist.length > 0) {
+              paras.computer_iplists = comp_machinelist
+            }
           }
           if (tempData.computer_user) {
             paras.computer_user = tempData.computer_user

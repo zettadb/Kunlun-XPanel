@@ -195,11 +195,6 @@ export default {
   display: flex;
 }
 
-.el-tabs__content {
-  height: calc(100vh - 102px);
-  overflow-y: auto;
-}
-
 .leftmenu {
   /*width: 13%;*/
   height: 100%;

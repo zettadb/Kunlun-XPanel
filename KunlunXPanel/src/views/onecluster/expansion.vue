@@ -68,12 +68,7 @@
       </el-form-item>
       <el-form-item label="选择数据库:" prop="database">
         <el-select v-model="selectdbtemp.database" clearable placeholder="请选择">
-          <el-option
-            v-for="item in databases"
-            :key="item.id"
-            :label="item.datname"
-            :value="item.datname"
-          />
+          <el-option v-for="item in databases" :key="item.id" :label="item.datname" :value="item.datname" />
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -81,56 +76,20 @@
       </el-form-item>
     </el-form>
     <!-- 扩容-->
-    <el-dialog
-      :title="textMap[dialogStatus]"
-      :visible.sync="dialogExpandVisible"
-      custom-class="single_dal_view expand"
-      :close-on-click-modal="false"
-    >
-      <el-form
-        ref="expandForm"
-        :model="expandtemp"
-        :rules="rules"
-        label-position="left"
-        label-width="130px"
-      >
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogExpandVisible" custom-class="single_dal_view expand"
+      :close-on-click-modal="false">
+      <el-form ref="expandForm" :model="expandtemp" :rules="rules" label-position="left" label-width="130px">
         <div class="icons-container">
           <el-tabs v-model="activeName" type="border-card" @tab-click="handleClick">
-            <el-tab-pane
-              v-for="(item,index) in shardNameList"
-              :key="index"
-              :label="item.name"
-              :name="item.name"
-              :value="item.id+'_'+item.cluster_id"
-            >
-              <el-table
-                :key="tableKey"
-                v-loading="listLoading"
-                :data="shardTable"
-                max-height="240"
-                border
-                highlight-current-row
-                style="width: 100%;margin-bottom: 20px;"
-                @selection-change="selectionChangeHandle"
-              >
+            <el-tab-pane v-for="(item, index) in shardNameList" :key="index" :label="item.name" :name="item.name"
+              :value="item.id + '_' + item.cluster_id">
+              <el-table :key="tableKey" v-loading="listLoading" :data="shardTable" max-height="240" border
+                highlight-current-row style="width: 100%;margin-bottom: 20px;" @selection-change="selectionChangeHandle">
                 <el-table-column type="selection" width="55" />
-                <el-table-column
-                  type="index"
-                  align="center"
-                  label="序号"
-                  width="50"
-                />
+                <el-table-column type="index" align="center" label="序号" width="50" />
                 <!-- TABLE_SCHEMA,TABLE_NAME -->
-                <el-table-column
-                  prop="TABLE_SCHEMA"
-                  label="数据库名称"
-                  align="center"
-                />
-                <el-table-column
-                  prop="TABLE_NAME"
-                  label="表名称"
-                  align="center"
-                />
+                <el-table-column prop="TABLE_SCHEMA" label="数据库名称" align="center" />
+                <el-table-column prop="TABLE_NAME" label="表名称" align="center" />
               </el-table>
               <el-form-item label="原shard:" prop="shard_name">
                 <el-input v-model="expandtemp.shard_name" :disabled="true" />
@@ -142,26 +101,16 @@
               <el-form-item v-if="expandtemp.table_list.length" label="已选原shard表:" prop="table_list">
                 <template>
                   <ul class="infinite-list" style="max-height:200px;overflow:auto">
-                    <li v-for="(item,index) in expandtemp.table_list" :key="index" class="infinite-list-item">
+                    <li v-for="(item, index) in expandtemp.table_list" :key="index" class="infinite-list-item">
                       {{ item.TABLE_SCHEMA + '.' + item.TABLE_NAME }}
                     </li>
                   </ul>
                 </template>
               </el-form-item>
               <el-form-item v-if="expandtemp.dsc_flag" label="目标shard:" prop="dst_shard_id">
-                <el-select
-                  v-model="expandtemp.dst_shard_id"
-                  clearable
-                  placeholder="请选择目标shard"
-                  style="width:100%;"
-                  @change="ChangeShardName"
-                >
-                  <el-option
-                    v-for="item in shardsList"
-                    :key="item.id"
-                    :label="item.name"
-                    :value="item.id"
-                  />
+                <el-select v-model="expandtemp.dst_shard_id" clearable placeholder="请选择目标shard" style="width:100%;"
+                  @change="ChangeShardName">
+                  <el-option v-for="item in shardsList" :key="item.id" :label="item.name" :value="item.id" />
                 </el-select>
               </el-form-item>
 
@@ -176,78 +125,31 @@
       </div>
     </el-dialog>
     <!--自动扩容 -->
-    <el-dialog
-      :title="textMap[dialogStatus]"
-      :visible.sync="outoExpandInfoVisible"
-      custom-class="single_dal_view"
-      :close-on-click-modal="false"
-    >
-      <el-form
-        ref="autoExpandForm"
-        :model="autoexpandtemp"
-        :rules="rules"
-        label-position="left"
-        label-width="130px"
-      >
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="outoExpandInfoVisible" custom-class="single_dal_view"
+      :close-on-click-modal="false">
+      <el-form ref="autoExpandForm" :model="autoexpandtemp" :rules="rules" label-position="left" label-width="130px">
         <el-form-item label="原shard:" prop="auto_shard_id">
-          <el-select
-            v-model="autoexpandtemp.auto_shard_id"
-            clearable
-            placeholder="请选择原shard"
-            style="width:100%;"
-            @change="autoChangeShardName"
-          >
-            <el-option
-              v-for="item in srcShardsList"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
-            />
+          <el-select v-model="autoexpandtemp.auto_shard_id" clearable placeholder="请选择原shard" style="width:100%;"
+            @change="autoChangeShardName">
+            <el-option v-for="item in srcShardsList" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="排序方式:" prop="policy">
           <el-select v-model="autoexpandtemp.policy" placeholder="请选择排序方式" @change="autoChangePolicy">
-            <el-option
-              v-for="item in policys"
-              :key="item.id"
-              :label="item.label"
-              :value="item.id"
-            />
+            <el-option v-for="item in policys" :key="item.id" :label="item.label" :value="item.id" />
           </el-select>
         </el-form-item>
-        <el-table
-          ref="dataTable"
-          :key="tableKey"
-          v-loading="listLoading"
-          :data="autoexpandtemp.tables"
-          max-height="240"
-          border
-          highlight-current-row
-          style="width: 100%;margin-bottom: 20px;"
-          @selection-change="selAutoChangeHandle"
-        >
+        <el-table ref="dataTable" :key="tableKey" v-loading="listLoading" :data="autoexpandtemp.tables" max-height="240"
+          border highlight-current-row style="width: 100%;margin-bottom: 20px;" @selection-change="selAutoChangeHandle">
           <el-table-column type="selection" width="55" />
-          <el-table-column
-            type="index"
-            align="center"
-            label="序号"
-            width="50"
-          />
-          <el-table-column
-            prop="TABLE_SCHEMA"
-            label="数据库名称"
-            align="center"
-          />
-          <el-table-column
-            prop="TABLE_NAME"
-            label="表名称"
-            align="center"
-          />
+          <el-table-column type="index" align="center" label="序号" width="50" />
+          <el-table-column prop="TABLE_SCHEMA" label="数据库名称" align="center" />
+          <el-table-column prop="TABLE_NAME" label="表名称" align="center" />
         </el-table>
         <el-form-item label="已选原shard表:" prop="table_list">
           <template>
             <ul class="infinite-list" style="max-height:200px;overflow:auto">
-              <li v-for="(item,index) in autoexpandtemp.table_list" :key="index" class="infinite-list-item">
+              <li v-for="(item, index) in autoexpandtemp.table_list" :key="index" class="infinite-list-item">
                 {{ item.TABLE_SCHEMA + '.' + item.TABLE_NAME }}
               </li>
             </ul>
@@ -258,19 +160,9 @@
           <el-radio v-model="autoexpandtemp.if_save" label="1">否</el-radio>
         </el-form-item>
         <el-form-item v-if="autoexpandtemp.dsc_flag" label="目标shard:" prop="dst_shard_id">
-          <el-select
-            v-model="autoexpandtemp.dst_shard_id"
-            clearable
-            placeholder="请选择目标shard"
-            style="width:100%;"
-            @change="autoChangeDscShardName"
-          >
-            <el-option
-              v-for="item in shardsList"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
-            />
+          <el-select v-model="autoexpandtemp.dst_shard_id" clearable placeholder="请选择目标shard" style="width:100%;"
+            @change="autoChangeDscShardName">
+            <el-option v-for="item in shardsList" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -281,26 +173,16 @@
       </div>
     </el-dialog>
     <!-- 扩容确认信息 -->
-    <el-dialog
-      :title="textMap[dialogStatus]"
-      :visible.sync="dialogExpandInfoVisible"
-      custom-class="single_dal_view"
-      :close-on-click-modal="false"
-    >
-      <el-form
-        ref="expandInfoForm"
-        :model="expandInfoTemp"
-        :rules="rules"
-        label-position="left"
-        label-width="130px"
-      >
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogExpandInfoVisible" custom-class="single_dal_view"
+      :close-on-click-modal="false">
+      <el-form ref="expandInfoForm" :model="expandInfoTemp" :rules="rules" label-position="left" label-width="130px">
         <el-form-item label="原shard:" prop="shard_name">
           <el-input v-model="expandInfoTemp.shard_name" :disabled="true" />
         </el-form-item>
         <el-form-item label="已选原shard表:" prop="table_list">
           <template>
             <ul class="infinite-list" style="max-height:200px;overflow:auto">
-              <li v-for="(item,index) in expandInfoTemp.table_list" :key="index" class="infinite-list-item">
+              <li v-for="(item, index) in expandInfoTemp.table_list" :key="index" class="infinite-list-item">
                 {{ item.TABLE_SCHEMA + '.' + item.TABLE_NAME }}
               </li>
             </ul>
@@ -314,7 +196,7 @@
         </el-form-item>
         <el-form-item label="是否保留原表:" prop="if_save">
           <template>
-            <span v-if="expandInfoTemp.if_save=='0'">是</span>
+            <span v-if="expandInfoTemp.if_save == '0'">是</span>
             <span v-else>否</span>
           </template>
         </el-form-item>
@@ -326,13 +208,8 @@
       </div>
     </el-dialog>
     <!--扩容状态框 -->
-    <el-dialog
-      :title="job_id"
-      :visible.sync="dialogExpondInfo"
-      custom-class="single_dal_view"
-      :close-on-click-modal="false"
-      :before-close="beforeExpandDestory"
-    >
+    <el-dialog :title="job_id" :visible.sync="dialogExpondInfo" custom-class="single_dal_view"
+      :close-on-click-modal="false" :before-close="beforeExpandDestory">
       <span v-if="expondInit">{{ expand_init }}</span>
       <json-viewer v-if="expondSatus" :value="expondInfo" />
       <span v-if="expondResult">{{ expand_end }}</span>
@@ -527,7 +404,7 @@ export default {
   },
   watch: {
     'expandtemp.table_list': {
-      handler: function(val, oldVal) {
+      handler: function (val, oldVal) {
         if (val.length > 0) {
           this.expandtemp.dsc_flag = true
           this.expandtemp.title = '提交'
@@ -539,7 +416,7 @@ export default {
       }
     },
     'autoexpandtemp.table_list': {
-      handler: function(val, oldVal) {
+      handler: function (val, oldVal) {
         if (val.length > 0) {
           this.autoexpandtemp.dsc_flag = true
         } else {
@@ -1054,9 +931,4 @@ export default {
   }
 }
 </script>
-<style scoped>
-.el-tabs__content {
-  height: calc(100vh - 102px);
-  /* overflow-y: auto; */
-}
-</style>
+<style scoped></style>
