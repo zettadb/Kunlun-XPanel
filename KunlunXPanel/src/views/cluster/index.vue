@@ -19,7 +19,7 @@
         <OneClusterList v-if="item.name" :one-list="InfoList" @getId="clusterId" />
       </el-tab-pane>
     </el-tabs>
-</div>
+  </div>
 </template>
 
 <script>
@@ -106,7 +106,7 @@ export default {
     },
     updateActiveName(data) {
       // 修改activeName的名称
-      // this.activeName = data.activeName
+      this.activeName = data.activeName
       this.InfoList = data.list;
       this.cluster_id = data.list.id + "集群设置";
       if (this.activeName == "four") {
