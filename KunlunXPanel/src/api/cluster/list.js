@@ -691,3 +691,10 @@ export function getDataCents(data) {
     params: data
   })
 }
+export function getLogicalBackUpList(query) {
+  return request({
+    url: '/user/Cluster/getLogicalBackUpList',
+    method: 'get',
+    params: query
+  })
+}

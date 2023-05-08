@@ -229,4 +229,8 @@ export default {
   box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
   background-color: rgba(0, 0, 0, 0.1);
 }
+.el-tabs__content {
+  height: calc(100vh - 102px);
+  overflow-y: auto;
+}
 </style>
