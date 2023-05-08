@@ -1,0 +1,11 @@
+
+# IDE Files
+#-------------------------
+info.php
+/nbproject/
+.idea/*
+.vscode/*
+buid
+KunlunMonitor.error.log
+KunlunMonitor.log
+

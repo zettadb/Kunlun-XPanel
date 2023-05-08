@@ -33,19 +33,6 @@
           </el-form-item>
         </el-col>
       </el-row>
-       <el-form-item label="删除源表:" prop="del_table">
-        <el-radio v-model="form.del_table" label="0">自动</el-radio>
-        <el-radio v-model="form.del_table" label="1">手动</el-radio>
-      </el-form-item>
-       <!-- <el-form-item label="是否替换目标表名:" prop="rename_table">
-        <el-radio v-model="form.rename_table" label="1">是</el-radio>
-        <el-radio v-model="form.rename_table" label="0">否</el-radio>
-      </el-form-item> -->
-       <el-form-item label="保留天数:" prop="del_day"  v-if="form.del_table=='0'" >
-          <el-select v-model="form.del_day" placeholder="请选择">
-            <el-option v-for="item in delDay" :key="item.id" :label="item.label" :value="item.id" />
-          </el-select>
-        </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="onSubmit(form)">提交</el-button>
         <!-- <el-button>取消</el-button> -->
@@ -74,7 +61,7 @@ import {
   clusterOptions,
 } from "@/api/cluster/list";
 import { messageTip, handleCofirm, getNowDate } from "@/utils";
-import { version_arr, timestamp_arr,del_day_arr} from "@/utils/global_variable";
+import { version_arr, timestamp_arr } from "@/utils/global_variable";
 import { Loading } from "element-ui";
 
 export default {
@@ -96,9 +83,6 @@ export default {
         name: "",
         nick_name: "",
         id: "",
-        del_table:"0",
-        del_day:"7",
-        rename_table:"1"
       },
 
       dialogStatusVisible: false,
@@ -107,13 +91,9 @@ export default {
       srcTable: [],
       srcTableOptions: [],
       ditTableOptions: [],
-      delDay: del_day_arr,
       rules: {
         dst_cluster_id: [
           { required: true, trigger: "blur", message: "目标集群不能为空" },
-        ],
-        del_table: [
-          { required: true, trigger: "blur"},
         ],
       },
     };
@@ -193,8 +173,6 @@ export default {
           }).join(",");
           paras.src_cluster_id = this.form.src_cluster_id;
           paras.dst_cluster_id = this.form.dst_cluster_id;
-          paras.del_src_table = this.form.del_table; 
-          paras.del_resv_day = this.form.del_day;
           paras.repartition_tables = repartition_tables;
           data.paras = paras;
           tableRepartition(data).then((res) => {

@@ -10,6 +10,11 @@
       <el-tab-pane label="异常集群列表" name="three">
         <ErrorList v-if="tabs.three" />
       </el-tab-pane>
+      <!-- <el-tab-pane :label="cluster_id" name="four" v-if="tabs.four">
+            <OneClusterList v-if="tabs.four" :oneList="InfoList"/>
+        </el-tab-pane> -->
+      <!-- <el-tabs v-model="editableTabsValue" type="card" closable @tab-remove="removeTab"> -->
+      <!-- v-for="(item,index) in editableTabs" -->
       <el-tab-pane v-for="item in editableTabs" :key="item.name" :label="item.title" :name="item.name" closable>
         <OneClusterList v-if="item.name" :one-list="InfoList" @getId="clusterId" />
       </el-tab-pane>

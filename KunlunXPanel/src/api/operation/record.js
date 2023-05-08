@@ -21,10 +21,26 @@ export function getOptionCount(){
     params:''
   })
 }
-export function delTable(data) {
-    return request({
-      url: '/user/Operation/delTable',
-      method: 'post',
-      data
-    })
-}
+// export function addAccount(data) {
+//     return request({
+//       url: '/user/User/add',
+//       method: 'post',
+//       data
+//     })
+// }
+
+// export function update(data) {
+//     return request({
+//       url: '/user/User/edit',
+//       method: 'post',
+//       data
+//     })
+// }
+
+// export function delAccount(id) {
+//     return request({
+//       url: '/user/User/delete',
+//       method: 'post',
+//       data:{id:id}
+//     })
+// }

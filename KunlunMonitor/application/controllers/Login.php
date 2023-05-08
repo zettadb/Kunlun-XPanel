@@ -52,7 +52,6 @@ class Login extends CI_Controller
 		}
 		$sql = "select count(id) as count,id from kunlun_user where name='$user_name' and password='$password';";
 		$res = $this->Login_model->getList($sql);
-		//print_r($res);exit;
 		if (!empty($res)) {
 			if ($res[0]['count'] > 1) {
 				$token = $this->Login_model->getToken($user_name, 'E', $this->key);
@@ -497,27 +496,28 @@ class Login extends CI_Controller
 				//调grafana的api查数据源
 				$this->load->model('Grafana_model');
 				$get_result = $this->Grafana_model->postDataSource($get_url);
-					if ($get_result) {
-						$get_arr = json_decode($get_result, true);
-						if (is_array($get_arr) && count($get_arr) !== 0) {
-							if (array_key_exists('message', $get_arr)) {
-								//{"message":"Invalid Basic Auth Header","traceID":""}
-								if ($get_arr['message'] == 'invalid API key' || $get_arr['message'] == 'Unauthorized'||$get_arr['message'] == 'Invalid Basic Auth Header') {
-									//获取key
-									$post_keyDate = '{"name":"apikeycurl_002", "role": "Admin"}';
-									$post_keyurl = 'http://admin:admin@' . $this->grafana_svr . '/api/auth/keys';
-									$post_keyresult = $this->Grafana_model->getKey($post_keyDate, $post_keyurl);
-									//print_r($post_keyresult);
-									//exit($post_keyurl);
-									$post_keyresult = json_decode($post_keyresult, true);
-									if (array_key_exists('key', $post_keyresult)) {
-										$key = 'Bearer ' . $post_keyresult['key'];
-									}
+				if ($get_result) {
+					$get_arr = json_decode($get_result, true);
+
+					if (is_array($get_arr) && count($get_arr) !== 0) {
+						if (array_key_exists('message', $get_arr)) {
+							if ($get_arr['message'] == 'invalid API key' || $get_arr['message'] == 'Unauthorized') {
+								//获取key
+								$post_keyDate = '{"name":"apikeycurl_002", "role": "Admin"}';
+								$post_keyurl = 'http://admin:admin@' . $this->grafana_svr . '/api/auth/keys';
+								$post_keyresult = $this->Grafana_model->getKey($post_keyDate, $post_keyurl);
+								//print_r($post_keyresult);
+								//exit($post_keyurl);
+								$post_keyresult = json_decode($post_keyresult, true);
+								if (array_key_exists('key', $post_keyresult)) {
+									$key = 'Bearer ' . $post_keyresult['key'];
 								}
 							}
 						}
 					}
-				//exit(print_r($key));
+				}
+
+				//exit(print_r($res));
 				//修改配置文件myconfig.php
 				$post_url = 'http://' . $res[0] . ':' . $res[1] . '/HttpService/Emit';
 				rewrite_config([

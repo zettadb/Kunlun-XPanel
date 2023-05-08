@@ -1516,27 +1516,4 @@ class Operation extends CI_Controller
 		$res = $this->Cluster_model->getList($sql);
 		return $res;
 	}
-	public function delTable()
-	{
-		//获取token
-		$arr = apache_request_headers(); //获取请求头数组
-		$token = $arr["Token"];
-		if (empty($token)) {
-			$data['code'] = 201;
-			$data['message'] = 'token不能为空';
-			print_r(json_encode($data));
-			return;
-		}
-		//判断参数
-		$string = json_decode(@file_get_contents('php://input'), true);
-		//调接口
-		$this->load->model('Cluster_model');
-		$post_data = str_replace("\\/", "/", json_encode($string));
-		$post_arr = $this->Cluster_model->postData($post_data, $this->post_url);
-		$post_arr = json_decode($post_arr, TRUE);
-		$data = $post_arr;
-		print_r(json_encode($data));
-	}
-
-
 }
