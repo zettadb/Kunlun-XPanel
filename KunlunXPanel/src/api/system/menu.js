@@ -1,68 +1,33 @@
-<<<<<<< HEAD
 import request from '@/utils/request'
 
 export function permissionlist() {
- return request({
+  return request({
     url: '/user/web/permission/list',
     method: 'get',
-    params:''
-  });
+    params: ''
+  })
 }
 
 export function addMenu(data) {
-    return request({
-      url: '/user/web/permission/add',
-      method: 'post',
-      data
-    })
+  return request({
+    url: '/user/web/permission/add',
+    method: 'post',
+    data
+  })
 }
 
 export function updateMenu(data) {
-    return request({
-      url: '/user/web/permission/edit',
-      method: 'post',
-      data
-    })
+  return request({
+    url: '/user/web/permission/edit',
+    method: 'post',
+    data
+  })
 }
 
 export function delMenu(id) {
-    return request({
-      url: `/user/web/permission/delete?id=${id}`,
-      method: 'delete',
-      param:''
-    })
-=======
-import request from '@/utils/request'
-
-export function permissionlist() {
- return request({
-    url: '/user/web/permission/list',
-    method: 'get',
-    params:''
-  });
-}
-
-export function addMenu(data) {
-    return request({
-      url: '/user/web/permission/add',
-      method: 'post',
-      data
-    })
-}
-
-export function updateMenu(data) {
-    return request({
-      url: '/user/web/permission/edit',
-      method: 'post',
-      data
-    })
-}
-
-export function delMenu(id) {
-    return request({
-      url: `/user/web/permission/delete?id=${id}`,
-      method: 'delete',
-      param:''
-    })
->>>>>>> 1.0
+  return request({
+    url: `/user/web/permission/delete?id=${id}`,
+    method: 'delete',
+    param: ''
+  })
 }

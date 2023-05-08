@@ -49,6 +49,7 @@ class Role extends CI_Controller {
 					$user_id.=$row['id'].',';
 				}
 				$user_id=substr($user_id,0,strlen($user_id)-1);
+				
 			}else if($userid_count==1){
 				$user_id=$res_userid[0]['id'];
 			}else{

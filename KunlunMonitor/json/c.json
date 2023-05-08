@@ -1,0 +1,123 @@
+{
+    "machines":[
+        {
+            "ip":"192.168.0.128",
+            "basedir":"/home/haifeng/basenode",
+            "user":"kunlun"
+        },
+		{
+            "ip":"192.168.0.132",
+            "basedir":"/home/haifeng/basenode",
+            "user":"kunlun"
+        },
+		{
+            "ip":"192.168.0.134",
+            "basedir":"/home/haifeng/basenode",
+            "user":"kunlun"
+        }
+    ],
+    "meta":{
+	"ha_mode": "mgr",
+        "nodes":[
+			{
+				"is_primary":true,
+				"ip":"192.168.0.128",
+				"port":10016,
+				"xport":10017,
+				"mgr_port":10018,
+				"innodb_buffer_pool_size":"64MB",
+				"election_weight":50
+			},
+			{
+				"is_primary":false,
+				"ip":"192.168.0.132",
+				"port":10016,
+				"xport":10017,
+				"mgr_port":10018,
+				"innodb_buffer_pool_size":"64MB",
+				"election_weight":50
+			},
+			{
+				"is_primary":false,
+				"ip":"192.168.0.134",
+				"port":10016,
+				"xport":10017,
+				"mgr_port":10018,
+				"innodb_buffer_pool_size":"64MB",
+				"election_weight":50
+			}
+        ]
+    },
+    "cluster_manager": {
+           "nodes": [
+				{
+				"ip": "192.168.0.128",
+				"brpc_raft_port": 55005,
+				"brpc_http_port": 55006,
+				"prometheus_port_start": 55007
+				},
+				{
+				"ip": "192.168.0.132",
+				"brpc_raft_port": 55005,
+				"brpc_http_port": 55006,
+				"prometheus_port_start": 55007
+				},
+				{
+				"ip": "192.168.0.134",
+				"brpc_raft_port": 55005,
+				"brpc_http_port": 55006,
+				"prometheus_port_start": 55007
+				}
+	    ]	
+    },
+    "node_manager": {
+           "nodes": [
+		{
+ 		"ip": "192.168.0.128",
+		"total_cpu_cores": 32,
+		"total_mem": 8192,
+		"nodetype": "both",
+ 		"brpc_http_port": 55008,
+		"tcp_port": 55009,
+		"prometheus_port_start": 55010,
+		"server_portrange":"47100-48100",
+		"storage_portrange":"57100-58100"
+		},
+		{
+ 		"ip": "192.168.0.132",
+		"total_cpu_cores": 32,
+		"total_mem": 8192,
+		"nodetype": "both",
+ 		"brpc_http_port": 55008,
+		"tcp_port": 55009,
+		"prometheus_port_start": 55010,
+		"server_portrange":"47100-48100",
+		"storage_portrange":"57100-58100"
+		}
+		,
+		{
+ 		"ip": "192.168.0.134",
+		"total_cpu_cores": 32,
+		"total_mem": 8192,
+		"nodetype": "both",
+ 		"brpc_http_port": 55008,
+		"tcp_port": 55009,
+		"prometheus_port_start": 55010,
+		"server_portrange":"47100-48100",
+		"storage_portrange":"57100-58100"
+		}
+	    ]
+    },
+      "backup":{
+        "hdfs":{
+	  "ip": "192.168.0.134",
+        "port": 9550
+		}
+	 },
+	"xpanel": {
+	"ip": "192.168.0.134",
+	"port": 19001,
+	"image": "registry.cn-hangzhou.aliyuncs.com/kunlundb/kunlun-xpanel:1.1.1"
+	}
+
+}

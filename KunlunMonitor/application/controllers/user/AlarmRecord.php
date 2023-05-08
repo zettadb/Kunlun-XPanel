@@ -279,6 +279,7 @@ class AlarmRecord extends CI_Controller {
 										if (array_key_exists("nick_name", $string['paras'])) {
 											$nick_name=$string['paras']['nick_name'];
 										}
+										
 										$res[$row]['list']='<div>job_id：'.$string["id"].'</div><div>业务名称：'.$nick_name.'</div><div>集群ID：'.$string["paras"]["cluster_id"].'</div><div>shard个数：'.$string["paras"]["shards"].'</div><div>副本数：'.$string["paras"]["nodes"].'</div>'.$shard_arrs;
 									}
 									if($value2=='delete_shard'){

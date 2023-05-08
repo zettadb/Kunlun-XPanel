@@ -1,11 +1,4 @@
-<<<<<<< HEAD
 build/*.js
 src/assets
 public
 dist
-=======
-build/*.js
-src/assets
-public
-dist
->>>>>>> 1.0

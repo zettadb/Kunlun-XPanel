@@ -3,8 +3,8 @@
     <div class="filter-container">
       <div class="table-list-search-wrap">
         <el-input
-          class="list_search_keyword"
           v-model="listQuery.name"
+          class="list_search_keyword"
           placeholder="可输入目标名称搜索"
           @keyup.enter.native="handleFilter"
         />
@@ -15,17 +15,16 @@
           重置
         </el-button>
         <el-button
+          v-if="user_name=='super_dba'"
           class="filter-item"
           type="primary"
           icon="el-icon-plus"
           @click="handleCreate"
-          v-if="user_name=='super_dba'"
-        >新增</el-button>
-        <div v-text="info" v-show="installStatus===true" class="info"></div>
+        >新增
+        </el-button>
+        <div v-show="installStatus===true" class="info" v-text="info" />
       </div>
-      <div class="table-list-wrap">
-
-      </div>
+      <div class="table-list-wrap" />
     </div>
 
     <el-table
@@ -34,14 +33,15 @@
       :data="list"
       border
       highlight-current-row
-      style="width: 100%;margin-bottom: 20px;">
+      style="width: 100%;margin-bottom: 20px;"
     >
+      >
       <el-table-column
         type="index"
         align="center"
         label="序号"
-        width="50">
-      </el-table-column>
+        width="50"
+      />
 
       <el-table-column label="目标名称" align="center">
         <template slot-scope="{row}">
@@ -50,42 +50,50 @@
       </el-table-column>
 
       <el-table-column
-            prop="stype"
-            align="center"
-            label="类型">
-      </el-table-column>
+        prop="stype"
+        align="center"
+        label="类型"
+      />
       <el-table-column
-            prop="hostaddr"
-            align="center"
-            label="IP地址">
-      </el-table-column>
+        prop="hostaddr"
+        align="center"
+        label="IP地址"
+      />
       <el-table-column
-            prop="port"
-            align="center"
-            label="端口号">
-      </el-table-column>
-      
+        prop="port"
+        align="center"
+        label="端口号"
+      />
+
       <el-table-column
+        v-if="user_name=='super_dba'"
         label="操作"
         align="center"
         width="300"
         class-name="small-padding fixed-width"
-        v-if="user_name=='super_dba'"
       >
         <template slot-scope="{row,$index}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)" v-if="user_name=='super_dba'">编辑</el-button>
+<!--          <el-button v-if="user_name=='super_dba'" type="primary" size="mini" @click="handleUpdate(row)">编辑-->
+<!--          </el-button>-->
           <el-button
+            v-if="user_name=='super_dba'"
             size="mini"
             type="danger"
             @click="handleDelete(row,$index)"
-            v-if="user_name=='super_dba'"
-          >删除</el-button>
+          >删除
+          </el-button>
           <!-- <div v-text="info" v-show="installStatus===true" class="info"></div> -->
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="getList" />
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="listQuery.pageNo"
+      :limit.sync="listQuery.pageSize"
+      @pagination="getList"
+    />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" custom-class="single_dal_view">
       <el-form
@@ -95,38 +103,52 @@
         label-position="left"
         label-width="140px"
       >
-      
+
         <el-form-item label="目标名称:" prop="name">
-          <el-input v-model="temp.name" placeholder="请输入目标名称" :disabled="dialogStatus==='detail'||dialogStatus==='update'"/>
+          <el-input
+            v-model="temp.name"
+            placeholder="请输入目标名称"
+            :disabled="dialogStatus==='detail'||dialogStatus==='update'"
+          />
         </el-form-item>
 
-        <el-form-item label="目标类型:" prop="stype" >
-          <el-select v-model="temp.stype" placeholder="请选择目标类型">
+        <el-form-item label="目标类型:" prop="stype">
+          <el-select v-model="temp.stype" placeholder="请选择目标类型" @change="changeValue($event)">
             <el-option
               v-for="stype in stypelist"
               :key="stype.id"
               :label="stype.name"
-              :value="stype.name">
-            </el-option>
+              :value="stype.name"
+            />
           </el-select>
         </el-form-item>
 
         <el-form-item label="IP地址:" prop="hostaddr">
-          <el-input v-model="temp.hostaddr" placeholder="请输入IP地址" :disabled="dialogStatus==='detail'"/>
+          <el-input v-model="temp.hostaddr" placeholder="请输入IP地址" :disabled="dialogStatus==='detail'" />
         </el-form-item>
-
+        <el-form-item v-if="temp.stype=='SSH'" label="SSH用户名:">
+          <el-input v-model="temp.user_name" placeholder="请输入SSH 用户名" :disabled="dialogStatus==='detail'" />
+        </el-form-item>
         <el-form-item label="端口号:" prop="port">
-          <el-input  v-model="temp.port" placeholder="请输入端口号"  :disabled="dialogStatus==='detail'"/>
+          <el-input v-model="temp.port" placeholder="请输入端口号" :disabled="dialogStatus==='detail'" />
         </el-form-item>
 
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false" v-show="!dialogDetail">关闭</el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData(row)"  v-show="!dialogDetail">确认</el-button>
+        <el-button v-show="!dialogDetail" @click="dialogFormVisible = false">关闭</el-button>
+        <el-button v-show="!dialogDetail" type="primary" @click="dialogStatus==='create'?createData():updateData(row)">
+          确认
+        </el-button>
       </div>
     </el-dialog>
     <!--  状态框 -->
-    <el-dialog :visible.sync="dialogStatusVisible" custom-class="single_dal_view" width="400px" :close-on-click-modal="false" :before-close="beforeSyncDestory">
+    <el-dialog
+      :visible.sync="dialogStatusVisible"
+      custom-class="single_dal_view"
+      width="400px"
+      :close-on-click-modal="false"
+      :before-close="beforeSyncDestory"
+    >
       <div class="block">
         <el-timeline>
           <el-timeline-item
@@ -136,8 +158,9 @@
             :type="activity.type"
             :color="activity.color"
             :size="activity.size"
-            :timestamp="activity.timestamp">
-            {{activity.content}}
+            :timestamp="activity.timestamp"
+          >
+            {{ activity.content }}
           </el-timeline-item>
         </el-timeline>
       </div>
@@ -146,111 +169,119 @@
 </template>
 
 <script>
- import { messageTip,handleCofirm,getNowDate } from "@/utils";
- import {getStorageList,addStorage,updateStorage,delStorage,getEvStatus,getBackStorageList} from '@/api/cluster/list'
- import {version_arr,storage_type_arr, timestamp_arr} from "@/utils/global_variable"
- import Pagination from '@/components/Pagination' 
-
+import { messageTip, handleCofirm, getNowDate } from '@/utils'
+import {
+  // eslint-disable-next-line no-unused-vars
+  getStorageList,
+  addStorage,
+  updateStorage,
+  delStorage,
+  getEvStatus,
+  getBackStorageList
+} from '@/api/cluster/list'
+import { version_arr, storage_type_arr, timestamp_arr } from '@/utils/global_variable'
+import Pagination from '@/components/Pagination'
 
 export default {
-  name: "account",
+  name: 'Account',
   components: { Pagination },
   data() {
-   const validateIPAddress=(rule, value, callback)=>{
-      let regexp = /^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$/;
-      let valdata = value.split(',');
-      let isCorrect = true;
+    const validateIPAddress = (rule, value, callback) => {
+      const regexp = /^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$/
+      const valdata = value.split(',')
+      let isCorrect = true
       if (valdata.length) {
         for (let i = 0; i < valdata.length; i++) {
           if (regexp.test(valdata[i]) == false) {
-              isCorrect = false;
+            isCorrect = false
           }
         }
       }
       if (value == '') {
-            return callback(new Error('请输入IP地址'));
+        return callback(new Error('请输入IP地址'))
       } else if (!isCorrect) {
-            callback(new Error('请输入正确对IP地址'));
+        callback(new Error('请输入正确对IP地址'))
       } else {
-            callback()
+        callback()
       }
-    };
+    }
     const validateName = (rule, value, callback) => {
-      if(!value){
-        callback(new Error("请输入目标名称"));
-      }else {
-        callback();
-      }
-    };
-    const validateStype = (rule, value, callback) => {
-      if(!value){
-        callback(new Error("请选择目标类型"));
-      }else {
-        callback();
-      }
-    };
-    const validatePort = (rule, value, callback) => {
-       const number= /^[0-9]*$/
       if (!value) {
-        callback(new Error("请输入端口号"));
-      } else if(!number.test(value)){
-       callback(new Error("端口号只允许输入数字"));
-      }else {
-        callback();
+        callback(new Error('请输入目标名称'))
+      } else {
+        callback()
       }
-    };
-    
+    }
+    const validateStype = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('请选择目标类型'))
+      } else {
+        callback()
+      }
+    }
+    const validatePort = (rule, value, callback) => {
+      const number = /^[0-9]*$/
+      if (!value) {
+        callback(new Error('请输入端口号'))
+      } else if (!number.test(value)) {
+        callback(new Error('端口号只允许输入数字'))
+      } else {
+        callback()
+      }
+    }
+
     return {
       tableKey: 0,
       list: null,
       listLoading: true,
-      searchLoading:false,
+      searchLoading: false,
       total: 0,
       listQuery: {
         pageNo: 1,
         pageSize: 10,
-        name: '',
+        name: ''
       },
       temp: {
         hostaddr: '',
-        name:'',
-        stype:'',
-        port:''
+        name: '',
+        stype: '',
+        port: '',
+        user_name: ''
       },
       dialogFormVisible: false,
-      dialogEditVisible:false,
-      dialogStatus: "",
+      dialogEditVisible: false,
+      dialogStatus: '',
       textMap: {
-        update: "编辑备份存储目标",
-        create: "新增备份存储目标",
-        detail: "详情"
+        update: '编辑备份存储目标',
+        create: '新增备份存储目标',
+        detail: '详情'
       },
       dialogDetail: false,
-      message_tips:'',
-      message_type:'',
-      installStatus:false,
-      info:'',
-      row:{},
-      stypelist:storage_type_arr,
-      user_name:sessionStorage.getItem('login_username'),
-      timer:null,
-      dialogStatusVisible:false,
-      activities:[],
+      message_tips: '',
+      message_type: '',
+      installStatus: false,
+      info: '',
+      row: {},
+      stypelist: storage_type_arr,
+      user_name: sessionStorage.getItem('login_username'),
+      timer: null,
+      dialogStatusVisible: false,
+      activities: [],
       rules: {
         hostaddr: [
-          { required: true, trigger: "blur",validator: validateIPAddress },
+          { required: true, trigger: 'blur', validator: validateIPAddress }
         ],
         name: [
-          { required: true, trigger: "blur",validator: validateName },
+          { required: true, trigger: 'blur', validator: validateName }
         ],
         stype: [
-          { required: true, trigger: "blur",validator: validateStype },
+          { required: true, trigger: 'blur', validator: validateStype }
         ],
         port: [
-          { required: true, trigger: "blur",validator: validatePort },
+          { required: true, trigger: 'blur', validator: validatePort }
         ]
-      },
-    };
+      }
+    }
   },
   created() {
     this.getList()
@@ -260,259 +291,267 @@ export default {
     this.timer = null
   },
   methods: {
-    beforeSyncDestory(){
+    changeValue(value) {
+      console.log(value)
+      this.temp.stype = value
+    },
+
+    beforeSyncDestory() {
       clearInterval(this.timer)
-      this.dialogStatusVisible=false;
-      this.timer=null;
+      this.dialogStatusVisible = false
+      this.timer = null
     },
     handleFilter() {
       this.listQuery.pageNo = 1
       this.getList()
     },
-    handleClear(){
+    handleClear() {
       this.listQuery.name = ''
       this.listQuery.pageNo = 1
       this.getList()
     },
     getList() {
-        this.listLoading = true
-        this.installStatus = false
-        let queryParam = Object.assign({}, this.listQuery)
-        // const temp={};
-        // temp.version=version_arr[0].ver;
-        // temp.job_id='';
-        // temp.job_type='get_backup_storage';
-        // temp.timestamp=timestamp_arr[0].time+'';
-        // temp.paras={};
-        // //模糊搜索
-        // getStorageList(temp).then(response => {
-        //   if(response.attachment.list_backup_storage!==null){
-        //     this.list = response.attachment.list_backup_storage;
-        //     this.total = response.attachment.list_backup_storage.length;
-        //   }else{
-        //     this.list =[];
-        //     this.total=[];
-        //   }
-        //   setTimeout(() => {
-        //     this.listLoading = false
-        //   }, 0.5 * 1000)
-        // });
+      this.listLoading = true
+      this.installStatus = false
+      const queryParam = Object.assign({}, this.listQuery)
+      // const temp={};
+      // temp.version=version_arr[0].ver;
+      // temp.job_id='';
+      // temp.job_type='get_backup_storage';
+      // temp.timestamp=timestamp_arr[0].time+'';
+      // temp.paras={};
+      // //模糊搜索
+      // getStorageList(temp).then(response => {
+      //   if(response.attachment.list_backup_storage!==null){
+      //     this.list = response.attachment.list_backup_storage;
+      //     this.total = response.attachment.list_backup_storage.length;
+      //   }else{
+      //     this.list =[];
+      //     this.total=[];
+      //   }
+      //   setTimeout(() => {
+      //     this.listLoading = false
+      //   }, 0.5 * 1000)
+      // });
       getBackStorageList(queryParam).then(response => {
-        if(response.list!==false){
-          this.list = response.list;
-          this.total = response.total;
-        }else{
-          this.list =[];
-          this.total=0;
+        if (response.list !== false) {
+          this.list = response.list
+          this.total = response.total
+        } else {
+          this.list = []
+          this.total = 0
         }
         setTimeout(() => {
           this.listLoading = false
         }, 0.5 * 1000)
-      });
+      })
     },
     resetTemp() {
       this.temp = {
         hostaddr: '',
-        name:'',
-        stype:'',
-        port:''
-      };
+        name: '',
+        stype: 'HDFS',
+        port: '',
+        user_name: ''
+      }
     },
     handleCreate() {
-      this.resetTemp();
-      this.dialogStatus = "create";
-      this.dialogFormVisible = true;
-      this.dialogDetail = false;
+      this.resetTemp()
+      this.dialogStatus = 'create'
+      this.dialogFormVisible = true
+      this.dialogDetail = false
       this.$nextTick(() => {
-        this.$refs.dataForm.clearValidate();
-      });
+        this.$refs.dataForm.clearValidate()
+      })
     },
     createData() {
-      this.$refs["dataForm"].validate((valid) => {
+      this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          const tempData = {};
-          tempData.job_id ='';
-          tempData.job_type ='create_backup_storage';
-          tempData.version=version_arr[0].ver;
-          tempData.timestamp=timestamp_arr[0].time+'';
-          tempData.user_name=sessionStorage.getItem('login_username');
-          tempData.paras=Object.assign({}, this.temp);
-          //发送接口
-          addStorage(tempData).then(response=>{
-            let res = response;
-            if(res.status=='accept'){
-              this.dialogFormVisible = false;
-              this.dialogStatusVisible=true;
-              this.activities=[];
-              const newArr={
-                content:'正在新增备份存储目标',
+          const tempData = {}
+          tempData.job_id = ''
+          tempData.job_type = 'create_backup_storage'
+          tempData.version = version_arr[0].ver
+          tempData.timestamp = timestamp_arr[0].time + ''
+          tempData.user_name = sessionStorage.getItem('login_username')
+          tempData.paras = Object.assign({}, this.temp)
+          // 发送接口
+          addStorage(tempData).then(response => {
+            const res = response
+            // eslint-disable-next-line eqeqeq
+            if (res.status === 'accept') {
+              this.dialogFormVisible = false
+              this.dialogStatusVisible = true
+              this.activities = []
+              const newArr = {
+                content: '正在新增备份存储目标',
                 timestamp: getNowDate(),
                 size: 'large',
                 type: 'primary',
                 icon: 'el-icon-more'
-              };
-              this.activities.push(newArr);
-              //调获取状态接口
-              let i=0;
-              let action_name='新增备份存储目标';
+              }
+              this.activities.push(newArr)
+              // 调获取状态接口
+              let i = 0
+              const action_name = '新增备份存储目标'
               this.timer = setInterval(() => {
-                this.getStatus(this.timer,res.job_id,i++,action_name)
+                this.getStatus(this.timer, res.job_id, i++, action_name)
               }, 1000)
-            }else{
-              this.message_tips = res.error_info;
-              this.message_type = 'error';
-              messageTip(this.message_tips,this.message_type);
+            } else {
+              this.message_tips = res.error_info
+              this.message_type = 'error'
+              messageTip(this.message_tips, this.message_type)
             }
           })
         }
-      });
+      })
     },
-    handleDetail(row){
-      this.dialogStatus = "detail"
+    handleDetail(row) {
+      this.dialogStatus = 'detail'
       this.dialogFormVisible = true
-      this.temp = Object.assign({}, row);
+      this.temp = Object.assign({}, row)
       this.dialogDetail = true
     },
     handleUpdate(row) {
-      this.temp = Object.assign({}, row); 
-      this.dialogStatus = "update";
-      this.dialogFormVisible = true;
-      this.dialogDetail = false;
+      this.temp = Object.assign({}, row)
+      this.dialogStatus = 'update'
+      this.dialogFormVisible = true
+      this.dialogDetail = false
       this.$nextTick(() => {
-        this.$refs["dataForm"].clearValidate();
-      });
+        this.$refs['dataForm'].clearValidate()
+      })
     },
     updateData() {
-      this.$refs["dataForm"].validate((valid) => {
+      this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          const tempData = {};
-          tempData.job_id ='';
-          tempData.job_type ='update_backup_storage';
-          tempData.version=version_arr[0].ver;
-          tempData.timestamp=timestamp_arr[0].time+'';
-          tempData.user_name=sessionStorage.getItem('login_username');
-          tempData.paras=Object.assign({}, this.temp);
+          const tempData = {}
+          tempData.job_id = ''
+          tempData.job_type = 'update_backup_storage'
+          tempData.version = version_arr[0].ver
+          tempData.timestamp = timestamp_arr[0].time + ''
+          tempData.user_name = sessionStorage.getItem('login_username')
+          tempData.paras = Object.assign({}, this.temp)
           updateStorage(tempData).then((response) => {
-            let res = response;
-            if(res.status=='accept'){
-              this.dialogFormVisible = false;
-              this.dialogStatusVisible=true;
-              this.activities=[];
-              const newArr={
-                content:'正在编辑备份存储目标',
+            const res = response
+            // eslint-disable-next-line eqeqeq
+            if (res.status === 'accept') {
+              this.dialogFormVisible = false
+              this.dialogStatusVisible = true
+              this.activities = []
+              const newArr = {
+                content: '正在编辑备份存储目标',
                 timestamp: getNowDate(),
                 size: 'large',
                 type: 'primary',
                 icon: 'el-icon-more'
-              };
-              this.activities.push(newArr);
-              //调获取状态接口
-              let i=0;
-              let action_name='编辑备份存储目标';
+              }
+              this.activities.push(newArr)
+              // 调获取状态接口
+              let i = 0
+              const action_name = '编辑备份存储目标'
               this.timer = setInterval(() => {
-                this.getStatus(this.timer,res.job_id,i++,action_name)
+                this.getStatus(this.timer, res.job_id, i++, action_name)
               }, 1000)
-            }else{
-              this.message_tips = res.error_info;
-              this.message_type = 'error';
-              messageTip(this.message_tips,this.message_type);
+            } else {
+              this.message_tips = res.error_info
+              this.message_type = 'error'
+              messageTip(this.message_tips, this.message_type)
             }
-          });
+          })
         }
-      });
+      })
     },
     handleDelete(row) {
-      handleCofirm("此操作将永久删除该数据, 是否继续?").then( () =>{
-        const tempData = {};
-        tempData.job_id ='';
-        tempData.job_type ='delete_backup_storage';
-        tempData.version=version_arr[0].ver;
-        tempData.timestamp=timestamp_arr[0].time+'';
-        tempData.user_name=sessionStorage.getItem('login_username');
-        tempData.paras={'name':row.name};
-        delStorage(tempData).then((response)=>{
-          let res = response;
-          if(res.status=='accept'){
-            this.dialogFormVisible = false;
-            this.dialogStatusVisible=true;
-            this.activities=[];
-            const newArr={
-              content:'正在删除备份存储目标',
+      handleCofirm('此操作将永久删除该数据, 是否继续?').then(() => {
+        const tempData = {}
+        tempData.job_id = ''
+        tempData.job_type = 'delete_backup_storage'
+        tempData.version = version_arr[0].ver
+        tempData.timestamp = timestamp_arr[0].time + ''
+        tempData.user_name = sessionStorage.getItem('login_username')
+        tempData.paras = { 'name': row.name }
+        delStorage(tempData).then((response) => {
+          const res = response
+          if (res.status == 'accept') {
+            this.dialogFormVisible = false
+            this.dialogStatusVisible = true
+            this.activities = []
+            const newArr = {
+              content: '正在删除备份存储目标',
               timestamp: getNowDate(),
               size: 'large',
               type: 'primary',
               icon: 'el-icon-more'
-            };
-            this.activities.push(newArr);
-            //调获取状态接口
-            let i=0;
-            let action_name='删除备份存储目标';
+            }
+            this.activities.push(newArr)
+            // 调获取状态接口
+            let i = 0
+            const action_name = '删除备份存储目标'
             this.timer = setInterval(() => {
-              this.getStatus(this.timer,res.job_id,i++,action_name)
+              this.getStatus(this.timer, res.job_id, i++, action_name)
             }, 1000)
-          }else{
-            this.message_tips = res.error_info;
-            this.message_type = 'error';
-            messageTip(this.message_tips,this.message_type);
+          } else {
+            this.message_tips = res.error_info
+            this.message_type = 'error'
+            messageTip(this.message_tips, this.message_type)
           }
         })
       }).catch(() => {
-          console.log('quxiao')
-          messageTip('已取消删除','info');
-      }); 
+        console.log('quxiao')
+        messageTip('已取消删除', 'info')
+      })
     },
-    getStatus (timer,data,i,action_name) {
-      setTimeout(()=>{
-        const postarr={};
-        postarr.job_type='get_status';
-        postarr.version=version_arr[0].ver;
-        postarr.job_id=data;
-        postarr.timestamp=timestamp_arr[0].time+'';
-        postarr.paras={};
+    getStatus(timer, data, i, action_name) {
+      setTimeout(() => {
+        const postarr = {}
+        postarr.job_type = 'get_status'
+        postarr.version = version_arr[0].ver
+        postarr.job_id = data
+        postarr.timestamp = timestamp_arr[0].time + ''
+        postarr.paras = {}
         getEvStatus(postarr).then((res) => {
-        if(res.status=='done'||res.status=='failed'){
-          if(res.status=='done'){
-            const newArrdone={
-              content:action_name+'成功',
-              timestamp: getNowDate(),
-              color: '#0bbd87',
-              icon: 'el-icon-circle-check'
-            };
-            this.activities.push(newArrdone)
-            this.getList()
-            //this.dialogStatusVisible=false;
-            clearInterval(timer);
-          }else{
-            if(res.attachment==null&&res.error_code=='70001'&&res.status=='failed'){
-              if(i>5){
-                const newArr={
-                  content:res.error_info,
+          if (res.status == 'done' || res.status == 'failed') {
+            if (res.status == 'done') {
+              const newArrdone = {
+                content: action_name + '成功',
+                timestamp: getNowDate(),
+                color: '#0bbd87',
+                icon: 'el-icon-circle-check'
+              }
+              this.activities.push(newArrdone)
+              this.getList()
+              // this.dialogStatusVisible=false;
+              clearInterval(timer)
+            } else {
+              if (res.attachment == null && res.error_code == '70001' && res.status == 'failed') {
+                if (i > 5) {
+                  const newArr = {
+                    content: res.error_info,
+                    timestamp: getNowDate(),
+                    color: 'red',
+                    icon: 'el-icon-circle-close'
+                  }
+                  this.activities.push(newArr)
+                  clearInterval(timer)
+                }
+              } else {
+                const newArr = {
+                  content: res.error_info,
                   timestamp: getNowDate(),
                   color: 'red',
                   icon: 'el-icon-circle-close'
-                };
-                this.activities.push(newArr);
-                clearInterval(timer);
+                }
+                this.activities.push(newArr)
+                clearInterval(timer)
               }
-            }else{
-              const newArr={
-                content:res.error_info,
-                timestamp: getNowDate(),
-                color: 'red',
-                icon: 'el-icon-circle-close'
-              };
-              this.activities.push(newArr);
-              clearInterval(timer);
             }
           }
-        }
-      });
-        if(i>=86400){
-            clearInterval(timer);
+        })
+        if (i >= 86400) {
+          clearInterval(timer)
         }
       }, 0)
     }
 
-  },
-};
+  }
+}
 </script>
