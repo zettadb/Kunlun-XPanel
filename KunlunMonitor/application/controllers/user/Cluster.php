@@ -4193,4 +4193,71 @@ class Cluster extends CI_Controller
 		$res = $this->Cluster_model->DB($sql_main, $ip, $port, $user_name);
 		return $res;
 	}
+	public function getLogicalBackUpList()
+	{
+		//GET请求
+		$serve = $_SERVER['QUERY_STRING'];
+		$string = preg_split('/[=&]/', $serve);
+		$arr = array();
+		for ($i = 0; $i < count($string); $i += 2) {
+			$arr[$string[$i]] = $string[$i + 1];
+		}
+		$pageNo = $arr['pageNo'];
+		$pageSize = $arr['pageSize'];
+		$username = $arr['username'];
+		$status = $arr['status'];
+		$start = ($pageNo - 1) * $pageSize;
+		$this->load->model('Cluster_model');
+
+		//获取集群信息
+		$sql = "select cluster_id,db_table,execute_host,job_id,backup_time,backup_state,backup_info from cluster_logicalbackup_record ";
+		//print_r($sql);exit;
+		if (!empty($status)) {
+			$sql .= " where  backup_state='$status'";
+		}
+		$sql .= " order by id desc limit " . $pageSize . " offset " . $start;
+		//echo $sql;exit;
+		$res = $this->Cluster_model->getList($sql);
+		$total_sql = "select count(id) as count from cluster_logicalbackup_record ";
+		if (!empty($status)) {
+			$total_sql .= " where  backup_state='$status'";
+		}
+		$res_total = $this->Cluster_model->getList($total_sql);
+		if (!empty($res)) {
+			foreach ($res as $row => $value) {
+				foreach ($value as $key2 => $value2) {
+					//集群名称
+					if ($key2 == 'cluster_id') {
+						if (!empty($value2)) {
+							$name = $this->getOneCluster($value2);
+							if (!empty($name)) {
+								$res[$row]['cluster_name'] = $name[0]['name'];
+								$res[$row]['nick_name'] = $name[0]['nick_name'];
+							} else {
+								$res[$row]['cluster_name'] = '';
+								$res[$row]['nick_name'] = '';
+							}
+						} else {
+							$res[$row]['cluster_name'] = '';
+							$res[$row]['nick_name'] = '';
+						}
+					}
+
+				}
+			}
+		} else {
+			$res = array();
+		}
+		$data['code'] = 200;
+		$data['list'] = $res;
+		$data['total'] = $res_total ? (int) $res_total[0]['count'] : 0;
+		print_r(json_encode($data));
+	}
+	public function getOneCluster($id)
+	{
+		$sql = "select name,nick_name from db_clusters where id='$id' ";
+		$this->load->model('Cluster_model');
+		$res = $this->Cluster_model->getList($sql);
+		return $res;
+	}
 }

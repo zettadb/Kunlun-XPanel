@@ -125,6 +125,7 @@ export default {
         active: this.active,
         editableTabs: this.editableTabs,
       };
+      console.log(this.editableTabs);
     },
     clusterId(value) {
       this.removeTab(value);

@@ -499,7 +499,8 @@ class Login extends CI_Controller
 
 					if (is_array($get_arr) && count($get_arr) !== 0) {
 						if (array_key_exists('message', $get_arr)) {
-							if ($get_arr['message'] == 'invalid API key' || $get_arr['message'] == 'Unauthorized') {
+								//{"message":"Invalid Basic Auth Header","traceID":""}
+								if ($get_arr['message'] == 'invalid API key' || $get_arr['message'] == 'Unauthorized'||$get_arr['message'] == 'Invalid Basic Auth Header') {
 								//获取key
 								$post_keyDate = '{"name":"apikeycurl_002", "role": "Admin"}';
 								$post_keyurl = 'http://admin:admin@' . $this->grafana_svr . '/api/auth/keys';

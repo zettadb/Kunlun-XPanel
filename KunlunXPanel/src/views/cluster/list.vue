@@ -2653,7 +2653,9 @@ export default {
         this.handleClear()
       }
       this.editableTabs = this.comment.editableTabs
-      const newTabName = row.id + ''
+      const newTabName = row.id + ""
+      //console.log(newTabName);
+      //console.log(this.comment);
       const tabs = this.editableTabs
       if (tabs.length > 0) {
         let exist = false

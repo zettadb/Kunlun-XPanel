@@ -97,8 +97,8 @@ export const constantRoutes = [
       {
         path: 'backup',
         name: 'Backup',
-        component: () => import('@/views/cluster/backup'),
-        meta: { 
+        component: () => import('@/views/cluster/backupmenu'),
+        meta: {
           title: '集群备份列表',
           requiresAuth:true, 
           //  icon: 'tree' 

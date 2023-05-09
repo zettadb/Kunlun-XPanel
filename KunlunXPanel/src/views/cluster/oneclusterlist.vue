@@ -230,7 +230,9 @@ export default {
   background-color: rgba(0, 0, 0, 0.1);
 }
 
-.set-clus .el-tabs__content {
+
+.el-tabs__content {
+
   height: calc(100vh - 102px);
   overflow-y: auto;
 }
