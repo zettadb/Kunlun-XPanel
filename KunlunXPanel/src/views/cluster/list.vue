@@ -1857,7 +1857,7 @@ export default {
             paras.computer_password = tempData.computer_password;
           }
           // 0和没有该字段为正常模式，1为小内存模式
-          paras.dbcfg = "0";
+          paras.dbcfg = "1";
           clusterData.paras = paras;
           // console.log(clusterData);return;
           // 发送接口
