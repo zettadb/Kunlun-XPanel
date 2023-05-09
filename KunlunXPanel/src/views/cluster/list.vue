@@ -1806,45 +1806,45 @@ export default {
             paras.cpu_cores = tempData.per_computing_node_cpu_cores
           }
 
-
-          console.log(this.$refs.data_center_nodes.selection);
-          console.log(this.$refs.data_center_comps.selection);
-          const data_center_nodes = this.$refs.data_center_nodes.selection;
-          const data_center_comps = this.$refs.data_center_comps.selection;
-
-          if (data_center_comps.length == 0) {
-            this.message_tips = "选择计算节点"
-            this.message_type = 'error'
-            messageTip(this.message_tips, this.message_type)
-            return false;
-          }
-
-          if (data_center_nodes.length == 0) {
-            this.message_tips = "选择计算节点"
-            this.message_type = 'error'
-            messageTip(this.message_tips, this.message_type)
-            return false;
-          }
-
-          if (data_center_nodes.length != data_center_comps.length) {
-            this.message_tips = "计算节点的数量和存储节点数量不一致"
-            this.message_type = 'error'
-            messageTip(this.message_tips, this.message_type)
-            return false;
-          }
-
-          //判断是否有主
-          let master_idc = null;
-          data_center_nodes.forEach((v) => {
-            if (v.master) {
-              master_idc = {
-                idc: v.name,
-                node_num: (v.node_num - 1) + ''
-              }
-            }
-          })
-
           if (this.createTypes == 'datacenters') {
+
+            console.log(this.$refs.data_center_nodes.selection);
+            console.log(this.$refs.data_center_comps.selection);
+            const data_center_nodes = this.$refs.data_center_nodes.selection;
+            const data_center_comps = this.$refs.data_center_comps.selection;
+
+            if (data_center_comps.length == 0) {
+              this.message_tips = "选择计算节点"
+              this.message_type = 'error'
+              messageTip(this.message_tips, this.message_type)
+              return false;
+            }
+
+            if (data_center_nodes.length == 0) {
+              this.message_tips = "选择计算节点"
+              this.message_type = 'error'
+              messageTip(this.message_tips, this.message_type)
+              return false;
+            }
+
+            if (data_center_nodes.length != data_center_comps.length) {
+              this.message_tips = "计算节点的数量和存储节点数量不一致"
+              this.message_type = 'error'
+              messageTip(this.message_tips, this.message_type)
+              return false;
+            }
+
+            //判断是否有主
+            let master_idc = null;
+            data_center_nodes.forEach((v) => {
+              if (v.master) {
+                master_idc = {
+                  idc: v.name,
+                  node_num: (v.node_num - 1) + ''
+                }
+              }
+            })
+
             //数据中心购买
             if (this.distribution_value == 'same_city') {
               //同城购买
