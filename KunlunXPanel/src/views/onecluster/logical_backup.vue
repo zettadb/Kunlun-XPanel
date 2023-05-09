@@ -7,6 +7,14 @@
       <el-form-item label="业务名称">
         <span>{{ form.nick_name }}</span>
       </el-form-item>
+
+      <el-form-item label="备份类型">
+        <el-select v-model="backup_type" placeholder="选择备份类型" @change="setbackupType($event)">
+          <el-option v-for="item in backup_type_items" :key="item.value" :label="item.label" :value="item.value">
+          </el-option>
+        </el-select>
+      </el-form-item>
+
       <el-row v-for="(table, index) in form.backup" :key="table.key">
         <el-col :span="10">
           <el-form-item label="备份表:" :prop="'backup.' + index + '.db_table'" :rules="{
@@ -80,6 +88,22 @@ export default {
       cb();
     };
     return {
+      backup_type: "table",
+      backup_type_items: [
+        {
+          item: "db",
+          label: "db",
+          value: 'db',
+        },
+        {
+          item: "schema",
+          label: "schema",
+          value: 'schema',
+        }, {
+          item: "table",
+          label: "table",
+          value: 'table',
+        }],
       form: {
         name: "",
         nick_name: "",
@@ -92,6 +116,7 @@ export default {
         time: [{ validator: checkTimeRange, trigger: "blur" }],
       },
       tableOptions: [],
+      tableOptionsSource: [],
     };
   },
   mounted() {
@@ -100,10 +125,47 @@ export default {
     this.form.id = this.listsent.id;
     getPGTableList({ cluster_id: this.form.id, all: "1" }).then((res) => {
       this.tableOptions = res.list;
+      this.tableOptionsSource = JSON.stringify(res.list);
     });
   },
 
   methods: {
+    setbackupType(value) {
+      console.log(value)
+      switch (value) {
+        case "db":
+          try {
+            let backup = JSON.parse(this.tableOptionsSource)
+            this.tableOptions = []
+            backup.forEach((v) => {
+              v.children = null
+              this.tableOptions.push(v)
+            });
+          } catch (error) { }
+          console.log(this.tableOptions)
+          break
+        case "schema":
+          try {
+            let backup_schema = JSON.parse(this.tableOptionsSource)
+            this.tableOptions = []
+            backup_schema.forEach((v) => {
+              if (v.children.length > 0) {
+                v.children.forEach((k) => {
+                  k.children = null
+                })
+              }
+              this.tableOptions.push(v)
+              console.log(this.tableOptions)
+            });
+          } catch (error) { }
+          break
+        case "table":
+          try {
+            this.tableOptions = JSON.parse(this.tableOptionsSource)
+          } catch (error) { }
+          break
+      }
+    },
     beforeRestoreDestory() {
       clearInterval(this.timer);
       this.dialogStatusVisible = false;
@@ -123,6 +185,7 @@ export default {
     onSubmit(row) {
       console.info(this.form);
 
+      const _this = this;
       this.$refs["form"].validate((valid) => {
         if (valid) {
           const data = {};
@@ -133,14 +196,34 @@ export default {
           data.timestamp = timestamp_arr[0].time + "";
           const paras = {};
           const backup = this.form.backup.map((v) => {
-            return {
-              db_table: v.db_table[0] + "_$$_" + v.db_table[1] + "." + v.db_table[2],
-              backup_time: v.startTime + ":00" + "-" + v.endTime + ":00",
-            };
+
+            if (_this.backup_type == "table") {
+              return {
+                db_table: v.db_table[0] + "_$$_" + v.db_table[1] + "." + v.db_table[2],
+                backup_time: v.startTime + ":00" + "-" + v.endTime + ":00",
+              };
+            }
+
+            if (_this.backup_type == "db") {
+              return {
+                db_table: v.db_table[0],
+                backup_time: v.startTime + ":00" + "-" + v.endTime + ":00",
+              };
+            }
+
+            if (_this.backup_type == "schema") {
+              return {
+                db_table: v.db_table[0] + "_$$_" + v.db_table[1],
+                backup_time: v.startTime + ":00" + "-" + v.endTime + ":00",
+              };
+            }
           });
           paras.cluster_id = this.form.id;
+          paras.backup_type = _this.backup_type;
           paras.backup = backup;
+
           data.paras = paras;
+
           console.info(data);
           tableRepartition(data).then((res) => {
             if (res.code === 200) {

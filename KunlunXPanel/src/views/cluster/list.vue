@@ -141,8 +141,7 @@
             :disabled="dialogStatus === 'detail'" />
         </el-form-item>
         <el-form-item v-if="dialogStatus === 'create'" label="选择计算机:" prop="machinelist">
-
-          <el-tabs type="border-card" v-model="createTypes">
+          <el-tabs type="border-card" v-model="createTypes" id="data-center">
             <el-tab-pane label="本地集群" name="local">
               <div style="margin: 30px">
                 存储：

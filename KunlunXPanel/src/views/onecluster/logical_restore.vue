@@ -7,6 +7,12 @@
       <el-form-item label="业务名称">
         <span>{{ form.nick_name }}</span>
       </el-form-item>
+      <el-form-item label="恢复类型">
+        <el-select v-model="backup_type" placeholder="选择恢复类型" @change="setbackupType($event)">
+          <el-option v-for="item in backup_type_items" :key="item.value" :label="item.label" :value="item.value">
+          </el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item label="目标表集群:" prop="dst_cluster_id">
         <el-select v-model="form.dst_cluster_id" clearable placeholder="请选择目标表集群" style="width: 100%"
           @change="onDstClusterChange">
@@ -86,6 +92,22 @@ export default {
       cb();
     };
     return {
+      backup_type: "table",
+      backup_type_items: [
+        {
+          item: "db",
+          label: "db",
+          value: 'db',
+        },
+        {
+          item: "schema",
+          label: "schema",
+          value: 'schema',
+        }, {
+          item: "table",
+          label: "table",
+          value: 'table',
+        }],
       form: {
         src_cluster_id: "",
         dst_cluster_id: "",
@@ -110,6 +132,7 @@ export default {
     this.form.id = this.listsent.id;
     getPGTableList({ cluster_id: this.form.id, all: "1" }).then((res) => {
       this.tableOptions = res.list;
+      this.tableOptionsSource = JSON.stringify(res.list);
     });
     // 获取原集群名称
     clusterOptions({}).then((res) => {
@@ -118,6 +141,42 @@ export default {
   },
 
   methods: {
+    setbackupType(value) {
+      console.log(value)
+      switch (value) {
+        case "db":
+          try {
+            let backup = JSON.parse(this.tableOptionsSource)
+            this.tableOptions = []
+            backup.forEach((v) => {
+              v.children = null
+              this.tableOptions.push(v)
+            });
+          } catch (error) { }
+          console.log(this.tableOptions)
+          break
+        case "schema":
+          try {
+            let backup_schema = JSON.parse(this.tableOptionsSource)
+            this.tableOptions = []
+            backup_schema.forEach((v) => {
+              if (v.children.length > 0) {
+                v.children.forEach((k) => {
+                  k.children = null
+                })
+              }
+              this.tableOptions.push(v)
+              console.log(this.tableOptions)
+            });
+          } catch (error) { }
+          break
+        case "table":
+          try {
+            this.tableOptions = JSON.parse(this.tableOptionsSource)
+          } catch (error) { }
+          break
+      }
+    },
     beforeRestoreDestory() {
       clearInterval(this.timer);
       this.dialogStatusVisible = false;

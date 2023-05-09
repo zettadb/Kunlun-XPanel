@@ -1,5 +1,5 @@
 <template>
-  <div class="icons-container">
+  <div class="icons-container set-clus">
     <el-tabs v-model="activeName" type="border-card" @tab-click="handleClick" @tab-remove="removeTab">
       <el-tab-pane label="集群列表信息" name="second">
         <List v-if="tabs.second" :comment="clusterTab" @updateActiveName="updateActiveName" />
