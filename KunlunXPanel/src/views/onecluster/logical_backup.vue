@@ -26,7 +26,7 @@
               placeholder="请选择 库名/模式/表" :options="tableOptions" filterable />
           </el-form-item>
         </el-col>
-        <el-col :span="10">
+        <el-col :span="8">
           <el-form-item label="备份时间范围:" :prop="'backup.' + index" :rules="rules.time">
             <el-time-select :key="'startTime' + index" v-model="form.backup[index].startTime" style="width: 48%"
               placeholder="起始时间" :arrow-control="true" :picker-options="{

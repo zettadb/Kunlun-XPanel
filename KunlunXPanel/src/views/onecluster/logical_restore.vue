@@ -48,6 +48,12 @@
             <!--            />-->
           </el-form-item>
         </el-col>
+        <el-col :span="4" style="margin-top: 4px">
+          <div style="margin-left: 3px">
+            <el-button v-if="index === 0" icon="el-icon-plus" size="small" @click="onPush(index)" />
+            <el-button v-else icon="el-icon-minus" size="small" @click="onRemove(index)" />
+          </div>
+        </el-col>
       </el-row>
       <el-form-item>
         <el-button type="primary" @click="onSubmit(form)">保存</el-button>
@@ -200,7 +206,7 @@ export default {
     },
     onSubmit(row) {
       console.info(this.form);
-
+      const _this = this;
       this.$refs["form"].validate((valid) => {
         if (valid) {
           const data = {};
@@ -211,18 +217,32 @@ export default {
           data.timestamp = timestamp_arr[0].time + "";
           const paras = {};
           const backup = this.form.backup.map((v) => {
-            return {
-              db_table: v.db_table[0] + "_$$_" + v.db_table[1] + "." + v.db_table[2],
-              backup_time: v.startTime,
-            };
+            if (_this.backup_type == "table") {
+              return {
+                db_table: v.db_table[0] + "_$$_" + v.db_table[1] + "." + v.db_table[2],
+                backup_time: v.startTime + ":00" + "-" + v.endTime + ":00",
+              };
+            }
+
+            if (_this.backup_type == "db") {
+              return {
+                db_table: v.db_table[0],
+                backup_time: v.startTime + ":00" + "-" + v.endTime + ":00",
+              };
+            }
+
+            if (_this.backup_type == "schema") {
+              return {
+                db_table: v.db_table[0] + "_$$_" + v.db_table[1],
+                backup_time: v.startTime + ":00" + "-" + v.endTime + ":00",
+              };
+            }
           });
           console.log(backup);
-          paras.src_cluster_id = this.form.id;
-          // paras.backup = backup[0]
-          paras.db_table = backup[0].db_table;
-          paras.restore_time = backup[0].backup_time;
+          paras.cluster_id = this.form.id;
+          paras.backup_type = _this.backup_type;
+          paras.backup = backup;
 
-          paras.dst_cluster_id = this.dst_cluster_id;
           data.paras = paras;
           console.info(data);
           tableRepartition(data).then((res) => {
