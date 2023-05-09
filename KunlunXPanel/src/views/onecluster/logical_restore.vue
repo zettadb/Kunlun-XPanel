@@ -216,7 +216,7 @@ export default {
           data.job_type = "logical_restore";
           data.timestamp = timestamp_arr[0].time + "";
           const paras = {};
-          const backup = this.form.backup.map((v) => {
+          const restore = this.form.backup.map((v) => {
             if (_this.backup_type == "table") {
               return {
                 db_table: v.db_table[0] + "_$$_" + v.db_table[1] + "." + v.db_table[2],
@@ -240,8 +240,11 @@ export default {
           });
           console.log(backup);
           paras.cluster_id = this.form.id;
-          paras.backup_type = _this.backup_type;
-          paras.backup = backup;
+
+          paras.restore_type = _this.backup_type;
+          paras.src_cluster_id = _this.form.src_cluster_id;
+          paras.dst_cluster_id = _this.form.dst_cluster_id;
+          paras.restore = restore;
 
           data.paras = paras;
           console.info(data);
