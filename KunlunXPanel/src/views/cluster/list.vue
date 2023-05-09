@@ -266,10 +266,19 @@
             <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">MB</i>
           </el-input>
         </el-form-item>
-        <el-form-item v-show="dialogStatus === 'create' || 'detail'" label="每shard中强同步备机应当个数:" prop="fullsync_level">
-          <el-input v-model="temp.fullsync_level" class="right_input" placeholder="请输入每shard中强同步备机应当个数"
+        <el-form-item v-show="dialogStatus === 'create' || 'detail'" label="每shard强同步备机个数:" prop="fullsync_level">
+          <el-input v-model="temp.fullsync_level" class="right_input" placeholder="请输入每shard强同步备机个数"
             :disabled="dialogStatus === 'detail'">
             <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">个</i>
+          </el-input>
+        </el-form-item>
+        <el-form-item v-show="dialogStatus === 'create' || 'detail'"  label="shard是否退化:" prop="conf_degrade_state">
+          <el-radio v-model="temp.conf_degrade_state" label="ON">是</el-radio>
+          <el-radio v-model="temp.conf_degrade_state" label="OFF">否</el-radio>
+        </el-form-item>
+        <el-form-item label="退化时间:" prop="conf_degrade_time" v-if="temp.conf_degrade_state=='ON'">
+          <el-input v-model="temp.conf_degrade_time" class="right_input" placeholder="退化时间范围为5-500s">
+            <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">s</i>
           </el-input>
         </el-form-item>
         <el-form-item label="数据存储空间:" prop="per_storage_node_data_storage_MB">
@@ -920,6 +929,20 @@ export default {
         callback()
       }
     }
+    const validateDegradeTime = (rule, value, callback) => {
+      if (value.length == 0) {
+        callback(new Error('请输入退化时间'))
+      } else if (!/^[0-9]+$/.test(value)) {
+        callback(new Error('退化时间只能输入数字'))
+      } else if (value > 500) {
+        callback(new Error('退化时间不能大于500'))
+      } else if (value < 5) {
+        callback(new Error('退化时间不能小于5'))
+      } else {
+        callback()
+      }
+    }
+    
     return {
       tableKey: 0,
       list: null,
@@ -958,7 +981,9 @@ export default {
         computer_user: '',
         computer_password: '',
         fullsync_level: '1',
-        install_proxysql: '0'
+        install_proxysql: '0',
+        conf_degrade_state:'OFF',
+        conf_degrade_time:'25'
       },
       restoretemp: {
         old_cluster_name: '',
@@ -1196,6 +1221,12 @@ export default {
         ],
         install_proxysql: [
           { required: true, trigger: 'blur', message: '是否安装proxysql必选' }
+        ],
+        conf_degrade_state: [
+          { required: true, trigger: 'blur', message: 'shard是否退化必选'  }
+        ],
+        conf_degrade_time: [
+          { required: true, trigger: 'blur', validator: validateDegradeTime}
         ],
         snode_count: [{ required: true, trigger: 'blur', validator: validateSnodeCount }],
         comp_count: [{ required: true, trigger: 'blur', validator: validateCompCount }],
@@ -1640,7 +1671,7 @@ export default {
     getDataCents() {
       const _this = this;
       getDataCents({}).then((response) => {
-        console.log(response.list.res)
+        // console.log(response.list.res)
         _this.data_center_nodes = [];
         _this.data_center_comps = [];
         _this.data_center_nodes = response.list.res
@@ -1688,7 +1719,9 @@ export default {
         shards: '',
         computer_user: '',
         computer_password: '',
-        fullsync_level: '1'
+        fullsync_level: '1',
+        conf_degrade_state:'OFF',
+        conf_degrade_time:'25'
       }
     },
     autoExpandTemp() {
@@ -1794,6 +1827,11 @@ export default {
           paras.fullsync_level = tempData.fullsync_level
           paras.data_storage_MB = tempData.per_storage_node_data_storage_MB
           paras.log_storage_MB = tempData.per_storage_node_log_storage_MB
+          paras.conf_degrade_state = tempData.conf_degrade_state
+          paras.conf_degrade_time = tempData.conf_degrade_time
+          if(tempData.conf_degrade_state=='ON'){
+             tempData.conf_degrade_time='0'
+          }
 
           // 可选项
           if (tempData.per_storage_node_max_storage_size) {

@@ -97,10 +97,23 @@
       <el-table-column prop="db_cluster_id" align="center" label=" 集群ID" />
       <el-table-column prop="name" align="center" label="shard名称" />
       <el-table-column prop="num_nodes" align="center" label="副本数" />
-      <el-table-column label="操作" align="center" width="100" class-name="small-padding fixed-width">
+      <el-table-column prop="degrade_conf_state" align="center" label="是否退化">
+        <template slot-scope="scope">
+          <span v-if="scope.row.degrade_conf_state === 'ON'">是</span>
+          <span v-else-if="scope.row.degrade_conf_state === 'OFF'">否</span>
+          <span v-else />
+        </template>
+      </el-table-column>
+       <el-table-column prop="degrade_conf_time" align="center" label="退化时间" >
+          <template slot-scope="scope">
+            <span v-if="scope.row.degrade_conf_time === '0'"></span>
+            <span v-else >{{scope.row.degrade_conf_time}}</span>
+          </template>
+       </el-table-column>
+      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
-          <el-button v-if="shard_drop_priv === 'Y'" size="mini" type="danger" @click="handleDelete(row, $index)">删除
-          </el-button>
+          <el-button v-if="shard_drop_priv === 'Y'" size="mini" type="primary" @click="handleUpdate(row)">编辑</el-button>
+          <el-button v-if="shard_drop_priv === 'Y'" size="mini" type="danger" @click="handleDelete(row, $index)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -298,6 +311,30 @@
         <el-button type="primary" @click="SaveCpuSetData(cpu_paras)">确认</el-button>
       </div>
     </el-dialog>
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogChangeVisible" custom-class="single_dal_view"
+      :close-on-click-modal="false">
+      <el-form ref="editForm" :model="shardEdit" :rules="rules" label-position="left" label-width="130px">
+        <el-form-item label="集群ID:" prop="db_cluster_id">
+          <span>{{ shardEdit.db_cluster_id }}</span>
+        </el-form-item>
+        <el-form-item label="shard名称:" prop="shard_name">
+          <span>{{ shardEdit.shard_name }}</span>
+        </el-form-item>
+        <el-form-item  label="shard是否退化:" prop="conf_degrade_state">
+          <el-radio v-model="shardEdit.conf_degrade_state" label="ON">是</el-radio>
+          <el-radio v-model="shardEdit.conf_degrade_state" label="OFF">否</el-radio>
+        </el-form-item>
+        <el-form-item label="退化时间:" prop="degrade_conf_time" v-if="shardEdit.conf_degrade_state=='ON'">
+          <el-input v-model="shardEdit.degrade_conf_time" class="right_input" placeholder="退化时间范围为5-500s">
+            <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">s</i>
+          </el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogChangeVisible = false">关闭</el-button>
+        <el-button type="primary" @click=" updateData()">确认</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -319,7 +356,7 @@ import {
   getShardPrimary,
   switchShard,
   getBackupStorageList,
-  rebuildNode, SetCpuCgroup
+  rebuildNode, SetCpuCgroup,updateShard
 } from '@/api/cluster/list'
 import { version_arr, timestamp_arr, ip_arr } from '@/utils/global_variable'
 import Pagination from '@/components/Pagination'
@@ -395,6 +432,19 @@ export default {
         callback(new Error('最大延迟时间不能为空'))
       } else if (!(/^[0-9]+$/.test(value))) {
         callback(new Error('最大延迟时间只能输入数字'))
+      } else {
+        callback()
+      }
+    }
+    const validateDegradeTime = (rule, value, callback) => {
+      if (value.length == 0) {
+        callback(new Error('请输入退化时间'))
+      } else if (!/^[0-9]+$/.test(value)) {
+        callback(new Error('退化时间只能输入数字'))
+      } else if (value > 500) {
+        callback(new Error('退化时间不能大于500'))
+      } else if (value < 5) {
+        callback(new Error('退化时间不能小于5'))
       } else {
         callback()
       }
@@ -479,10 +529,12 @@ export default {
       textMap: {
         create: '添加shard',
         createstorage: '添加存储节点',
-        detail: '详情'
+        detail: '详情',
+        shardupdate: '编辑shard'
       },
       dialogDetail: false,
       dialogNodeVisible: false,
+      dialogChangeVisible: false,
       message_tips: '',
       message_type: '',
       installStatus: false,
@@ -521,6 +573,24 @@ export default {
       placeholder_node: '',
       dialogStatusVisible: false,
       activities: [],
+      //suppliers:[],   //保存数据    
+      showInput: "", //用来判断是否显示哪个单元格
+      oldData: {}, //用来存修改前的数据
+      currentData: {},  //用来保存新的数据  
+      suppliers:[{
+          value: 'ON',
+          label: '是'
+        }, {
+          value: 'OFF',
+          label: '否'
+        }],
+      shardEdit:{
+        shardid:'',
+        db_cluster_id:'',
+        shard_name:'',
+        conf_degrade_state:'',
+        degrade_conf_time:''
+      },
       rules: {
         nodes: [
           { required: true, trigger: 'blur', validator: validateNodes }
@@ -542,7 +612,13 @@ export default {
         ],
         maxtime: [
           { required: true, trigger: 'blur', validator: validatemaxtime }
-        ]
+        ],
+        conf_degrade_state: [
+          { required: true, trigger: 'blur', message: 'shard是否退化必选'  }
+        ],
+        conf_degrade_time: [
+          { required: true, trigger: 'blur', validator: validateDegradeTime}
+        ],
       }
     }
   },
@@ -556,6 +632,64 @@ export default {
     this.timer = null
   },
   methods: {
+    handleUpdate(row) {
+      this.shardEdit.shardid = row.id; 
+      this.shardEdit.db_cluster_id=row.db_cluster_id;
+      this.shardEdit.shard_name=row.name;
+      this.shardEdit.conf_degrade_state=row.degrade_conf_state;
+      this.shardEdit.degrade_conf_time=row.degrade_conf_time;
+      if(row.degrade_conf_time=='0'){
+        this.shardEdit.degrade_conf_time='25';
+      }
+      this.dialogStatus = "shardupdate";
+      this.dialogChangeVisible = true;
+      this.$nextTick(() => {
+        this.$refs["editForm"].clearValidate();
+      });
+    },
+    updateData() {
+      this.$refs["editForm"].validate((valid) => {
+        if (valid) {
+          const tempData = {}
+          tempData.user_name = sessionStorage.getItem('login_username')
+          tempData.job_id = ''
+          tempData.job_type = 'update_shard_degrade_conf'
+          tempData.version = version_arr[0].ver
+          tempData.timestamp = timestamp_arr[0].time + ''
+          const paras = {}
+          paras.cluster_id = this.shardEdit.db_cluster_id
+          paras.shard_id =  this.shardEdit.shardid
+          paras.conf_degrade_state =  this.shardEdit.conf_degrade_state
+          if(this.shardEdit.conf_degrade_state=='OFF'){
+            this.shardEdit.degrade_conf_time='0'
+          }
+          paras.conf_degrade_time =  this.shardEdit.degrade_conf_time
+          tempData.paras = paras
+          //console.log(tempData);return;
+          updateShard(tempData).then((response) => {
+            let res = response;
+            if(res.status=='done'){
+              this.dialogChangeVisible = false;
+              this.message_tips = '编辑成功';
+              this.message_type = 'success';
+              messageTip(this.message_tips,this.message_type);
+              this.getList()
+            }
+            else{
+              this.message_tips = res.error_info;
+              this.message_type = 'error';
+              messageTip(this.message_tips,this.message_type);
+            }
+
+          });
+        }
+      });
+    },
+    tableDbEdit(row, column, event) {
+      this.showInput = column.property + row.inboundId;
+      this.oldData[column.property] = row[column.property];
+    },
+    
     beforeSwitchDestory() {
       // console.log('00:00');
       clearInterval(this.timer)

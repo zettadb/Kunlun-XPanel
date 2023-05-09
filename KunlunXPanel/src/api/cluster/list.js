@@ -698,3 +698,10 @@ export function getLogicalBackUpList(query) {
     params: query
   })
 }
+export function updateShard(data) {
+  return request({
+    url: '/user/Cluster/updateShard',
+    method: 'post',
+    data
+  })
+}
