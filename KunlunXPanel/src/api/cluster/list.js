@@ -691,6 +691,7 @@ export function getDataCents(data) {
     params: data
   })
 }
+
 export function getLogicalBackUpList(query) {
   return request({
     url: '/user/Cluster/getLogicalBackUpList',
@@ -698,6 +699,15 @@ export function getLogicalBackUpList(query) {
     params: query
   })
 }
+
+export function getLogicalBackUpRecordList(query) {
+  return request({
+    url: '/user/ClusterSetting/getRecordLogicalBackup',
+    method: 'get',
+    params: query
+  })
+}
+
 export function updateShard(data) {
   return request({
     url: '/user/Cluster/updateShard',

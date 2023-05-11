@@ -20,39 +20,35 @@
         </el-select>
       </el-form-item>
       <el-row v-for="(table, index) in form.backup" :key="table.key">
-        <el-col :span="10">
-          <el-form-item label="备份表:" :prop="'backup.' + index + '.db_table'" :rules="{
+        <el-col :span="6">
+          <el-form-item label="备份记录:" :prop="'backup.' + index + '.db_table'" :rules="{
             required: true,
             message: '备份表不能为空',
             trigger: 'blur',
           }">
             <el-cascader :key="'srcTable' + index" v-model="form.backup[index].db_table" style="width: 100%" clearable
+              placeholder="请选择 库名/模式/表" :options="backupList" filterable />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="恢复地址:" :prop="'backup.' + index + '.new_db_table'" :rules="{
+            required: true,
+            message: '备份表不能为空',
+            trigger: 'blur',
+          }">
+            <el-cascader :key="'srcTable' + index" v-model="form.backup[index].new_db_table" style="width: 100%" clearable
               placeholder="请选择 库名/模式/表" :options="tableOptions" filterable />
           </el-form-item>
         </el-col>
-        <el-col :span="10">
-          <el-form-item label="恢复开始时间:" :prop="'backup.' + index" :rules="rules.time">
+        <el-col :span="8">
+          <el-form-item label="开始时间:" :prop="'backup.' + index" :rules="rules.time">
             <el-date-picker v-model="form.backup[index].startTime" type="datetime" value-format="yyyy-MM-dd HH:mm:ss"
               placeholder="起始时间" />
-            <!--            <el-time-select-->
-            <!--              :key="'startTime' + index"-->
-            <!--              v-model="form.backup[index].startTime"-->
-            <!--              style="width: 48%"-->
-            <!--              placeholder="起始时间"-->
-            <!--              :arrow-control="true"-->
-            <!--              :picker-options="{-->
-            <!--                start: '00:00',-->
-            <!--                step: '00:30',-->
-            <!--                end: '24:00'-->
-            <!--              }"-->
-            <!--            />-->
           </el-form-item>
         </el-col>
-        <el-col :span="4" style="margin-top: 4px">
-          <div style="margin-left: 3px">
-            <el-button v-if="index === 0" icon="el-icon-plus" size="small" @click="onPush(index)" />
-            <el-button v-else icon="el-icon-minus" size="small" @click="onRemove(index)" />
-          </div>
+        <el-col :span="2">
+          <el-button v-if="index === 0" icon="el-icon-plus" size="small" @click="onPush(index)" />
+          <el-button v-else icon="el-icon-minus" size="small" @click="onRemove(index)" />
         </el-col>
       </el-row>
       <el-form-item>
@@ -81,6 +77,7 @@ import {
   getEvStatus,
   getPGTableList,
   tableRepartition,
+  getLogicalBackUpRecordList,
 } from "@/api/cluster/list";
 import { timestamp_arr, version_arr } from "@/utils/global_variable";
 import { getNowDate, messageTip } from "@/utils";
@@ -119,7 +116,7 @@ export default {
         dst_cluster_id: "",
         name: "",
         nick_name: "",
-        backup: [{ db_table: [], backup_time: "", startTime: "", endTime: "" }],
+        backup: [{ db_table: [], backup_time: "", new_db_table: "", startTime: "", endTime: "" }],
         id: "",
         clusterOptions: [],
       },
@@ -130,6 +127,8 @@ export default {
         time: [{ validator: checkTimeRange, trigger: "blur" }],
       },
       tableOptions: [],
+      backupList: [],
+      backupListStr: null,
     };
   },
   mounted() {
@@ -144,9 +143,20 @@ export default {
     clusterOptions({}).then((res) => {
       this.clusterOptions = res.list;
     });
+    this.toGetLogicalBackUpRecordList()
   },
 
   methods: {
+
+    toGetLogicalBackUpRecordList() {
+      getLogicalBackUpRecordList({ cluster_id: this.form.id, }).then((res) => {
+        console.log(res)
+        this.backupListStr = JSON.stringify(res.list);
+        try {
+          this.backupList = res.list['table'];
+        } catch (error) { }
+      });
+    },
     setbackupType(value) {
       console.log(value)
       switch (value) {
@@ -158,6 +168,10 @@ export default {
               v.children = null
               this.tableOptions.push(v)
             });
+          } catch (error) { }
+          try {
+            let list = JSON.parse(this.backupListStr)
+            this.backupList = list['db']
           } catch (error) { }
           console.log(this.tableOptions)
           break
@@ -175,10 +189,18 @@ export default {
               console.log(this.tableOptions)
             });
           } catch (error) { }
+          try {
+            let list = JSON.parse(this.backupListStr)
+            this.backupList = list['schema']
+          } catch (error) { }
           break
         case "table":
           try {
             this.tableOptions = JSON.parse(this.tableOptionsSource)
+          } catch (error) { }
+          try {
+            let list = JSON.parse(this.backupListStr)
+            this.backupList = list['table']
           } catch (error) { }
           break
       }
@@ -219,30 +241,31 @@ export default {
           const restore = this.form.backup.map((v) => {
             if (_this.backup_type == "table") {
               return {
-                db_table: v.db_table[0] + "_$$_" + v.db_table[1] + "." + v.db_table[2],
-                backup_time: v.startTime + ":00" + "-" + v.endTime + ":00",
+                db_table: v.db_table[0].substr(0, v.db_table[0].indexOf("(")),
+                new_db_table: v.new_db_table[0] + "_$$_" + v.new_db_table[1] + "." + v.new_db_table[2],
+                restore_time: v.startTime
               };
             }
 
             if (_this.backup_type == "db") {
               return {
-                db_table: v.db_table[0],
-                backup_time: v.startTime + ":00" + "-" + v.endTime + ":00",
+                db_table: v.db_table[0].substr(0, v.db_table[0].indexOf("(")),
+                new_db_table: v.new_db_table[0],
+                restore_time: v.startTime
               };
             }
 
             if (_this.backup_type == "schema") {
               return {
-                db_table: v.db_table[0] + "_$$_" + v.db_table[1],
-                backup_time: v.startTime + ":00" + "-" + v.endTime + ":00",
+                db_table: v.db_table[0].substr(0, v.db_table[0].indexOf("(")),
+                new_db_table: v.new_db_table[0] + "_$$_" + v.new_db_table[1],
+                restore_time: v.startTime,
               };
             }
           });
-          console.log(backup);
           paras.cluster_id = this.form.id;
-
           paras.restore_type = _this.backup_type;
-          paras.src_cluster_id = _this.form.src_cluster_id;
+          paras.src_cluster_id = this.form.id;
           paras.dst_cluster_id = _this.form.dst_cluster_id;
           paras.restore = restore;
 
@@ -299,7 +322,7 @@ export default {
             // this.info=res.error_info;
             if (res.status === "done") {
               const newArrdone = {
-                content: "集群回档成功",
+                content: "逻辑恢复成功",
                 timestamp: getNowDate(),
                 color: "#0bbd87",
                 icon: "el-icon-circle-check",

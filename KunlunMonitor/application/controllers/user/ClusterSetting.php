@@ -192,6 +192,7 @@ class ClusterSetting extends CI_Controller
 		$relation = [];
 		foreach ($res as $key => $value) {
 
+
 		}
 		foreach ($res as $key => $value) {
 			$res[$key]['node_num'] = 2;
@@ -262,5 +263,77 @@ class ClusterSetting extends CI_Controller
 			$data['message'] = isset($data['error_info']) ? $data['error_info'] : '系统错误';
 		}
 		echo json_encode($data);
+	}
+
+
+	public function getRecordLogicalBackup()
+	{
+
+		$cluster_id = $this->input->get('cluster_id');
+		if ($cluster_id == "") {
+			throw new ApiException('集群ID 不能为空', 201);
+		}
+		$sql = "SELECT a.*,b.related_id,b.job_info,b.user_name FROM cluster_logicalbackup_record a
+	LEFT JOIN cluster_general_job_log b ON a.job_id=b.id 
+	WHERE b.related_id=0 AND a.backup_state='done' AND a.cluster_id=" . $cluster_id;
+
+		$this->load->model('Cluster_model');
+		$res = $this->Cluster_model->getList($sql);
+		if ($res === false) {
+			$res = [];
+		}
+
+		$table = [];
+		$db = [];
+		$schema = [];
+		foreach ($res as $key => $item) {
+			$info = json_decode($item['job_info'], true);
+			$res[$key]['job_info'] = $info;
+			$backup_type = $info['paras']['backup_type'];
+			foreach ($info['paras']['backup'] as $k => $v) {
+				//print_r($v);
+				if ($backup_type == 'db') {
+					$db[] = [
+						"label" => $v['db_table'] . "(" . $item['backup_time'] . ")",
+						"value" => $v['db_table'] . "(" . $item['id'] . "_" . $item['backup_time'] . ")",
+						"desc" => $v['db_table'],
+						"children" => null,
+						"time" => $v['backup_time'],
+						"backup_time" => $item['backup_time'],
+					];
+				}
+				if ($backup_type == 'table') {
+					$table[] = [
+						"label" => $v['db_table'] . "(" . $item['backup_time'] . ")",
+						"value" => $v['db_table'] . "(" . $item['id'] . "_" . $item['backup_time'] . ")",
+						"desc" => $v['db_table'],
+						"children" => null,
+						"time" => $v['backup_time'],
+						"backup_time" => $item['backup_time'],
+					];
+				}
+				if ($backup_type == 'schema') {
+					$schema[] = [
+						"label" => $v['db_table'] . "(" . $item['backup_time'] . ")",
+						"value" => $v['db_table'] . "(" . $item['id'] . "_" . $item['backup_time'] . ")",
+						"desc" => $v['db_table'],
+						"children" => null,
+						"time" => $v['backup_time'],
+						"backup_time" => $item['backup_time'],
+					];
+				}
+			}
+		}
+
+		echo json_encode([
+			'code' => 200,
+			'list' => [
+				'table' => $table,
+				'db' => $db,
+				'schema' => $schema
+			],
+			'message' => 'success',
+		]);
+
 	}
 }
