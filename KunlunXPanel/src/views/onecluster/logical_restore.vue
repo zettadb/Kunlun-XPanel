@@ -46,7 +46,7 @@
               placeholder="起始时间" />
           </el-form-item>
         </el-col>
-        <el-col :span="2">
+        <el-col :span="2" if="backup_type!='db'">
           <el-button v-if="index === 0" icon="el-icon-plus" size="small" @click="onPush(index)" />
           <el-button v-else icon="el-icon-minus" size="small" @click="onRemove(index)" />
         </el-col>
