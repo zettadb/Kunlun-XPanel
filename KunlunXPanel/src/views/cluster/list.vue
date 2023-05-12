@@ -162,18 +162,18 @@
               <div style="margin:30px">
                 <div>
                   购买类型
-                  <el-select v-model="distribution_value" placeholder="请选择">
+                  <el-select size="mini" v-model="distribution_value" placeholder="请选择">
                     <el-option v-for="item in distribution_type" :key="item.value" :label="item.label"
                       :value="item.value" />
                   </el-select>
                 </div>
                 <div style="margin-top:20px">
                   选择城市
-                  <el-cascader :options="data_center_city" clearable />
+                  <el-cascader size="mini" :options="data_center_city" clearable />
                 </div>
                 <div>存储：</div>
-                <el-table ref="data_center_nodes" :data="data_center_nodes" border tooltip-effect="dark"
-                  style="width: 100%" size="min" @selection-change="handleSelectionChange">
+                <el-table size="mini" ref="data_center_nodes" :data="data_center_nodes" border tooltip-effect="dark"
+                  style="width: 100%" @selection-change="handleSelectionChange">
                   <el-table-column type="selection" width="55" />
                   <el-table-column label="省/市" width="170">
                     <template slot-scope="scope">
@@ -188,14 +188,14 @@
                   </el-table-column>
                   <el-table-column prop="node_num" label="节点数" width="100">
                     <template slot-scope="scope">
-                      <el-input v-model="scope.row.node_num" />
+                      <el-input size="mini" v-model="scope.row.node_num" />
                     </template>
                   </el-table-column>
                 </el-table>
 
                 <div>计算</div>
-                <el-table ref="data_center_comps" :data="data_center_comps" border tooltip-effect="dark"
-                  style="width: 100%" size="min" @selection-change="handleSelectionChange">
+                <el-table size="mini" ref="data_center_comps" :data="data_center_comps" border tooltip-effect="dark"
+                  style="width: 100%" @selection-change="handleSelectionChange">
                   <el-table-column type="selection" width="55" />
                   <el-table-column label="省/市" width="170">
                     <template slot-scope="scope">
@@ -205,7 +205,7 @@
                   <el-table-column prop="name" label="idc" width="100" />
                   <el-table-column prop="node_num" label="节点数" width="100">
                     <template slot-scope="scope">
-                      <el-input v-model="scope.row.node_num" />
+                      <el-input size="mini" v-model="scope.row.node_num" />
                     </template>
                   </el-table-column>
                 </el-table>
@@ -272,11 +272,11 @@
             <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">个</i>
           </el-input>
         </el-form-item>
-        <el-form-item v-show="dialogStatus === 'create' || 'detail'"  label="shard是否退化:" prop="conf_degrade_state">
+        <el-form-item v-show="dialogStatus === 'create' || 'detail'" label="shard是否退化:" prop="conf_degrade_state">
           <el-radio v-model="temp.conf_degrade_state" label="ON">是</el-radio>
           <el-radio v-model="temp.conf_degrade_state" label="OFF">否</el-radio>
         </el-form-item>
-        <el-form-item label="退化时间:" prop="conf_degrade_time" v-if="temp.conf_degrade_state=='ON'">
+        <el-form-item label="退化时间:" prop="conf_degrade_time" v-if="temp.conf_degrade_state == 'ON'">
           <el-input v-model="temp.conf_degrade_time" class="right_input" placeholder="退化时间范围为5-500s">
             <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">s</i>
           </el-input>
@@ -942,7 +942,7 @@ export default {
         callback()
       }
     }
-    
+
     return {
       tableKey: 0,
       list: null,
@@ -982,8 +982,8 @@ export default {
         computer_password: '',
         fullsync_level: '1',
         install_proxysql: '0',
-        conf_degrade_state:'OFF',
-        conf_degrade_time:'25'
+        conf_degrade_state: 'OFF',
+        conf_degrade_time: '25'
       },
       restoretemp: {
         old_cluster_name: '',
@@ -1223,10 +1223,10 @@ export default {
           { required: true, trigger: 'blur', message: '是否安装proxysql必选' }
         ],
         conf_degrade_state: [
-          { required: true, trigger: 'blur', message: 'shard是否退化必选'  }
+          { required: true, trigger: 'blur', message: 'shard是否退化必选' }
         ],
         conf_degrade_time: [
-          { required: true, trigger: 'blur', validator: validateDegradeTime}
+          { required: true, trigger: 'blur', validator: validateDegradeTime }
         ],
         snode_count: [{ required: true, trigger: 'blur', validator: validateSnodeCount }],
         comp_count: [{ required: true, trigger: 'blur', validator: validateCompCount }],
@@ -1720,8 +1720,8 @@ export default {
         computer_user: '',
         computer_password: '',
         fullsync_level: '1',
-        conf_degrade_state:'OFF',
-        conf_degrade_time:'25'
+        conf_degrade_state: 'OFF',
+        conf_degrade_time: '25'
       }
     },
     autoExpandTemp() {
@@ -1829,8 +1829,8 @@ export default {
           paras.log_storage_MB = tempData.per_storage_node_log_storage_MB
           paras.conf_degrade_state = tempData.conf_degrade_state
           paras.conf_degrade_time = tempData.conf_degrade_time
-          if(tempData.conf_degrade_state=='ON'){
-             tempData.conf_degrade_time='0'
+          if (tempData.conf_degrade_state == 'ON') {
+            tempData.conf_degrade_time = '0'
           }
 
           // 可选项
@@ -1878,7 +1878,7 @@ export default {
               if (v.master) {
                 master_idc = {
                   idc: v.name,
-                  node_num: (v.node_num - 1) + ''
+                  node_num: '1'
                 }
               }
             })
@@ -1897,7 +1897,7 @@ export default {
                   if (!v.master) {
                     same_city_master_node_distribution.slave_idc.push({
                       idc: v.name,
-                      node_num: v.node_num + ''
+                      node_num: 2 + "",
                     })
                   }
                 })
@@ -1950,7 +1950,7 @@ export default {
             data_center_comps.forEach((v) => {
               comp_distribution.push({
                 idc: v.name,
-                node_num: (v.node_num - 1) + ''
+                node_num: v.node_num + ''
               })
             })
             paras.comp_distribution = comp_distribution;

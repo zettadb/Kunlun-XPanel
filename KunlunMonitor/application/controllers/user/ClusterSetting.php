@@ -195,7 +195,7 @@ class ClusterSetting extends CI_Controller
 
 		}
 		foreach ($res as $key => $value) {
-			$res[$key]['node_num'] = 2;
+			$res[$key]['node_num'] = 1;
 			$res[$key]['master'] = false;
 			$res[$key]['id'] = $value['name'];
 		}
