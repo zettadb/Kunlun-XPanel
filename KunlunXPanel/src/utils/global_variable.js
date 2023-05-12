@@ -109,8 +109,6 @@ const cpu_limit_mode = [
   { id: 'quota', label: 'quota' },
   { id: 'share', label: 'share' }
 ]
-const del_day_arr = [{ id: '1', label: '1天' }, { id: '2', label: '2天' }, { id: '3', label: '3天' }, { id: '4', label: '4天' }, { id: '5', label: '5天' }, { id: '6', label: '6天' }, { id: '7', label: '7天' }]
-
 export {
   role_type_arr,
   valid_period,
@@ -132,6 +130,5 @@ export {
   node_stats_arr,
   alarm_type_arr,
   alarm_level_arr,
-  cpu_limit_mode,
-  del_day_arr
+  cpu_limit_mode
 }
