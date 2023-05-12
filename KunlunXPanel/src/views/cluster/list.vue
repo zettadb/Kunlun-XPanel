@@ -1315,6 +1315,7 @@ export default {
     }
   },
   created() {
+    console.log(process.env.NODE_ENV)
     this.getList()
     this.getDataCents()
     // this.getMode();
@@ -1979,6 +1980,9 @@ export default {
           }
           // 0和没有该字段为正常模式，1为小内存模式
           paras.dbcfg = '0'
+          if (process.env.NODE_ENV === 'development') {
+            paras.dbcfg = '1'
+          }
           clusterData.paras = paras
           // console.log(clusterData);return;
           // 发送接口
