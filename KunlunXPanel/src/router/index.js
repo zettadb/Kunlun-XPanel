@@ -199,7 +199,7 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/cdc_server',
+    path: '/cdc',
     component: Layout,
     redirect: '/cdc',
     name: 'Cdc',
@@ -212,7 +212,7 @@ export const constantRoutes = [
       {
         path: 'list',
         name: 'list',
-        component: () => import('@/views/metacluster/list'),
+        component: () => import('@/views/cluster/cdclist'),
         meta: {
           title: 'CDC服务',
           requiresAuth: true,
