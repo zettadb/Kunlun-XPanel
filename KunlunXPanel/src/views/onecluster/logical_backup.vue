@@ -285,7 +285,7 @@ export default {
               };
               this.activities.push(newArrdone);
               // }
-              this.getList();
+              //this.getList();
               // this.dialogStatusVisible=false;
             } else {
               const newArr = {

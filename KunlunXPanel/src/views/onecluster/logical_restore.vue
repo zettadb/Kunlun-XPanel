@@ -318,7 +318,7 @@ export default {
               };
               this.activities.push(newArrdone);
               // }
-              _this.getList();
+              //_this.getList();
               // this.dialogStatusVisible=false;
             } else {
               const newArr = {
