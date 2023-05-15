@@ -20,7 +20,7 @@
         </el-select>
       </el-form-item>
       <el-row v-for="(table, index) in form.backup" :key="table.key">
-        <el-col :span="6">
+        <el-col :span="8">
           <el-form-item label="备份记录:" :prop="'backup.' + index + '.db_table'" :rules="{
             required: true,
             message: '备份表不能为空',
@@ -30,23 +30,14 @@
               placeholder="请选择 库名/模式/表" :options="backupList" filterable />
           </el-form-item>
         </el-col>
-        <el-col :span="6">
-          <el-form-item label="恢复地址:" :prop="'backup.' + index + '.new_db_table'" :rules="{
-            required: true,
-            message: '备份表不能为空',
-            trigger: 'blur',
-          }">
-            <el-cascader :key="'srcTable' + index" v-model="form.backup[index].new_db_table" style="width: 100%" clearable
-              placeholder="请选择 库名/模式/表" :options="tableOptions" filterable />
-          </el-form-item>
-        </el-col>
+
         <el-col :span="8">
           <el-form-item label="开始时间:" :prop="'backup.' + index" :rules="rules.time">
             <el-date-picker v-model="form.backup[index].startTime" type="datetime" value-format="yyyy-MM-dd HH:mm:ss"
               placeholder="起始时间" />
           </el-form-item>
         </el-col>
-        <el-col :span="2">
+        <el-col :span="2" v-if="backup_type == 'table' || backup_type == 'schema'">
           <el-button v-if="index === 0" icon="el-icon-plus" size="small" @click="onPush(index)" />
           <el-button v-else icon="el-icon-minus" size="small" @click="onRemove(index)" />
         </el-col>
@@ -242,7 +233,6 @@ export default {
             if (_this.backup_type == "table") {
               return {
                 db_table: v.db_table[0].substr(0, v.db_table[0].indexOf("(")),
-                new_db_table: v.new_db_table[0] + "_$$_" + v.new_db_table[1] + "." + v.new_db_table[2],
                 restore_time: v.startTime
               };
             }
@@ -250,7 +240,6 @@ export default {
             if (_this.backup_type == "db") {
               return {
                 db_table: v.db_table[0].substr(0, v.db_table[0].indexOf("(")),
-                new_db_table: v.new_db_table[0],
                 restore_time: v.startTime
               };
             }
@@ -258,7 +247,6 @@ export default {
             if (_this.backup_type == "schema") {
               return {
                 db_table: v.db_table[0].substr(0, v.db_table[0].indexOf("(")),
-                new_db_table: v.new_db_table[0] + "_$$_" + v.new_db_table[1],
                 restore_time: v.startTime,
               };
             }
@@ -308,6 +296,7 @@ export default {
       });
     },
     getStatus(timer, data, i) {
+      const _this = this;
       setTimeout(() => {
         const postarr = {};
         postarr.job_type = "get_status";
@@ -329,7 +318,7 @@ export default {
               };
               this.activities.push(newArrdone);
               // }
-              this.getList();
+              _this.getList();
               // this.dialogStatusVisible=false;
             } else {
               const newArr = {
