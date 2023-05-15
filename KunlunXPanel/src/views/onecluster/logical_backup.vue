@@ -267,6 +267,7 @@ export default {
       setTimeout(() => {
         const postarr = {};
         postarr.job_type = "get_status";
+        postarr.job_keyword = "logical_backup";
         postarr.version = version_arr[0].ver;
         postarr.job_id = data;
         postarr.timestamp = timestamp_arr[0].time + "";

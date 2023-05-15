@@ -33,22 +33,22 @@
           </el-form-item>
         </el-col>
       </el-row>
-       <el-form-item label="删除源表:" prop="del_table">
+       <el-form-item label="删除源表:" prop="del_table" @change="agreeChange">
         <el-radio v-model="form.del_table" label="0">自动</el-radio>
         <el-radio v-model="form.del_table" label="1">手动</el-radio>
+        <span style="color:red;" v-show="!btnstatus">请前往操作记录中进行删除源表操作！</span>
       </el-form-item>
        <!-- <el-form-item label="是否替换目标表名:" prop="rename_table">
         <el-radio v-model="form.rename_table" label="1">是</el-radio>
         <el-radio v-model="form.rename_table" label="0">否</el-radio>
       </el-form-item> -->
        <el-form-item label="保留天数:" prop="del_day"  v-if="form.del_table=='0'" >
-          <el-select v-model="form.del_day" placeholder="请选择">
-            <el-option v-for="item in delDay" :key="item.id" :label="item.label" :value="item.id" />
-          </el-select>
+        <el-input v-model="form.del_day" placeholder="请输入保留天数">
+          <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">天</i>
+        </el-input>
         </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="onSubmit(form)">提交</el-button>
-        <!-- <el-button>取消</el-button> -->
       </el-form-item>
     </el-form>
 
@@ -74,7 +74,7 @@ import {
   clusterOptions,
 } from "@/api/cluster/list";
 import { messageTip, handleCofirm, getNowDate } from "@/utils";
-import { version_arr, timestamp_arr,del_day_arr} from "@/utils/global_variable";
+import { version_arr, timestamp_arr} from "@/utils/global_variable";
 import { Loading } from "element-ui";
 
 export default {
@@ -83,6 +83,17 @@ export default {
     listsent: { typeof: Object },
   },
   data() {
+    const validDelDay = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('保留天数不能为空'))
+      } else if (!(/^[0-9]+$/.test(value))) {
+        callback(new Error('保留天数只能输入大于0的正整数'))
+      } else if (value<1) {
+        callback(new Error('保留天数不能小于1'))
+      } else {
+        callback()
+      }
+    }
     return {
       form: {
         src_cluster_id: "",
@@ -107,13 +118,16 @@ export default {
       srcTable: [],
       srcTableOptions: [],
       ditTableOptions: [],
-      delDay: del_day_arr,
+      btnstatus:false ,
       rules: {
         dst_cluster_id: [
           { required: true, trigger: "blur", message: "目标集群不能为空" },
         ],
         del_table: [
           { required: true, trigger: "blur"},
+        ],
+        del_day: [
+          { required: true, trigger: "blur", validator: validDelDay},
         ],
       },
     };
@@ -144,6 +158,9 @@ export default {
     this.timer = null;
   },
   methods: {
+    agreeChange:function(val){
+      this.btnstatus=(val==='1')?true:false;
+    },
     onPush(index) {
       this.form.repartition_tables.push({
         srcTable: [],
