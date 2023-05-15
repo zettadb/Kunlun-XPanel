@@ -21,14 +21,20 @@ class AlarmRecord extends CI_Controller
 		$this->job_type = $this->config->item('job_type');
 		$this->load->model('Cluster_model');
 
-		$sql_table = "CREATE TABLE IF NOT EXISTS `cluster_alarm_user` (`id` INT NOT NULL AUTO_INCREMENT,`uid` INT DEFAULT NULL,`alarm_type` VARCHAR (128) COLLATE utf8mb4_0900_as_cs DEFAULT NULL COMMENT '告警类型',`alarm_to_user` VARCHAR (255) COLLATE utf8mb4_0900_as_cs DEFAULT NULL COMMENT '提醒方式',`create_at` INT DEFAULT NULL,`update_at` INT DEFAULT NULL,`delete_at` INT DEFAULT NULL,`status` TINYINT DEFAULT NULL COMMENT '是否生效',PRIMARY KEY (`id`)) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;";
-		$this->Cluster_model->updateList($sql_table);
 
-		$push_comfig = "CREATE TABLE IF NOT EXISTS `cluster_alarm_message_config` (`id` INT NOT NULL AUTO_INCREMENT,`message` text COLLATE utf8mb4_0900_as_cs,`create_at` INT DEFAULT NULL,`update_at` INT DEFAULT NULL,`type` VARCHAR (64) COLLATE utf8mb4_0900_as_cs DEFAULT NULL,PRIMARY KEY (`id`)) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;";
-		$this->Cluster_model->updateList($push_comfig);
+		try {
 
-		$push_log = "CREATE TABLE IF NOT EXISTS `cluster_alarm_push_log` (`id` INT NOT NULL AUTO_INCREMENT,`alarm_type` VARCHAR (128) COLLATE utf8mb4_0900_as_cs DEFAULT NULL,`push_type` VARCHAR (128) COLLATE utf8mb4_0900_as_cs DEFAULT NULL,`content` text COLLATE utf8mb4_0900_as_cs,`content_res` VARCHAR (255) COLLATE utf8mb4_0900_as_cs DEFAULT NULL,`create_at` INT DEFAULT NULL,PRIMARY KEY (`id`)) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;";
-		$this->Cluster_model->updateList($push_log);
+			$sql_table = "CREATE TABLE IF NOT EXISTS `cluster_alarm_user` (`id` INT NOT NULL AUTO_INCREMENT,`uid` INT DEFAULT NULL,`alarm_type` VARCHAR (128) COLLATE utf8mb4_0900_as_cs DEFAULT NULL COMMENT '告警类型',`alarm_to_user` VARCHAR (255) COLLATE utf8mb4_0900_as_cs DEFAULT NULL COMMENT '提醒方式',`create_at` INT DEFAULT NULL,`update_at` INT DEFAULT NULL,`delete_at` INT DEFAULT NULL,`status` TINYINT DEFAULT NULL COMMENT '是否生效',PRIMARY KEY (`id`)) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;";
+			$this->Cluster_model->updateList($sql_table);
+
+			$push_comfig = "CREATE TABLE IF NOT EXISTS `cluster_alarm_message_config` (`id` INT NOT NULL AUTO_INCREMENT,`message` text COLLATE utf8mb4_0900_as_cs,`create_at` INT DEFAULT NULL,`update_at` INT DEFAULT NULL,`type` VARCHAR (64) COLLATE utf8mb4_0900_as_cs DEFAULT NULL,PRIMARY KEY (`id`)) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;";
+			$this->Cluster_model->updateList($push_comfig);
+
+			$push_log = "CREATE TABLE IF NOT EXISTS `cluster_alarm_push_log` (`id` INT NOT NULL AUTO_INCREMENT,`alarm_type` VARCHAR (128) COLLATE utf8mb4_0900_as_cs DEFAULT NULL,`push_type` VARCHAR (128) COLLATE utf8mb4_0900_as_cs DEFAULT NULL,`content` text COLLATE utf8mb4_0900_as_cs,`content_res` VARCHAR (255) COLLATE utf8mb4_0900_as_cs DEFAULT NULL,`create_at` INT DEFAULT NULL,PRIMARY KEY (`id`)) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;";
+			$this->Cluster_model->updateList($push_log);
+		} catch (\Throwable $th) {
+			//throw $th;
+		}
 	}
 
 	public function getAlarmRecordList()
