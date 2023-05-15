@@ -1,5 +1,5 @@
 {
-    "editor.fontSize": 12,
+    "editor.fontSize": 11,
     "files.autoSave": "onFocusChange",
     "workbench.colorTheme": "Darcula Theme from IntelliJ",
     "oneDarkPro.editorTheme": "One Dark Pro Flat"
