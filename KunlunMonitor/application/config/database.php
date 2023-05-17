@@ -5,8 +5,8 @@
 		$db_debug=TRUE;
 		$db['role']=array(
 			'dsn'	=> '',
-			'hostname' => '192.168.0.134',
-			'port' => 10016,
+			'hostname' => '192.168.0.150',
+			'port' => 21882,
 			'username' => 'pgx',
 			'password' => 'pgx_pwd',
 			'database' => 'kunlun_dba_tools_db',
@@ -28,8 +28,8 @@
 		);
 		$db['default']=array(
 			'dsn'	=> '',
-			'hostname' => '192.168.0.134',
-			'port' => 10016,
+			'hostname' => '192.168.0.150',
+			'port' => 21882,
 			'username' => 'pgx',
 			'password' => 'pgx_pwd',
 			'database' => 'kunlun_metadata_db',

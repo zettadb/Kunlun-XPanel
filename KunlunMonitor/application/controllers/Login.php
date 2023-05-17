@@ -499,8 +499,8 @@ class Login extends CI_Controller
 
 					if (is_array($get_arr) && count($get_arr) !== 0) {
 						if (array_key_exists('message', $get_arr)) {
-								//{"message":"Invalid Basic Auth Header","traceID":""}
-								if ($get_arr['message'] == 'invalid API key' || $get_arr['message'] == 'Unauthorized'||$get_arr['message'] == 'Invalid Basic Auth Header') {
+							//{"message":"Invalid Basic Auth Header","traceID":""}
+							if ($get_arr['message'] == 'invalid API key' || $get_arr['message'] == 'Unauthorized' || $get_arr['message'] == 'Invalid Basic Auth Header') {
 								//获取key
 								$post_keyDate = '{"name":"apikeycurl_002", "role": "Admin"}';
 								$post_keyurl = 'http://admin:admin@' . $this->grafana_svr . '/api/auth/keys';
@@ -537,23 +537,36 @@ class Login extends CI_Controller
 					print_r(json_encode($data));
 					return;
 				}
+
 				if ($dbha_mode == 'rbr') {
-					//获取元数据的主节点
-					$sql_main = "select * from meta_db_nodes WHERE member_state='source';";
-					$res = $this->Change_model->getMysql($ip, $port, 'pgx', 'pgx_pwd', 'kunlun_metadata_db', $sql_main);
-					//print_r($res);
-					if ($res) {
-						$res_main = [];
-						$res_main['code'] = 200;
-						$res_main[0] = $res[1];
-						$res_main[1] = $res[2];
-					} else {
-						//连不上报错
+
+					//判断主是否是唯一，某些情况主不唯一，直接报错
+					$masterArr = [];
+					foreach ($string['nodes'] as $knode => $vnode) {
+						$sql_main = "select * from meta_db_nodes WHERE member_state='source';";
+						$res = $this->Change_model->getMysql($vnode['ip'], $vnode['port'], 'pgx', 'pgx_pwd', 'kunlun_metadata_db', $sql_main);
+						if ($res) {
+							$res_main = [];
+							$res_main['code'] = 200;
+							$res_main[0] = $res[1];
+							$res_main[1] = $res[2];
+							$masterArr[$res[1]] = 'master';
+						} else {
+							$data['code'] = 500;
+							$data['message'] = $vnode['ip'] . ":" . $vnode['port'] . '元数据链接超时';
+							print_r(json_encode($data));
+							return;
+						}
+					}
+
+					if (count($masterArr) > 1) {
+						//多个主
 						$data['code'] = 500;
-						$data['message'] = 'rbr元数据找不到主节点';
+						$data['message'] = '异常，存在多个主' . json_encode($masterArr);
 						print_r(json_encode($data));
 						return;
 					}
+
 				} else if ($dbha_mode == 'mgr') {
 					//获取元数据的主节点
 					//$sql_main="select hostaddr,port from meta_db_nodes where member_state='source'";
