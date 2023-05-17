@@ -42,6 +42,7 @@
           <el-button v-else icon="el-icon-minus" size="small" @click="onRemove(index)" />
         </el-col>
       </el-row>
+      <el-form-item style="color:red;" label="温馨提示:" ><p>1.开始时间不能大于当前系统时间。</p><p>2.目标集群不存在和备份集群相同的table和schema。</p></el-form-item>
       <el-form-item>
         <el-button type="primary" @click="onSubmit(form)">保存</el-button>
         <!-- <el-button>取消</el-button> -->
@@ -85,6 +86,13 @@ export default {
       }
       cb();
     };
+    const checkDstCluster = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('目标表集群不能为空'))
+      } else {
+        callback()
+      }
+    }
     return {
       backup_type: "table",
       backup_type_items: [
@@ -116,6 +124,7 @@ export default {
       activities: [],
       rules: {
         time: [{ validator: checkTimeRange, trigger: "blur" }],
+        dst_cluster_id:[{required: true, validator: checkDstCluster, trigger: "blur" }],
       },
       tableOptions: [],
       backupList: [],
@@ -131,16 +140,17 @@ export default {
       this.tableOptionsSource = JSON.stringify(res.list);
     });
     // 获取原集群名称
-    clusterOptions({}).then((res) => {
+    let temp={'cluster_id':this.form.id}
+    clusterOptions(temp).then((res) => {
       this.clusterOptions = res.list;
     });
-    this.toGetLogicalBackUpRecordList()
+    this.toGetLogicalBackUpRecordList(this.backup_type)
   },
 
   methods: {
 
-    toGetLogicalBackUpRecordList() {
-      getLogicalBackUpRecordList({ cluster_id: this.form.id, }).then((res) => {
+    toGetLogicalBackUpRecordList(type) {
+      getLogicalBackUpRecordList({ cluster_id: this.form.id,type:type }).then((res) => {
         console.log(res)
         this.backupListStr = JSON.stringify(res.list);
         try {
@@ -149,59 +159,59 @@ export default {
       });
     },
     setbackupType(value) {
-      console.log(value)
-      switch (value) {
-        case "db":
-          try {
-            let backup = JSON.parse(this.tableOptionsSource)
-            this.tableOptions = []
-            backup.forEach((v) => {
-              v.children = null
-              this.tableOptions.push(v)
-            });
-          } catch (error) { }
-          try {
-            let list = JSON.parse(this.backupListStr)
-            this.backupList = list['db']
-          } catch (error) { }
-          console.log(this.tableOptions)
-          break
-        case "schema":
-          try {
-            let backup_schema = JSON.parse(this.tableOptionsSource)
-            this.tableOptions = []
-            backup_schema.forEach((v) => {
-              if (v.children.length > 0) {
-                v.children.forEach((k) => {
-                  k.children = null
-                })
-              }
-              this.tableOptions.push(v)
-              console.log(this.tableOptions)
-            });
-          } catch (error) { }
-          try {
-            let list = JSON.parse(this.backupListStr)
-            this.backupList = list['schema']
-          } catch (error) { }
-          break
-        case "table":
-          try {
-            this.tableOptions = JSON.parse(this.tableOptionsSource)
-          } catch (error) { }
-          try {
-            let list = JSON.parse(this.backupListStr)
-            this.backupList = list['table']
-          } catch (error) { }
-          break
-      }
+      //console.log(value)
+      this.toGetLogicalBackUpRecordList(value)
+      // switch (value) {
+      //   case "db":
+      //     try {
+      //       let backup = JSON.parse(this.tableOptionsSource)
+      //       this.tableOptions = []
+      //       backup.forEach((v) => {
+      //         v.children = null
+      //         this.tableOptions.push(v)
+      //       });
+      //     } catch (error) { }
+      //     try {
+      //       let list = JSON.parse(this.backupListStr)
+      //       this.backupList = list['db']
+      //     } catch (error) { }
+      //     console.log(this.tableOptions)
+      //     break
+      //   case "schema":
+      //     try {
+      //       let backup_schema = JSON.parse(this.tableOptionsSource)
+      //       this.tableOptions = []
+      //       backup_schema.forEach((v) => {
+      //         if (v.children.length > 0) {
+      //           v.children.forEach((k) => {
+      //             k.children = null
+      //           })
+      //         }
+      //         this.tableOptions.push(v)
+      //         console.log(this.tableOptions)
+      //       });
+      //     } catch (error) { }
+      //     try {
+      //       let list = JSON.parse(this.backupListStr)
+      //       this.backupList = list['schema']
+      //     } catch (error) { }
+      //     break
+      //   case "table":
+      //     try {
+      //       this.tableOptions = JSON.parse(this.tableOptionsSource)
+      //     } catch (error) { }
+      //     try {
+      //       let list = JSON.parse(this.backupListStr)
+      //       this.backupList = list['table']
+      //     } catch (error) { }
+      //     break
+      // }
     },
     beforeRestoreDestory() {
       clearInterval(this.timer);
       this.dialogStatusVisible = false;
       this.timer = null;
     },
-    clusterOptions,
     onDstClusterChange(e) {
       console.log(e);
       this.dst_cluster_id = e;
@@ -229,6 +239,13 @@ export default {
           data.job_type = "logical_restore";
           data.timestamp = timestamp_arr[0].time + "";
           const paras = {};
+          let repeat=this.repeatObject(this.form.backup,'db_table');
+          if(repeat!==null){
+            this.message_tips = '备份记录不能重复选择';
+            this.message_type = 'error';
+            messageTip(this.message_tips,this.message_type);
+            return;
+          }
           const restore = this.form.backup.map((v) => {
             if (_this.backup_type == "table") {
               return {
@@ -295,6 +312,23 @@ export default {
         }
       });
     },
+    repeatObject(obj,field) {
+      var count = 0;
+      var len = obj.length, result = new Array(), resultList = new Array();
+      for (var i = 0, x = 0; i < len; i++) {
+          var id = obj[i][field];
+          if (result[id]) {
+              resultList[x] = id;
+              count = 1, x++; 
+          } else {
+              result[id] = 1;
+          }
+      }
+      if (count == 1) {
+          return resultList;
+      }
+      return null;
+    },
     getStatus(timer, data, i) {
       const _this = this;
       setTimeout(() => {
@@ -321,6 +355,15 @@ export default {
               //_this.getList();
               // this.dialogStatusVisible=false;
             } else {
+              //获取attachment里的fail_dts错误数据全部显示出来
+              let errors='';
+              if(res.attachment.fail_dts){
+                //遍历取出数据
+                for (let i = 0; i<res.attachment.fail_dts.length;i++) {
+                    errors+=res.attachment.fail_dts[i].host+res.attachment.fail_dts[i].db_table+res.attachment.fail_dts[i].errmsg+';'
+                }
+                error_info=errors;
+              }
               const newArr = {
                 content: error_info,
                 timestamp: getNowDate(),
@@ -328,20 +371,8 @@ export default {
                 icon: "el-icon-circle-close",
               };
               this.activities.push(newArr);
-              // this.installStatus = true;
             }
-          } else {
-            // if (error_info) {
-            //   const newArrgoing = {
-            //     content: error_info,
-            //     timestamp: getNowDate(),
-            //     color: '#0bbd87'
-            //   }
-            //   this.activities.push(newArrgoing)
-            // }
-            // this.info=res.error_info;
-            // this.installStatus = true;
-          }
+          } 
         });
         if (i >= 86400) {
           clearInterval(timer);
