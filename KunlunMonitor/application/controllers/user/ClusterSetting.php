@@ -218,7 +218,8 @@ class ClusterSetting extends CI_Controller
 	{
 		$username = $this->input->get('name');
 		$filterId = $this->input->get('filter_id');
-		$sql = "select id,name from db_clusters where memo!='' and memo is not null and status!='deleted'";
+		$cluster_id = $this->input->get('cluster_id');
+		$sql = "select id,name from db_clusters where memo!='' and memo is not null and status!='deleted' and id!='$cluster_id'";
 		if (!empty($username)) {
 			$sql .= " and nick_name like '%$username%'";
 		}
@@ -270,13 +271,15 @@ class ClusterSetting extends CI_Controller
 	{
 
 		$cluster_id = $this->input->get('cluster_id');
+		$type = $this->input->get('type');
+		$restore_type='"backup_type":"'.$type.'"';
 		if ($cluster_id == "") {
 			throw new ApiException('集群ID 不能为空', 201);
 		}
 		$sql = "SELECT a.*,b.related_id,b.job_info,b.user_name FROM cluster_logicalbackup_record a
 	LEFT JOIN cluster_general_job_log b ON a.job_id=b.id 
-	WHERE b.related_id=0 AND a.backup_state='done' AND a.cluster_id=" . $cluster_id;
-
+	WHERE b.related_id=0 AND a.backup_state='done' AND a.cluster_id='$cluster_id' and b.job_info like '%$restore_type%' GROUP BY a.db_table ";
+		//echo $sql;exit;
 		$this->load->model('Cluster_model');
 		$res = $this->Cluster_model->getList($sql);
 		if ($res === false) {
@@ -286,13 +289,16 @@ class ClusterSetting extends CI_Controller
 		$table = [];
 		$db = [];
 		$schema = [];
+		$if_db=false;
+		$if_schema=false;
+		$if_table=false;
 		foreach ($res as $key => $item) {
 			$info = json_decode($item['job_info'], true);
 			$res[$key]['job_info'] = $info;
 			$backup_type = $info['paras']['backup_type'];
 			foreach ($info['paras']['backup'] as $k => $v) {
 				//print_r($v);
-				if ($backup_type == 'db') {
+				/*if ($backup_type == 'db') {
 					$db[] = [
 						"label" => $v['db_table'] . "(" . $item['backup_time'] . ")",
 						"value" => $v['db_table'] . "(" . $item['id'] . "_" . $item['backup_time'] . ")",
@@ -321,6 +327,79 @@ class ClusterSetting extends CI_Controller
 						"time" => $v['backup_time'],
 						"backup_time" => $item['backup_time'],
 					];
+				}*/
+				if ($backup_type == 'db') {
+					if(!empty($db)){
+						foreach ($db as $k1 => $v1){
+							if($db[$k1]['label']===$v['db_table']){
+								$if_db=false;
+								break;
+							}else{
+								$if_db=true;
+							}
+						}
+					}else{
+						$if_db=true;
+					}
+					if($if_db==true) {
+						$db[] = [
+							"label" => $v['db_table'],
+							"value" => $v['db_table'] ,
+							"desc" => $v['db_table'],
+							"children" => null,
+							"time" => $v['backup_time'],
+							"backup_time" => $item['backup_time'],
+						];
+					}
+
+				}
+				if ($backup_type == 'table') {
+					if(!empty($table)){
+						foreach ($table as $k1 => $v1){
+							if($table[$k1]['label']===$v['db_table']){
+								$if_table=false;
+								break;
+							}else{
+								$if_table=true;
+							}
+						}
+					}else{
+						$if_table=true;
+					}
+					if($if_table===true){
+						$table[] = [
+							"label" => $v['db_table'] ,
+							"value" => $v['db_table'] ,
+							"desc" => $v['db_table'],
+							"children" => null,
+							"time" => $v['backup_time'],
+							"backup_time" => $item['backup_time'],
+						];
+					}
+				}
+				if ($backup_type == 'schema') {
+					if(!empty($schema)){
+						foreach ($schema as $k1 => $v1){
+							if($schema[$k1]['label']!==$v['db_table']){
+								$if_schema=false;
+								break;
+							}else{
+								$if_schema=false;
+							}
+						}
+					}else{
+						$if_schema=false;
+					}
+					if($if_schema==true) {
+						$schema[] = [
+							"label" => $v['db_table'],
+							"value" => $v['db_table'] ,
+							"desc" => $v['db_table'],
+							"children" => null,
+							"time" => $v['backup_time'],
+							"backup_time" => $item['backup_time'],
+						];
+					}
 				}
 			}
 		}
