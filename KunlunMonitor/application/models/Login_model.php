@@ -24,14 +24,15 @@ class Login_model extends CI_Model
 		//$mysql="select * from performance_schema.replication_group_members;";
 		$this->db->query($sql);
 		$error = $this->db->error();
-		// print_r($error);
+		//print_r($error);
 		// exit;
 		if ($error['code'] !== 0) {
 			//切换元数据主节点
 			$mysql = "select MEMBER_HOST,MEMBER_PORT from performance_schema.replication_group_members where MEMBER_ROLE = 'PRIMARY' and MEMBER_STATE = 'ONLINE'";
 			$q = $this->db->query($mysql);
+			//print_r($q);exit;
 			if ($q->num_rows() > 0) {
-				$arr = $q->result_array();
+				/*$arr = $q->result_array();
 				if (!empty($arr)) {
 					$host = $arr[0]['MEMBER_HOST'];
 					$port = $arr[0]['MEMBER_PORT'];
@@ -94,7 +95,79 @@ class Login_model extends CI_Model
 					return $this->db->affected_rows();
 				} else {
 					return $this->db->error();
-				}
+				}*/
+			}else if($q !== false &&$q->num_rows()==0){
+				//print_r(11);exit;
+				$mysql1 = "select hostaddr as MEMBER_HOST,port as MEMBER_PORT from meta_db_nodes WHERE member_state='source'";
+				$q1 = $this->db->query($mysql1);
+				$q=$q1;
+
+			}
+			$arr = $q->result_array();
+
+			//print_r($arr);exit;
+			if (!empty($arr)) {
+				$host = $arr[0]['MEMBER_HOST'];
+				$port = $arr[0]['MEMBER_PORT'];
+				//print_r($host);exit;
+				$f = fopen('./application/config/database.php', 'w+');
+				$file = "<?php
+		defined('BASEPATH') OR exit('No direct script access allowed');
+		\$active_group = 'default';
+		\$query_builder = TRUE;
+		\$db_debug=TRUE;
+		\$db['role']=array(
+			'dsn'	=> '',
+			'hostname' => '$host',
+			'port' => $port,
+			'username' => 'pgx',
+			'password' => 'pgx_pwd',
+			'database' => 'kunlun_dba_tools_db',
+			'dbdriver' => 'mysqli',
+			'dbprefix' => '',
+			'pconnect' => FALSE,
+			'db_debug' => FALSE,
+			'cache_on' => FALSE,
+			'cachedir' => '',
+			'char_set' => 'utf8',
+			'dbcollat' => 'utf8_general_ci',
+			'swap_pre' => '',
+			'encrypt' => FALSE,
+			'compress' => FALSE,
+			'stricton' => FALSE,
+			'failover' => array(),
+			'options' => array(PDO::ATTR_TIMEOUT => 5),
+			'save_queries' => TRUE,
+		);
+		\$db['default']=array(
+			'dsn'	=> '',
+			'hostname' => '$host',
+			'port' => $port,
+			'username' => 'pgx',
+			'password' => 'pgx_pwd',
+			'database' => 'kunlun_metadata_db',
+			'dbdriver' => 'mysqli',
+			'dbprefix' => '',
+			'pconnect' => FALSE,
+			'db_debug' => TRUE,
+			'cache_on' => FALSE,
+			'cachedir' => '',
+			'char_set' => 'utf8',
+			'dbcollat' => 'utf8_general_ci',
+			'swap_pre' => '',
+			'encrypt' => FALSE,
+			'compress' => FALSE,
+			'stricton' => FALSE,
+			'failover' => array(),
+			'options' => array(PDO::ATTR_TIMEOUT => 5),
+			'save_queries' => TRUE,
+		);";
+				fwrite($f, $file);
+				fgets($f);
+				$this->db->query($sql);
+				return $this->db->affected_rows();
+			} else {
+				return $this->db->error();
 			}
 			//return $error;
 		}
@@ -180,5 +253,19 @@ class Login_model extends CI_Model
 		} else {
 			return false;
 		}
+	}
+	public function getUserId($user_name)
+	{
+		$user_sql = "select id from kunlun_user where name='$user_name';";
+		$res_user = $this->getList($user_sql);
+		if (!empty($res_user)) {
+			$data['code'] = 200;
+			$data['message'] = $res_user[0]['id'];
+		} else {
+			$data['code'] = 500;
+			$data['message'] = '该用户不存在';
+			return $data;
+		}
+		return  $data;
 	}
 }
