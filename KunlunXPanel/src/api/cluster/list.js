@@ -715,3 +715,29 @@ export function updateShard(data) {
     data
   })
 }
+
+export function editCdc(data) {
+  return request({
+    url: '/user/Cluster/cdcEdit',
+    method: 'post',
+    data
+  })
+}
+
+export function getCdcList(data) {
+  return request({
+    url: '/user/Cluster/getCdcList',
+    method: 'post',
+    data
+  })
+}
+
+
+export function getMetaClusterList(query) {
+  return request({
+    url: '/user/MetaCluster/getMetaClusterList',
+    method: 'get',
+    params: query
+  });
+}
+

@@ -23,14 +23,10 @@
       >
       <el-table-column type="index" align="center" label="序号" width="50" />
 
-      <el-table-column label="目标名称" align="center">
-        <template slot-scope="{row}">
-          <span class="link-type" @click="handleDetail(row)">{{ row.name }}</span>
-        </template>
-      </el-table-column>
-
-      <el-table-column prop="hostaddr" align="center" label="IP地址" />
+      <el-table-column prop="host_addr" align="center" label="IP地址" />
       <el-table-column prop="port" align="center" label="端口号" />
+      <el-table-column prop="master" align="center" label="主节点" />
+      <el-table-column prop="status" align="center" label="状态" />
 
       <el-table-column v-if="user_name == 'super_dba'" label="操作" align="center" width="300"
         class-name="small-padding fixed-width">
@@ -91,7 +87,10 @@ import {
   updateStorage,
   delStorage,
   getEvStatus,
-  getBackStorageList
+  getBackStorageList,
+  editCdc,
+  getCdcList
+
 } from '@/api/cluster/list'
 import { version_arr, storage_type_arr, timestamp_arr } from '@/utils/global_variable'
 import Pagination from '@/components/Pagination'
@@ -247,7 +246,7 @@ export default {
       //     this.listLoading = false
       //   }, 0.5 * 1000)
       // });
-      getBackStorageList(queryParam).then(response => {
+      getCdcList(queryParam).then(response => {
         if (response.list !== false) {
           this.list = response.list
           this.total = response.total
@@ -283,13 +282,15 @@ export default {
         if (valid) {
           const tempData = {}
           tempData.job_id = ''
-          tempData.job_type = 'create_backup_storage'
-          tempData.version = version_arr[0].ver
+          tempData.job_type = 'get_leader'
+          tempData.version = '1.0'
           tempData.timestamp = timestamp_arr[0].time + ''
           tempData.user_name = sessionStorage.getItem('login_username')
           tempData.paras = Object.assign({}, this.temp)
+          tempData.host_addr = tempData.paras.hostaddr
+          tempData.port = tempData.paras.port
           // 发送接口
-          addStorage(tempData).then(response => {
+          editCdc(tempData).then(response => {
             const res = response
             // eslint-disable-next-line eqeqeq
             if (res.status === 'accept') {

@@ -220,6 +220,16 @@ export const constantRoutes = [
         }
       },
       {
+        path: 'worker',
+        name: 'list',
+        component: () => import('@/views/cluster/cdcworker'),
+        meta: {
+          title: 'CDC任务',
+          requiresAuth: true,
+          // icon: 'table'
+        }
+      },
+      {
         path: 'node',
         name: 'Node',
         component: () => import('@/views/machine/node'),

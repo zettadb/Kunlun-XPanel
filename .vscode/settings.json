@@ -2,5 +2,6 @@
     "editor.fontSize": 11,
     "files.autoSave": "onFocusChange",
     "workbench.colorTheme": "Darcula Theme from IntelliJ",
-    "oneDarkPro.editorTheme": "One Dark Pro Flat"
+    "oneDarkPro.editorTheme": "One Dark Pro Flat",
+    "vue3snippets.enable-compile-vue-file-on-did-save-code": false
 }
