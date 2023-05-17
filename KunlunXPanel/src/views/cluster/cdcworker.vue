@@ -424,6 +424,16 @@ export default {
           tempData.version = "1.0";
           tempData.timestamp = timestamp_arr[0].time + "";
           tempData.user_name = sessionStorage.getItem("login_username");
+
+          const param = {
+            meta_db: this.temp.meta_db.join(','),
+            meta_user: this.temp.meta_user,
+            meta_passwd: this.temp.meta_passwd,
+            cluster_name: '',
+          }
+
+
+
           tempData.paras = Object.assign({}, this.temp);
           tempData.host_addr = tempData.paras.hostaddr;
           tempData.port = tempData.paras.port;

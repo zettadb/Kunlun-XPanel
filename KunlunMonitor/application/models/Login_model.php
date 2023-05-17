@@ -95,6 +95,8 @@ class Login_model extends CI_Model
 				} else {
 					return $this->db->error();
 				}
+			} else {
+
 			}
 			//return $error;
 		}
