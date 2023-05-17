@@ -82,19 +82,19 @@
         </div>
 
         <div v-else style="border:1px solid #ddd;width:80%;padding:32px;border-radius: 10px;">
-          <el-form-item label="ip地址:" prop="hostaddr">
+          <el-form-item label="ip地址:" prop="kunlunsql_plugin_param.hostaddr">
             <el-input v-model="temp.kunlunsql_plugin_param.hostaddr" clearable placeholder="ip地址" />
           </el-form-item>
-          <el-form-item label="端口:" prop="port">
+          <el-form-item label="端口:" prop="kunlunsql_plugin_param.port">
             <el-input v-model="temp.kunlunsql_plugin_param.port" clearable placeholder="端口" />
           </el-form-item>
-          <el-form-item label="用户名:" prop="user">
+          <el-form-item label="用户名:" prop="kunlunsql_plugin_param.user">
             <el-input v-model="temp.kunlunsql_plugin_param.user" clearable placeholder="用户名" />
           </el-form-item>
-          <el-form-item label="密码:" prop="password">
+          <el-form-item label="密码:" prop="kunlunsql_plugin_param.password">
             <el-input v-model="temp.kunlunsql_plugin_param.password" clearable placeholder="密码" />
           </el-form-item>
-          <el-form-item label="日志地址:" prop="log_path">
+          <el-form-item label="日志地址:" prop="kunlunsql_plugin_param.log_path">
             <el-input v-model="temp.kunlunsql_plugin_param.log_path" clearable placeholder="日志地址" />
           </el-form-item>
           <el-form-item label="udf_name:" prop="udf_name">
@@ -416,6 +416,7 @@ export default {
       });
     },
     createData() {
+      const _this = this;
       this.$refs["dataForm"].validate((valid) => {
         if (valid) {
           const tempData = {};
@@ -425,22 +426,45 @@ export default {
           tempData.timestamp = timestamp_arr[0].time + "";
           tempData.user_name = sessionStorage.getItem("login_username");
 
+          let cluster_name = ""
+          this.clusterOptions.forEach((v) => {
+            if (v.id == _this.temp.cluster_name) {
+              cluster_name = v.name;
+            }
+          })
+
+          const dump_tables = []
+          this.temp.dump_tables.forEach((v) => {
+            dump_tables.push(v[0] + '_$$_' + v[1] + '.' + v[2])
+          })
+
+          let output_plugins = []
+          if (this.temp.plugin_name == 'event_file') {
+            output_plugins = [{
+              plugin_name: "event_file",
+              plugin_param: this.temp.plugin_param,
+              udf_name: this.temp.udf_name
+            }]
+          } else {
+            output_plugins = [{
+              plugin_name: "event_kunlunsql",
+              plugin_param: JSON.stringify(this.temp.kunlunsql_plugin_param),
+              udf_name: this.temp.udf_name
+            }]
+          }
           const param = {
             meta_db: this.temp.meta_db.join(','),
             meta_user: this.temp.meta_user,
             meta_passwd: this.temp.meta_passwd,
-            cluster_name: '',
+            cluster_name: cluster_name,
+            dump_tables: dump_tables.join(','),
+            output_plugins: output_plugins,
           }
-
-
-
-          tempData.paras = Object.assign({}, this.temp);
-          tempData.host_addr = tempData.paras.hostaddr;
-          tempData.port = tempData.paras.port;
+          console.log(param)
+          tempData.paras = param
           // 发送接口
           editCdc(tempData).then((response) => {
             const res = response;
-            // eslint-disable-next-line eqeqeq
             if (res.status === "accept") {
               this.dialogFormVisible = false;
               this.dialogStatusVisible = true;
