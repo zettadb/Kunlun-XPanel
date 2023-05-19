@@ -970,8 +970,8 @@ export default {
         per_storage_node_rocksdb_buffer_pool_size: '',
         per_storage_node_initial_storage_size: '20',
         per_storage_node_max_storage_size: '20',
-        per_storage_node_data_storage_MB: '',
-        per_storage_node_log_storage_MB: '',
+        per_storage_node_data_storage_MB: '1024',
+        per_storage_node_log_storage_MB: '1024',
         nick_name: '',
         machinelist: [],
         comp_machinelist: [],
@@ -1710,8 +1710,8 @@ export default {
         per_storage_node_rocksdb_buffer_pool_size: '',
         per_storage_node_initial_storage_size: '20',
         per_storage_node_max_storage_size: '20',
-        per_storage_node_data_storage_MB: '',
-        per_storage_node_log_storage_MB: '',
+        per_storage_node_data_storage_MB: '1024',
+        per_storage_node_log_storage_MB: '1024',
         nick_name: '',
         machinelist: [],
         comp_machinelist: [],
@@ -2962,6 +2962,41 @@ export default {
                           }
                         }
                       }
+                    }
+                  }
+                  // 遍历存储节点改状态(20230512加入else if条件)
+                }else if (this.shard.length > 0) {
+                  for (let c = 0; c < this.shard.length; c++) {
+                    if (ress.attachment.hasOwnProperty('shard_step')) {
+                      for (let b = 0; b < ress.attachment.shard_step.length; b++) {
+                        if (info == '新增') {
+                          const shard_ids = ress.attachment.shard_step[b].shard_ids
+                          for (let e = 0; e < shard_ids.length; e++) {
+                            for (var item in shard_ids[e]) {
+                              var shard_idsValue = shard_ids[e][item]
+                              if (this.shard[c].shard_id == shard_idsValue) {
+                                this.shard[c].icon = 'el-icon-circle-check'
+                                this.shard[c].status = 'success'
+                              }
+                            }
+                          }
+                        } else if (info == '删除') {
+                          const arr = ress.attachment.shard_step[b].storage_hosts.substr(
+                            0,
+                            ress.attachment.shard_step[b].storage_hosts.length - 1
+                          )
+                          const shard_ids = arr.split(',')
+                          for (let e = 0; e < shard_ids.length; e++) {
+                            if (this.shard[c].shard_id == shard_ids[e]) {
+                              this.shard[c].icon = 'el-icon-circle-check'
+                              this.shard[c].status = 'success'
+                            }
+                          }
+                        }
+                      }
+                    } else {
+                      this.shard[c].icon = 'el-icon-circle-check'
+                      this.shard[c].status = 'success'
                     }
                   }
                 }
