@@ -827,22 +827,22 @@ class Cluster extends CI_Controller
 					}
 					//节点名称
 					/*if ($key2 == 'id') {
-																																																																																																																																																																																																															  if (!empty($value2)) {
-																																																																																																																																																																																																															  $shard_node_id='shard'.$res[$row]['id'];
-																																																																																																																																																																																																															  $shard_arr=$this->getShardNode($value2);
-																																																																																																																																																																																																															  if($shard_arr!==false){
-																																																																																																																																																																																																															  foreach ($shard_arr as $key){
-																																																																																																																																																																																																															  $shard_arr_id=$key['id'];
-																																																																																																																																																																																																															  $shard_arr_name=$key['port'];
-																																																																																																																																																																																																															  $shard_n_id='snode'.$shard_arr_id;
-																																																																																																																																																																																																															  $shard_node=array('id'=>$shard_n_id, 'text'=>$shard_arr_name,'data'=>array('cluster_name'=>$cluster_text,'hostaddr'=>$key['hostaddr'],'port'=>$key['port'],'cpu_cores'=>$key['cpu_cores'],'initial_storage_GB'=>$key['initial_storage_GB'],'max_storage_GB'=>$key['max_storage_GB'],'innodb_buffer_pool_MB'=>$key['innodb_buffer_pool_MB'],'rocksdb_buffer_pool_MB'=>$key['rocksdb_buffer_pool_MB'],'name'=>'mysql','shard_name'=>$res[$row]['name']));
-																																																																																																																																																																																																															  $shard_link=array('from'=>$shard_node_id, 'to'=>$shard_n_id,'text'=>$key['hostaddr']);
-																																																																																																																																																																																																															  array_push($nodes,$shard_node);
-																																																																																																																																																																																																															  array_push($links,$shard_link);
-																																																																																																																																																																																																															  }
-																																																																																																																																																																																																															  }
-																																																																																																																																																																																																															  }
-																																																																																																																																																																																																															  }*/
+																																																																																																																																																																																																																																																																																						   if (!empty($value2)) {
+																																																																																																																																																																																																																																																																																						   $shard_node_id='shard'.$res[$row]['id'];
+																																																																																																																																																																																																																																																																																						   $shard_arr=$this->getShardNode($value2);
+																																																																																																																																																																																																																																																																																						   if($shard_arr!==false){
+																																																																																																																																																																																																																																																																																						   foreach ($shard_arr as $key){
+																																																																																																																																																																																																																																																																																						   $shard_arr_id=$key['id'];
+																																																																																																																																																																																																																																																																																						   $shard_arr_name=$key['port'];
+																																																																																																																																																																																																																																																																																						   $shard_n_id='snode'.$shard_arr_id;
+																																																																																																																																																																																																																																																																																						   $shard_node=array('id'=>$shard_n_id, 'text'=>$shard_arr_name,'data'=>array('cluster_name'=>$cluster_text,'hostaddr'=>$key['hostaddr'],'port'=>$key['port'],'cpu_cores'=>$key['cpu_cores'],'initial_storage_GB'=>$key['initial_storage_GB'],'max_storage_GB'=>$key['max_storage_GB'],'innodb_buffer_pool_MB'=>$key['innodb_buffer_pool_MB'],'rocksdb_buffer_pool_MB'=>$key['rocksdb_buffer_pool_MB'],'name'=>'mysql','shard_name'=>$res[$row]['name']));
+																																																																																																																																																																																																																																																																																						   $shard_link=array('from'=>$shard_node_id, 'to'=>$shard_n_id,'text'=>$key['hostaddr']);
+																																																																																																																																																																																																																																																																																						   array_push($nodes,$shard_node);
+																																																																																																																																																																																																																																																																																						   array_push($links,$shard_link);
+																																																																																																																																																																																																																																																																																						   }
+																																																																																																																																																																																																																																																																																						   }
+																																																																																																																																																																																																																																																																																						   }
+																																																																																																																																																																																																																																																																																						   }*/
 
 				}
 			}
@@ -860,11 +860,11 @@ class Cluster extends CI_Controller
 						if (!empty($value2)) {
 							$shard_node_id = 'cnode' . $res_comp[$row]['id'];
 							/*$shard_node_id='comp_name'.$res_comp[$row]['id'];
-																																																																																																																																																																																																																																																																																																		  $shard_comp_id='comp'.$res_comp[$row]['id'];
-																																																																																																																																																																																																																																																																																																		  $shard_node1=array('id'=>$shard_node_id, 'text'=>$res_comp[$row]['name']);
-																																																																																																																																																																																																																																																																																																		  $shard_link1=array('from'=>$comp_id, 'to'=>$shard_node_id);
-																																																																																																																																																																																																																																																																																																		  array_push($nodes,$shard_node1);
-																																																																																																																																																																																																																																																																																																		  array_push($links,$shard_link1);*/
+																																																																																																																																																																																																																																																																																																																																																																																																						 $shard_comp_id='comp'.$res_comp[$row]['id'];
+																																																																																																																																																																																																																																																																																																																																																																																																						 $shard_node1=array('id'=>$shard_node_id, 'text'=>$res_comp[$row]['name']);
+																																																																																																																																																																																																																																																																																																																																																																																																						 $shard_link1=array('from'=>$comp_id, 'to'=>$shard_node_id);
+																																																																																																																																																																																																																																																																																																																																																																																																						 array_push($nodes,$shard_node1);
+																																																																																																																																																																																																																																																																																																																																																																																																						 array_push($links,$shard_link1);*/
 							$shard_node = array('id' => $shard_node_id, 'text' => $value2, 'data' => array('cluster_name' => $cluster_name, 'nick_name' => $cluster_text, 'port' => $value2, 'hostaddr' => $res_comp[$row]['hostaddr'], 'cpu_cores' => $res_comp[$row]['cpu_cores'], 'max_mem_MB' => $res_comp[$row]['max_mem_MB'], 'max_conns' => $res_comp[$row]['max_conns'], 'name' => 'pgsql', 'comp' => $res_comp[$row]['name'], 'status' => $res_comp[$row]['status'], 'cluster_id' => $clusterID, 'comp_id' => $res_comp[$row]['id']));
 							$shard_link = array('from' => $cluster_id, 'to' => $shard_node_id, 'text' => $res_comp[$row]['hostaddr'] . '(计算节点)');
 							array_push($nodes, $shard_node);
@@ -1832,11 +1832,11 @@ class Cluster extends CI_Controller
 			$user = "SELECT usename FROM  pg_catalog.pg_user WHERE  usename = '$username'";
 			$res_usename = $this->Cluster_model->DB($user, $host, $port, $pgusername);
 			/*if($res_usename['code']==500){
-																																																																																																																												  $data['message'] = $res_usename['error'];
-																																																																																																																												  $data['code'] = $res_usename['code'];
-																																																																																																																												  print_r(json_encode($data));return;
-																																																																																																																												  }else{
-																																																																																																																												  if(empty($res_usename['arr'])){*/
+																																																																																																																																																																							 $data['message'] = $res_usename['error'];
+																																																																																																																																																																							 $data['code'] = $res_usename['code'];
+																																																																																																																																																																							 print_r(json_encode($data));return;
+																																																																																																																																																																							 }else{
+																																																																																																																																																																							 if(empty($res_usename['arr'])){*/
 			if (empty($res_usename)) {
 				$createuser = "CREATE ROLE $username LOGIN PASSWORD '$username';";
 				$res_cuser = $this->Cluster_model->DB($createuser, $host, $port, $pgusername);
@@ -3090,6 +3090,7 @@ class Cluster extends CI_Controller
 		//exit;
 		//$post_arr = $this->Cluster_model->postData($post_data, $this->post_url);
 		try {
+			exit($string['paras']['variable']);
 			$this->Cluster_model->updateList($string['paras']['variable']);
 			$resp = [
 				'error_code' => 0,
@@ -4357,12 +4358,18 @@ class Cluster extends CI_Controller
 			print_r(json_encode($data));
 			return;
 		}
-
 		$this->load->model('Cluster_model');
-
 		//判断参数
 		$string = json_decode(@file_get_contents('php://input'), true);
 		$this->load->model('Cluster_model');
+		$getHostaddr = "select * from cluster_cdc_server where `host_addr`='" . $string['host_addr'] . "'";
+		$masterList = $this->Cluster_model->getList($getHostaddr);
+		if ($masterList) {
+			$data['code'] = 201;
+			$data['message'] = 'CDC 服务存在';
+			print_r(json_encode($data));
+			return;
+		}
 		$curl_addr = "http://" . $string['host_addr'] . ":" . $string['port'] . "/kunlun_cdc";
 		//echo $curl_addr;
 		$curl = curl_init();
@@ -4385,10 +4392,29 @@ class Cluster extends CI_Controller
 		);
 		$response = curl_exec($curl);
 		curl_close($curl);
-
-		$sql = "INSERT INTO `kunlun_metadata_db`.`cluster_cdc_server` (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $string['host_addr'] . "', '" . $string['port'] . "',0, " . time() . ", 0);";
-		$this->Cluster_model->updateList($sql);
-		print_r(json_encode(json_decode($response, true)));
+		if ($response) {
+			$sql = "INSERT INTO `kunlun_metadata_db`.`cluster_cdc_server` (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $string['host_addr'] . "', '" . $string['port'] . "',0, " . time() . ", 0);";
+			$this->Cluster_model->updateList($sql);
+			$responseArr = json_decode($response, true);
+			$master = $responseArr['attachment']['ipPort'];
+			$getmaster = "select * from cluster_cdc_server where master=1";
+			$masterList = $this->Cluster_model->getList($getmaster);
+			$masterArr = explode(":", $master);
+			if ($masterList) {
+				$updateMasterSql = "UPDATE `kunlun_metadata_db`.`cluster_cdc_server` SET `host_addr` = '" . $masterArr[0] . "', `port` = '" . $masterArr[1] . "', `master` = 1, `create_time` = NULL, `status` = 1 WHERE `id` = " . $masterList[0]['id'];
+				$this->Cluster_model->getList($updateMasterSql);
+			} else {
+				$sql = "INSERT INTO `kunlun_metadata_db`.`cluster_cdc_server` (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $masterArr[0] . "', '" . $masterArr[1] . "',1, " . time() . ", 0);";
+				$this->Cluster_model->updateList($sql);
+			}
+			print_r(json_encode(json_decode($response, true)));
+			return;
+		} else {
+			$data['code'] = 201;
+			$data['message'] = '获取CDC 服务失败';
+			print_r(json_encode($data));
+			return;
+		}
 
 	}
 }
