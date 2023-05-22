@@ -1104,10 +1104,6 @@ export default {
       activities: [],
       dialogStatusShowVisible: false,
       active: 0,
-      // 已选步骤
-      stepSuc: [0],
-      // 步骤参数
-      stepParams: [],
       computer: [],
       shard: [],
       computer_state: '',
@@ -1212,9 +1208,6 @@ export default {
 
       ],
       rules: {
-        // machinelist: [
-        //   { required: true, trigger: "blur",validator: validatemachine },
-        // ],
         ha_mode: [{ required: true, trigger: 'blur', validator: validateHaMode }],
         shards_count: [
           { required: true, trigger: 'blur', validator: validateShardsCount }
@@ -1236,9 +1229,6 @@ export default {
         shard_name: [{ required: true, trigger: 'blur', validator: validateShardName }],
         shards: [{ required: true, trigger: 'blur', validator: validateNodeTotal }],
         nodes: [{ required: true, trigger: 'blur', validator: validateNodes }],
-        // cluster_name: [
-        //     { required: true, trigger: "blur",validator: validateClusterName },
-        // ],
         nick_name: [{ required: true, trigger: 'blur', validator: validateNickName }],
         fullsync_level: [
           { required: true, trigger: 'blur', validator: validateFullsyncLevel }
@@ -1268,19 +1258,6 @@ export default {
     }
   },
   watch: {
-    'temp.machinelist': {
-      handler: function () {
-        // 旧数据中包含时无需push
-        //   this.temp.machinelist=[];
-        //   this.temp.machinelist.forEach(item => {
-        //   if (this.temp.machinelist.indexOf(item) == -1) {
-        //     const newArr={"hostaddr":item};
-        //     this.temp.machinelist.push(newArr)
-        //   }
-        // })
-        // this.temp.shards_count=this.temp.machinelist.length;
-      }
-    },
     'expandtemp.table_list': {
       handler: function (val) {
         if (val.length > 0) {
