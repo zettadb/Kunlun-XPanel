@@ -183,4 +183,26 @@ class Login_model extends CI_Model
 			return false;
 		}
 	}
+	public function getUserId($user_name)
+	{
+		$user_sql = "select id from kunlun_user where name='$user_name';";
+		$res_user = $this->getList($user_sql);
+		if (!empty($res_user)) {
+			$data['code'] = 200;
+			$data['message'] = $res_user[0]['id'];
+		} else {
+			$data['code'] = 500;
+			$data['message'] = '该用户不存在';
+			return $data;
+		}
+		return  $data;
+	}
+	public function getRBR()
+	{
+		$mysql1 = "select hostaddr as MEMBER_HOST,port as MEMBER_PORT from meta_db_nodes WHERE member_state='source'";
+		$q = $this->db->query($mysql1);
+		$arr = $q->result_array();
+		return $arr;
+	}
+
 }
