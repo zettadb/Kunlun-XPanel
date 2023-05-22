@@ -555,7 +555,7 @@ export default {
     handleEffectTime(row) {
       let res = ''
       for (const v of valid_period) {
-        if (row.valid_period == v['value']) {
+        if (row.valid_period === v['value']) {
           res = v['label']
           break
         } else {
@@ -566,7 +566,7 @@ export default {
     },
     handleStartTime(row) {
       let res = ''
-      if (row.start_ts == '0000-00-00 00:00:00') {
+      if (row.start_ts === '0000-00-00 00:00:00') {
         res = ''
       } else {
         res = row.start_ts
@@ -575,7 +575,8 @@ export default {
     },
     handleEndTime(row) {
       let res = ''
-      if (row.end_ts == '0000-00-00 00:00:00') {
+      // eslint-disable-next-line eqeqeq
+      if (row.end_ts === '0000-00-00 00:00:00') {
         res = ''
       } else {
         res = row.end_ts

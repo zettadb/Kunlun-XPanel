@@ -2,24 +2,39 @@
   <div class="app-container">
     <div class="filter-container">
       <div class="table-list-search-wrap">
-        <el-input v-model="listQuery.name" class="list_search_keyword" placeholder="可输入目标名称搜索"
-          @keyup.enter.native="handleFilter" />
+        <el-input
+          v-model="listQuery.name"
+          class="list_search_keyword"
+          placeholder="可输入目标名称搜索"
+          @keyup.enter.native="handleFilter"
+        />
         <el-button icon="el-icon-search" @click="handleFilter">
           查询
         </el-button>
         <el-button icon="el-icon-refresh-right" @click="handleClear">
           重置
         </el-button>
-        <el-button v-if="user_name == 'super_dba'" class="filter-item" type="primary" icon="el-icon-plus"
-          @click="handleCreate">新增
+        <el-button
+          v-if="user_name == 'super_dba'"
+          class="filter-item"
+          type="primary"
+          icon="el-icon-plus"
+          @click="handleCreate"
+        >新增
         </el-button>
         <div v-show="installStatus === true" class="info" v-text="info" />
       </div>
       <div class="table-list-wrap" />
     </div>
 
-    <el-table :key="tableKey" v-loading="listLoading" :data="list" border highlight-current-row
-      style="width: 100%;margin-bottom: 20px;">
+    <el-table
+      :key="tableKey"
+      v-loading="listLoading"
+      :data="list"
+      border
+      highlight-current-row
+      style="width: 100%;margin-bottom: 20px;"
+    >
       >
       <el-table-column type="index" align="center" label="序号" width="50" />
 
@@ -28,8 +43,13 @@
       <el-table-column prop="master" align="center" label="主节点" />
       <el-table-column prop="status" align="center" label="状态" />
 
-      <el-table-column v-if="user_name == 'super_dba'" label="操作" align="center" width="300"
-        class-name="small-padding fixed-width">
+      <el-table-column
+        v-if="user_name == 'super_dba'"
+        label="操作"
+        align="center"
+        width="300"
+        class-name="small-padding fixed-width"
+      >
         <template slot-scope="{row,$index}">
           <!--          <el-button v-if="user_name=='super_dba'" type="primary" size="mini" @click="handleUpdate(row)">编辑-->
           <!--          </el-button>-->
@@ -40,8 +60,13 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total > 0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize"
-      @pagination="getList" />
+    <pagination
+      v-show="total > 0"
+      :total="total"
+      :page.sync="listQuery.pageNo"
+      :limit.sync="listQuery.pageSize"
+      @pagination="getList"
+    />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" custom-class="single_dal_view">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="140px">
@@ -57,19 +82,34 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button v-show="!dialogDetail" @click="dialogFormVisible = false">关闭</el-button>
-        <el-button v-show="!dialogDetail" type="primary"
-          @click="dialogStatus === 'create' ? createData() : updateData(row)">
+        <el-button
+          v-show="!dialogDetail"
+          type="primary"
+          @click="dialogStatus === 'create' ? createData() : updateData(row)"
+        >
           确认
         </el-button>
       </div>
     </el-dialog>
     <!--  状态框 -->
-    <el-dialog :visible.sync="dialogStatusVisible" custom-class="single_dal_view" width="400px"
-      :close-on-click-modal="false" :before-close="beforeSyncDestory">
+    <el-dialog
+      :visible.sync="dialogStatusVisible"
+      custom-class="single_dal_view"
+      width="400px"
+      :close-on-click-modal="false"
+      :before-close="beforeSyncDestory"
+    >
       <div class="block">
         <el-timeline>
-          <el-timeline-item v-for="(activity, index) in activities" :key="index" :icon="activity.icon"
-            :type="activity.type" :color="activity.color" :size="activity.size" :timestamp="activity.timestamp">
+          <el-timeline-item
+            v-for="(activity, index) in activities"
+            :key="index"
+            :icon="activity.icon"
+            :type="activity.type"
+            :color="activity.color"
+            :size="activity.size"
+            :timestamp="activity.timestamp"
+          >
             {{ activity.content }}
           </el-timeline-item>
         </el-timeline>
@@ -227,25 +267,6 @@ export default {
       this.listLoading = true
       this.installStatus = false
       const queryParam = Object.assign({}, this.listQuery)
-      // const temp={};
-      // temp.version=version_arr[0].ver;
-      // temp.job_id='';
-      // temp.job_type='get_backup_storage';
-      // temp.timestamp=timestamp_arr[0].time+'';
-      // temp.paras={};
-      // //模糊搜索
-      // getStorageList(temp).then(response => {
-      //   if(response.attachment.list_backup_storage!==null){
-      //     this.list = response.attachment.list_backup_storage;
-      //     this.total = response.attachment.list_backup_storage.length;
-      //   }else{
-      //     this.list =[];
-      //     this.total=[];
-      //   }
-      //   setTimeout(() => {
-      //     this.listLoading = false
-      //   }, 0.5 * 1000)
-      // });
       getCdcList(queryParam).then(response => {
         if (response.list !== false) {
           this.list = response.list

@@ -9,52 +9,84 @@
       </el-form-item>
       <el-form-item label="恢复类型">
         <el-select v-model="backup_type" placeholder="选择恢复类型" @change="setbackupType($event)">
-          <el-option v-for="item in backup_type_items" :key="item.value" :label="item.label" :value="item.value">
-          </el-option>
+          <el-option v-for="item in backup_type_items" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </el-form-item>
       <el-form-item label="目标表集群:" prop="dst_cluster_id">
-        <el-select v-model="form.dst_cluster_id" clearable placeholder="请选择目标表集群" style="width: 100%"
-          @change="onDstClusterChange">
+        <el-select
+          v-model="form.dst_cluster_id"
+          clearable
+          placeholder="请选择目标表集群"
+          style="width: 100%"
+          @change="onDstClusterChange"
+        >
           <el-option v-for="item in clusterOptions" :key="item.id" :label="item.name" :value="item.id" />
         </el-select>
       </el-form-item>
       <el-row v-for="(table, index) in form.backup" :key="table.key">
         <el-col :span="8">
-          <el-form-item label="备份记录:" :prop="'backup.' + index + '.db_table'" :rules="{
-            required: true,
-            message: '备份表不能为空',
-            trigger: 'blur',
-          }">
-            <el-cascader :key="'srcTable' + index" v-model="form.backup[index].db_table" style="width: 100%" clearable
-              placeholder="请选择 库名/模式/表" :options="backupList" filterable />
+          <el-form-item
+            label="备份记录:"
+            :prop="'backup.' + index + '.db_table'"
+            :rules="{
+              required: true,
+              message: '备份表不能为空',
+              trigger: 'blur',
+            }"
+          >
+            <el-cascader
+              :key="'srcTable' + index"
+              v-model="form.backup[index].db_table"
+              style="width: 100%"
+              clearable
+              placeholder="请选择 库名/模式/表"
+              :options="backupList"
+              filterable
+            />
           </el-form-item>
         </el-col>
 
         <el-col :span="8">
           <el-form-item label="开始时间:" :prop="'backup.' + index" :rules="rules.time">
-            <el-date-picker v-model="form.backup[index].startTime" type="datetime" value-format="yyyy-MM-dd HH:mm:ss"
-              placeholder="起始时间" />
+            <el-date-picker
+              v-model="form.backup[index].startTime"
+              type="datetime"
+              value-format="yyyy-MM-dd HH:mm:ss"
+              placeholder="起始时间"
+            />
           </el-form-item>
         </el-col>
-        <el-col :span="2" v-if="backup_type == 'table' || backup_type == 'schema'">
+        <el-col v-if="backup_type == 'table' || backup_type == 'schema'" :span="2">
           <el-button v-if="index === 0" icon="el-icon-plus" size="small" @click="onPush(index)" />
           <el-button v-else icon="el-icon-minus" size="small" @click="onRemove(index)" />
         </el-col>
       </el-row>
-      <el-form-item style="color:red;" label="温馨提示:" ><p>1.开始时间不能大于当前系统时间。</p><p>2.目标集群不存在和备份集群相同的table和schema。</p></el-form-item>
+      <el-form-item style="color:red;" label="温馨提示:"><p>1.开始时间不能大于当前系统时间。</p>
+        <p>2.目标集群不存在和备份集群相同的table和schema。</p></el-form-item>
       <el-form-item>
         <el-button type="primary" @click="onSubmit(form)">保存</el-button>
         <!-- <el-button>取消</el-button> -->
       </el-form-item>
     </el-form>
 
-    <el-dialog :visible.sync="dialogStatusVisible" custom-class="single_dal_view" width="400px"
-      :close-on-click-modal="false" :before-close="beforeRestoreDestory">
+    <el-dialog
+      :visible.sync="dialogStatusVisible"
+      custom-class="single_dal_view"
+      width="400px"
+      :close-on-click-modal="false"
+      :before-close="beforeRestoreDestory"
+    >
       <div class="block">
         <el-timeline>
-          <el-timeline-item v-for="(activity, index) in activities" :key="index" :icon="activity.icon"
-            :type="activity.type" :color="activity.color" :size="activity.size" :timestamp="activity.timestamp">
+          <el-timeline-item
+            v-for="(activity, index) in activities"
+            :key="index"
+            :icon="activity.icon"
+            :type="activity.type"
+            :color="activity.color"
+            :size="activity.size"
+            :timestamp="activity.timestamp"
+          >
             {{ activity.content }}
           </el-timeline-item>
         </el-timeline>
@@ -69,23 +101,23 @@ import {
   getEvStatus,
   getPGTableList,
   tableRepartition,
-  getLogicalBackUpRecordList,
-} from "@/api/cluster/list";
-import { timestamp_arr, version_arr } from "@/utils/global_variable";
-import { getNowDate, messageTip } from "@/utils";
+  getLogicalBackUpRecordList
+} from '@/api/cluster/list'
+import { timestamp_arr, version_arr } from '@/utils/global_variable'
+import { getNowDate, messageTip } from '@/utils'
 
 export default {
-  name: "LogicalBackup",
+  name: 'LogicalBackup',
   props: {
-    listsent: { typeof: Object },
+    listsent: { typeof: Object }
   },
   data() {
     const checkTimeRange = (rule, value, cb) => {
-      if (value.startTime === "") {
-        return cb(new Error("请选择备份时间范围"));
+      if (value.startTime === '') {
+        return cb(new Error('请选择备份时间范围'))
       }
-      cb();
-    };
+      cb()
+    }
     const checkDstCluster = (rule, value, callback) => {
       if (!value) {
         callback(new Error('目标表集群不能为空'))
@@ -94,72 +126,73 @@ export default {
       }
     }
     return {
-      backup_type: "table",
+      backup_type: 'table',
       backup_type_items: [
         {
-          item: "db",
-          label: "db",
-          value: 'db',
+          item: 'db',
+          label: 'db',
+          value: 'db'
         },
         {
-          item: "schema",
-          label: "schema",
-          value: 'schema',
+          item: 'schema',
+          label: 'schema',
+          value: 'schema'
         }, {
-          item: "table",
-          label: "table",
-          value: 'table',
+          item: 'table',
+          label: 'table',
+          value: 'table'
         }],
       form: {
-        src_cluster_id: "",
-        dst_cluster_id: "",
-        name: "",
-        nick_name: "",
-        backup: [{ db_table: [], backup_time: "", new_db_table: "", startTime: "", endTime: "" }],
-        id: "",
-        clusterOptions: [],
+        src_cluster_id: '',
+        dst_cluster_id: '',
+        name: '',
+        nick_name: '',
+        backup: [{ db_table: [], backup_time: '', new_db_table: '', startTime: '', endTime: '' }],
+        id: '',
+        clusterOptions: []
       },
       dst_cluster_id: 0,
       dialogStatusVisible: false,
       activities: [],
       rules: {
-        time: [{ validator: checkTimeRange, trigger: "blur" }],
-        dst_cluster_id:[{required: true, validator: checkDstCluster, trigger: "blur" }],
+        time: [{ validator: checkTimeRange, trigger: 'blur' }],
+        dst_cluster_id: [{ required: true, validator: checkDstCluster, trigger: 'blur' }]
       },
       tableOptions: [],
       backupList: [],
-      backupListStr: null,
-    };
+      backupListStr: null
+    }
   },
   mounted() {
-    this.form.name = this.listsent.name;
-    this.form.nick_name = this.listsent.nick_name;
-    this.form.id = this.listsent.id;
-    getPGTableList({ cluster_id: this.form.id, all: "1" }).then((res) => {
-      this.tableOptions = res.list;
-      this.tableOptionsSource = JSON.stringify(res.list);
-    });
+    this.form.name = this.listsent.name
+    this.form.nick_name = this.listsent.nick_name
+    this.form.id = this.listsent.id
+    getPGTableList({ cluster_id: this.form.id, all: '1' }).then((res) => {
+      this.tableOptions = res.list
+      this.tableOptionsSource = JSON.stringify(res.list)
+    })
     // 获取原集群名称
-    let temp={'cluster_id':this.form.id}
+    const temp = { 'cluster_id': this.form.id }
     clusterOptions(temp).then((res) => {
-      this.clusterOptions = res.list;
-    });
+      this.clusterOptions = res.list
+    })
     this.toGetLogicalBackUpRecordList(this.backup_type)
   },
 
   methods: {
 
     toGetLogicalBackUpRecordList(type) {
-      getLogicalBackUpRecordList({ cluster_id: this.form.id,type:type }).then((res) => {
+      getLogicalBackUpRecordList({ cluster_id: this.form.id, type: type }).then((res) => {
         console.log(res)
-        this.backupListStr = JSON.stringify(res.list);
+        this.backupListStr = JSON.stringify(res.list)
         try {
-          this.backupList = res.list['table'];
-        } catch (error) { }
-      });
+          this.backupList = res.list['table']
+        } catch (error) {
+        }
+      })
     },
     setbackupType(value) {
-      //console.log(value)
+      // console.log(value)
       this.toGetLogicalBackUpRecordList(value)
       // switch (value) {
       //   case "db":
@@ -208,177 +241,178 @@ export default {
       // }
     },
     beforeRestoreDestory() {
-      clearInterval(this.timer);
-      this.dialogStatusVisible = false;
-      this.timer = null;
+      clearInterval(this.timer)
+      this.dialogStatusVisible = false
+      this.timer = null
     },
     onDstClusterChange(e) {
-      console.log(e);
-      this.dst_cluster_id = e;
+      console.log(e)
+      this.dst_cluster_id = e
     },
     onPush(index) {
       this.form.backup.push({
         db_table: [],
-        backup_time: "",
-        startTime: "",
-        endTime: "",
-      });
+        backup_time: '',
+        startTime: '',
+        endTime: ''
+      })
     },
     onRemove(index) {
-      this.form.backup.splice(index, 1);
+      this.form.backup.splice(index, 1)
     },
     onSubmit(row) {
-      console.info(this.form);
-      const _this = this;
-      this.$refs["form"].validate((valid) => {
+      console.info(this.form)
+      const _this = this
+      this.$refs['form'].validate((valid) => {
         if (valid) {
-          const data = {};
-          data.user_name = sessionStorage.getItem("login_username");
-          data.job_id = "";
-          data.version = version_arr[0].ver;
-          data.job_type = "logical_restore";
-          data.timestamp = timestamp_arr[0].time + "";
-          const paras = {};
-          let repeat=this.repeatObject(this.form.backup,'db_table');
-          if(repeat!==null){
-            this.message_tips = '备份记录不能重复选择';
-            this.message_type = 'error';
-            messageTip(this.message_tips,this.message_type);
-            return;
+          const data = {}
+          data.user_name = sessionStorage.getItem('login_username')
+          data.job_id = ''
+          data.version = version_arr[0].ver
+          data.job_type = 'logical_restore'
+          data.timestamp = timestamp_arr[0].time + ''
+          const paras = {}
+          const repeat = this.repeatObject(this.form.backup, 'db_table')
+          if (repeat !== null) {
+            this.message_tips = '备份记录不能重复选择'
+            this.message_type = 'error'
+            messageTip(this.message_tips, this.message_type)
+            return
           }
           const restore = this.form.backup.map((v) => {
-            if (_this.backup_type == "table") {
+            if (_this.backup_type == 'table') {
               return {
-                db_table: v.db_table[0].substr(0, v.db_table[0].indexOf("(")),
+                db_table: v.db_table[0].substr(0, v.db_table[0].indexOf('(')),
                 restore_time: v.startTime
-              };
+              }
             }
 
-            if (_this.backup_type == "db") {
+            if (_this.backup_type == 'db') {
               return {
-                db_table: v.db_table[0].substr(0, v.db_table[0].indexOf("(")),
+                db_table: v.db_table[0].substr(0, v.db_table[0].indexOf('(')),
                 restore_time: v.startTime
-              };
+              }
             }
 
-            if (_this.backup_type == "schema") {
+            if (_this.backup_type == 'schema') {
               return {
-                db_table: v.db_table[0].substr(0, v.db_table[0].indexOf("(")),
-                restore_time: v.startTime,
-              };
+                db_table: v.db_table[0].substr(0, v.db_table[0].indexOf('(')),
+                restore_time: v.startTime
+              }
             }
-          });
-          paras.cluster_id = this.form.id;
-          paras.restore_type = _this.backup_type;
-          paras.src_cluster_id = this.form.id;
-          paras.dst_cluster_id = _this.form.dst_cluster_id;
-          paras.restore = restore;
+          })
+          paras.cluster_id = this.form.id
+          paras.restore_type = _this.backup_type
+          paras.src_cluster_id = this.form.id
+          paras.dst_cluster_id = _this.form.dst_cluster_id
+          paras.restore = restore
 
-          data.paras = paras;
-          console.info(data);
+          data.paras = paras
+          console.info(data)
           tableRepartition(data).then((res) => {
             if (res.code === 200) {
               this.form.backup = [
-                { db_table: [], backup_time: "", startTime: "", endTime: "" },
-              ];
+                { db_table: [], backup_time: '', startTime: '', endTime: '' }
+              ]
             }
-            if (res.status === "accept") {
-              this.dialogRetreatedVisible = false;
-              this.dialogStatusVisible = true;
-              this.activities = [];
+            if (res.status === 'accept') {
+              this.dialogRetreatedVisible = false
+              this.dialogStatusVisible = true
+              this.activities = []
               const newArr = {
-                content: "逻辑恢复中...",
+                content: '逻辑恢复中...',
                 timestamp: getNowDate(),
-                size: "large",
-                type: "primary",
-                icon: "el-icon-more",
-              };
-              this.activities.push(newArr);
-              let i = 0;
-              this.timer = null;
+                size: 'large',
+                type: 'primary',
+                icon: 'el-icon-more'
+              }
+              this.activities.push(newArr)
+              let i = 0
+              this.timer = null
               this.timer = setInterval(() => {
-                this.getStatus(this.timer, res.job_id, i++);
-              }, 1000);
-            } else if (res.status === "ongoing") {
-              this.message_tips = "系统正在操作中，请等待一会！";
-              this.message_type = "error";
-              messageTip(this.message_tips, this.message_type);
+                this.getStatus(this.timer, res.job_id, i++)
+              }, 1000)
+            } else if (res.status === 'ongoing') {
+              this.message_tips = '系统正在操作中，请等待一会！'
+              this.message_type = 'error'
+              messageTip(this.message_tips, this.message_type)
             } else {
-              this.message_tips = res.error_info;
-              this.message_type = "error";
-              messageTip(this.message_tips, this.message_type);
+              this.message_tips = res.error_info
+              this.message_type = 'error'
+              messageTip(this.message_tips, this.message_type)
             }
-          });
+          })
         }
-      });
+      })
     },
-    repeatObject(obj,field) {
-      var count = 0;
-      var len = obj.length, result = new Array(), resultList = new Array();
+    repeatObject(obj, field) {
+      var count = 0
+      var len = obj.length; var result = new Array(); var resultList = new Array()
       for (var i = 0, x = 0; i < len; i++) {
-          var id = obj[i][field];
-          if (result[id]) {
-              resultList[x] = id;
-              count = 1, x++; 
-          } else {
-              result[id] = 1;
-          }
+        var id = obj[i][field]
+        if (result[id]) {
+          resultList[x] = id
+          count = 1, x++
+        } else {
+          result[id] = 1
+        }
       }
       if (count == 1) {
-          return resultList;
+        return resultList
       }
-      return null;
+      return null
     },
+
     getStatus(timer, data, i) {
-      const _this = this;
+      const _this = this
       setTimeout(() => {
-        const postarr = {};
-        postarr.job_type = "get_status";
-        postarr.version = version_arr[0].ver;
-        postarr.job_id = data;
-        postarr.timestamp = timestamp_arr[0].time + "";
-        postarr.paras = {};
+        const postarr = {}
+        postarr.job_type = 'get_status'
+        postarr.version = version_arr[0].ver
+        postarr.job_id = data
+        postarr.timestamp = timestamp_arr[0].time + ''
+        postarr.paras = {}
         getEvStatus(postarr).then((res) => {
-          const error_info = res.error_info;
-          if (res.status === "done" || res.status === "failed") {
-            clearInterval(timer);
+          const error_info = res.error_info
+          if (res.status === 'done' || res.status === 'failed') {
+            clearInterval(timer)
             // this.info=res.error_info;
-            if (res.status === "done") {
+            if (res.status === 'done') {
               const newArrdone = {
-                content: "逻辑恢复成功",
+                content: '逻辑恢复成功',
                 timestamp: getNowDate(),
-                color: "#0bbd87",
-                icon: "el-icon-circle-check",
-              };
-              this.activities.push(newArrdone);
+                color: '#0bbd87',
+                icon: 'el-icon-circle-check'
+              }
+              this.activities.push(newArrdone)
               // }
-              //_this.getList();
+              // _this.getList();
               // this.dialogStatusVisible=false;
             } else {
-              //获取attachment里的fail_dts错误数据全部显示出来
-              let errors='';
-              if(res.attachment.fail_dts){
-                //遍历取出数据
-                for (let i = 0; i<res.attachment.fail_dts.length;i++) {
-                    errors+=res.attachment.fail_dts[i].host+res.attachment.fail_dts[i].db_table+res.attachment.fail_dts[i].errmsg+';'
+              // 获取attachment里的fail_dts错误数据全部显示出来
+              let errors = ''
+              if (res.attachment.fail_dts) {
+                // 遍历取出数据
+                for (let i = 0; i < res.attachment.fail_dts.length; i++) {
+                  errors += res.attachment.fail_dts[i].host + res.attachment.fail_dts[i].db_table + res.attachment.fail_dts[i].errmsg + ';'
                 }
-                error_info=errors;
+                error_info = errors
               }
               const newArr = {
                 content: error_info,
                 timestamp: getNowDate(),
-                color: "red",
-                icon: "el-icon-circle-close",
-              };
-              this.activities.push(newArr);
+                color: 'red',
+                icon: 'el-icon-circle-close'
+              }
+              this.activities.push(newArr)
             }
-          } 
-        });
+          }
+        })
         if (i >= 86400) {
-          clearInterval(timer);
+          clearInterval(timer)
         }
-      }, 0);
-    },
-  },
-};
+      }, 0)
+    }
+  }
+}
 </script>
