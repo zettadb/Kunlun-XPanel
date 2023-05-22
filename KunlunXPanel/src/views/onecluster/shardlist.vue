@@ -2,9 +2,18 @@
   <div class="app-container">
     <div class="filter-container">
       <div class="table-list-search-wrap">
-        <el-input v-model="listQuery.hostaddr" class="list_search_keyword" placeholder="可输入ip搜索"
-          @keyup.enter.native="handleFilter" />
-        <el-select v-model="listQuery.master" placeholder="请选择主/备节点" class="list_search_select" style="width:150px;">
+        <el-input
+          v-model="listQuery.hostaddr"
+          class="list_search_keyword"
+          placeholder="可输入ip搜索"
+          @keyup.enter.native="handleFilter"
+        />
+        <el-select
+          v-model="listQuery.master"
+          placeholder="请选择主/备节点"
+          class="list_search_select"
+          style="width:150px;"
+        >
           <el-option label="主节点" value="source" />
           <el-option label="备节点" value="replica" />
         </el-select>
@@ -20,16 +29,34 @@
         <el-button icon="el-icon-refresh-right" @click="handleClear">
           重置
         </el-button>
-        <el-button v-if="shard_create_priv === 'Y'" class="filter-item" type="primary" icon="el-icon-plus"
-          @click="handleCreate">添加shard
+        <el-button
+          v-if="shard_create_priv === 'Y'"
+          class="filter-item"
+          type="primary"
+          icon="el-icon-plus"
+          @click="handleCreate"
+        >添加shard
         </el-button>
-        <el-button v-if="storage_node_create_priv === 'Y'" class="filter-item" type="primary" icon="el-icon-plus"
-          @click="handleCreateStorage">添加储存节点
+        <el-button
+          v-if="storage_node_create_priv === 'Y'"
+          class="filter-item"
+          type="primary"
+          icon="el-icon-plus"
+          @click="handleCreateStorage"
+        >添加储存节点
         </el-button>
       </div>
     </div>
-    <el-table ref="multipleTable" :key="tableKey" v-loading="listLoading" :data="list" border highlight-current-row
-      default-expand-all style="width: 100%;margin-bottom: 20px;">
+    <el-table
+      ref="multipleTable"
+      :key="tableKey"
+      v-loading="listLoading"
+      :data="list"
+      border
+      highlight-current-row
+      default-expand-all
+      style="width: 100%;margin-bottom: 20px;"
+    >
       <el-table-column type="expand" align="center" label="" width="50">
         <template slot-scope="scope">
           <el-table class="sectable" :data="scope.row.shardList" stripe style="width: 100%">
@@ -66,21 +93,37 @@
                 </el-button>
                 <el-button v-if="row.status == 'online'" size="mini" type="primary" @click="handleSetCpu(row)">设置
                 </el-button>
-                <el-button v-if="row.status !== 'online'" size="mini" type="primary"
-                  @click="handleControlNode(row, 'start')">启用
+                <el-button
+                  v-if="row.status !== 'online'"
+                  size="mini"
+                  type="primary"
+                  @click="handleControlNode(row, 'start')"
+                >启用
                 </el-button>
-                <el-button v-if="row.master !== 'true' && row.status !== 'offline'" size="mini" type="primary"
-                  @click="handleControlNode(row, 'stop')">禁用
+                <el-button
+                  v-if="row.master !== 'true' && row.status !== 'offline'"
+                  size="mini"
+                  type="primary"
+                  @click="handleControlNode(row, 'stop')"
+                >禁用
                 </el-button>
-                <el-button v-if="row.master !== 'true'" size="mini" type="primary"
-                  @click="handleControlNode(row, 'restart')">重启
+                <el-button
+                  v-if="row.master !== 'true'"
+                  size="mini"
+                  type="primary"
+                  @click="handleControlNode(row, 'restart')"
+                >重启
                 </el-button>
                 <el-button v-if="row.master == 'true'" size="mini" type="primary" @click="handleSwitch(row)">主备切换
                 </el-button>
                 <el-button v-if="row.master == 'true'" size="mini" type="primary" @click="handleReDo(row)">重做备机节点
                 </el-button>
-                <el-button v-if="storage_node_drop_priv === 'Y' && row.master !== 'true'" size="mini" type="danger"
-                  @click="handleDeleteStorage(row, $index)">删除
+                <el-button
+                  v-if="storage_node_drop_priv === 'Y' && row.master !== 'true'"
+                  size="mini"
+                  type="danger"
+                  @click="handleDeleteStorage(row, $index)"
+                >删除
                 </el-button>
               </template>
             </el-table-column>
@@ -104,25 +147,36 @@
           <span v-else />
         </template>
       </el-table-column>
-       <el-table-column prop="degrade_conf_time" align="center" label="退化时间" >
-          <template slot-scope="scope">
-            <span v-if="scope.row.degrade_conf_time === '0'"></span>
-            <span v-else >{{scope.row.degrade_conf_time}}</span>
-          </template>
-       </el-table-column>
+      <el-table-column prop="degrade_conf_time" align="center" label="退化时间">
+        <template slot-scope="scope">
+          <span v-if="scope.row.degrade_conf_time === '0'" />
+          <span v-else>{{ scope.row.degrade_conf_time }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
-          <el-button v-if="shard_drop_priv === 'Y'" size="mini" type="primary" @click="handleUpdate(row)">编辑</el-button>
-          <el-button v-if="shard_drop_priv === 'Y'" size="mini" type="danger" @click="handleDelete(row, $index)">删除</el-button>
+          <el-button v-if="shard_drop_priv === 'Y'" size="mini" type="primary" @click="handleUpdate(row)">编辑
+          </el-button>
+          <el-button v-if="shard_drop_priv === 'Y'" size="mini" type="danger" @click="handleDelete(row, $index)">删除
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total > 0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize"
-      @pagination="getList" />
+    <pagination
+      v-show="total > 0"
+      :total="total"
+      :page.sync="listQuery.pageNo"
+      :limit.sync="listQuery.pageSize"
+      @pagination="getList"
+    />
     <!--添加shard -->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogNodeVisible" custom-class="single_dal_view"
-      :close-on-click-modal="false">
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogNodeVisible"
+      custom-class="single_dal_view"
+      :close-on-click-modal="false"
+    >
       <el-form ref="dataForm" :model="temp" :rules="rules" label-position="left" label-width="130px">
         <el-form-item label="集群名称:" prop="name">
           <span>{{ temp.name }}</span>
@@ -132,13 +186,20 @@
         </el-form-item>
         <el-form-item label="选择计算机:" prop="machinelist">
           <el-select v-model="temp.machinelist" multiple placeholder="请选择">
-            <el-option v-for="machine in strogemachines" :key="machine.id" :label="machine.hostaddr"
-              :value="machine.hostaddr" />
+            <el-option
+              v-for="machine in strogemachines"
+              :key="machine.id"
+              :label="machine.hostaddr"
+              :value="machine.hostaddr"
+            />
           </el-select>
         </el-form-item>
         <el-form-item v-if="dialogStatus === 'createstorage'" label="shard名称:" prop="shard_name">
-          <el-select v-if="dialogStatus === 'createstorage' ? true : false" v-model="temp.shard_name"
-            placeholder="请选择shard名称">
+          <el-select
+            v-if="dialogStatus === 'createstorage' ? true : false"
+            v-model="temp.shard_name"
+            placeholder="请选择shard名称"
+          >
             <el-option v-for="shard in shard_arr" :key="shard.id" :label="shard.name" :value="shard.id" />
           </el-select>
         </el-form-item>
@@ -156,47 +217,86 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogNodeVisible = false">关闭</el-button>
-        <el-button type="primary" @click="dialogStatus === 'create' ? createData() : createStorageData()">确认</el-button>
+        <el-button type="primary" @click="dialogStatus === 'create' ? createData() : createStorageData()">确认
+        </el-button>
       </div>
     </el-dialog>
     <!--添加删除状态框 -->
-    <el-dialog :title="job_id" :visible.sync="dialogStatusShowVisible" custom-class="single_dal_view"
-      :close-on-click-modal="false" :before-close="beforeDestory">
+    <el-dialog
+      :title="job_id"
+      :visible.sync="dialogStatusShowVisible"
+      custom-class="single_dal_view"
+      :close-on-click-modal="false"
+      :before-close="beforeDestory"
+    >
       <div style="width: 100%;background: #fff;padding:0 20px;">
         <el-steps direction="vertical" :active="init_active">
           <el-step v-if="init_show" :title="init_title" icon="el-icon-more" />
-          <el-step v-if="shard_show" :title="shard_title" :status="storage_state" :icon="shard_icon"
-            :description="shard_description">
+          <el-step
+            v-if="shard_show"
+            :title="shard_title"
+            :status="storage_state"
+            :icon="shard_icon"
+            :description="shard_description"
+          >
             <template slot="description">
               <span>{{ shard_description }}</span>
               <div style="padding:20px;">
                 <el-steps direction="vertical" :active="shard_active">
-                  <el-step v-for="(item, index) of shard" :key="index" :title="item.title" :icon="item.icon"
-                    :status="item.status" :description="item.description" @click.native="thisDetail(item.shard_id)" />
+                  <el-step
+                    v-for="(item, index) of shard"
+                    :key="index"
+                    :title="item.title"
+                    :icon="item.icon"
+                    :status="item.status"
+                    :description="item.description"
+                    @click.native="thisDetail(item.shard_id)"
+                  />
                 </el-steps>
               </div>
             </template>
           </el-step>
-          <el-step v-if="finish_show" :title="finish_title" :icon="finish_icon" :description="finish_description"
-            :status="finish_state" />
+          <el-step
+            v-if="finish_show"
+            :title="finish_title"
+            :icon="finish_icon"
+            :description="finish_description"
+            :status="finish_state"
+          />
         </el-steps>
       </div>
     </el-dialog>
     <!--  状态框 -->
-    <el-dialog :visible.sync="dialogStatusVisible" custom-class="single_dal_view" width="400px"
-      :close-on-click-modal="false" :before-close="beforeSyncDestory">
+    <el-dialog
+      :visible.sync="dialogStatusVisible"
+      custom-class="single_dal_view"
+      width="400px"
+      :close-on-click-modal="false"
+      :before-close="beforeSyncDestory"
+    >
       <div class="block">
         <el-timeline>
-          <el-timeline-item v-for="(activity, index) in activities" :key="index" :icon="activity.icon"
-            :type="activity.type" :color="activity.color" :size="activity.size" :timestamp="activity.timestamp">
+          <el-timeline-item
+            v-for="(activity, index) in activities"
+            :key="index"
+            :icon="activity.icon"
+            :type="activity.type"
+            :color="activity.color"
+            :size="activity.size"
+            :timestamp="activity.timestamp"
+          >
             {{ activity.content }}
           </el-timeline-item>
         </el-timeline>
       </div>
     </el-dialog>
     <!--shard信息框 -->
-    <el-dialog :title="dialogStatus" :visible.sync="dialogShardInfo" custom-class="single_dal_view"
-      :close-on-click-modal="false">
+    <el-dialog
+      :title="dialogStatus"
+      :visible.sync="dialogShardInfo"
+      custom-class="single_dal_view"
+      :close-on-click-modal="false"
+    >
       <json-viewer :value="shardInfo" />
     </el-dialog>
     <!--主备切换-->
@@ -205,6 +305,7 @@
         <el-form-item label="主节点:" prop="primary_node">
           <span>{{ switchtemp.primary_node }}</span>
         </el-form-item>
+
         <el-form-item label="备机节点:" prop="replica">
           <el-select v-model="switchtemp.replica" clearable placeholder="请选择备机节点">
             <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.label" />
@@ -256,30 +357,59 @@
       </div>
     </el-dialog>
     <!-- 主备切换状态框 -->
-    <el-dialog :title="job_id" :visible.sync="dialogStatusFVisible" custom-class="single_dal_view"
-      :close-on-click-modal="false" :before-close="beforeSwitchDestory">
+    <el-dialog
+      :title="job_id"
+      :visible.sync="dialogStatusFVisible"
+      custom-class="single_dal_view"
+      :close-on-click-modal="false"
+      :before-close="beforeSwitchDestory"
+    >
       <div style="height: 400px;">
         <el-steps direction="vertical" :active="active" finish-status="success">
-          <el-step v-for="(item, index) of stepParams" :key="index" :title="item.title" :icon="item.icon"
-            :status="item.status" :description="item.description" :class="stepSuc.includes(index) ? 'stepSuc' : 'stepErr'"
-            @click.native="handleStep(index)" />
+          <el-step
+            v-for="(item, index) of stepParams"
+            :key="index"
+            :title="item.title"
+            :icon="item.icon"
+            :status="item.status"
+            :description="item.description"
+            :class="stepSuc.includes(index) ? 'stepSuc' : 'stepErr'"
+            @click.native="handleStep(index)"
+          />
         </el-steps>
       </div>
 
     </el-dialog>
     <!-- 重做备机状态框 -->
-    <el-dialog :title="job_id" :visible.sync="dialogStatusRedoVisible" custom-class="single_dal_view"
-      :close-on-click-modal="false" :before-close="beforeRedoDestory">
+    <el-dialog
+      :title="job_id"
+      :visible.sync="dialogStatusRedoVisible"
+      custom-class="single_dal_view"
+      :close-on-click-modal="false"
+      :before-close="beforeRedoDestory"
+    >
       <div style="width: 100%;background: #fff;padding:0 20px;" class="block">
         <el-steps direction="vertical" :active="init_active">
-          <el-step v-for="(items, key) in statusList" :key="key" :title="items.title" :icon="items.icon"
-            :status="items.status" :description="items.description">
+          <el-step
+            v-for="(items, key) in statusList"
+            :key="key"
+            :title="items.title"
+            :icon="items.icon"
+            :status="items.status"
+            :description="items.description"
+          >
             <template slot="description">
               <span>{{ items.description }}</span>
               <div style="padding:20px;">
                 <el-steps direction="vertical" :active="second_active">
-                  <el-step v-for="(item, index) of statusList[key].second" :key="index" :title="item.title"
-                    :icon="item.icon" :status="item.status" :description="item.description" />
+                  <el-step
+                    v-for="(item, index) of statusList[key].second"
+                    :key="index"
+                    :title="item.title"
+                    :icon="item.icon"
+                    :status="item.status"
+                    :description="item.description"
+                  />
                 </el-steps>
               </div>
             </template>
@@ -312,8 +442,12 @@
         <el-button type="primary" @click="SaveCpuSetData(cpu_paras)">确认</el-button>
       </div>
     </el-dialog>
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogChangeVisible" custom-class="single_dal_view"
-      :close-on-click-modal="false">
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogChangeVisible"
+      custom-class="single_dal_view"
+      :close-on-click-modal="false"
+    >
       <el-form ref="editForm" :model="shardEdit" :rules="rules" label-position="left" label-width="130px">
         <el-form-item label="集群ID:" prop="db_cluster_id">
           <span>{{ shardEdit.db_cluster_id }}</span>
@@ -321,11 +455,11 @@
         <el-form-item label="shard名称:" prop="shard_name">
           <span>{{ shardEdit.shard_name }}</span>
         </el-form-item>
-        <el-form-item  label="shard是否退化:" prop="conf_degrade_state">
+        <el-form-item label="shard是否退化:" prop="conf_degrade_state">
           <el-radio v-model="shardEdit.conf_degrade_state" label="ON">是</el-radio>
           <el-radio v-model="shardEdit.conf_degrade_state" label="OFF">否</el-radio>
         </el-form-item>
-        <el-form-item label="退化时间:" prop="degrade_conf_time" v-if="shardEdit.conf_degrade_state=='ON'">
+        <el-form-item v-if="shardEdit.conf_degrade_state=='ON'" label="退化时间:" prop="degrade_conf_time">
           <el-input v-model="shardEdit.degrade_conf_time" class="right_input" placeholder="退化时间范围为5-500s">
             <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">s</i>
           </el-input>
@@ -357,7 +491,7 @@ import {
   getShardPrimary,
   switchShard,
   getBackupStorageList,
-  rebuildNode, SetCpuCgroup,updateShard
+  rebuildNode, SetCpuCgroup, updateShard
 } from '@/api/cluster/list'
 import { version_arr, timestamp_arr, ip_arr } from '@/utils/global_variable'
 import Pagination from '@/components/Pagination'
@@ -405,7 +539,7 @@ export default {
     const validateredolist = (rule, value, callback) => {
       if (value.length === 0) {
         callback(new Error('请选择需重做的备机节点'))
-      } else if (value.length == this.options.length) {
+      } else if (value.length === this.options.length) {
         this.redotemp.allow_pull_from_master = '1'
         callback()
       } else {
@@ -575,23 +709,23 @@ export default {
       placeholder_node: '',
       dialogStatusVisible: false,
       activities: [],
-      //suppliers:[],   //保存数据    
-      showInput: "", //用来判断是否显示哪个单元格
-      oldData: {}, //用来存修改前的数据
-      currentData: {},  //用来保存新的数据  
-      suppliers:[{
-          value: 'ON',
-          label: '是'
-        }, {
-          value: 'OFF',
-          label: '否'
-        }],
-      shardEdit:{
-        shardid:'',
-        db_cluster_id:'',
-        shard_name:'',
-        conf_degrade_state:'',
-        degrade_conf_time:''
+      // suppliers:[],   //保存数据
+      showInput: '', // 用来判断是否显示哪个单元格
+      oldData: {}, // 用来存修改前的数据
+      currentData: {}, // 用来保存新的数据
+      suppliers: [{
+        value: 'ON',
+        label: '是'
+      }, {
+        value: 'OFF',
+        label: '否'
+      }],
+      shardEdit: {
+        shardid: '',
+        db_cluster_id: '',
+        shard_name: '',
+        conf_degrade_state: '',
+        degrade_conf_time: ''
       },
       if_show:'false',
       rules: {
@@ -617,11 +751,11 @@ export default {
           { required: true, trigger: 'blur', validator: validatemaxtime }
         ],
         conf_degrade_state: [
-          { required: true, trigger: 'blur', message: 'shard是否退化必选'  }
+          { required: true, trigger: 'blur', message: 'shard是否退化必选' }
         ],
         conf_degrade_time: [
-          { required: true, trigger: 'blur', validator: validateDegradeTime}
-        ],
+          { required: true, trigger: 'blur', validator: validateDegradeTime }
+        ]
       }
     }
   },
@@ -636,22 +770,22 @@ export default {
   },
   methods: {
     handleUpdate(row) {
-      this.shardEdit.shardid = row.id; 
-      this.shardEdit.db_cluster_id=row.db_cluster_id;
-      this.shardEdit.shard_name=row.name;
-      this.shardEdit.conf_degrade_state=row.degrade_conf_state;
-      this.shardEdit.degrade_conf_time=row.degrade_conf_time;
-      if(row.degrade_conf_time=='0'){
-        this.shardEdit.degrade_conf_time='25';
+      this.shardEdit.shardid = row.id
+      this.shardEdit.db_cluster_id = row.db_cluster_id
+      this.shardEdit.shard_name = row.name
+      this.shardEdit.conf_degrade_state = row.degrade_conf_state
+      this.shardEdit.degrade_conf_time = row.degrade_conf_time
+      if (row.degrade_conf_time == '0') {
+        this.shardEdit.degrade_conf_time = '25'
       }
-      this.dialogStatus = "shardupdate";
-      this.dialogChangeVisible = true;
+      this.dialogStatus = 'shardupdate'
+      this.dialogChangeVisible = true
       this.$nextTick(() => {
-        this.$refs["editForm"].clearValidate();
-      });
+        this.$refs['editForm'].clearValidate()
+      })
     },
     updateData() {
-      this.$refs["editForm"].validate((valid) => {
+      this.$refs['editForm'].validate((valid) => {
         if (valid) {
           const tempData = {}
           tempData.user_name = sessionStorage.getItem('login_username')
@@ -661,38 +795,36 @@ export default {
           tempData.timestamp = timestamp_arr[0].time + ''
           const paras = {}
           paras.cluster_id = this.shardEdit.db_cluster_id
-          paras.shard_id =  this.shardEdit.shardid
-          paras.conf_degrade_state =  this.shardEdit.conf_degrade_state
-          if(this.shardEdit.conf_degrade_state=='OFF'){
-            this.shardEdit.degrade_conf_time='0'
+          paras.shard_id = this.shardEdit.shardid
+          paras.conf_degrade_state = this.shardEdit.conf_degrade_state
+          if (this.shardEdit.conf_degrade_state == 'OFF') {
+            this.shardEdit.degrade_conf_time = '0'
           }
-          paras.conf_degrade_time =  this.shardEdit.degrade_conf_time
+          paras.conf_degrade_time = this.shardEdit.degrade_conf_time
           tempData.paras = paras
-          //console.log(tempData);return;
+          // console.log(tempData);return;
           updateShard(tempData).then((response) => {
-            let res = response;
-            if(res.status=='done'){
-              this.dialogChangeVisible = false;
-              this.message_tips = '编辑成功';
-              this.message_type = 'success';
-              messageTip(this.message_tips,this.message_type);
+            const res = response
+            if (res.status == 'done') {
+              this.dialogChangeVisible = false
+              this.message_tips = '编辑成功'
+              this.message_type = 'success'
+              messageTip(this.message_tips, this.message_type)
               this.getList()
+            } else {
+              this.message_tips = res.error_info
+              this.message_type = 'error'
+              messageTip(this.message_tips, this.message_type)
             }
-            else{
-              this.message_tips = res.error_info;
-              this.message_type = 'error';
-              messageTip(this.message_tips,this.message_type);
-            }
-
-          });
+          })
         }
-      });
+      })
     },
     tableDbEdit(row, column, event) {
-      this.showInput = column.property + row.inboundId;
-      this.oldData[column.property] = row[column.property];
+      this.showInput = column.property + row.inboundId
+      this.oldData[column.property] = row[column.property]
     },
-    
+
     beforeSwitchDestory() {
       // console.log('00:00');
       clearInterval(this.timer)
@@ -750,9 +882,9 @@ export default {
           const paras = {}
           if (this.redotemp.allow_pull_from_master == '1') {
             paras.shard_id = this.redotemp.shard_id,
-              paras.cluster_id = this.redotemp.cluster_id,
-              paras.allow_pull_from_master = this.redotemp.allow_pull_from_master,
-              paras.rb_nodes = rebuild
+            paras.cluster_id = this.redotemp.cluster_id,
+            paras.allow_pull_from_master = this.redotemp.allow_pull_from_master,
+            paras.rb_nodes = rebuild
           } else {
             paras.shard_id = this.redotemp.shard_id
             paras.cluster_id = this.redotemp.cluster_id
@@ -2604,7 +2736,7 @@ export default {
                       if (this.shard.length > 0) {
                         for (let c = 0; c < this.shard.length; c++) {
                           let shard_ids = ''
-                          if (info == '添加shard') {
+                          if (info === '添加shard') {
                             shard_ids = ress.attachment.shard_ids
                             for (let e = 0; e < shard_ids.length; e++) {
                               for (var item in shard_ids[e]) {
@@ -2700,7 +2832,7 @@ export default {
                           for (let e = 0; e < shard_ids.length; e++) {
                             // for(var item in shard_ids[e]){
                             //   var shard_idsValue=shard_ids[e][item];
-                            if (this.shard[c].shard_id == shard_ids[e]) {
+                            if (this.shard[c].shard_id === shard_ids[e]) {
                               this.shard[c].icon = 'el-icon-circle-close'
                               this.shard[c].status = 'error'
                             }
@@ -2708,7 +2840,7 @@ export default {
                           }
                         } else {
                           shard_ids = ip
-                          if (this.shard[c].shard_id == shard_ids) {
+                          if (this.shard[c].shard_id === shard_ids) {
                             this.shard[c].icon = 'el-icon-circle-close'
                             this.shard[c].status = 'error'
                           }

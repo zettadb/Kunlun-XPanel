@@ -7,7 +7,7 @@ services:
       - ./:/var/www/html/
     networks:
       csl:
-        ipv4_address: 172.18.0.7
+        ipv4_address: 172.19.0.7
   apache-kunlun-server:
     image: httpd:2.4-alpine
     build: './compose/apacheserver'
@@ -20,7 +20,7 @@ services:
       - ./compose/apacheserver/:/usr/local/apache2/conf.d
     networks:
       csl:
-        ipv4_address: 172.18.0.6
+        ipv4_address: 172.19.0.6
 
   apache-kunlun-client:
     image: httpd:2.4-alpine
@@ -32,10 +32,10 @@ services:
       - ./compose/apacheclient/:/usr/local/apache2/conf.d
     networks:
       csl:
-        ipv4_address: 172.18.0.8
+        ipv4_address: 172.19.0.8
 networks:
   csl:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.18.0.0/16
+        - subnet: 172.19.0.0/16
