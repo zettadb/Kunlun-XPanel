@@ -81,19 +81,19 @@
         <template slot-scope="{ row, $index }">
           <el-button v-if="row.status == 'active'" size="mini" type="primary" @click="nodeMonitor(row)">节点监控
           </el-button>
-          <el-button size="mini" type="primary" @click="handleSetCpu(row)">设置
+          <el-button v-if="user_name=='super_dba'" size="mini" type="primary" @click="handleSetCpu(row)">设置
           </el-button>
-          <el-button v-if="row.status !== 'active'" size="mini" type="primary" @click="handleControlNode(row, 'start')">
+          <el-button v-if="row.status !== 'active'&&user_name=='super_dba'" size="mini" type="primary" @click="handleControlNode(row, 'start')">
             启用
           </el-button>
           <el-button
-            v-if="row.status !== 'manual_stop'"
+            v-if="row.status !== 'manual_stop'&&user_name=='super_dba'"
             size="mini"
             type="primary"
             @click="handleControlNode(row, 'stop')"
           >禁用
           </el-button>
-          <el-button size="mini" type="primary" @click="handleControlNode(row, 'restart')">重启</el-button>
+          <el-button v-if="user_name=='super_dba'" size="mini" type="primary" @click="handleControlNode(row, 'restart')">重启</el-button>
           <el-button
             v-if="compute_node_drop_priv === 'Y'"
             size="mini"

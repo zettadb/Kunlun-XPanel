@@ -26,7 +26,7 @@
         <span>{{ form.fullsync_level + '个' }}</span>
       </el-form-item>
       <el-form-item>
-        <el-button v-if="delflag" type="danger" @click="onSubmit(form)">删除集群</el-button>
+        <el-button v-if="delflag&&cluster_drop_priv=== 'Y'" type="danger" @click="onSubmit(form)">删除集群</el-button>
         <!-- <el-button @click="onDel()">取消</el-button> -->
       </el-form-item>
     </el-form>
@@ -163,7 +163,8 @@ export default {
       shardInfo: '',
       dialogShardInfo: false,
       job_id: '',
-      delflag: true
+      delflag: true,
+      cluster_drop_priv: JSON.parse(sessionStorage.getItem('priv')).cluster_drop_priv,
     }
   },
 

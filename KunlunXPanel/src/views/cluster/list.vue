@@ -107,19 +107,12 @@
       </el-table-column>
       <el-table-column v-if="colData[6].istrue" prop="ha_mode" align="center" label="高可用模式" />
       <el-table-column v-if="colData[7].istrue" prop="name" label="集群名称" align="center" />
-      <el-table-column v-if="storage_node_create_priv === 'Y' ||
-        shard_create_priv === 'Y' ||
-        compute_node_create_priv === 'Y' ||
-        restore_priv === 'Y' ||
-        backup_priv === 'Y' ||
-        cluster_drop_priv === 'Y' ||
-        row.ha_mode === 'rbr'
-        " label="操作" align="center" width="100" fixed="right" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" width="100" fixed="right" class-name="small-padding fixed-width">
         <template slot-scope="{ row }">
           <el-button v-if="restore_priv === 'Y'" type="primary" size="mini" style="margin-left: 10px; margin-bottom: 2px"
             @click="handleRetreated(row)">回档
           </el-button>
-          <el-button type="primary" size="mini" style="margin-bottom: 2px" @click="handleExpand(row)">扩容</el-button>
+          <el-button v-if="expand_cluster_priv === 'Y'" type="primary" size="mini" style="margin-bottom: 2px" @click="handleExpand(row)">扩容</el-button>
           <el-button v-if="storage_node_create_priv === 'Y' &&
             shard_create_priv === 'Y' &&
             compute_node_create_priv === 'Y'
@@ -1098,6 +1091,7 @@ export default {
         .storage_node_create_priv,
       compute_node_create_priv: JSON.parse(sessionStorage.getItem('priv'))
         .compute_node_create_priv,
+      expand_cluster_priv:JSON.parse(sessionStorage.getItem('priv')).expand_cluster_priv,
       timer: null,
       installStatus: false,
       info: '',

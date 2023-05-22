@@ -7,7 +7,7 @@
             <i class="el-icon-setting" />
             <span>基础设置</span>
           </el-menu-item>
-          <el-menu-item index="2">
+          <el-menu-item index="2" v-if="user_name=='super_dba'">
             <i class="el-icon-setting" />
             <span slot="title">全量备份</span>
           </el-menu-item>
@@ -15,23 +15,23 @@
             <i class="el-icon-setting" />
             <span slot="title">全量备份记录</span>
           </el-menu-item>
-          <el-menu-item index="4">
+          <el-menu-item index="4" v-if="restore_priv === 'Y'" >
             <i class="el-icon-setting" />
             <span slot="title">集群回档</span>
           </el-menu-item>
-          <el-menu-item index="5">
+          <el-menu-item index="5"  v-if="expand_cluster_priv === 'Y'">
             <i class="el-icon-setting" />
             <span slot="title">集群扩容</span>
           </el-menu-item>
-          <el-menu-item index="6">
+          <el-menu-item index="6" v-if="user_name=='super_dba'">
             <i class="el-icon-setting" />
             <span slot="title">主备切换</span>
           </el-menu-item>
-          <el-menu-item index="7">
+          <el-menu-item index="7" >
             <i class="el-icon-setting" />
             <span slot="title">主备切换记录</span>
           </el-menu-item>
-          <el-menu-item index="8">
+          <el-menu-item index="8" v-if="user_name=='super_dba'">
             <i class="el-icon-setting" />
             <span slot="title">重做备机节点</span>
           </el-menu-item>
@@ -54,11 +54,11 @@
             <i class="el-icon-setting" />
             <span slot="title">计算节点列表</span>
           </el-menu-item>
-          <el-menu-item index="11">
+          <el-menu-item index="11" v-if="user_name=='super_dba'">
             <i class="el-icon-setting" />
             <span slot="title">设置延迟告警时间</span>
           </el-menu-item>
-          <el-menu-item index="12">
+          <el-menu-item index="12" v-if="user_name=='super_dba'">
             <i class="el-icon-setting" />
             <span slot="title">设置实例变量</span>
           </el-menu-item>
@@ -66,15 +66,15 @@
             <i class="el-icon-setting" />
             <span slot="title">获取实例变量</span>
           </el-menu-item>
-          <el-menu-item index="14">
+          <el-menu-item index="14" v-if="user_name=='super_dba'">
             <i class="el-icon-setting" />
             <span slot="title">表重分布</span>
           </el-menu-item>
-          <el-menu-item index="15">
+          <el-menu-item index="15" v-if="user_name=='super_dba'">
             <i class="el-icon-setting" />
             <span slot="title">逻辑备份</span>
           </el-menu-item>
-          <el-menu-item index="16">
+          <el-menu-item index="16" v-if="user_name=='super_dba'">
             <i class="el-icon-setting" />
             <span slot="title">逻辑恢复</span>
           </el-menu-item>
@@ -133,6 +133,9 @@ export default {
     return {
       listsent: [],
       componted: "CommonSet",
+      restore_priv: JSON.parse(sessionStorage.getItem('priv')).restore_priv,
+      expand_cluster_priv:JSON.parse(sessionStorage.getItem('priv')).expand_cluster_priv,
+      user_name: sessionStorage.getItem('login_username'),
     };
   },
   created() {
