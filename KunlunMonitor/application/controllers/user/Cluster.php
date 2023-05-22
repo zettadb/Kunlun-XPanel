@@ -4003,6 +4003,43 @@ class Cluster extends CI_Controller
 				}
 			}
 		}
+		//rcr状态异常 1.rcr同步异常
+		//2.rcr主备延迟异常todo
+		$rcr_error = $this->rcrError();
+		if (!empty($rcr_error)) {
+			foreach ($rcr_error as $machine_row) {
+				if (strpos($machine_row, '同步') !== false) {
+					$arr = explode('[', $machine_row);
+					$db = substr($arr[1],0,strlen($arr[1])-1);
+					$arr_id = explode('的', $arr[0]);
+					$rcr_id=explode('为', $arr_id[0]);
+					$msg_data = urldecode(
+						json_encode(
+							array(
+								'message' => urlencode($machine_row),
+								'dump_host' => $db,
+								'rcr_infos_id' => $rcr_id[1]
+							)
+						)
+					);
+					$select_machine_sql = "select job_info from cluster_alarm_info where job_info='$msg_data' and status='unhandled' ";
+					$res_machine_select = $this->Cluster_model->getList($select_machine_sql);
+					if ($res_machine_select == false) {
+						$PushMessage = $this->getPushMessageType("rcr_sync_abnormal");
+						foreach ($PushMessage as $item) {
+							if ($item['type'] == 'phone_message') {
+								$this->SendSms($item['phone'], $msg_data);
+							}
+							if ($item['type'] == 'mail') {
+								$this->SendMail($item['email'], "RCR同步异常rcr_sync_abnormal", $msg_data);
+							}
+						}
+						$insert_machine_sql = "insert into cluster_alarm_info(alarm_type,job_info,occur_timestamp) values ('rcr_sync_abnormal','$msg_data',now());";
+						$res_machine_insert = $this->Cluster_model->updateList($insert_machine_sql);
+					}
+				}
+			}
+		}
 		//sleep(2);
 	}
 
@@ -4416,5 +4453,19 @@ class Cluster extends CI_Controller
 			return;
 		}
 
+	}
+	public function rcrError()
+	{
+		$this->load->model('Cluster_model');
+		$sql = "select rcr_infos_id,dump_host from cluster_rcr_meta_sync where meta_sync_state ='disconnect' GROUP BY id ";
+		$res = $this->Cluster_model->getList($sql);
+		$error = array();
+		if (!empty($res)) {
+			foreach ($res as $row) {
+				array_push($error, 'id为'.$row['rcr_infos_id'] . '的rcr关系同步异常了['.$row['dump_host']. ']');
+			}
+		}
+		//print_r($error);exit;
+		return $error;
 	}
 }

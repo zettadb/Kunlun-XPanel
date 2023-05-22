@@ -107,7 +107,12 @@ class AlarmRecord extends CI_Controller
 										$arr_list = '<div>shard_id：' . $string["shardid"] . '</div>';
 									}
 									$res[$row]['list'] = '<div>job_id：' . $string["id"] . '</div><div>集群ID：' . $string["cluster_id"] . '</div><div>IP：' . $string["ip"] . '</div><div>端口：' . $string["port"] . '</div><div>开始时间：' . $string["when_started"] . '</div><div>结束时间：' . $string["when_ended"] . '</div>' . $arr_list;
-								} else {
+								} else if($value2 == 'rcr_sync_abnormal'){
+									$arr_list = '';
+									$res[$row]['job_type'] = 'RCR同步异常';
+									$res[$row]['object'] = $string['dump_host'] ;
+									$res[$row]['list'] = '<div>rcr_id：' . $string["rcr_infos_id"] . '</div><div>dump_host：' . $string["dump_host"] . '</div>'. $arr_list;
+								}else {
 									foreach ($job_type as $k2 => $v2) {
 										if ($value2 == $v2['code']) {
 											$res[$row]['job_type'] = $v2['name'];
