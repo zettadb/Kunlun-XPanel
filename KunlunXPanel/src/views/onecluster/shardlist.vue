@@ -152,6 +152,7 @@
             <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">个</i>
           </el-input>
         </el-form-item>
+        <el-form-item style="color:red;" v-show="if_show==='true'"><p>该集群已建立RCR关系</p></el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogNodeVisible = false">关闭</el-button>
@@ -362,6 +363,7 @@ import { version_arr, timestamp_arr, ip_arr } from '@/utils/global_variable'
 import Pagination from '@/components/Pagination'
 import JsonViewer from 'vue-json-viewer'
 import { mysqlDashboard } from '@/api/grafana/list'
+import { getRCRRelater } from '@/api/rcr/list'
 
 export default {
   name: 'Complist',
@@ -591,6 +593,7 @@ export default {
         conf_degrade_state:'',
         degrade_conf_time:''
       },
+      if_show:'false',
       rules: {
         nodes: [
           { required: true, trigger: 'blur', validator: validateNodes }
@@ -1076,6 +1079,15 @@ export default {
         this.strogemachines = []
         this.strogemachines = res.list
       })
+      //判断是否为rcr关系
+      let tempdate={cluater_id:this.listsent.id};
+      getRCRRelater(tempdate).then((response) => {
+        if(response.total==0){
+          this.if_show='false';
+        }else{
+          this.if_show='true';
+        }
+      })
       this.$nextTick(() => {
         this.$refs.dataForm.clearValidate()
       })
@@ -1252,7 +1264,15 @@ export default {
           messageTip('该集群当前有且仅有一个shard,不能进行删除操作', 'error')
         } else if (res.total > 1) {
           const code = createCode()
-          const string = '此操作将永久删除' + row.name + ',是否继续?code=' + code
+          let rcrRelation='';
+          //判断是否为rcr关系
+          let tempdate={cluater_id:this.listsent.id};
+          getRCRRelater(tempdate).then((response) => {
+            if(response.total>0){
+              rcrRelation='该集群已建立rcr关系,';
+            }
+          })
+          const string = rcrRelation+'此操作将永久删除' + row.name + ',是否继续?code=' + code
           gotoCofirm(string).then((res) => {
             // 先执行删权限
             if (!res.value) {

@@ -119,17 +119,17 @@ export const constantRoutes = [
         path: 'switchover',
         name: 'Switchover',
         component: () => import('@/views/cluster/switchover'),
+      },
+      {
+        path: 'tree',
+        name: 'Tree',
+        component: () => import('@/views/rcr/list'),
+        meta: { 
+          title: 'RCR服务',
+          requiresAuth:true, 
+          // icon: 'tree'
+        }
       }
-      // {
-      //   path: 'tree',
-      //   name: 'Tree',
-      //   // component: () => import('@/views/cluster/upgrade'),
-      //   meta: { 
-      //     title: '集群扩容',
-      //     requiresAuth:true, 
-      //     // icon: 'tree'
-      //   }
-      // }
     ]
   },
   {

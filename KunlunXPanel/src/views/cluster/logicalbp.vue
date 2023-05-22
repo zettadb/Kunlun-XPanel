@@ -225,8 +225,9 @@ export default {
         nick_name: "",
         backup: [{ db_table: [], backup_time: "", new_db_table: "", startTime: "", endTime: "" }],
         id: "",
-        clusterOptions: [],
+        //clusterOptions: [],
       },
+      clusterOptions: [],
       // dst_cluster_id: 0,
       dialogStatusVisible: false,
       activities: [],
@@ -336,6 +337,7 @@ export default {
             this.message_tips = '备份记录不能重复选择';
             this.message_type = 'error';
             messageTip(this.message_tips,this.message_type);
+            return;
           }
           const restore = this.form.backup.map((v) => {
             if (_this.backup_type == "table") {
