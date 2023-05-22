@@ -16,12 +16,6 @@
           <el-button slot="reference" type="primary" size="small" plain><i class="el-icon-arrow-down el-icon-menu" />列筛选
           </el-button>
         </el-popover>
-        <!-- <el-button
-          class="filter-item"
-          type="primary"
-          icon="el-icon-plus"
-          @click="handleStatus"
-        >显示进度条</el-button> -->
         <div v-show="installStatus === true" class="info" v-text="info" />
       </div>
     </div>
@@ -909,6 +903,8 @@ export default {
         per_storage_node_rocksdb_buffer_pool_size: "",
         per_storage_node_initial_storage_size: "20",
         per_storage_node_max_storage_size: "20",
+        per_storage_node_data_storage_MB: '1024',
+        per_storage_node_log_storage_MB: '1024',
         nick_name: "",
         machinelist: [],
         comp_machinelist: [],
@@ -1643,6 +1639,8 @@ export default {
         per_storage_node_rocksdb_buffer_pool_size: "",
         per_storage_node_initial_storage_size: "20",
         per_storage_node_max_storage_size: "20",
+        per_storage_node_data_storage_MB: '1024',
+        per_storage_node_log_storage_MB: '1024',
         nick_name: "",
         machinelist: [],
         comp_machinelist: [],
