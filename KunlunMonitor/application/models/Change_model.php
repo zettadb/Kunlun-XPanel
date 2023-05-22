@@ -32,7 +32,7 @@ class Change_model extends CI_Model
 	}
 
 	//mysql连接
-	public function getAllMysql($host, $port, $username, $pwd, $dbname, $sql)
+	public function getAllMysql($host, $port, $username, $pwd, $dbname, $sql,$string)
 	{
 		mysqli_report(MYSQLI_REPORT_STRICT);
 		try {
@@ -45,10 +45,13 @@ class Change_model extends CI_Model
 			if ($result = mysqli_query($conn, $sql)) {
 				// 一条条获取
 				while ($row = mysqli_fetch_row($result)) {
-					$list = array('host' => $row[0], 'port' => $row[1]);
+					if($string=='cluster_info'){
+						$list = array('cluster_id' => $row[0], 'name' => $row[1],'nick_name' => $row[2]);
+					}else{
+						$list = array('host' => $row[0], 'port' => $row[1]);
+					}
 					$lists[] = $list;
 				}
-				//print_r(json_encode($arr));exit;
 				// 释放结果集合
 				mysqli_free_result($result);
 			}
