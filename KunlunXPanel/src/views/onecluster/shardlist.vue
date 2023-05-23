@@ -1213,7 +1213,7 @@ export default {
         this.strogemachines = res.list
       })
       //判断是否为rcr关系
-      let tempdate={cluater_id:this.listsent.id};
+      let tempdate={cluster_id:this.listsent.id};
       getRCRRelater(tempdate).then((response) => {
         if(response.total==0){
           this.if_show='false';
