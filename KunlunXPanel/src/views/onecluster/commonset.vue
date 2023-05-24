@@ -25,6 +25,7 @@
       <el-form-item label="每shard中强同步备机应当个数:">
         <span>{{ form.fullsync_level + '个' }}</span>
       </el-form-item>
+      <el-form-item style="color:red;" v-show="if_show==='true'" label="温馨提示:"><p>该集群已建立RCR关系</p></el-form-item>
       <el-form-item>
         <el-button v-if="delflag&&cluster_drop_priv=== 'Y'" type="danger" @click="onSubmit(form)">删除集群</el-button>
         <!-- <el-button @click="onDel()">取消</el-button> -->
@@ -38,6 +39,7 @@
       :before-close="beforeDestory"
     >
       <div style="width: 100%;background: #fff;padding:0 20px;">
+       <el-progress :text-inside="true" :stroke-width="20"  :percentage="percentage"   :status="progress_status" :format="setText"></el-progress>
         <el-steps direction="vertical" :active="init_active">
           <el-step v-if="init_show" :title="init_title" icon="el-icon-more" />
           <el-step
@@ -112,7 +114,7 @@
 import { messageTip, createCode, gotoCofirm } from '@/utils'
 import { delCluster, getEvStatus, uAssign } from '@/api/cluster/list'
 import { version_arr, timestamp_arr } from '@/utils/global_variable'
-
+import { getRCRRelater } from '@/api/rcr/list'
 export default {
   name: 'Commonset',
   props: {
@@ -165,6 +167,10 @@ export default {
       job_id: '',
       delflag: true,
       cluster_drop_priv: JSON.parse(sessionStorage.getItem('priv')).cluster_drop_priv,
+      percentage:0,
+      if_show:'false',
+      progress_status:null,
+      progress_format:'未完成存储和计算删除'
     }
   },
 
@@ -179,97 +185,118 @@ export default {
     this.form.comptotal = this.listsent.comp_count
     // this.form.shards_count=this.listsent.shards_count;
     this.form.shardtotal = this.listsent.shardtotal
+    //判断是否为rcr关系
+    let tempdate={cluster_id:this.listsent.id};
+    getRCRRelater(tempdate).then((response) => {
+        if(response.total==0){
+          this.if_show='false';
+        }else{
+          this.if_show='true';
+        }
+      })
   },
   methods: {
+    setText(percentage){
+       return this.progress_format+percentage+'%'
+      },
     onSubmit(row) {
       const code = createCode()
-      const string = '此操作将永久删除该数据, 是否继续?code=' + code
-      gotoCofirm(string).then((res) => {
-        // 先执行删权限
-        if (!res.value) {
-          this.message_tips = 'code不能为空！'
-          this.message_type = 'error'
-          messageTip(this.message_tips, this.message_type)
-        } else if (res.value == code) {
-          const apply_all_cluster = sessionStorage.getItem('apply_all_cluster')
-          if (apply_all_cluster == 2) {
-            const arrs = {}
-            arrs.effectCluster = sessionStorage.getItem('affected_clusters')
-            arrs.cluster_name = row.name
-            arrs.username = sessionStorage.getItem('login_username')
-            arrs.type = 'del'
-            uAssign(arrs).then((responses) => {
-              const res_update = responses
-              if (res_update.code == 200) {
-                // this.dialogFormVisible = false;
-                sessionStorage.setItem('affected_clusters', res_update.effectCluster)
-              }
-            })
-          }
-          // 调接口删集群
-          const tempData = {}
-          tempData.user_name = sessionStorage.getItem('login_username')
-          tempData.job_id = ''
-          tempData.version = version_arr[0].ver
-          tempData.job_type = 'delete_cluster'
-          tempData.timestamp = timestamp_arr[0].time + ''
-          tempData.paras = { 'cluster_id': row.id, 'nick_name': row.nick_name }
-          delCluster(tempData).then((response) => {
-            const res = response
-            if (res.status == 'accept') {
-              // this.dialogFormVisible = false;
-              this.dialogStatusShowVisible = true
-              // 把之前的数据清空
-              this.computer = []
-              this.shard = []
-              this.computer_state = ''
-              this.storage_state = ''
-              this.computer_title = ''
-              this.computer_icon = ''
-              this.shard_icon = ''
-              this.shard_title = ''
-              this.comp_active = 0
-              this.shard_active = 0
-              this.strogemachines = []
-              this.init_title = ''
-              this.init_active = 0
-              this.finish_title = ''
-              this.finish_icon = ''
-              this.finish_description = ''
-              this.computer_description = ''
-              this.shard_description = ''
-              this.job_id = ''
-              this.timer = null
-              this.shard_show = true
-              this.finish_show = false
-              this.computer_show = true
-              this.finish_state = ''
-              const info = '删除'
-              this.init_show = true
-              // 调获取状态接口
-              let i = 0
-              this.getFStatus(this.timer, res.job_id, i++, info)
-              this.timer = setInterval(() => {
-                this.getFStatus(this.timer, res.job_id, i++, info)
-              }, 5000)
-            } else if (res.status == 'ongoing') {
-              this.message_tips = '系统正在操作中，请等待一会！'
+      //判断是否为rcr关系
+      let tempdate={cluster_id:this.listsent.id};
+      getRCRRelater(tempdate).then((response) => {
+        if(response.total>0){
+          messageTip('该集群已建立rcr关系,请先前往RCR服务页面解除关系再进行删除操作', 'error');
+        }else{
+          const string = '此操作将永久删除该数据, 是否继续?code=' + code
+          gotoCofirm(string).then((res) => {
+            // 先执行删权限
+            if (!res.value) {
+              this.message_tips = 'code不能为空！'
               this.message_type = 'error'
               messageTip(this.message_tips, this.message_type)
+            } else if (res.value == code) {
+              const apply_all_cluster = sessionStorage.getItem('apply_all_cluster')
+              if (apply_all_cluster == 2) {
+                const arrs = {}
+                arrs.effectCluster = sessionStorage.getItem('affected_clusters')
+                arrs.cluster_name = row.name
+                arrs.username = sessionStorage.getItem('login_username')
+                arrs.type = 'del'
+                uAssign(arrs).then((responses) => {
+                  const res_update = responses
+                  if (res_update.code == 200) {
+                    // this.dialogFormVisible = false;
+                    sessionStorage.setItem('affected_clusters', res_update.effectCluster)
+                  }
+                })
+              }
+              // 调接口删集群
+              const tempData = {}
+              tempData.user_name = sessionStorage.getItem('login_username')
+              tempData.job_id = ''
+              tempData.version = version_arr[0].ver
+              tempData.job_type = 'delete_cluster'
+              tempData.timestamp = timestamp_arr[0].time + ''
+              tempData.paras = { 'cluster_id': row.id, 'nick_name': row.nick_name }
+              //this.dialogStatusShowVisible = true
+              delCluster(tempData).then((response) => {
+                const res = response
+                if (res.status == 'accept') {
+                  // this.dialogFormVisible = false;
+                  this.dialogStatusShowVisible = true
+                  // 把之前的数据清空
+                  this.computer = []
+                  this.shard = []
+                  this.computer_state = ''
+                  this.storage_state = ''
+                  this.computer_title = ''
+                  this.computer_icon = ''
+                  this.shard_icon = ''
+                  this.shard_title = ''
+                  this.comp_active = 0
+                  this.shard_active = 0
+                  this.strogemachines = []
+                  this.init_title = ''
+                  this.init_active = 0
+                  this.finish_title = ''
+                  this.finish_icon = ''
+                  this.finish_description = ''
+                  this.computer_description = ''
+                  this.shard_description = ''
+                  this.job_id = ''
+                  this.timer = null
+                  this.shard_show = true
+                  this.finish_show = false
+                  this.computer_show = true
+                  this.finish_state = ''
+                  const info = '删除'
+                  this.init_show = true
+                  // 调获取状态接口
+                  let i = 0
+                  this.getFStatus(this.timer, res.job_id, i++, info)
+                  this.timer = setInterval(() => {
+                    this.getFStatus(this.timer, res.job_id, i++, info)
+                  }, 5000)
+                } else if (res.status == 'ongoing') {
+                  this.message_tips = '系统正在操作中，请等待一会！'
+                  this.message_type = 'error'
+                  messageTip(this.message_tips, this.message_type)
+                } else {
+                  this.message_tips = res.error_info
+                  this.message_type = 'error'
+                  messageTip(this.message_tips, this.message_type)
+                }
+              })
             } else {
-              this.message_tips = res.error_info
+              this.message_tips = 'code输入有误'
               this.message_type = 'error'
               messageTip(this.message_tips, this.message_type)
             }
+          }).catch(() => {
+            console.log('quxiao')
+            messageTip('已取消删除', 'info')
           })
-        } else {
-          this.message_tips = 'code输入有误'
-          this.message_type = 'error'
-          messageTip(this.message_tips, this.message_type)
         }
-      }).catch(() => {
-        console.log('quxiao')
-        messageTip('已取消删除', 'info')
       })
     },
     onDel() {
@@ -1046,6 +1073,76 @@ export default {
                   }
                 }
               }
+              //加进度条
+              let progress_info='';
+              if(info == '新增'){
+                progress_info='安装'
+              }else{
+                progress_info='删除'
+              }
+              if(ress.status == 'ongoing'){
+                if((ress.attachment.storage_state == 'ongoing'&&ress.attachment.computer_state == 'done')||
+                (ress.attachment.storage_state == 'done'&&ress.attachment.computer_state == 'ongoing')||
+                (ress.attachment.storage_state == 'dispatch'&&ress.attachment.computer_state == 'done')||
+                (ress.attachment.storage_state == 'done'&&ress.attachment.computer_state == 'dispatch')){
+                  this.percentage=75;
+                  if(ress.attachment.computer_state == 'done'){
+                    this.progress_format='未完成存储'+progress_info
+                  }else{
+                     this.progress_format='未完成计算'+progress_info
+                  }
+                }else if((ress.attachment.storage_state == 'failed'&&ress.attachment.computer_state == 'done')||
+                (ress.attachment.storage_state == 'done'&&ress.attachment.computer_state == 'failed')||
+               (ress.attachment.storage_state == 'dispatch'&&ress.attachment.computer_state == 'done')||
+                (ress.attachment.storage_state == 'done'&&ress.attachment.computer_state == 'dispatch')){
+                  if(this.percentage<=50){
+                    this.percentage=50;
+                    if(ress.attachment.computer_state == 'done'){
+                      this.progress_format='未完成存储'+progress_info
+                    }else{
+                      this.progress_format='未完成计算'+progress_info
+                    }
+                  }
+                }else{
+                  this.percentage=45;
+                  this.progress_format='未完成存储和计算'+progress_info
+                }
+              }else if(ress.status == 'failed'){
+                this.progress_status="exception";
+               if((ress.attachment.storage_state == 'ongoing'&&ress.attachment.computer_state == 'done')||
+                (ress.attachment.storage_state == 'done'&&ress.attachment.computer_state == 'ongoing')||
+                (ress.attachment.storage_state == 'dispatch'&&ress.attachment.computer_state == 'done')||
+                (ress.attachment.storage_state == 'done'&&ress.attachment.computer_state == 'dispatch')){
+                  this.percentage=75;
+                  if(ress.attachment.computer_state == 'done'){
+                    this.progress_format='未完成存储'+progress_info
+                  }else{
+                     this.progress_format='未完成计算'+progress_info
+                  }
+                }else if((ress.attachment.storage_state == 'failed'&&ress.attachment.computer_state == 'ongoing')||
+                (ress.attachment.storage_state == 'ongoing'&&ress.attachment.computer_state == 'failed')||
+                (ress.attachment.storage_state == 'dispatch'&&ress.attachment.computer_state == 'done')||
+                (ress.attachment.storage_state == 'done'&&ress.attachment.computer_state == 'dispatch')){
+                  if(this.percentage<=50){
+                    this.percentage=50;
+                    if(ress.attachment.computer_state == 'done'){
+                      this.progress_format='未完成存储'+progress_info
+                    }else{
+                      this.progress_format='未完成计算'+progress_info
+                    }
+                  }
+                }else{
+                  // if(this.percentage<40){
+                  //  this.percentage+=10;
+                  // }
+                    this.percentage=45;
+                  this.progress_format='未完成存储和计算'+progress_info
+                }
+              }else{
+                  this.progress_status="success";
+                  this.percentage=100;
+                  this.progress_format=progress_info+'完成'
+              }
             } else if (ress.attachment == null && ress.error_code == '70001' && ress.status == 'failed') {
               this.init_title = '正在' + info + '集群'
               // 计算节点
@@ -1066,6 +1163,7 @@ export default {
                 this.storage_state = 'error'
                 this.shard_icon = 'el-icon-circle-close'
                 this.shard_title = info + 'shard失败'
+                this.percentage=45;
                 clearInterval(timer)
               }
             } else if (ress.attachment == null && ress.status == 'ongoing') {
@@ -1078,6 +1176,7 @@ export default {
               this.storage_state = 'process'
               this.shard_icon = 'el-icon-loading'
               this.shard_title = '正在' + info + 'shard'
+              this.percentage=45;
             } else if (ress.attachment == null && ress.status == 'done') {
               this.init_show = false
               // 计算节点
@@ -1088,6 +1187,7 @@ export default {
               this.storage_state = 'success'
               this.shard_icon = 'el-icon-circle-check'
               this.shard_title = info + 'shard成功'
+              this.percentage=100;
               clearInterval(timer)
             } else {
               this.init_show = false
@@ -1099,6 +1199,7 @@ export default {
               this.storage_state = 'error'
               this.shard_icon = 'el-icon-circle-close'
               this.shard_title = info + 'shard失败'
+               this.percentage=45;
               clearInterval(timer)
             }
           }

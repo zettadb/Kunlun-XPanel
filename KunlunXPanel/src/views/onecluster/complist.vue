@@ -66,16 +66,6 @@
       </el-table-column>
       <el-table-column prop="cpu_cores" align="center" label="cpu个数" />
       <el-table-column prop="mysql_port" align="center" label="MySQL端口" />
-      <!-- <el-table-column
-        prop="max_mem_MB"
-        align="center"
-        label="最大内存（MB）">
-      </el-table-column> -->
-      <!--      <el-table-column-->
-      <!--        prop="max_conns"-->
-      <!--        align="center"-->
-      <!--        label="最大连接数"-->
-      <!--      />-->
 
       <el-table-column label="操作" align="center" width="400" class-name="small-padding fixed-width">
         <template slot-scope="{ row, $index }">
@@ -156,6 +146,7 @@
       :before-close="beforeDestory"
     >
       <div style="width: 100%; background: #fff; padding: 0 20px">
+        <el-progress :text-inside="true" :stroke-width="20"  :percentage="percentage"   :status="progress_status" :format="setText" ></el-progress>
         <el-steps direction="vertical" :active="init_active">
           <el-step v-if="init_show" :title="init_title" icon="el-icon-more" />
           <el-step
@@ -432,6 +423,9 @@ export default {
       dialogStatusShowVisible: false,
       dialogStatusVisible: false,
       activities: [],
+      percentage:0,
+      progress_status:null,
+      progress_format:'',
       rules: {
         nodes: [{ required: true, trigger: 'blur', validator: validateNodes }]
       }
@@ -446,6 +440,9 @@ export default {
     this.timer = null
   },
   methods: {
+     setText(percentage){
+      return this.progress_format+ percentage+'%'
+    },
     nodeMonitor(row) {
       const pparas = {}
       pparas['cluster_id'] = row.db_cluster_id
@@ -616,6 +613,9 @@ export default {
               this.finish_show = false
               this.finish_state = ''
               const info = '添加计算节点'
+              this.percentage=0
+              this.progress_status=null
+              this.progress_format=''
               let i = 0
 
               this.getFStatus(this.timer, res.job_id, i++, info)
@@ -696,6 +696,9 @@ export default {
                     this.job_id = ''
                     this.timer = null
                     const info = '删除计算节点'
+                    this.percentage=0
+                    this.progress_status=null
+                    this.progress_format=''
                     this.getFStatus(this.timer, res.job_id, i++, info, '')
                     this.timer = setInterval(() => {
                       this.getFStatus(this.timer, res.job_id, i++, info, '')
@@ -1081,6 +1084,47 @@ export default {
                 this.getList()
               }
             }
+            //加进度条
+              if(ress.status == 'ongoing'){
+                if(ress.attachment.storage_state == 'prepare'){
+                  this.percentage=20;
+                  this.progress_format='正在'+info
+                }else if(ress.attachment.storage_state == 'failed'){
+                  this.progress_format=info+'失败'
+                }else if(ress.attachment.storage_state == 'done'){
+                  this.percentage=100;
+                  this.progress_format=info+'完成'
+                }else{
+                  if(this.percentage<70&&this.percentage>=30){
+                    this.percentage+=10;
+                  }else if(this.percentage<30&&this.percentage>=0){
+                    this.percentage=30;
+                  }
+                  this.progress_format='正在'+info
+                }
+              }else if(ress.status == 'failed'){
+                this.progress_status="exception";
+                if(ress.attachment.storage_state == 'prepare'){
+                  this.percentage=20;
+                  this.progress_format='正在'+info
+                }else if(ress.attachment.storage_state == 'failed'){
+                  this.progress_format=info+'失败'
+                }else if(ress.attachment.storage_state == 'done'){
+                  this.percentage=100;
+                  this.progress_format=info+'完成'
+                }else{
+                  if(this.percentage<70&&this.percentage>=30){
+                    this.percentage+=10;
+                  }else if(this.percentage<30&&this.percentage>=0){
+                    this.percentage=30;
+                  }
+                  this.progress_format='正在'+info
+                }
+              }else{
+                this.progress_status="success";
+                this.percentage=100;
+                this.progress_format=info+'完成'
+              }
           } else if (
             ress.attachment == null &&
             ress.error_code == '70001' &&
