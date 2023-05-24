@@ -1,5 +1,5 @@
 <?php
-$config['post_url'] = 'http://192.168.0.132:55006/HttpService/Emit';
+$config['post_url'] = 'http://192.168.0.128:55006/HttpService/Emit';
 $config['key'] = 'zetta@509';
 $config['pg_username'] = 'abc';
 $config['default_username'] = 'player';
@@ -34,7 +34,4 @@ $config['job_type'] = [
 	['code' => 'expand_cluster', 'name' => '集群扩容'],
 	['code' => 'manual_backup_cluster', 'name' => '全量备份'],
 	['code' => 'table_repartition', 'name' => '表重分布'],
-	['code' => 'modify_rcr', 'name' => '配置RCR'],
-	['code' => 'delete_rcr', 'name' => '刪除RCR'],
-	['code' => 'create_rcr', 'name' => '新增RCR'],
 ];

@@ -205,7 +205,7 @@ class Cluster extends CI_Controller
 		}
 		$data['code'] = 200;
 		$data['list'] = $res;
-		$data['total'] = $res_total ? (int) $res_total[0]['count'] : 0;
+		$data['total'] = $res_total ? (int)$res_total[0]['count'] : 0;
 		print_r(json_encode($data));
 	}
 
@@ -382,7 +382,7 @@ class Cluster extends CI_Controller
 		}
 		$data['code'] = 200;
 		$data['list'] = $res;
-		$data['total'] = $res_total ? (int) $res_total[0]['count'] : 0;
+		$data['total'] = $res_total ? (int)$res_total[0]['count'] : 0;
 		print_r(json_encode($data));
 	}
 
@@ -639,7 +639,7 @@ class Cluster extends CI_Controller
 		$list = array();
 		$status = '';
 		if ($res !== false) {
-			$count = count((array) $res);
+			$count = count((array)$res);
 		}
 		$data['shards_count'] = $count;
 		if ($count == 1) {
@@ -1684,7 +1684,7 @@ class Cluster extends CI_Controller
 				} else {
 					$total_sql = "select count(id) as count from shard_nodes where id='$shard_id' and db_cluster_id='$cluster_id' ";
 					$res_total = $this->Cluster_model->getList($total_sql);
-					$data['total'] = $res_total ? (int) $res_total[0]['count'] : 0;
+					$data['total'] = $res_total ? (int)$res_total[0]['count'] : 0;
 					print_r(json_encode($data));
 				}
 			}
@@ -1803,7 +1803,7 @@ class Cluster extends CI_Controller
 	function getUnixTimestamp()
 	{
 		list($s1, $s2) = explode(' ', microtime());
-		return (float) sprintf('%.0f', (floatval($s1) + floatval($s2)) * 1000);
+		return (float)sprintf('%.0f', (floatval($s1) + floatval($s2)) * 1000);
 	}
 
 	public function getEffectComp()
@@ -1876,7 +1876,7 @@ class Cluster extends CI_Controller
 					if ($key == 'arr') {
 						foreach ($value as $key2 => $value2) {
 							if (is_object($value2)) {
-								$value2 = (array) $value2;
+								$value2 = (array)$value2;
 							}
 							if (is_array($value2)) {
 								$table = $value2['tablename'];
@@ -1885,7 +1885,7 @@ class Cluster extends CI_Controller
 								$sql1 = "select t1.name from pg_shard t1 join pg_class t2 on t2.relshardid=t1.id and t2.relname='$table';";
 								$res1 = $this->Cluster_model->getResult($sql1, $host, $port, $username, $db_name);
 								if (!empty($res1['arr'])) {
-									$shard = (array) $res1['arr'][0];
+									$shard = (array)$res1['arr'][0];
 									$tablename = $table . '(' . $shard['name'] . ')';
 								} else {
 									$tablename = $table . '()';
@@ -2105,9 +2105,9 @@ class Cluster extends CI_Controller
 		$sql_comp = "select count(id) as count from comp_nodes where db_cluster_id='$cluster_id' and status!='deleted'";
 		$comp = $this->Cluster_model->getList($sql_comp);
 		$data['code'] = 200;
-		$data['shard'] = (int) $shards[0]['count'];
-		$data['nodes'] = (int) $nodes[0]['count'];
-		$data['comp'] = (int) $comp[0]['count'];
+		$data['shard'] = (int)$shards[0]['count'];
+		$data['nodes'] = (int)$nodes[0]['count'];
+		$data['comp'] = (int)$comp[0]['count'];
 		print_r(json_encode($data));
 	}
 
@@ -2217,7 +2217,7 @@ class Cluster extends CI_Controller
 		$res_total = $this->Cluster_model->getList($total_sql);
 		$data['code'] = 200;
 		$data['list'] = $res;
-		$data['total'] = $res_total ? (int) $res_total[0]['count'] : 0;
+		$data['total'] = $res_total ? (int)$res_total[0]['count'] : 0;
 		print_r(json_encode($data));
 	}
 
@@ -2529,7 +2529,7 @@ class Cluster extends CI_Controller
 		$res = $this->Cluster_model->getList($sql);
 		//print_r($res);exit;
 		$data['code'] = 200;
-		$data['total'] = $res ? (int) $res[0]['count'] : 0;
+		$data['total'] = $res ? (int)$res[0]['count'] : 0;
 		print_r(json_encode($data));
 	}
 
@@ -2548,7 +2548,7 @@ class Cluster extends CI_Controller
 		$res = $this->Cluster_model->getList($sql);
 		//print_r($res);exit;
 		$data['code'] = 200;
-		$data['total'] = $res ? (int) $res[0]['count'] : 0;
+		$data['total'] = $res ? (int)$res[0]['count'] : 0;
 		print_r(json_encode($data));
 	}
 
@@ -2568,7 +2568,7 @@ class Cluster extends CI_Controller
 		$res = $this->Cluster_model->getList($sql);
 		//print_r($res);exit;
 		$data['code'] = 200;
-		$data['total'] = $res ? (int) $res[0]['count'] : 0;
+		$data['total'] = $res ? (int)$res[0]['count'] : 0;
 		print_r(json_encode($data));
 	}
 
@@ -2633,7 +2633,7 @@ class Cluster extends CI_Controller
 		//print_r($res);exit;
 		$data['code'] = 200;
 		$data['list'] = $res;
-		$data['total'] = $res_total ? (int) $res_total[0]['count'] : 0;
+		$data['total'] = $res_total ? (int)$res_total[0]['count'] : 0;
 		print_r(json_encode($data));
 	}
 
@@ -2746,7 +2746,7 @@ class Cluster extends CI_Controller
 		}
 		$data['code'] = 200;
 		$data['list'] = $res;
-		$data['total'] = $res_total ? (int) $res_total[0]['count'] : 0;
+		$data['total'] = $res_total ? (int)$res_total[0]['count'] : 0;
 		print_r(json_encode($data));
 	}
 
@@ -3289,7 +3289,7 @@ class Cluster extends CI_Controller
 		}
 		$data['code'] = 200;
 		$data['list'] = $res;
-		$data['total'] = $res_total ? (int) $res_total[0]['count'] : 0;
+		$data['total'] = $res_total ? (int)$res_total[0]['count'] : 0;
 		print_r(json_encode($data));
 	}
 
@@ -3331,7 +3331,7 @@ class Cluster extends CI_Controller
 		$res_total = $this->Cluster_model->getList($sql_total);
 		$data['code'] = 200;
 		$data['list'] = $res;
-		$data['total'] = $res_total ? (int) $res_total[0]['count'] : 0;
+		$data['total'] = $res_total ? (int)$res_total[0]['count'] : 0;
 		print_r(json_encode($data));
 	}
 
@@ -3515,7 +3515,7 @@ class Cluster extends CI_Controller
 		}
 		$data['code'] = 200;
 		$data['list'] = $res;
-		$data['total'] = $res_total ? (int) $res_total[0]['count'] : 0;
+		$data['total'] = $res_total ? (int)$res_total[0]['count'] : 0;
 		print_r(json_encode($data));
 	}
 
@@ -3600,7 +3600,6 @@ class Cluster extends CI_Controller
 		$data['list'] = $res;
 		print_r(json_encode($data));
 	}
-
 
 
 	public function decodeUnicode($str)
@@ -4214,6 +4213,7 @@ class Cluster extends CI_Controller
 		$res = $this->Cluster_model->DB($sql_main, $ip, $port, $user_name);
 		return $res;
 	}
+
 	public function getLogicalBackUpList()
 	{
 		//GET请求
@@ -4271,9 +4271,10 @@ class Cluster extends CI_Controller
 		}
 		$data['code'] = 200;
 		$data['list'] = $res;
-		$data['total'] = $res_total ? (int) $res_total[0]['count'] : 0;
+		$data['total'] = $res_total ? (int)$res_total[0]['count'] : 0;
 		print_r(json_encode($data));
 	}
+
 	public function getOneCluster($id)
 	{
 		$sql = "select name,nick_name from db_clusters where id='$id' ";
@@ -4281,6 +4282,7 @@ class Cluster extends CI_Controller
 		$res = $this->Cluster_model->getList($sql);
 		return $res;
 	}
+
 	public function updateShard()
 	{
 		//获取token
@@ -4304,7 +4306,6 @@ class Cluster extends CI_Controller
 	}
 
 
-
 	public function getCdcList()
 	{
 		//获取token
@@ -4326,15 +4327,6 @@ class Cluster extends CI_Controller
 
 		}
 
-		// //判断参数
-		// $string = json_decode(@file_get_contents('php://input'), true);
-		// //调接口
-		// $this->load->model('Cluster_model');
-		// $post_data = str_replace("\\/", "/", json_encode($string));
-		// $post_arr = $this->Cluster_model->postData($post_data, $this->post_url);
-		// $post_arr = json_decode($post_arr, TRUE);
-		// $data = $post_arr;
-
 		$sql = "select * from cluster_cdc_server";
 		$res = $this->Cluster_model->getList($sql);
 		$resp = [
@@ -4345,6 +4337,33 @@ class Cluster extends CI_Controller
 		print_r(json_encode($resp));
 	}
 
+
+	public function CdcDelete()
+	{
+		//获取token
+		$arr = apache_request_headers(); //获取请求头数组
+		$token = $arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));
+			return;
+		}
+
+		$this->load->model('Cluster_model');
+
+		$string = json_decode(@file_get_contents('php://input'), true);
+
+		$sql = "delete * from cluster_cdc_server where id=" . $string['name'];
+		echo $sql;
+		$res = $this->Cluster_model->getList($sql);
+		$resp = [
+			'code' => 200,
+			'list' => $res,
+			'total' => count($res)
+		];
+		print_r(json_encode($resp));
+	}
 
 
 	public function cdcEdit()

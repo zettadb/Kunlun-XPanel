@@ -724,6 +724,14 @@ export function editCdc(data) {
   })
 }
 
+export function DeleteCdc(data) {
+  return request({
+    url: '/user/Cluster/CdcDelete',
+    method: 'post',
+    data
+  })
+}
+
 export function getCdcList(data) {
   return request({
     url: '/user/Cluster/getCdcList',
@@ -732,12 +740,11 @@ export function getCdcList(data) {
   })
 }
 
-
 export function getMetaClusterList(query) {
   return request({
     url: '/user/MetaCluster/getMetaClusterList',
     method: 'get',
     params: query
-  });
+  })
 }
 

@@ -2,12 +2,21 @@
   <div class="app-container">
     <div class="filter-container">
       <div class="table-list-search-wrap">
-        <el-input v-model="listQuery.name" class="list_search_keyword" placeholder="可输入集群名称搜索"
-          @keyup.enter.native="handleFilter" />
+        <el-input
+          v-model="listQuery.name"
+          class="list_search_keyword"
+          placeholder="可输入集群名称搜索"
+          @keyup.enter.native="handleFilter"
+        />
         <el-button icon="el-icon-search" @click="handleFilter"> 查询 </el-button>
         <el-button icon="el-icon-refresh-right" @click="handleClear"> 重置 </el-button>
-        <el-button v-if="cluster_creata_priv === 'Y'" class="filter-item" type="primary" icon="el-icon-plus"
-          @click="handleCreate">新增
+        <el-button
+          v-if="cluster_creata_priv === 'Y'"
+          class="filter-item"
+          type="primary"
+          icon="el-icon-plus"
+          @click="handleCreate"
+        >新增
         </el-button>
         <el-popover placement="right" title="列筛选" trigger="click" width="420" style="float: right">
           <el-checkbox-group v-model="checkedColumns" size="mini">
@@ -20,8 +29,14 @@
       </div>
     </div>
 
-    <el-table :key="tableKey" v-loading="listLoading" :data="list" border highlight-current-row
-      style="width: 100%; margin-bottom: 20px">
+    <el-table
+      :key="tableKey"
+      v-loading="listLoading"
+      :data="list"
+      border
+      highlight-current-row
+      style="width: 100%; margin-bottom: 20px"
+    >
       <el-table-column type="index" align="center" label="序号" width="50" />
       <el-table-column v-if="colData[0].istrue" label="集群ID" align="center" width="70">
         <template slot-scope="{ row }">
@@ -29,8 +44,14 @@
         </template>
       </el-table-column>
       <el-table-column v-if="colData[1].istrue" prop="nick_name" label="业务名称" align="center" />
-      <el-table-column v-if="colData[2].istrue" prop="status" align="center" sortable :show-overflow-tooltip="true"
-        label="状态">
+      <el-table-column
+        v-if="colData[2].istrue"
+        prop="status"
+        align="center"
+        sortable
+        :show-overflow-tooltip="true"
+        label="状态"
+      >
         <template slot-scope="scope">
           <span v-if="scope.row.status === '运行中'" style="color: #00ed37">运行中</span>
           <span v-else style="color: red; border-bottom: 1px red solid" @click="statusDetail(scope.row)">{{
@@ -107,54 +128,93 @@
       </el-table-column>
       <el-table-column v-if="colData[6].istrue" prop="ha_mode" align="center" label="高可用模式" />
       <el-table-column v-if="colData[7].istrue" prop="name" label="集群名称" align="center" />
-      <el-table-column v-if="storage_node_create_priv === 'Y' ||
-        shard_create_priv === 'Y' ||
-        compute_node_create_priv === 'Y' ||
-        restore_priv === 'Y' ||
-        backup_priv === 'Y' ||
-        cluster_drop_priv === 'Y' ||
-        row.ha_mode === 'rbr'
-        " label="操作" align="center" width="100" fixed="right" class-name="small-padding fixed-width">
+      <el-table-column
+        v-if="storage_node_create_priv === 'Y' ||
+          shard_create_priv === 'Y' ||
+          compute_node_create_priv === 'Y' ||
+          restore_priv === 'Y' ||
+          backup_priv === 'Y' ||
+          cluster_drop_priv === 'Y' ||
+          row.ha_mode === 'rbr'
+        "
+        label="操作"
+        align="center"
+        width="100"
+        fixed="right"
+        class-name="small-padding fixed-width"
+      >
         <template slot-scope="{ row }">
-          <el-button v-if="restore_priv === 'Y'" type="primary" size="mini" style="margin-left: 10px; margin-bottom: 2px"
-            @click="handleRetreated(row)">回档
+          <el-button
+            v-if="restore_priv === 'Y'"
+            type="primary"
+            size="mini"
+            style="margin-left: 10px; margin-bottom: 2px"
+            @click="handleRetreated(row)"
+          >回档
           </el-button>
           <el-button type="primary" size="mini" style="margin-bottom: 2px" @click="handleExpand(row)">扩容</el-button>
-          <el-button v-if="storage_node_create_priv === 'Y' &&
-            shard_create_priv === 'Y' &&
-            compute_node_create_priv === 'Y'
-            " type="primary" size="mini" style="margin-bottom: 2px" @click="handleUpdate(row)">+
+          <el-button
+            v-if="storage_node_create_priv === 'Y' &&
+              shard_create_priv === 'Y' &&
+              compute_node_create_priv === 'Y'
+            "
+            type="primary"
+            size="mini"
+            style="margin-bottom: 2px"
+            @click="handleUpdate(row)"
+          >+
           </el-button>
           <el-button type="primary" size="mini" @click="handleSetUp(row)">设置</el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total > 0" :total="total" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize"
-      @pagination="getList" />
+    <pagination
+      v-show="total > 0"
+      :total="total"
+      :page.sync="listQuery.pageNo"
+      :limit.sync="listQuery.pageSize"
+      @pagination="getList"
+    />
     <!-- 新增 -->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" custom-class="single_dal_view"
-      :close-on-click-modal="false">
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogFormVisible"
+      custom-class="single_dal_view"
+      :close-on-click-modal="false"
+    >
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="200px">
         <el-form-item v-show="dialogStatus === 'create' || 'detail'" label="业务名称:" prop="nick_name">
-          <el-input v-model="temp.nick_name" class="right_input" placeholder="请输入业务名称"
-            :disabled="dialogStatus === 'detail'" />
+          <el-input
+            v-model="temp.nick_name"
+            class="right_input"
+            placeholder="请输入业务名称"
+            :disabled="dialogStatus === 'detail'"
+          />
         </el-form-item>
         <el-form-item v-if="dialogStatus === 'create'" label="选择计算机:" prop="machinelist">
-          <el-tabs type="border-card" v-model="createTypes" id="data-center">
+          <el-tabs id="data-center" v-model="createTypes" type="border-card">
             <el-tab-pane label="本地集群" name="local">
               <div style="margin: 30px">
                 存储：
                 <el-select v-model="temp.machinelist" multiple placeholder="请选择">
-                  <el-option v-for="machine in machines" :key="machine.id" :label="machine.hostaddr"
-                    :value="machine.hostaddr" />
+                  <el-option
+                    v-for="machine in machines"
+                    :key="machine.id"
+                    :label="machine.hostaddr"
+                    :value="machine.hostaddr"
+                  />
                 </el-select>
               </div>
               <div style="margin: 30px">
                 计算：
                 <el-select v-model="temp.comp_machinelist" multiple placeholder="请选择">
-                  <el-option v-for="comp_machine in comp_machines" :key="comp_machine.id" :label="comp_machine.hostaddr"
-                    :value="comp_machine.hostaddr" />
+                  <el-option
+                    v-for="comp_machine in comp_machines"
+                    :key="comp_machine.id"
+                    :label="comp_machine.hostaddr"
+                    :value="comp_machine.hostaddr"
+                  />
                 </el-select>
               </div>
             </el-tab-pane>
@@ -162,9 +222,13 @@
               <div style="margin:30px">
                 <div>
                   购买类型
-                  <el-select size="mini" v-model="distribution_value" placeholder="请选择">
-                    <el-option v-for="item in distribution_type" :key="item.value" :label="item.label"
-                      :value="item.value" />
+                  <el-select v-model="distribution_value" size="mini" placeholder="请选择">
+                    <el-option
+                      v-for="item in distribution_type"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value"
+                    />
                   </el-select>
                 </div>
                 <div style="margin-top:20px">
@@ -172,8 +236,15 @@
                   <el-cascader size="mini" :options="data_center_city" clearable />
                 </div>
                 <div>存储：</div>
-                <el-table size="mini" ref="data_center_nodes" :data="data_center_nodes" border tooltip-effect="dark"
-                  style="width: 100%" @selection-change="handleSelectionChange">
+                <el-table
+                  ref="data_center_nodes"
+                  size="mini"
+                  :data="data_center_nodes"
+                  border
+                  tooltip-effect="dark"
+                  style="width: 100%"
+                  @selection-change="handleSelectionChange"
+                >
                   <el-table-column type="selection" width="55" />
                   <el-table-column label="省/市" width="170">
                     <template slot-scope="scope">
@@ -188,14 +259,21 @@
                   </el-table-column>
                   <el-table-column prop="node_num" label="节点数" width="100">
                     <template slot-scope="scope">
-                      <el-input size="mini" v-model="scope.row.node_num" />
+                      <el-input v-model="scope.row.node_num" size="mini" />
                     </template>
                   </el-table-column>
                 </el-table>
 
                 <div>计算</div>
-                <el-table size="mini" ref="data_center_comps" :data="data_center_comps" border tooltip-effect="dark"
-                  style="width: 100%" @selection-change="handleSelectionChange">
+                <el-table
+                  ref="data_center_comps"
+                  size="mini"
+                  :data="data_center_comps"
+                  border
+                  tooltip-effect="dark"
+                  style="width: 100%"
+                  @selection-change="handleSelectionChange"
+                >
                   <el-table-column type="selection" width="55" />
                   <el-table-column label="省/市" width="170">
                     <template slot-scope="scope">
@@ -205,7 +283,7 @@
                   <el-table-column prop="name" label="idc" width="100" />
                   <el-table-column prop="node_num" label="节点数" width="100">
                     <template slot-scope="scope">
-                      <el-input size="mini" v-model="scope.row.node_num" />
+                      <el-input v-model="scope.row.node_num" size="mini" />
                     </template>
                   </el-table-column>
                 </el-table>
@@ -230,8 +308,12 @@
               </el-tooltip>
               <span>:</span>
             </template>
-            <el-radio-group v-model="temp.install_proxysql" class="right_input" :disabled="dialogStatus === 'detail'"
-              @change="installProxySqlChange">
+            <el-radio-group
+              v-model="temp.install_proxysql"
+              class="right_input"
+              :disabled="dialogStatus === 'detail'"
+              @change="installProxySqlChange"
+            >
               <el-radio label="1" border>是</el-radio>
               <el-radio label="0" border>否</el-radio>
             </el-radio-group>
@@ -239,21 +321,33 @@
         </div>
         <div v-show="dialogStatus === 'create'">
           <el-form-item label="shard个数:" prop="shards_count">
-            <el-input v-model="temp.shards_count" class="right_input" placeholder="请输入shard个数"
-              :disabled="dialogStatus === 'detail' || temp.install_proxysql === '1'">
+            <el-input
+              v-model="temp.shards_count"
+              class="right_input"
+              placeholder="请输入shard个数"
+              :disabled="dialogStatus === 'detail' || temp.install_proxysql === '1'"
+            >
               <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">个</i>
             </el-input>
           </el-form-item>
         </div>
         <el-form-item v-show="dialogStatus === 'create'" label="副本数:" prop="snode_count">
-          <el-input v-model="temp.snode_count" class="right_input" placeholder="副本数至少是3，且不能大于256"
-            :disabled="dialogStatus === 'detail'">
+          <el-input
+            v-model="temp.snode_count"
+            class="right_input"
+            placeholder="副本数至少是3，且不能大于256"
+            :disabled="dialogStatus === 'detail'"
+          >
             <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">个</i>
           </el-input>
         </el-form-item>
         <el-form-item v-show="dialogStatus === 'create' || 'detail'" label="计算节点总个数:" prop="comp_count">
-          <el-input v-model="temp.comp_count" class="right_input" placeholder="输入计算节点总个数"
-            :disabled="dialogStatus === 'detail'">
+          <el-input
+            v-model="temp.comp_count"
+            class="right_input"
+            placeholder="输入计算节点总个数"
+            :disabled="dialogStatus === 'detail'"
+          >
             <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">个</i>
           </el-input>
         </el-form-item>
@@ -261,14 +355,22 @@
           <span>{{ temp.shardtotal }}</span>
         </el-form-item>
         <el-form-item v-show="dialogStatus === 'create' || 'detail'" label="缓冲池大小:" prop="buffer_pool">
-          <el-input v-model="temp.buffer_pool" class="right_input" placeholder="缓冲池大小单位为MB"
-            :disabled="dialogStatus === 'detail'">
+          <el-input
+            v-model="temp.buffer_pool"
+            class="right_input"
+            placeholder="缓冲池大小单位为MB"
+            :disabled="dialogStatus === 'detail'"
+          >
             <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">MB</i>
           </el-input>
         </el-form-item>
         <el-form-item v-show="dialogStatus === 'create' || 'detail'" label="每shard强同步备机个数:" prop="fullsync_level">
-          <el-input v-model="temp.fullsync_level" class="right_input" placeholder="请输入每shard强同步备机个数"
-            :disabled="dialogStatus === 'detail'">
+          <el-input
+            v-model="temp.fullsync_level"
+            class="right_input"
+            placeholder="请输入每shard强同步备机个数"
+            :disabled="dialogStatus === 'detail'"
+          >
             <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">个</i>
           </el-input>
         </el-form-item>
@@ -276,7 +378,7 @@
           <el-radio v-model="temp.conf_degrade_state" label="ON">是</el-radio>
           <el-radio v-model="temp.conf_degrade_state" label="OFF">否</el-radio>
         </el-form-item>
-        <el-form-item label="退化时间:" prop="conf_degrade_time" v-if="temp.conf_degrade_state == 'ON'">
+        <el-form-item v-if="temp.conf_degrade_state == 'ON'" label="退化时间:" prop="conf_degrade_time">
           <el-input v-model="temp.conf_degrade_time" class="right_input" placeholder="退化时间范围为5-500s">
             <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">s</i>
           </el-input>
@@ -295,12 +397,20 @@
 
         <div v-show="isShow" v-if="dialogStatus === 'create' ? true : false">
           <el-form-item v-show="dialogStatus === 'create' || 'detail'" label="计算节点账号:" prop="computer_user">
-            <el-input v-model="temp.computer_user" class="right_input" placeholder="输入计算节点账号"
-              :disabled="dialogStatus === 'detail'" />
+            <el-input
+              v-model="temp.computer_user"
+              class="right_input"
+              placeholder="输入计算节点账号"
+              :disabled="dialogStatus === 'detail'"
+            />
           </el-form-item>
           <el-form-item v-show="dialogStatus === 'create' || 'detail'" label="计算节点密码:" prop="computer_password">
-            <el-input v-model="temp.computer_password" class="right_input" placeholder="输入计算节点密码"
-              :disabled="dialogStatus === 'detail'" />
+            <el-input
+              v-model="temp.computer_password"
+              class="right_input"
+              placeholder="输入计算节点密码"
+              :disabled="dialogStatus === 'detail'"
+            />
           </el-form-item>
           <el-form-item label="每个计算节点最大连接数:" prop="max_connections">
             <el-input v-model="temp.max_connections" class="right_input" placeholder="请输入每个计算节点最大连接数" />
@@ -322,14 +432,20 @@
             <el-input v-model="temp.per_storage_node_cpu_cores" class="right_input" placeholder="请输入每个存储节点的cpu核数" />
           </el-form-item>
           <el-form-item label="每个存储节点rocksdb缓冲池大小:" prop="per_storage_node_rocksdb_buffer_pool_size">
-            <el-input v-model="temp.per_storage_node_rocksdb_buffer_pool_size" class="right_input"
-              placeholder="请输入每个存储节点rocksdb缓冲池大小">
+            <el-input
+              v-model="temp.per_storage_node_rocksdb_buffer_pool_size"
+              class="right_input"
+              placeholder="请输入每个存储节点rocksdb缓冲池大小"
+            >
               <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">MB</i>
             </el-input>
           </el-form-item>
           <el-form-item label="每个存储节点初始化存储值:" prop="per_storage_node_initial_storage_size">
-            <el-input v-model="temp.per_storage_node_initial_storage_size" class="right_input"
-              placeholder="请输入每个存储节点初始化存储值">
+            <el-input
+              v-model="temp.per_storage_node_initial_storage_size"
+              class="right_input"
+              placeholder="请输入每个存储节点初始化存储值"
+            >
               <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">GB</i>
             </el-input>
           </el-form-item>
@@ -346,47 +462,76 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button v-show="!dialogDetail" @click="dialogFormVisible = false">关闭</el-button>
-        <el-button v-show="!dialogDetail" type="primary"
-          @click="dialogStatus === 'create' ? createData() : updateData(row)">
+        <el-button
+          v-show="!dialogDetail"
+          type="primary"
+          @click="dialogStatus === 'create' ? createData() : updateData(row)"
+        >
           确认
         </el-button>
       </div>
     </el-dialog>
     <!-- 添加 -->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogNodeVisible" custom-class="single_dal_view"
-      :close-on-click-modal="false">
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogNodeVisible"
+      custom-class="single_dal_view"
+      :close-on-click-modal="false"
+    >
       <el-form ref="nodeForm" :model="nodetemp" :rules="rules" label-position="left" label-width="110px">
         <el-form-item v-if="dialogStatus === 'update' ? true : false" label="集群名称:" prop="name">
           <el-input v-model="nodetemp.name" :disabled="true" />
         </el-form-item>
         <el-form-item v-if="dialogStatus === 'update' ? true : false" label="类型:" prop="node_type">
-          <el-select v-if="dialogStatus === 'update' ? true : false" v-model="nodetemp.node_type" placeholder="请选择类型"
-            @change="ChangeSaler">
+          <el-select
+            v-if="dialogStatus === 'update' ? true : false"
+            v-model="nodetemp.node_type"
+            placeholder="请选择类型"
+            @change="ChangeSaler"
+          >
             <el-option v-for="item in node_types" :key="item.id" :label="item.label" :value="item.id" />
           </el-select>
         </el-form-item>
         <el-form-item v-if="dialogStatus === 'update'" label="选择计算机:" prop="machinelist">
           <el-select v-model="nodetemp.machinelist" multiple placeholder="请选择">
-            <el-option v-for="machine in strogemachines" :key="machine.id" :label="machine.hostaddr"
-              :value="machine.hostaddr" />
+            <el-option
+              v-for="machine in strogemachines"
+              :key="machine.id"
+              :label="machine.hostaddr"
+              :value="machine.hostaddr"
+            />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="nodetemp.node_type == 'add_nodes' && dialogStatus === 'update'" label="shard名称:"
-          prop="shard_name">
-          <el-select v-if="dialogStatus === 'update' ? true : false" v-model="nodetemp.shard_name"
-            placeholder="请选择shard名称">
+        <el-form-item
+          v-if="nodetemp.node_type == 'add_nodes' && dialogStatus === 'update'"
+          label="shard名称:"
+          prop="shard_name"
+        >
+          <el-select
+            v-if="dialogStatus === 'update' ? true : false"
+            v-model="nodetemp.shard_name"
+            placeholder="请选择shard名称"
+          >
             <el-option v-for="shard in shardList" :key="shard.id" :label="shard.name" :value="shard.id" />
           </el-select>
         </el-form-item>
         <el-form-item v-if="nodetemp.node_type == 'add_shards'" label="shard个数:" prop="shards">
-          <el-input v-model="nodetemp.shards" class="right_input" placeholder="请输入shard个数"
-            :disabled="dialogStatus === 'detail'">
+          <el-input
+            v-model="nodetemp.shards"
+            class="right_input"
+            placeholder="请输入shard个数"
+            :disabled="dialogStatus === 'detail'"
+          >
             <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">个</i>
           </el-input>
         </el-form-item>
         <el-form-item label="节点个数:" prop="nodes">
-          <el-input v-model="nodetemp.nodes" class="right_input" placeholder="请输入节点个数"
-            :disabled="dialogStatus === 'detail'">
+          <el-input
+            v-model="nodetemp.nodes"
+            class="right_input"
+            placeholder="请输入节点个数"
+            :disabled="dialogStatus === 'detail'"
+          >
             <i slot="suffix" style="font-style: normal; margin-right: 10px; line-height: 30px">个</i>
           </el-input>
         </el-form-item>
@@ -397,8 +542,12 @@
       </div>
     </el-dialog>
     <!-- 恢复-->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogRestoreVisible" custom-class="single_dal_view"
-      :close-on-click-modal="false">
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogRestoreVisible"
+      custom-class="single_dal_view"
+      :close-on-click-modal="false"
+    >
       <el-form ref="restoreForm" :model="restoretemp" :rules="rules" label-position="left" label-width="110px">
         <el-form-item v-if="dialogStatus === 'restore'" label="选择计算机:" prop="machinelist">
           <el-checkbox-group v-model="restoretemp.machinelist" :min="minMachine" :max="machineTotal">
@@ -413,8 +562,12 @@
           <el-input v-model="restoretemp.nick_name" placeholder="请输入新集群名称" />
         </el-form-item>
         <el-form-item label="回档时间:" prop="now">
-          <el-date-picker v-model="restoretemp.now" type="datetime" value-format="yyyy-MM-dd HH:mm:ss"
-            placeholder="请选择回档时间" />
+          <el-date-picker
+            v-model="restoretemp.now"
+            type="datetime"
+            value-format="yyyy-MM-dd HH:mm:ss"
+            placeholder="请选择回档时间"
+          />
         </el-form-item>
         <el-form-item label="最早备份时间:" prop="end_ts">
           <el-input v-model="restoretemp.end_ts" :disabled="true" />
@@ -427,8 +580,12 @@
       </div>
     </el-dialog>
     <!-- 回档-->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogRetreatedVisible" custom-class="single_dal_view"
-      :close-on-click-modal="false">
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogRetreatedVisible"
+      custom-class="single_dal_view"
+      :close-on-click-modal="false"
+    >
       <el-form ref="retreatedForm" :model="retreatedtemp" :rules="rules" label-position="left" label-width="120px">
         <el-form-item label="原集群名称:" prop="old_cluster_id">
           <!-- <el-input v-model="retreatedtemp.old_cluster_name" /> -->
@@ -440,8 +597,12 @@
           <el-input v-model="retreatedtemp.nick_name" :disabled="true" />
         </el-form-item>
         <el-form-item label="回档时间:" prop="retreated_time">
-          <el-date-picker v-model="retreatedtemp.retreated_time" type="datetime" value-format="yyyy-MM-dd HH:mm:ss"
-            placeholder="请选择回档时间" />
+          <el-date-picker
+            v-model="retreatedtemp.retreated_time"
+            type="datetime"
+            value-format="yyyy-MM-dd HH:mm:ss"
+            placeholder="请选择回档时间"
+          />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -450,15 +611,32 @@
       </div>
     </el-dialog>
     <!-- 扩容-->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogExpandVisible" custom-class="single_dal_view expand"
-      :close-on-click-modal="false">
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogExpandVisible"
+      custom-class="single_dal_view expand"
+      :close-on-click-modal="false"
+    >
       <el-form ref="expandForm" :model="expandtemp" :rules="rules" label-position="left" label-width="130px">
         <div class="icons-container">
           <el-tabs v-model="activeName" type="border-card" @tab-click="handleClick">
-            <el-tab-pane v-for="(item, index) in shardNameList" :key="index" :label="item.name" :name="item.name"
-              :value="item.id + '_' + item.cluster_id">
-              <el-table :key="tableKey" v-loading="listLoading" :data="shardTable" max-height="240" border
-                highlight-current-row style="width: 100%; margin-bottom: 20px" @selection-change="selectionChangeHandle">
+            <el-tab-pane
+              v-for="(item, index) in shardNameList"
+              :key="index"
+              :label="item.name"
+              :name="item.name"
+              :value="item.id + '_' + item.cluster_id"
+            >
+              <el-table
+                :key="tableKey"
+                v-loading="listLoading"
+                :data="shardTable"
+                max-height="240"
+                border
+                highlight-current-row
+                style="width: 100%; margin-bottom: 20px"
+                @selection-change="selectionChangeHandle"
+              >
                 <el-table-column type="selection" width="55" />
                 <el-table-column type="index" align="center" label="序号" width="50" />
                 <!-- TABLE_SCHEMA,TABLE_NAME -->
@@ -482,8 +660,13 @@
                 </template>
               </el-form-item>
               <el-form-item v-if="expandtemp.dsc_flag" label="目标shard:" prop="dst_shard_id">
-                <el-select v-model="expandtemp.dst_shard_id" clearable placeholder="请选择目标shard" style="width: 100%"
-                  @change="ChangeShardName">
+                <el-select
+                  v-model="expandtemp.dst_shard_id"
+                  clearable
+                  placeholder="请选择目标shard"
+                  style="width: 100%"
+                  @change="ChangeShardName"
+                >
                   <el-option v-for="item in shardsList" :key="item.id" :label="item.name" :value="item.id" />
                 </el-select>
               </el-form-item>
@@ -500,8 +683,12 @@
       </div>
     </el-dialog>
     <!-- 扩容确认信息 -->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogExpandInfoVisible" custom-class="single_dal_view"
-      :close-on-click-modal="false">
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogExpandInfoVisible"
+      custom-class="single_dal_view"
+      :close-on-click-modal="false"
+    >
       <el-form ref="expandInfoForm" :model="expandInfoTemp" :rules="rules" label-position="left" label-width="130px">
         <el-form-item label="原shard:" prop="shard_name">
           <el-input v-model="expandInfoTemp.shard_name" :disabled="true" />
@@ -535,12 +722,21 @@
       </div>
     </el-dialog>
     <!--自动扩容 -->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="outoExpandInfoVisible" custom-class="single_dal_view"
-      :close-on-click-modal="false">
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="outoExpandInfoVisible"
+      custom-class="single_dal_view"
+      :close-on-click-modal="false"
+    >
       <el-form ref="autoExpandForm" :model="autoexpandtemp" :rules="rules" label-position="left" label-width="130px">
         <el-form-item label="原shard:" prop="auto_shard_id">
-          <el-select v-model="autoexpandtemp.auto_shard_id" clearable placeholder="请选择原shard" style="width: 100%"
-            @change="autoChangeShardName">
+          <el-select
+            v-model="autoexpandtemp.auto_shard_id"
+            clearable
+            placeholder="请选择原shard"
+            style="width: 100%"
+            @change="autoChangeShardName"
+          >
             <el-option v-for="item in srcShardsList" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
@@ -549,8 +745,17 @@
             <el-option v-for="item in policys" :key="item.id" :label="item.label" :value="item.id" />
           </el-select>
         </el-form-item>
-        <el-table ref="dataTable" :key="tableKey" v-loading="listLoading" :data="autoexpandtemp.tables" max-height="240"
-          border highlight-current-row style="width: 100%; margin-bottom: 20px" @selection-change="selAutoChangeHandle">
+        <el-table
+          ref="dataTable"
+          :key="tableKey"
+          v-loading="listLoading"
+          :data="autoexpandtemp.tables"
+          max-height="240"
+          border
+          highlight-current-row
+          style="width: 100%; margin-bottom: 20px"
+          @selection-change="selAutoChangeHandle"
+        >
           <el-table-column type="selection" width="55" />
           <el-table-column type="index" align="center" label="序号" width="50" />
           <el-table-column prop="TABLE_SCHEMA" label="数据库名称" align="center" />
@@ -570,8 +775,13 @@
           <el-radio v-model="autoexpandtemp.if_save" label="1">否</el-radio>
         </el-form-item>
         <el-form-item v-if="autoexpandtemp.dsc_flag" label="目标shard:" prop="dst_shard_id">
-          <el-select v-model="autoexpandtemp.dst_shard_id" clearable placeholder="请选择目标shard" style="width: 100%"
-            @change="autoChangeDscShardName">
+          <el-select
+            v-model="autoexpandtemp.dst_shard_id"
+            clearable
+            placeholder="请选择目标shard"
+            style="width: 100%"
+            @change="autoChangeDscShardName"
+          >
             <el-option v-for="item in shardsList" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
@@ -583,8 +793,12 @@
       </div>
     </el-dialog>
     <!-- 扩容选库 -->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="expandSelectDBVisible" custom-class="single_dal_view"
-      :close-on-click-modal="false">
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="expandSelectDBVisible"
+      custom-class="single_dal_view"
+      :close-on-click-modal="false"
+    >
       <el-form ref="selectExpandForm" :model="selectdbtemp" :rules="rules" label-position="left" label-width="100px">
         <el-form-item label="集群ID:">
           <span>{{ selectdbtemp.cluster_id }}</span>
@@ -602,30 +816,58 @@
       </div>
     </el-dialog>
     <!--状态框 -->
-    <el-dialog :visible.sync="dialogStatusVisible" custom-class="single_dal_view" width="400px"
-      :close-on-click-modal="false" :before-close="beforeSyncDestory">
+    <el-dialog
+      :visible.sync="dialogStatusVisible"
+      custom-class="single_dal_view"
+      width="400px"
+      :close-on-click-modal="false"
+      :before-close="beforeSyncDestory"
+    >
       <div class="block">
         <el-timeline>
-          <el-timeline-item v-for="(activity, index) in activities" :key="index" :icon="activity.icon"
-            :type="activity.type" :color="activity.color" :size="activity.size" :timestamp="activity.timestamp">
+          <el-timeline-item
+            v-for="(activity, index) in activities"
+            :key="index"
+            :icon="activity.icon"
+            :type="activity.type"
+            :color="activity.color"
+            :size="activity.size"
+            :timestamp="activity.timestamp"
+          >
             {{ activity.content }}
           </el-timeline-item>
         </el-timeline>
       </div>
     </el-dialog>
-    <el-dialog :title="job_id" :visible.sync="dialogStatusShowVisible" custom-class="single_dal_view"
-      :close-on-click-modal="false" :before-close="beforeDestory">
+    <el-dialog
+      :title="job_id"
+      :visible.sync="dialogStatusShowVisible"
+      custom-class="single_dal_view"
+      :close-on-click-modal="false"
+      :before-close="beforeDestory"
+    >
       <div style="width: 100%; background: #fff; padding: 0 20px">
         <el-steps direction="vertical" :active="init_active">
           <el-step v-if="init_show" :title="init_title" icon="el-icon-more" />
-          <el-step v-if="computer_show" :title="computer_title" :status="computer_state" :icon="computer_icon"
-            :description="computer_description">
+          <el-step
+            v-if="computer_show"
+            :title="computer_title"
+            :status="computer_state"
+            :icon="computer_icon"
+            :description="computer_description"
+          >
             <template slot="description">
               <span>{{ computer_description }}</span>
               <div style="padding: 20px">
                 <el-steps direction="vertical" :active="comp_active">
-                  <el-step v-for="(item, index) of computer" :key="index" :title="item.title" :icon="item.icon"
-                    :status="item.status" :description="item.description">
+                  <el-step
+                    v-for="(item, index) of computer"
+                    :key="index"
+                    :title="item.title"
+                    :icon="item.icon"
+                    :status="item.status"
+                    :description="item.description"
+                  >
                     <!-- <template slot="description">
                   <el-button size="mini" type="primary"  @click="thisDetail(item.computer_id)">详情</el-button>
                 </template> -->
@@ -634,14 +876,26 @@
               </div>
             </template>
           </el-step>
-          <el-step v-if="shard_show" :title="shard_title" :status="storage_state" :icon="shard_icon"
-            :description="shard_description">
+          <el-step
+            v-if="shard_show"
+            :title="shard_title"
+            :status="storage_state"
+            :icon="shard_icon"
+            :description="shard_description"
+          >
             <template slot="description">
               <span>{{ shard_description }}</span>
               <div style="padding: 20px">
                 <el-steps direction="vertical" :active="shard_active">
-                  <el-step v-for="(item, index) of shard" :key="index" :title="item.title" :icon="item.icon"
-                    :status="item.status" :description="item.description" @click.native="thisDetail(item.shard_id)">
+                  <el-step
+                    v-for="(item, index) of shard"
+                    :key="index"
+                    :title="item.title"
+                    :icon="item.icon"
+                    :status="item.status"
+                    :description="item.description"
+                    @click.native="thisDetail(item.shard_id)"
+                  >
                     <!-- <template slot="description">
                   <el-button size="mini" type="primary" @click="thisDetail(item.shard_id)">详情</el-button>
                 </template> -->
@@ -650,26 +904,44 @@
               </div>
             </template>
           </el-step>
-          <el-step v-if="finish_show" :title="finish_title" :icon="finish_icon" :description="finish_description"
-            :status="finish_state" />
+          <el-step
+            v-if="finish_show"
+            :title="finish_title"
+            :icon="finish_icon"
+            :description="finish_description"
+            :status="finish_state"
+          />
         </el-steps>
       </div>
     </el-dialog>
     <!--shard信息框 -->
-    <el-dialog :title="dialogStatus" :visible.sync="dialogShardInfo" custom-class="single_dal_view"
-      :close-on-click-modal="false">
+    <el-dialog
+      :title="dialogStatus"
+      :visible.sync="dialogShardInfo"
+      custom-class="single_dal_view"
+      :close-on-click-modal="false"
+    >
       <json-viewer :value="shardInfo" />
     </el-dialog>
     <!--扩容状态框 -->
-    <el-dialog :title="job_id" :visible.sync="dialogExpondInfo" custom-class="single_dal_view"
-      :close-on-click-modal="false" :before-close="beforeExpandDestory">
+    <el-dialog
+      :title="job_id"
+      :visible.sync="dialogExpondInfo"
+      custom-class="single_dal_view"
+      :close-on-click-modal="false"
+      :before-close="beforeExpandDestory"
+    >
       <span v-if="expondInit">{{ expand_init }}</span>
       <json-viewer v-if="expondSatus" :value="expondInfo" />
       <span v-if="expondResult">{{ expand_end }}</span>
     </el-dialog>
     <!-- 列表里的状态详情框 -->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="statusDetailVisible" custom-class="single_dal_view"
-      :close-on-click-modal="false">
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="statusDetailVisible"
+      custom-class="single_dal_view"
+      :close-on-click-modal="false"
+    >
       <!-- <span style="color:red;">{{abnormal}}</span> -->
       <div style="color: red" v-html="abnormal" />
     </el-dialog>
@@ -733,7 +1005,7 @@ import JsonViewer from 'vue-json-viewer'
 export default {
   name: 'List',
   components: { Pagination, JsonViewer },
-  props: { comment: { type: Object } },
+  props: { comment: { type: Object }},
   data() {
     const validateHaMode = (rule, value, callback) => {
       if (!value) {
@@ -1170,7 +1442,7 @@ export default {
       },
       expandSelectDBVisible: false,
       expandTableList: null,
-      createTypes: 'local',//"datacenters",
+      createTypes: 'local', // "datacenters",
       distribution_type: [
         {
           label: '同城购买',
@@ -1259,7 +1531,7 @@ export default {
   },
   watch: {
     'expandtemp.table_list': {
-      handler: function (val) {
+      handler: function(val) {
         if (val.length > 0) {
           this.expandtemp.dsc_flag = true
           this.expandtemp.title = '提交'
@@ -1271,7 +1543,7 @@ export default {
       }
     },
     'autoexpandtemp.table_list': {
-      handler: function (val) {
+      handler: function(val) {
         if (val.length > 0) {
           this.autoexpandtemp.dsc_flag = true
         } else {
@@ -1647,11 +1919,11 @@ export default {
       this.getList()
     },
     getDataCents() {
-      const _this = this;
+      const _this = this
       getDataCents({}).then((response) => {
         // console.log(response.list.res)
-        _this.data_center_nodes = [];
-        _this.data_center_comps = [];
+        _this.data_center_nodes = []
+        _this.data_center_comps = []
         _this.data_center_nodes = response.list.res
         _this.data_center_comps = response.list.res
       })
@@ -1823,35 +2095,34 @@ export default {
           }
 
           if (this.createTypes == 'datacenters') {
-
-            console.log(this.$refs.data_center_nodes.selection);
-            console.log(this.$refs.data_center_comps.selection);
-            const data_center_nodes = this.$refs.data_center_nodes.selection;
-            const data_center_comps = this.$refs.data_center_comps.selection;
+            console.log(this.$refs.data_center_nodes.selection)
+            console.log(this.$refs.data_center_comps.selection)
+            const data_center_nodes = this.$refs.data_center_nodes.selection
+            const data_center_comps = this.$refs.data_center_comps.selection
 
             if (data_center_comps.length == 0) {
-              this.message_tips = "选择计算节点"
+              this.message_tips = '选择计算节点'
               this.message_type = 'error'
               messageTip(this.message_tips, this.message_type)
-              return false;
+              return false
             }
 
             if (data_center_nodes.length == 0) {
-              this.message_tips = "选择计算节点"
+              this.message_tips = '选择计算节点'
               this.message_type = 'error'
               messageTip(this.message_tips, this.message_type)
-              return false;
+              return false
             }
 
             if (data_center_nodes.length != data_center_comps.length) {
-              this.message_tips = "计算节点的数量和存储节点数量不一致"
+              this.message_tips = '计算节点的数量和存储节点数量不一致'
               this.message_type = 'error'
               messageTip(this.message_tips, this.message_type)
-              return false;
+              return false
             }
 
-            //判断是否有主
-            let master_idc = null;
+            // 判断是否有主
+            let master_idc = null
             data_center_nodes.forEach((v) => {
               if (v.master) {
                 master_idc = {
@@ -1861,13 +2132,13 @@ export default {
               }
             })
 
-            //数据中心购买
+            // 数据中心购买
             if (this.distribution_value == 'same_city') {
-              //同城购买
+              // 同城购买
               if (master_idc != null) {
                 // 同城 master
                 const same_city_master_node_distribution = {
-                  distribution_type: "same_city",
+                  distribution_type: 'same_city',
                   master_idc: master_idc,
                   slave_idc: []
                 }
@@ -1875,15 +2146,15 @@ export default {
                   if (!v.master) {
                     same_city_master_node_distribution.slave_idc.push({
                       idc: v.name,
-                      node_num: 2 + "",
+                      node_num: 2 + ''
                     })
                   }
                 })
-                paras.node_distribution = same_city_master_node_distribution;
+                paras.node_distribution = same_city_master_node_distribution
               } else {
-                // 同城 no_master 
+                // 同城 no_master
                 const same_city_no_master_node_distribution = {
-                  distribution_type: "same_city",
+                  distribution_type: 'same_city',
                   idcs: []
                 }
                 data_center_nodes.forEach((v) => {
@@ -1892,33 +2163,32 @@ export default {
                     node_num: v.node_num + ''
                   })
                 })
-                paras.node_distribution = same_city_no_master_node_distribution;
+                paras.node_distribution = same_city_no_master_node_distribution
               }
             } else {
-              //跨城
+              // 跨城
               if (master_idc != null) {
-                //有主的
+                // 有主的
                 const cross_city_master_node_distribution = {
-                  "master_city": {
-                    "city_name": "cname_11",
-                    "master_idc": master_idc,
-                    "slave_idc": []
+                  'master_city': {
+                    'city_name': 'cname_11',
+                    'master_idc': master_idc,
+                    'slave_idc': []
                   },
-                  "slave_city": {
-                    "city_name": "cname_22",
-                    "idcs": []
+                  'slave_city': {
+                    'city_name': 'cname_22',
+                    'idcs': []
                   }
                 }
               } else {
-
-                //跨city情况，主城不指定master_idc/slave_idc
+                // 跨city情况，主城不指定master_idc/slave_idc
                 const cross_city_no_maste_node_distribution = {
                   master_city: {
-                    city_name: "cname_11",
+                    city_name: 'cname_11',
                     idcs: []
                   },
                   slave_city: {
-                    city_name: "cname_22",
+                    city_name: 'cname_22',
                     idcs: []
                   }
                 }
@@ -1931,9 +2201,9 @@ export default {
                 node_num: v.node_num + ''
               })
             })
-            paras.comp_distribution = comp_distribution;
+            paras.comp_distribution = comp_distribution
           } else {
-            //本地购买，
+            // 本地购买，
             tempData.machinelist.forEach((item) => {
               machinelist.push(item)
             })
@@ -2672,9 +2942,9 @@ export default {
         this.handleClear()
       }
       this.editableTabs = this.comment.editableTabs
-      const newTabName = row.id + ""
-      //console.log(newTabName);
-      //console.log(this.comment);
+      const newTabName = row.id + ''
+      // console.log(newTabName);
+      // console.log(this.comment);
       const tabs = this.editableTabs
       if (tabs.length > 0) {
         let exist = false
@@ -2942,7 +3212,7 @@ export default {
                     }
                   }
                   // 遍历存储节点改状态(20230512加入else if条件)
-                }else if (this.shard.length > 0) {
+                } else if (this.shard.length > 0) {
                   for (let c = 0; c < this.shard.length; c++) {
                     if (ress.attachment.hasOwnProperty('shard_step')) {
                       for (let b = 0; b < ress.attachment.shard_step.length; b++) {
