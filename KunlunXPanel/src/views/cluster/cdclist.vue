@@ -15,7 +15,6 @@
           重置
         </el-button>
         <el-button
-          v-if="user_name == 'super_dba'"
           class="filter-item"
           type="primary"
           icon="el-icon-plus"
@@ -44,16 +43,14 @@
       <el-table-column prop="status" align="center" label="状态" />
 
       <el-table-column
-        v-if="user_name == 'super_dba'"
+        v-if="user_name === 'super_dba'"
         label="操作"
         align="center"
         width="300"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{row,$index}">
-          <!--          <el-button v-if="user_name=='super_dba'" type="primary" size="mini" @click="handleUpdate(row)">编辑-->
-          <!--          </el-button>-->
-          <el-button v-if="user_name == 'super_dba'" size="mini" type="danger" @click="handleDelete(row, $index)">删除
+          <el-button v-if="user_name === 'super_dba'" size="mini" type="danger" @click="handleDelete(row, $index)">删除
           </el-button>
           <!-- <div v-text="info" v-show="installStatus===true" class="info"></div> -->
         </template>
@@ -121,15 +118,11 @@
 <script>
 import { messageTip, handleCofirm, getNowDate } from '@/utils'
 import {
-  // eslint-disable-next-line no-unused-vars
-  getStorageList,
-  addStorage,
   updateStorage,
-  delStorage,
   getEvStatus,
-  getBackStorageList,
   editCdc,
-  getCdcList
+  getCdcList,
+  DeleteCdc
 
 } from '@/api/cluster/list'
 import { version_arr, storage_type_arr, timestamp_arr } from '@/utils/global_variable'
@@ -145,12 +138,12 @@ export default {
       let isCorrect = true
       if (valdata.length) {
         for (let i = 0; i < valdata.length; i++) {
-          if (regexp.test(valdata[i]) == false) {
+          if (regexp.test(valdata[i]) === false) {
             isCorrect = false
           }
         }
       }
-      if (value == '') {
+      if (value === '') {
         return callback(new Error('请输入IP地址'))
       } else if (!isCorrect) {
         callback(new Error('请输入正确对IP地址'))
@@ -399,37 +392,9 @@ export default {
     handleDelete(row) {
       handleCofirm('此操作将永久删除该数据, 是否继续?').then(() => {
         const tempData = {}
-        tempData.job_id = ''
-        tempData.job_type = 'delete_backup_storage'
-        tempData.version = version_arr[0].ver
-        tempData.timestamp = timestamp_arr[0].time + ''
-        tempData.user_name = sessionStorage.getItem('login_username')
-        tempData.paras = { 'name': row.name }
-        delStorage(tempData).then((response) => {
-          const res = response
-          if (res.status == 'accept') {
-            this.dialogFormVisible = false
-            this.dialogStatusVisible = true
-            this.activities = []
-            const newArr = {
-              content: '正在删除备份存储目标',
-              timestamp: getNowDate(),
-              size: 'large',
-              type: 'primary',
-              icon: 'el-icon-more'
-            }
-            this.activities.push(newArr)
-            // 调获取状态接口
-            let i = 0
-            const action_name = '删除备份存储目标'
-            this.timer = setInterval(() => {
-              this.getStatus(this.timer, res.job_id, i++, action_name)
-            }, 1000)
-          } else {
-            this.message_tips = res.error_info
-            this.message_type = 'error'
-            messageTip(this.message_tips, this.message_type)
-          }
+        tempData.paras = { 'name': row.id }
+        DeleteCdc(tempData).then((response) => {
+          console.log(response)
         })
       }).catch(() => {
         console.log('quxiao')
@@ -445,8 +410,8 @@ export default {
         postarr.timestamp = timestamp_arr[0].time + ''
         postarr.paras = {}
         getEvStatus(postarr).then((res) => {
-          if (res.status == 'done' || res.status == 'failed') {
-            if (res.status == 'done') {
+          if (res.status === 'done' || res.status === 'failed') {
+            if (res.status === 'done') {
               const newArrdone = {
                 content: action_name + '成功',
                 timestamp: getNowDate(),
@@ -458,7 +423,7 @@ export default {
               // this.dialogStatusVisible=false;
               clearInterval(timer)
             } else {
-              if (res.attachment == null && res.error_code == '70001' && res.status == 'failed') {
+              if (res.attachment == null && res.error_code === '70001' && res.status === 'failed') {
                 if (i > 5) {
                   const newArr = {
                     content: res.error_info,
