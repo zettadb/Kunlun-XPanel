@@ -91,32 +91,32 @@
               <template slot-scope="{row,$index}">
                 <el-button v-if="row.status == 'online'" size="mini" type="primary" @click="nodeMonitor(row)">节点监控
                 </el-button>
-                <el-button v-if="row.status == 'online'" size="mini" type="primary" @click="handleSetCpu(row)">设置
+                <el-button v-if="row.status == 'online'&&user_name=='super_dba'" size="mini" type="primary" @click="handleSetCpu(row)">设置
                 </el-button>
                 <el-button
-                  v-if="row.status !== 'online'"
+                  v-if="row.status !== 'online'&&user_name=='super_dba'"
                   size="mini"
                   type="primary"
                   @click="handleControlNode(row, 'start')"
                 >启用
                 </el-button>
                 <el-button
-                  v-if="row.master !== 'true' && row.status !== 'offline'"
+                  v-if="row.master !== 'true' && row.status !== 'offline'&&user_name=='super_dba'"
                   size="mini"
                   type="primary"
                   @click="handleControlNode(row, 'stop')"
                 >禁用
                 </el-button>
                 <el-button
-                  v-if="row.master !== 'true'"
+                  v-if="row.master !== 'true'&&user_name=='super_dba'"
                   size="mini"
                   type="primary"
                   @click="handleControlNode(row, 'restart')"
                 >重启
                 </el-button>
-                <el-button v-if="row.master == 'true'" size="mini" type="primary" @click="handleSwitch(row)">主备切换
+                <el-button v-if="row.master == 'true'&&user_name=='super_dba'" size="mini" type="primary" @click="handleSwitch(row)">主备切换
                 </el-button>
-                <el-button v-if="row.master == 'true'" size="mini" type="primary" @click="handleReDo(row)">重做备机节点
+                <el-button v-if="row.master == 'true'&&user_name=='super_dba'" size="mini" type="primary" @click="handleReDo(row)">重做备机节点
                 </el-button>
                 <el-button
                   v-if="storage_node_drop_priv === 'Y' && row.master !== 'true'"
@@ -680,6 +680,7 @@ export default {
       shard_drop_priv: JSON.parse(sessionStorage.getItem('priv')).shard_drop_priv,
       storage_node_create_priv: JSON.parse(sessionStorage.getItem('priv')).storage_node_create_priv,
       storage_node_drop_priv: JSON.parse(sessionStorage.getItem('priv')).storage_node_drop_priv,
+      user_name: sessionStorage.getItem('login_username'),
       storage_status: false,
       comp_status: false,
       comp_active: 1,
@@ -1212,7 +1213,7 @@ export default {
         this.strogemachines = res.list
       })
       //判断是否为rcr关系
-      let tempdate={cluater_id:this.listsent.id};
+      let tempdate={cluster_id:this.listsent.id};
       getRCRRelater(tempdate).then((response) => {
         if(response.total==0){
           this.if_show='false';

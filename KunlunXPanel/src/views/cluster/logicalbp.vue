@@ -67,13 +67,14 @@
         label="备份时间"
       />
       <el-table-column
+      v-if="user_name=='super_dba'"
         label="操作"
         align="center"
         class-name="small-padding fixed-width"
         >
         <template slot-scope="{row,$index}">
           <el-button
-          v-if="row.backup_state==='done'"
+          v-if="row.backup_state==='done'&&user_name=='super_dba'"
             size="mini"
             type="primary"
             @click="handleRestore(row,$index)"
@@ -232,6 +233,7 @@ export default {
       dialogStatusVisible: false,
       activities: [],
       backupIndex:0,
+      user_name: sessionStorage.getItem('login_username'),
       rules: {
         time: [{ validator: checkTimeRange, trigger: "blur" }],
         dst_cluster_id:[{required: true, validator: checkDstCluster, trigger: "blur" }]

@@ -198,8 +198,8 @@ export default {
     this.timer = null
   },
   methods: {
-    agreeChange: function(val) {
-      this.btnstatus = (val === '1')
+    agreeChange:function(val){
+      this.btnstatus=(val==='1')?true:false;
     },
     onPush(index) {
       this.form.repartition_tables.push({
