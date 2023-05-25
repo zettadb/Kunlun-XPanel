@@ -4468,4 +4468,80 @@ class Cluster extends CI_Controller
 		//print_r($error);exit;
 		return $error;
 	}
+	public function addESList()
+	{
+		//获取token
+		$arr = apache_request_headers(); //获取请求头数组
+		$token = $arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));
+			return;
+		}
+		$string = json_decode(@file_get_contents('php://input'), true);
+		$hostaddr=$string['hostaddr'];
+		$port=$string['port'];
+		$is_install=$string['is_install'];
+		//print_r($string);exit;
+		//调接口
+		$this->load->model('Cluster_model');
+		$sql = "insert into cluster_es_conf (es_hostaddr,es_port,is_install) values ('$hostaddr','$port','$is_install') ";
+		//echo $sql;exit;
+		$res = $this->Cluster_model->updateList($sql);
+		if ($res == 1) {
+			$data['code'] = 200;
+			$data['message'] = '新增成功';
+		} else {
+			$data['code'] = 501;
+			$data['message'] = '新增失败';
+		}
+		print_r(json_encode($data));
+	}
+	public function getESList()
+	{
+		$pageNo = $this->input->get('pageNo');
+		$pageSize =$this->input->get('pageSize');
+		$start = ($pageNo - 1) * $pageSize;
+		//获取用户数据
+		$this->load->model('Cluster_model');
+		$sql = "select id, es_hostaddr ,es_port,is_install from cluster_es_conf";
+		$sql .= " order by id desc limit " . $pageSize . " offset " . $start;
+		$res = $this->Cluster_model->getList($sql);
+		if ($res === false) {
+			$res = array();
+		}
+		$total_sql = "select count(id) as count from cluster_es_conf ";
+		$res_total = $this->Cluster_model->getList($total_sql);
+		$data['code'] = 200;
+		$data['list'] = $res;
+		$data['total'] = $res_total ? (int) $res_total[0]['count'] : 0;
+		print_r(json_encode($data));
+	}
+	public function delESList()
+	{
+		//获取token
+		$arr = apache_request_headers(); //获取请求头数组
+		$token = $arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));
+			return;
+		}
+		$string = json_decode(@file_get_contents('php://input'), true);
+		$id=$string['id'];
+		$this->load->model('Cluster_model');
+		$sql = "delete from cluster_es_conf where id='$id';";
+		$res = $this->Cluster_model->updateList($sql);
+		if ($res == 1) {
+			$data['code'] = 200;
+			$data['message'] = '删除成功';
+		} else {
+			$data['code'] = 500;
+			$data['message'] = '删除失败';
+		}
+		print_r(json_encode($data));
+	}
+
 }
