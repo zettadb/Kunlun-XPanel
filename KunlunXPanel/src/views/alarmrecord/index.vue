@@ -44,41 +44,48 @@
       </div>
     </el-dialog>
 
-    <el-drawer title="告警配置" :visible.sync="table" direction="rtl" size="50%">
+    <el-drawer title="告警配置" :visible.sync="table" direction="rtl" size="70%">
 
       <el-tabs v-model="activeName">
-        <el-tab-pane label="用户管理" name="first">
-          <el-table :data="gridData">
-            <el-table-column property="alarm_type" label="告警类型" width="150">
-              <template slot-scope="scope">
-                <span>{{ handleUserTypeName(scope.row.alarm_type) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column property="alarm_to_user" label="推送方式" width="200">
-              <template slot-scope="scope">
-                <span>{{ handleAlramTypeName(scope.row.alarm_to_user) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column property="uid" label="接受处理人">
-              <template slot-scope="scope">
-                <span>{{ handleUserName(scope.row.uid) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column property="status" label="是否是生效">
-              <template slot-scope="scope">
-                <span v-if="scope.row.status === '1'">生效中</span>
-                <span v-else-if="scope.row.status === '0'">禁用</span>
-              </template>
-            </el-table-column>
-            <el-table-column property="" label="操作">
-              <template slot-scope="{ row }">
-                <el-button type="primary" size="mini" @click="handleEditAlram(row)">编辑</el-button>
-                <el-button type="danger" size="mini" @click="handleDeleteAlram(row)">删除</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
+        <el-tab-pane label="告警管理" name="first">
+          <div class="alarm" style="height: 800px;overflow-y: scroll">
+            <el-table :data="alarmTypes">
+              <el-table-column property="id" prop="id" label="告警ID" />
+              <el-table-column property="label" prop="label" label="告警名称" />
+              <el-table-column property="level" prop="level" label="告警级别">
+                <template slot-scope="scope">
+                  <el-select v-model="scope.row.level" placeholder="告警级别">
+                    <el-option v-for="item in alarmLevel" :key="item.id" :label="item.id" :value="item.id" />
+                  </el-select>
+                </template>
+              </el-table-column>
+              <el-table-column property="threshold" prop="threshold" label="告警阈值">
+                <template slot-scope="scope">
+                  <span>告警{{ scope.row.threshold }} 次触发</span>
+                </template>
+              </el-table-column>
+              <el-table-column property="accept_user" prop="accept_user" label="推送用户">
+                <template slot-scope="{ row }">
+                  <el-select v-model="row.accept_user" multiple clearable placeholder="推送用户">
+                    <el-option v-for="item in userList" :key="item.id" :label="item.username" :value="item.id" />
+                  </el-select>
+                </template>
+              </el-table-column>
+              <el-table-column property="accept_user" prop="accept_user" label="推送方式">
+                <template slot-scope="{ row }">
+                  <el-select v-model="row.push_type" multiple clearable placeholder="推送方式">
+                    <el-option key="0" label="系统提醒" value="system" />
+                    <el-option key="1" label="短信提醒" value="phone_message" />
+                    <el-option key="2" label="邮件提醒" value="mail" />
+                  </el-select>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+
         </el-tab-pane>
-        <el-tab-pane label="配置管理" name="second">
+
+        <el-tab-pane label="推送管理" name="second">
           <el-tabs :tab-position="tabPosition">
             <el-tab-pane label="短信配置">
               <el-form ref="phone_message_config" :model="phone_message_config" label-width="120px" :rules="rules">
@@ -283,7 +290,6 @@ export default {
       machine_drop_priv: JSON.parse(sessionStorage.getItem('priv')).machine_drop_priv,
       machine_priv: JSON.parse(sessionStorage.getItem('priv')).machine_priv,
       timer: null,
-      rules: {},
       gridData: [],
       table: false,
       dialog: false,

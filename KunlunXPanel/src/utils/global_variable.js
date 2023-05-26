@@ -82,23 +82,145 @@ const node_stats_arr = [
   { id: 'dead', label: '离线', color: 'red' }
 ]
 const alarm_type_arr = [
-  { id: 'standby_delay', label: '主备延迟过大' },
-  { id: 'storage_node_exception', label: '存储节点异常' },
-  { id: 'comp_node_exception', label: '计算节点异常' },
-  { id: 'machine_offline', label: '设备离线' },
-  { id: 'manual_switch', label: '主备切换' },
-  { id: 'expand_cluster', label: '集群扩容' },
-  { id: 'shard_coldbackup', label: '自动备份' },
-  { id: 'manual_backup_cluster', label: '全量备份' },
-  { id: 'create_cluster', label: '新增集群' },
-  { id: 'delete_cluster', label: '删除集群' },
-  { id: 'add_shards', label: '新增shard' },
-  { id: 'delete_shard', label: '删除shard' },
-  { id: 'add_comps', label: '增加计算节点' },
-  { id: 'delete_comp', label: '删除计算节点' },
-  { id: 'add_nodes', label: '增加存储节点' },
-  { id: 'delete_node', label: '删除存储节点' },
-  { id: 'rcr_sync_abnormal', label: 'RCR同步异常' }
+  {
+    id: 'standby_delay',
+    label: '主备延迟过大',
+    level: 'WARNING',
+    threshold: 1,
+    accept_user: [],
+    push_type: ['system']
+
+  },
+  {
+    id: 'storage_node_exception',
+    label: '存储节点异常',
+    level: 'WARNING',
+    threshold: 1,
+    accept_user: [],
+    push_type: ['system']
+  },
+  {
+    id: 'comp_node_exception',
+    label: '计算节点异常',
+    level: 'WARNING',
+    threshold: 1,
+    accept_user: [],
+    push_type: ['system']
+  },
+  {
+    id: 'machine_offline',
+    label: '设备离线',
+    level: 'WARNING',
+    threshold: 1,
+    accept_user: [],
+    push_type: ['system']
+  },
+  {
+    id: 'manual_switch',
+    label: '主备切换',
+    level: 'WARNING',
+    threshold: 1,
+    accept_user: [],
+    push_type: ['system']
+  },
+  {
+    id: 'expand_cluster',
+    label: '集群扩容',
+    level: 'WARNING',
+    threshold: 1,
+    accept_user: [],
+    push_type: ['system']
+  },
+  {
+    id: 'shard_coldbackup',
+    label: '自动备份',
+    level: 'WARNING',
+    threshold: 1,
+    accept_user: [],
+    push_type: ['system']
+
+  },
+  {
+    id: 'manual_backup_cluster',
+    label: '全量备份',
+    level: 'WARNING',
+    threshold: 1,
+    accept_user: [],
+    push_type: ['system']
+  },
+  {
+    id: 'create_cluster',
+    label: '新增集群',
+    level: 'WARNING',
+    threshold: 1,
+    accept_user: [],
+    push_type: ['system']
+  },
+  {
+    id: 'delete_cluster',
+    label: '删除集群',
+    level: 'WARNING',
+    threshold: 1,
+    accept_user: [],
+    push_type: ['system']
+
+  },
+  {
+    id: 'add_shards',
+    label: '新增shard',
+    level: 'WARNING',
+    threshold: 1,
+    accept_user: [],
+    push_type: ['system']
+  },
+  {
+    id: 'delete_shard',
+    label: '删除shard',
+    level: 'WARNING',
+    threshold: 1,
+    accept_user: [],
+    push_type: ['system']
+  },
+  {
+    id: 'add_comps',
+    label: '增加计算节点',
+    level: 'WARNING',
+    threshold: 1,
+    accept_user: [],
+    push_type: ['system']
+  },
+  {
+    id: 'delete_comp',
+    label: '删除计算节点',
+    level: 'WARNING',
+    threshold: 1,
+    accept_user: [],
+    push_type: ['system']
+  },
+  {
+    id: 'add_nodes',
+    label: '增加存储节点',
+    level: 'WARNING',
+    threshold: 1,
+    accept_user: [],
+    push_type: ['system']
+  },
+  {
+    id: 'delete_node',
+    label: '删除存储节点',
+    level: 'WARNING',
+    threshold: 1,
+    accept_user: [],
+    push_type: ['system']
+  },
+  {
+    id: 'rcr_sync_abnormal',
+    label: 'RCR同步异常',
+    level: 'WARNING',
+    threshold: 1,
+    accept_user: [],
+    push_type: ['system']
+  }
 ]
 
 const alarm_level_arr = [

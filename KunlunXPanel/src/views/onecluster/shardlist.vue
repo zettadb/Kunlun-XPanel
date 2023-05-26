@@ -91,7 +91,12 @@
               <template slot-scope="{row,$index}">
                 <el-button v-if="row.status == 'online'" size="mini" type="primary" @click="nodeMonitor(row)">节点监控
                 </el-button>
-                <el-button v-if="row.status == 'online'&&user_name=='super_dba'" size="mini" type="primary" @click="handleSetCpu(row)">设置
+                <el-button
+                  v-if="row.status == 'online'&&user_name=='super_dba'"
+                  size="mini"
+                  type="primary"
+                  @click="handleSetCpu(row)"
+                >设置
                 </el-button>
                 <el-button
                   v-if="row.status !== 'online'&&user_name=='super_dba'"
@@ -114,9 +119,19 @@
                   @click="handleControlNode(row, 'restart')"
                 >重启
                 </el-button>
-                <el-button v-if="row.master == 'true'&&user_name=='super_dba'" size="mini" type="primary" @click="handleSwitch(row)">主备切换
+                <el-button
+                  v-if="row.master == 'true'&&user_name=='super_dba'"
+                  size="mini"
+                  type="primary"
+                  @click="handleSwitch(row)"
+                >主备切换
                 </el-button>
-                <el-button v-if="row.master == 'true'&&user_name=='super_dba'" size="mini" type="primary" @click="handleReDo(row)">重做备机节点
+                <el-button
+                  v-if="row.master == 'true'&&user_name=='super_dba'"
+                  size="mini"
+                  type="primary"
+                  @click="handleReDo(row)"
+                >重做备机节点
                 </el-button>
                 <el-button
                   v-if="storage_node_drop_priv === 'Y' && row.master !== 'true'"
@@ -213,7 +228,7 @@
             <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">个</i>
           </el-input>
         </el-form-item>
-        <el-form-item style="color:red;" v-show="if_show==='true'"><p>该集群已建立RCR关系</p></el-form-item>
+        <el-form-item v-show="if_show==='true'" style="color:red;"><p>该集群已建立RCR关系</p></el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogNodeVisible = false">关闭</el-button>
@@ -728,7 +743,7 @@ export default {
         conf_degrade_state: '',
         degrade_conf_time: ''
       },
-      if_show:'false',
+      if_show: 'false',
       rules: {
         nodes: [
           { required: true, trigger: 'blur', validator: validateNodes }
@@ -1212,13 +1227,13 @@ export default {
         this.strogemachines = []
         this.strogemachines = res.list
       })
-      //判断是否为rcr关系
-      let tempdate={cluster_id:this.listsent.id};
+      // 判断是否为rcr关系
+      const tempdate = { cluster_id: this.listsent.id }
       getRCRRelater(tempdate).then((response) => {
-        if(response.total==0){
-          this.if_show='false';
-        }else{
-          this.if_show='true';
+        if (response.total == 0) {
+          this.if_show = 'false'
+        } else {
+          this.if_show = 'true'
         }
       })
       this.$nextTick(() => {
@@ -1397,15 +1412,15 @@ export default {
           messageTip('该集群当前有且仅有一个shard,不能进行删除操作', 'error')
         } else if (res.total > 1) {
           const code = createCode()
-          let rcrRelation='';
-          //判断是否为rcr关系
-          let tempdate={cluater_id:this.listsent.id};
+          let rcrRelation = ''
+          // 判断是否为rcr关系
+          const tempdate = { cluater_id: this.listsent.id }
           getRCRRelater(tempdate).then((response) => {
-            if(response.total>0){
-              rcrRelation='该集群已建立rcr关系,';
+            if (response.total > 0) {
+              rcrRelation = '该集群已建立rcr关系,'
             }
           })
-          const string = rcrRelation+'此操作将永久删除' + row.name + ',是否继续?code=' + code
+          const string = rcrRelation + '此操作将永久删除' + row.name + ',是否继续?code=' + code
           gotoCofirm(string).then((res) => {
             // 先执行删权限
             if (!res.value) {
@@ -2221,11 +2236,11 @@ export default {
               }
               // 存储
               if (ress.attachment.hasOwnProperty('storage_state')) {
-                if (ress.attachment.storage_state == 'ongoing') {
+                if (ress.attachment.storage_state === 'ongoing') {
                   this.storage_state = 'process'
                   this.shard_icon = 'el-icon-loading'
                   this.shard_title = '正在' + info
-                } else if (ress.attachment.storage_state == 'done') {
+                } else if (ress.attachment.storage_state === 'done') {
                   this.storage_state = 'success'
                   this.shard_icon = 'el-icon-circle-check'
                   this.shard_title = info + '成功'
@@ -2233,7 +2248,7 @@ export default {
                   if (this.shard.length > 0) {
                     for (let c = 0; c < this.shard.length; c++) {
                       let shard_ids = ''
-                      if (info == '添加shard') {
+                      if (info === '添加shard') {
                         shard_ids = ress.attachment.shard_ids
                         for (let e = 0; e < shard_ids.length; e++) {
                           for (var item in shard_ids[e]) {
