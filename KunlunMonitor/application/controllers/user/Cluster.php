@@ -4005,7 +4005,7 @@ class Cluster extends CI_Controller
 		}
 		//rcr状态异常 1.rcr同步异常
 		//2.rcr主备延迟异常todo
-		$rcr_error = $this->rcrError();
+		$rcr_error = $this->rcrError($user_id);
 		if (!empty($rcr_error)) {
 			foreach ($rcr_error as $machine_row) {
 				if (strpos($machine_row, '同步') !== false) {
@@ -4035,6 +4035,34 @@ class Cluster extends CI_Controller
 							}
 						}
 						$insert_machine_sql = "insert into cluster_alarm_info(alarm_type,job_info,occur_timestamp) values ('rcr_sync_abnormal','$msg_data',now());";
+						$res_machine_insert = $this->Cluster_model->updateList($insert_machine_sql);
+					}
+				}
+				if (strpos($machine_row, '延迟') !== false) {
+					$arr = explode('[', $machine_row);
+					$arr_id = explode('的', $arr[0]);
+					$rcr_id=explode('为', $arr_id[0]);
+					$msg_data = urldecode(
+						json_encode(
+							array(
+								'message' => urlencode($machine_row),
+								'rcr_infos_id' => $rcr_id[1]
+							)
+						)
+					);
+					$select_machine_sql = "select job_info from cluster_alarm_info where job_info='$msg_data' and status='unhandled' ";
+					$res_machine_select = $this->Cluster_model->getList($select_machine_sql);
+					if ($res_machine_select == false) {
+						$PushMessage = $this->getPushMessageType("rcr_delay");
+						foreach ($PushMessage as $item) {
+							if ($item['type'] == 'phone_message') {
+								$this->SendSms($item['phone'], $msg_data);
+							}
+							if ($item['type'] == 'mail') {
+								$this->SendMail($item['email'], "RCR延迟过大rcr_delay", $msg_data);
+							}
+						}
+						$insert_machine_sql = "insert into cluster_alarm_info(alarm_type,job_info,occur_timestamp) values ('rcr_delay','$msg_data',now());";
 						$res_machine_insert = $this->Cluster_model->updateList($insert_machine_sql);
 					}
 				}
@@ -4454,8 +4482,9 @@ class Cluster extends CI_Controller
 		}
 
 	}
-	public function rcrError()
+	public function rcrError($user_id)
 	{
+		//rcr同步异常
 		$this->load->model('Cluster_model');
 		$sql = "select rcr_infos_id,dump_host from cluster_rcr_meta_sync where meta_sync_state ='disconnect' GROUP BY id ";
 		$res = $this->Cluster_model->getList($sql);
@@ -4465,7 +4494,29 @@ class Cluster extends CI_Controller
 				array_push($error, 'id为'.$row['rcr_infos_id'] . '的rcr关系同步异常了['.$row['dump_host']. ']');
 			}
 		}
-		//print_r($error);exit;
+		//rcr延迟过大
+		//先查表是否存在
+		$this->load->model('Login_model');
+		$sqldalay = "select TABLE_NAME from information_schema.TABLES where TABLE_NAME = 'rcr_max_dalay';";
+		$resdalay = $this->Login_model->getList($sqldalay);
+		if ($resdalay !== false) {
+			//print_r($resdalay);exit;
+			$select_sql = "select id,rcr_id,max_delay_time from rcr_max_dalay where user_id='$user_id'";
+			$res_select = $this->Login_model->getList($select_sql);
+			if (!empty($res_select)) {
+				foreach ($res_select as $row_select) {
+					$maxtime = $row_select['max_delay_time'];
+					$rcr_id=$row_select['rcr_id'];
+					$sql_rcr_delay = "select id,replica_delay from cluster_rcr_infos where status !='deleted' and id= '$rcr_id'";
+					$res_rcr_delay = $this->Cluster_model->getList($sql_rcr_delay);
+					if (!empty($res_rcr_delay)) {
+						if($maxtime<$res_rcr_delay[0]['replica_delay']){
+							array_push($error, 'id为' . $rcr_id. '的rcr关系延迟过大，当前延迟时间为'.$res_rcr_delay[0]['replica_delay'].'，最大延迟时间为'.$maxtime);
+						}
+					}
+				}
+			}
+		}
 		return $error;
 	}
 	public function addESList()
