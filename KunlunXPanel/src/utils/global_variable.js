@@ -98,7 +98,8 @@ const alarm_type_arr = [
   { id: 'delete_comp', label: '删除计算节点' },
   { id: 'add_nodes', label: '增加存储节点' },
   { id: 'delete_node', label: '删除存储节点' },
-  { id: 'rcr_sync_abnormal', label: 'RCR同步异常' }
+  { id: 'rcr_sync_abnormal', label: 'RCR同步异常' },
+  { id: 'rcr_delay', label: 'RCR延迟过大' }
 ]
 
 const alarm_level_arr = [

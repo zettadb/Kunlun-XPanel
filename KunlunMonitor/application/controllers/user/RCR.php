@@ -59,6 +59,16 @@ class RCR extends CI_Controller
 						}
 						$res[$key]['slave_meta_name'] = $name;
 					}
+					if ($k == 'id') {
+						$name='';
+						if (!empty($v)){
+							$meta_name=$this->getMaxDelayTime($v,$user_id);
+							if(!empty($meta_name)) {
+								$name=$meta_name[0]['max_delay_time'];
+							}
+						}
+						$res[$key]['max_delay_time'] = $name;
+					}
 				}
 			}
 		}
@@ -328,14 +338,14 @@ class RCR extends CI_Controller
 			print_r(json_decode($res_user));
 		}
 		//如不存在创建表
-		$sql = "CREATE TABLE IF NOT EXISTS rcr_shard_max_dalay (id int unsigned NOT NULL AUTO_INCREMENT,rcr_id int unsigned NOT NULL,user_id int unsigned NOT NULL,max_delay_time int NOT NULL DEFAULT '100',when_created timestamp NULL DEFAULT CURRENT_TIMESTAMP,update_time timestamp NULL DEFAULT CURRENT_TIMESTAMP,PRIMARY KEY (id)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3;";
+		$sql = "CREATE TABLE IF NOT EXISTS rcr_max_dalay (id int unsigned NOT NULL AUTO_INCREMENT,rcr_id int unsigned NOT NULL,user_id int unsigned NOT NULL,max_delay_time int NOT NULL DEFAULT '0',when_created timestamp NULL DEFAULT CURRENT_TIMESTAMP,update_time timestamp NULL DEFAULT CURRENT_TIMESTAMP,PRIMARY KEY (id)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3;";
 		$res = $this->Login_model->updateList($sql);
 		if ($res == 0) {
 			//先查是否存在此条数据，存在更新 不存在insert
-			$select_sql = "select id from rcr_shard_max_dalay where rcr_id='$rcr_id'  and user_id='$user_id'";
+			$select_sql = "select id from rcr_max_dalay where rcr_id='$rcr_id'  and user_id='$user_id'";
 			$res_select = $this->Login_model->getList($select_sql);
 			if (!empty($res_select)) {
-				$update_sql = "update rcr_shard_max_dalay set max_delay_time='$maxtime',update_time=now() where  rcr_id='$rcr_id' and user_id='$user_id'; ";
+				$update_sql = "update rcr_max_dalay set max_delay_time='$maxtime',update_time=now() where  rcr_id='$rcr_id' and user_id='$user_id'; ";
 				$res_update = $this->Login_model->updateList($update_sql);
 				if ($res_update == 1) {
 					$data['code'] = 200;
@@ -346,7 +356,7 @@ class RCR extends CI_Controller
 				}
 				print_r(json_encode($data));
 			} else {
-				$insert_sql = "insert into rcr_shard_max_dalay(rcr_id,user_id,max_delay_time) values ('$rcr_id','$user_id','$maxtime'); ";
+				$insert_sql = "insert into rcr_max_dalay(rcr_id,user_id,max_delay_time) values ('$rcr_id','$user_id','$maxtime'); ";
 				$res_insert = $this->Login_model->updateList($insert_sql);
 				if ($res_insert == 1) {
 					$data['code'] = 200;
@@ -585,6 +595,52 @@ class RCR extends CI_Controller
 		$data['code'] = 200;
 		$data['total'] = $res ? (int) $res[0]['count'] : 0;
 		print_r(json_encode($data));
+	}
+	public function getMaxDelayTime($rcr_id, $user)
+	{
+		$this->load->model('Login_model');
+		$sql = "select max_delay_time from rcr_max_dalay where user_id='$user' and rcr_id='$rcr_id';  ";
+		$res = $this->Login_model->getList($sql);
+		return $res;
+	}
+	public function delRCRMaxDalayInfo()
+	{
+		$arr = apache_request_headers(); //获取请求头数组
+		$token = $arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));
+			return;
+		}
+		//判断参数
+		$string = json_decode(@file_get_contents('php://input'), true);
+		$rcr_id = $string['rcr_id'];
+		$user_name = $string['user_name'];
+		$this->load->model('Login_model');
+		//查用户id
+		$user_id='';
+		$res_user = $this->Login_model->getUserId($user_name);
+		if($res_user['code']==200){
+			$user_id=$res_user['message'];
+		}else{
+			print_r(json_decode($res_user));
+		}
+		$this->load->model('Login_model');
+		$sqldalay = "select TABLE_NAME from information_schema.TABLES where TABLE_NAME = 'rcr_max_dalay';";
+		$resdalay = $this->Login_model->getList($sqldalay);
+		if ($resdalay !== false) {
+			$update_sql = "delete from rcr_max_dalay  where  rcr_id='$rcr_id' ";
+			$res_update = $this->Login_model->updateList($update_sql);
+			if ($res_update !== false) {
+				$data['code'] = 200;
+				$data['message'] = '删除成功';
+			} else {
+				$data['code'] = 500;
+				$data['message'] = '删除失败';
+			}
+			print_r(json_encode($data));
+		}
 	}
 
 }
