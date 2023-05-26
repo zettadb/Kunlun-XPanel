@@ -747,4 +747,24 @@ export function getMetaClusterList(query) {
     params: query
   })
 }
-
+export function addESList(data) {
+  return request({
+    url: '/user/Cluster/addESList',
+    method: 'post',
+    data
+  })
+}
+export function getESList(query) {
+  return request({
+    url: '/user/Cluster/getESList',
+    method: 'get',
+    params: query
+  })
+}
+export function delESList(data) {
+  return request({
+    url: '/user/Cluster/delESList',
+    method: 'post',
+    data
+  })
+}

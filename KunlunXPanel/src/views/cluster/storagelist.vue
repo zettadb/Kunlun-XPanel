@@ -22,6 +22,14 @@
           @click="handleCreate"
         >新增
         </el-button>
+        <el-button
+          v-if="user_name=='super_dba'"
+          class="filter-item"
+          type="primary"
+          icon="el-icon-setting"
+          @click="handleES"
+        >es配置
+        </el-button>
         <div v-show="installStatus===true" class="info" v-text="info" />
       </div>
       <div class="table-list-wrap" />
@@ -73,8 +81,6 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{row,$index}">
-<!--          <el-button v-if="user_name=='super_dba'" type="primary" size="mini" @click="handleUpdate(row)">编辑-->
-<!--          </el-button>-->
           <el-button
             v-if="user_name=='super_dba'"
             size="mini"
@@ -82,7 +88,6 @@
             @click="handleDelete(row,$index)"
           >删除
           </el-button>
-          <!-- <div v-text="info" v-show="installStatus===true" class="info"></div> -->
         </template>
       </el-table-column>
     </el-table>
@@ -165,6 +170,90 @@
         </el-timeline>
       </div>
     </el-dialog>
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogESVisible" custom-class="single_dal_view">
+      <el-form
+            ref="esForm"
+            :rules="rules"
+            :model="estemp"
+            label-position="left"
+            label-width="140px"
+        >
+            <el-form-item label="IP地址:" prop="hostaddr">
+            <el-input v-model="estemp.hostaddr" placeholder="请输入IP地址"/>
+            </el-form-item>
+            <el-form-item label="端口号:" prop="port">
+                <el-input v-model="estemp.port"  placeholder="请输入端口号" />
+            </el-form-item>
+            <el-form-item label="是否安装:" prop="is_install">
+            <el-radio v-model="estemp.is_install" label="yes">是</el-radio>
+            <el-radio v-model="estemp.is_install" label="no">否</el-radio>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer" style="text-align:right">
+            <el-button @click="dialogESVisible = false" >关闭</el-button>
+            <el-button type="primary" @click="createESData(row)">确认</el-button>
+        </div>
+        <el-table
+          :key="tableKey"
+          v-loading="listESLoading"
+          :data="eslist"
+          border
+          highlight-current-row
+          style="width: 100%;margin-bottom: 20px;"
+        >
+          >
+          <el-table-column
+            type="index"
+            align="center"
+            label="序号"
+            width="50"
+          />
+          <el-table-column
+            prop="es_hostaddr"
+            align="center"
+            label="IP地址"
+          />
+          <el-table-column
+            prop="es_port"
+            align="center"
+            label="端口号"
+          />
+          <el-table-column
+            prop="is_install"
+            align="center"
+            label="是否安装"
+          >
+          <template slot-scope="scope">
+            <span v-if="scope.row.is_install==='yes'">是</span>
+            <span v-else-if="scope.row.is_install==='no'">否</span>
+            <span v-else></span>
+          </template>
+          </el-table-column>
+
+          <el-table-column
+            label="操作"
+            align="center"
+            class-name="small-padding fixed-width"
+          >
+            <template slot-scope="{row,$index}">
+              <el-button
+                size="mini"
+                type="danger"
+                @click="handleESDelete(row,$index)"
+              >删除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <pagination
+          v-show="total>0"
+          :total="total"
+          :page.sync="listESQuery.pageNo"
+          :limit.sync="listESQuery.pageSize"
+          @pagination="getESList"
+        />
+    </el-dialog>
   </div>
 </template>
 
@@ -177,7 +266,10 @@ import {
   updateStorage,
   delStorage,
   getEvStatus,
-  getBackStorageList
+  getBackStorageList,
+  addESList,
+  getESList,
+  delESList
 } from '@/api/cluster/list'
 import { version_arr, storage_type_arr, timestamp_arr } from '@/utils/global_variable'
 import Pagination from '@/components/Pagination'
@@ -241,6 +333,13 @@ export default {
         pageSize: 10,
         name: ''
       },
+      listESLoading:true,
+      eslist:null,
+      estotal: 0,
+      listESQuery: {
+        pageNo: 1,
+        pageSize: 10,
+      },
       temp: {
         hostaddr: '',
         name: '',
@@ -248,13 +347,20 @@ export default {
         port: '',
         user_name: ''
       },
+      estemp:{
+        port:'',
+        hostaddr:'',
+        is_install:'no'
+      },
       dialogFormVisible: false,
       dialogEditVisible: false,
+      dialogESVisible:false,
       dialogStatus: '',
       textMap: {
         update: '编辑备份存储目标',
         create: '新增备份存储目标',
-        detail: '详情'
+        detail: '详情',
+        setES:'es配置'
       },
       dialogDetail: false,
       message_tips: '',
@@ -291,6 +397,61 @@ export default {
     this.timer = null
   },
   methods: {
+    handleESDelete(row) {
+      handleCofirm('此操作将永久删除该数据, 是否继续?').then(() => {
+        let tempdata={id:row.id}
+        delESList(tempdata).then((response) => {
+          const res = response
+          if (res.code == 200) {
+            this.message_tips = '删除成功'
+            this.message_type = 'success'
+            // 成功后重新设置数据
+            this.getESList()
+          } else {
+            this.message_tips = res.message
+            this.message_type = 'error'
+          }
+          messageTip(this.message_tips, this.message_type)
+        })
+      }).catch(() => {
+        console.log('quxiao')
+        messageTip('已取消删除', 'info')
+      })
+    },
+    getESList(){
+      this.listESLoading = true
+      let queryParam = Object.assign({}, this.listESQuery)
+      getESList(queryParam).then(response => {
+        this.eslist = response.list;
+        this.estotal = response.total;
+        setTimeout(() => {
+          this.listESLoading = false
+        }, 0.5 * 1000)
+      });
+    },
+    createESData(row) {
+      this.$refs['esForm'].validate((valid) => {
+        if (valid) {
+          const tempData = Object.assign({}, this.estemp)
+          addESList(tempData).then(response => {
+            const res = response
+            if (res.code === 200) {
+              this.getESList()
+              this.dialogESVisible = false
+              this.message_tips = '新增成功'
+              this.message_type = 'success'
+            } else {
+              this.message_tips = res.message
+              this.message_type = 'error'
+            }
+            messageTip(this.message_tips, this.message_type)
+          })
+        } else {
+          console.log('error submit!!');
+          return false;
+        }
+      });
+    },
     changeValue(value) {
       console.log(value)
       this.temp.stype = value
@@ -362,6 +523,15 @@ export default {
       this.dialogDetail = false
       this.$nextTick(() => {
         this.$refs.dataForm.clearValidate()
+      })
+    },
+    handleES() {
+      this.dialogStatus = 'setES'
+      this.dialogESVisible = true
+      this.dialogDetail = false
+      this.getESList();
+      this.$nextTick(() => {
+        this.$refs.esForm.clearValidate()
       })
     },
     createData() {

@@ -26,6 +26,7 @@
           icon=""
           @click="drawer = true"
         >元数据管理</el-button>
+        <div style="color:red;  float:right;"><p>设置延迟时间后，rcr关系的延迟时间超过最大延迟时间会进行延迟告警通知，不设置不告警</p></div>
       </div>
       <div class="table-list-wrap"></div>
     </div>
@@ -107,13 +108,18 @@
         label="延迟时间">
       </el-table-column>
       <el-table-column
+        prop="max_delay_time"
+        align="center"
+        label="最大延迟时间">
+      </el-table-column>
+      <el-table-column
         label="操作"
         align="center"
         width="250"
         class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
-          <el-button type="primary" size="mini" @click="handleDalay(row)">设置延迟</el-button>
-          <el-button type="primary" size="mini" v-show="row.status=='running'||row.status=='manual_stop'" @click="handleAtion(row)" style="margin-bottom: 3px">
+          <el-button type="primary" size="mini" @click="handleDalay(row)" style="margin-left: 10px; margin-bottom: 2px">设置延迟时间</el-button>
+          <el-button type="primary" size="mini" v-show="row.status=='running'||row.status=='manual_stop'" @click="handleAtion(row)" style="margin-bottom: 2px">
               <span v-if="row.status === 'running'">停止</span>
               <span v-else-if="row.status === 'manual_stop'">启动</span>
           </el-button>
@@ -252,7 +258,7 @@
 </template>
 <script>
  import { messageTip,handleCofirm,getNowDate } from "@/utils";
- import { getRCRList,getMetaMachine,getStandbyMeta,addRCR,delMachine,update,createMetaTable,actionRCR,setRCRMaxDalay,findMetaDB,findMetaCluster} from '@/api/rcr/list'
+ import { getRCRList,getMetaMachine,getStandbyMeta,addRCR,delMachine,update,createMetaTable,actionRCR,setRCRMaxDalay,findMetaDB,findMetaCluster,delRCRMaxDalayInfo} from '@/api/rcr/list'
  import { getEvStatus } from '@/api/cluster/list'
  import {version_arr,timestamp_arr,machine_type_arr,node_stats_arr} from "@/utils/global_variable"
  import Pagination from '@/components/Pagination' 
@@ -531,7 +537,7 @@ export default {
               let info='设置同步延迟时间';
               let i=0;
               this.timer = setInterval(() => {
-                this.getStatus(this.timer,res.job_id,i++,info)
+                this.getStatus(this.timer,res.job_id,i++,info,'')
               }, 1000)   
             }else{
               this.message_tips = res.error_info;
@@ -695,7 +701,7 @@ export default {
               let i=0;
               let info='新增RCR';
               this.timer = setInterval(() => {
-                this.getStatus(this.timer,res.job_id,i++,info)
+                this.getStatus(this.timer,res.job_id,i++,info,'')
               }, 1000)
             }
             else{
@@ -744,7 +750,7 @@ export default {
               let info='删除RCR';
               let i=0;
               this.timer = setInterval(() => {
-                this.getStatus(this.timer,res.job_id,i++,info)
+                this.getStatus(this.timer,res.job_id,i++,info,row.id)
               }, 1000)   
             }else{
               this.message_tips = res.error_info;
@@ -787,7 +793,7 @@ export default {
               let i=0;
               let info='手动切换RCR';
               this.timer = setInterval(() => {
-                this.getStatus(this.timer,res.job_id,i++,info)
+                this.getStatus(this.timer,res.job_id,i++,info,'')
               }, 1000)
             }
             else{
@@ -841,7 +847,7 @@ export default {
             let info=action+'RCR';
             let i=0;
             this.timer = setInterval(() => {
-              this.getStatus(this.timer,res.job_id,i++,info)
+              this.getStatus(this.timer,res.job_id,i++,info,'')
             }, 1000)   
           }else{
             this.message_tips = res.error_info;
@@ -854,7 +860,7 @@ export default {
         messageTip('已取消删除','info');
     });   
     },
-    getStatus (timer,data,i,info) {
+    getStatus (timer,data,i,info,row) {
       setTimeout(()=>{
         const postarr={};
         postarr.job_type='get_status';
@@ -875,6 +881,11 @@ export default {
               tempData.maxtime =this.setform.maxtime;
               tempData.user_name = sessionStorage.getItem('login_username');
               setRCRMaxDalay(tempData)
+            }
+            if(info=='删除RCR'){let tempData={};
+              tempData.rcr_id = row;
+              tempData.user_name = sessionStorage.getItem('login_username');
+              delRCRMaxDalayInfo(tempData)
             }
             this.getList();
           }else{

@@ -609,6 +609,7 @@
     <el-dialog :title="job_id" :visible.sync="dialogStatusShowVisible" custom-class="single_dal_view"
       :close-on-click-modal="false" :before-close="beforeDestory">
       <div style="width: 100%; background: #fff; padding: 0 20px">
+        <el-progress :text-inside="true" :stroke-width="20"  :percentage="percentage"   :status="progress_status" :format="setText" ></el-progress>
         <el-steps direction="vertical" :active="init_active">
           <el-step v-if="init_show" :title="init_title" icon="el-icon-more" />
           <el-step v-if="computer_show" :title="computer_title" :status="computer_state" :icon="computer_icon"
@@ -1201,6 +1202,10 @@ export default {
       data_center_comps: [
 
       ],
+      percentage:0,
+      progress_status:null,
+      progress_format:'',
+      user_name: sessionStorage.getItem('login_username'),
       rules: {
         ha_mode: [{ required: true, trigger: 'blur', validator: validateHaMode }],
         shards_count: [
@@ -1316,6 +1321,9 @@ export default {
   //   }
   //  },
   methods: {
+    setText(percentage){
+      return this.progress_format+ percentage+'%'
+    },
     installProxySqlChange(val) {
       if (val === '1') {
         this.temp.shards_count = 1
@@ -1987,6 +1995,9 @@ export default {
               this.init_show = true
               this.finish_show = false
               this.finish_state = ''
+              this.percentage=0
+              this.progress_status=null
+              this.progress_format=''
               // 调获取状态接口
               let i = 0
               this.getFStatus(this.timer, res.job_id, i++, info)
@@ -2106,6 +2117,9 @@ export default {
                 this.finish_show = false
                 this.finish_state = ''
                 const info = '添加shard'
+                this.percentage=0
+                this.progress_status=null
+                this.progress_format=''
                 let i = 0
                 this.getFStatus(this.timer, res.job_id, i++, info)
                 this.timer = setInterval(() => {
@@ -2136,19 +2150,6 @@ export default {
             addComps(tempData).then((response) => {
               const res = response
               if (res.status == 'accept') {
-                //  this.dialogNodeVisible = false;
-                //  this.dialogStatusVisible=true;
-                //  this.activities=[];
-                //  const newArr={
-                //     content:'正在新增计算节点...',
-                //     timestamp: getNowDate(),
-                //     size: 'large',
-                //     type: 'primary',
-                //     icon: 'el-icon-more'
-                //  };
-                //  this.activities.push(newArr)
-                // this.message_tips = '正在新增计算节点...';
-                // this.message_type = 'success';
                 // 调获取状态接口
                 this.dialogNodeVisible = false
                 this.dialogStatusShowVisible = true
@@ -2177,6 +2178,9 @@ export default {
                 this.finish_show = false
                 this.finish_state = ''
                 const info = '添加计算节点'
+                this.percentage=0
+                this.progress_status=null
+                this.progress_format=''
                 let i = 0
                 this.getFStatus(this.timer, res.job_id, i++, info)
                 this.timer = setInterval(() => {
@@ -2209,19 +2213,7 @@ export default {
             addNodes(tempData).then((response) => {
               const res = response
               if (res.status == 'accept') {
-                // this.dialogNodeVisible = false;
-                // this.dialogStatusVisible=true;
-                // this.activities=[];
-                // const newArr={
-                //     content:'正在新增存储节点...',
-                //     timestamp: getNowDate(),
-                //     size: 'large',
-                //     type: 'primary',
-                //     icon: 'el-icon-more'
-                // };
-                // this.activities.push(newArr)
-                // this.message_tips =  '正在新增存储节点...';
-                // this.message_type = 'success';
+                
                 this.dialogNodeVisible = false
                 this.dialogStatusShowVisible = true
                 // 把之前的数据清空
@@ -2249,6 +2241,9 @@ export default {
                 this.finish_show = false
                 this.finish_state = ''
                 const info = '添加存储节点'
+                this.percentage=0
+                this.progress_status=null
+                this.progress_format=''
                 // 调获取状态接口
                 let i = 0
                 this.getFStatus(this.timer, res.job_id, i++, info)
@@ -2306,19 +2301,7 @@ export default {
             delCluster(tempData).then((response) => {
               const res = response
               if (res.status == 'accept') {
-                // this.dialogFormVisible = false;
-                // this.dialogStatusVisible=true;
-                // this.activities=[];
-                // const newArr={
-                //   content:'正在删除集群...',
-                //   timestamp: getNowDate(),
-                //   size: 'large',
-                //   type: 'primary',
-                //   icon: 'el-icon-more'
-                // };
-                // this.activities.push(newArr);
-                // this.message_tips = '正在删除...';
-                // this.message_type = 'success';
+
 
                 this.dialogFormVisible = false
                 this.dialogStatusShowVisible = true
@@ -2349,6 +2332,9 @@ export default {
                 this.finish_state = ''
                 const info = '删除'
                 this.init_show = true
+                this.percentage=0
+                this.progress_status=null
+                this.progress_format=''
                 // 调获取状态接口
                 let i = 0
                 this.getFStatus(this.timer, res.job_id, i++, info)
@@ -2903,6 +2889,12 @@ export default {
         getEvStatus(postarr).then((ress) => {
           // 新增集群、删除集群
           if (info == '新增' || info == '删除') {
+            let progress_info='';
+            if(info == '新增'){
+              progress_info='安装'
+            }else{
+              progress_info='删除'
+            }
             if (ress.attachment !== null) {
               const steps = ress.attachment.job_steps.split(',')
               // 计算
@@ -2946,6 +2938,9 @@ export default {
                             for (var item in shard_ids[e]) {
                               var shard_idsValue = shard_ids[e][item]
                               if (this.shard[c].shard_id == shard_idsValue) {
+                                this.shard[c].icon = 'el-icon-circle-check'
+                                this.shard[c].status = 'success'
+                              }else{
                                 this.shard[c].icon = 'el-icon-circle-check'
                                 this.shard[c].status = 'success'
                               }
@@ -3027,6 +3022,9 @@ export default {
                               if (this.shard[c].shard_id == shard_idsValue) {
                                 this.shard[c].icon = 'el-icon-circle-check'
                                 this.shard[c].status = 'success'
+                              }else{
+                                this.shard[c].icon = 'el-icon-circle-check'
+                                this.shard[c].status = 'success'
                               }
                             }
                           }
@@ -3065,6 +3063,9 @@ export default {
                             for (var item in shard_ids[e]) {
                               var shard_idsValue = shard_ids[e][item]
                               if (this.shard[c].shard_id == shard_idsValue) {
+                                this.shard[c].icon = 'el-icon-circle-close'
+                                this.shard[c].status = 'error'
+                              }else{
                                 this.shard[c].icon = 'el-icon-circle-close'
                                 this.shard[c].status = 'error'
                               }
@@ -3324,6 +3325,9 @@ export default {
                             for (var item in shard_ids[e]) {
                               var shard_idsValue = shard_ids[e][item]
                               if (this.shard[c].shard_id == shard_idsValue) {
+                                this.shard[c].icon = 'el-icon-circle-close'
+                                this.shard[c].status = 'error'
+                              }else{
                                 this.shard[c].icon = 'el-icon-circle-close'
                                 this.shard[c].status = 'error'
                               }
@@ -3712,6 +3716,9 @@ export default {
                                   if (this.shard[c].shard_id == shard_idsValue) {
                                     this.shard[c].icon = 'el-icon-circle-check'
                                     this.shard[c].status = 'success'
+                                  }else{
+                                    this.shard[c].icon = 'el-icon-circle-check'
+                                    this.shard[c].status = 'success'
                                   }
                                 }
                               }
@@ -3741,6 +3748,9 @@ export default {
                                 for (var item in shard_ids[e]) {
                                   var shard_idsValue = shard_ids[e][item]
                                   if (this.shard[c].shard_id == shard_idsValue) {
+                                    this.shard[c].icon = 'el-icon-circle-close'
+                                    this.shard[c].status = 'error'
+                                  }else{
                                     this.shard[c].icon = 'el-icon-circle-close'
                                     this.shard[c].status = 'error'
                                   }
@@ -3806,6 +3816,9 @@ export default {
                               if (this.shard[c].shard_id == shard_idsValue) {
                                 this.shard[c].icon = 'el-icon-circle-close'
                                 this.shard[c].status = 'error'
+                              }else{
+                                this.shard[c].icon = 'el-icon-circle-close'
+                                this.shard[c].status = 'error'
                               }
                             }
                           }
@@ -3832,6 +3845,71 @@ export default {
                   }
                 }
               }
+              //加进度条
+              if(ress.status == 'ongoing'){
+                if((ress.attachment.storage_state == 'ongoing'&&ress.attachment.computer_state == 'done')||
+                (ress.attachment.storage_state == 'done'&&ress.attachment.computer_state == 'ongoing')||
+                (ress.attachment.storage_state == 'dispatch'&&ress.attachment.computer_state == 'done')||
+                (ress.attachment.storage_state == 'done'&&ress.attachment.computer_state == 'dispatch')){
+                  this.percentage=75;
+                  if(ress.attachment.computer_state == 'done'){
+                    this.progress_format='未完成存储'+progress_info
+                  }else{
+                     this.progress_format='未完成计算'+progress_info
+                  }
+                }else if((ress.attachment.storage_state == 'failed'&&ress.attachment.computer_state == 'done')||
+                (ress.attachment.storage_state == 'done'&&ress.attachment.computer_state == 'failed')||
+                (ress.attachment.storage_state == 'dispatch'&&ress.attachment.computer_state == 'done')||
+                (ress.attachment.storage_state == 'done'&&ress.attachment.computer_state == 'dispatch')){
+                  if(this.percentage<=50){
+                   this.percentage=50;
+                   if(ress.attachment.computer_state == 'done'){
+                      this.progress_format='未完成存储'+progress_info
+                    }else{
+                      this.progress_format='未完成计算'+progress_info
+                    }
+                  }
+                }else{
+                  // if(this.percentage<40){
+                  //  this.percentage+=10;
+                  // }else{
+                    this.percentage=45;
+                  // }
+                  this.progress_format='未完成存储和计算'+progress_info
+                }
+              }else if(ress.status == 'failed'){
+                this.progress_status="exception";
+                if((ress.attachment.storage_state == 'ongoing'&&ress.attachment.computer_state == 'done')||
+                (ress.attachment.storage_state == 'done'&&ress.attachment.computer_state == 'ongoing')||
+                (ress.attachment.storage_state == 'dispatch'&&ress.attachment.computer_state == 'done')||
+                (ress.attachment.storage_state == 'done'&&ress.attachment.computer_state == 'dispatch')){
+                  this.percentage=75;
+                  if(ress.attachment.computer_state == 'done'){
+                    this.progress_format='未完成存储'+progress_info
+                  }else{
+                     this.progress_format='未完成计算'+progress_info
+                  }
+                }else if((ress.attachment.storage_state == 'failed'&&ress.attachment.computer_state == 'ongoing')||
+                (ress.attachment.storage_state == 'ongoing'&&ress.attachment.computer_state == 'failed')
+                (ress.attachment.storage_state == 'dispatch'&&ress.attachment.computer_state == 'done')||
+                  (ress.attachment.storage_state == 'done'&&ress.attachment.computer_state == 'dispatch')){
+                  if(this.percentage<=50){
+                   this.percentage=50;
+                   if(ress.attachment.computer_state == 'done'){
+                      this.progress_format='未完成存储'+progress_info
+                    }else{
+                      this.progress_format='未完成计算'+progress_info
+                    }
+                  }
+                }else{
+                  this.percentage=45;
+                  this.progress_format='未完成存储和计算'+progress_info
+                }
+              }else{
+                  this.progress_status="success";
+                  this.percentage=100;
+                  this.progress_format=progress_info+'完成'
+              }
             } else if (
               ress.attachment == null &&
               ress.error_code == '70001' &&
@@ -3856,6 +3934,9 @@ export default {
                 this.storage_state = 'error'
                 this.shard_icon = 'el-icon-circle-close'
                 this.shard_title = info + 'shard失败'
+                //进度条
+                this.percentage=0
+                this.progress_format='未完成存储和计算'+progress_info
                 clearInterval(timer)
               }
             } else if (ress.attachment == null && ress.status == 'ongoing') {
@@ -3878,6 +3959,9 @@ export default {
               this.storage_state = 'success'
               this.shard_icon = 'el-icon-circle-check'
               this.shard_title = info + 'shard成功'
+              //进度条
+              this.percentage=100
+              this.progress_format=progress_info+'完成'
               clearInterval(timer)
             } else {
               this.init_show = false
@@ -3889,6 +3973,9 @@ export default {
               this.storage_state = 'error'
               this.shard_icon = 'el-icon-circle-close'
               this.shard_title = info + 'shard失败'
+              //进度条
+              this.percentage=0
+              this.progress_format='未完成存储和计算'+progress_info
               clearInterval(timer)
             }
           } else if (
@@ -3962,7 +4049,7 @@ export default {
               }
               // 存储
               if (ress.attachment.hasOwnProperty('storage_state')) {
-                if (ress.attachment.storage_state == 'ongoing') {
+                if (ress.attachment.storage_state == 'ongoing'||ress.attachment.storage_state == 'dispatch') {
                   this.storage_state = 'process'
                   this.shard_icon = 'el-icon-loading'
                   this.shard_title = '正在' + info
@@ -3972,7 +4059,6 @@ export default {
                   this.shard_title = info + '成功'
                   // 遍历存储节点改状态
                   if (this.shard.length > 0) {
-                    for (let c = 0; c < this.shard.length; c++) {
                       let shard_ids = ''
                       if (info == '添加shard') {
                         shard_ids = ress.attachment.shard_ids
@@ -3980,17 +4066,52 @@ export default {
                         shard_ids = ress.attachment.shard_hosts
                       }
                       // const shard_ids=ress.attachment.shard_ids;
+                    for (let c = 0; c < this.shard.length; c++) {
                       for (let e = 0; e < shard_ids.length; e++) {
                         for (var item in shard_ids[e]) {
                           var shard_idsValue = shard_ids[e][item]
                           if (this.shard[c].shard_id == shard_idsValue) {
                             this.shard[c].icon = 'el-icon-circle-check'
                             this.shard[c].status = 'success'
+                          }else{
+                            this.shard[c].icon = 'el-icon-circle-check'
+                            this.shard[c].status = 'success'
                           }
                         }
                       }
                     }
+                  }else{
+                    //if (ress.attachment.hasOwnProperty('shard_hosts')) {
+                    let shard_ids = ''
+                    if (info == '添加shard') {
+                      if (ress.attachment.hasOwnProperty('shard_ids')) {
+                        shard_ids = ress.attachment.shard_ids
+                        }
+                    } else {
+                      if (ress.attachment.hasOwnProperty('shard_hosts')) {
+                        shard_ids = ress.attachment.shard_hosts
+                        }
+                    }
+                    if(shard_ids.length>0){
+                      for (let e = 0; e < shard_ids.length; e++) {
+                        for (var item in shard_ids[e]) {
+                          const shardgoing = {}
+                          var shard_idsValue = shard_ids[e][item]
+                          console.log(shard_idsValue)
+                          const shard_text = item + ':' + shard_idsValue
+                          console.log(shard_text)
+                          shardgoing.title =
+                          shard_idsValue !== '' ? shard_text :  info+'成功'
+                          shardgoing.icon = 'el-icon-circle-check'
+                          shardgoing.status = 'success'
+                          shardgoing.description = ''
+                          shardgoing.shard_id = shard_idsValue
+                          this.shard.push(shardgoing)
+                        }
+                      }
+                    }
                   }
+                  //}
                 } else if (ress.attachment.storage_state == 'failed') {
                   this.storage_state = 'error'
                   this.shard_icon = 'el-icon-circle-close'
@@ -4008,6 +4129,9 @@ export default {
                         for (var item in shard_ids[e]) {
                           var shard_idsValue = shard_ids[e][item]
                           if (this.shard[c].shard_id == shard_idsValue) {
+                            this.shard[c].icon = 'el-icon-circle-close'
+                            this.shard[c].status = 'error'
+                          }else{
                             this.shard[c].icon = 'el-icon-circle-close'
                             this.shard[c].status = 'error'
                           }
@@ -4109,30 +4233,34 @@ export default {
                   }
                 } else {
                   if (this.shard.length == 0) {
-                    if (ress.attachment.hasOwnProperty('shard_hosts')) {
                       let shard_ids = ''
                       if (info == '添加shard') {
-                        shard_ids = ress.attachment.shard_ids
+                        if (ress.attachment.hasOwnProperty('shard_ids')) {
+                          shard_ids = ress.attachment.shard_ids
+                        }
                       } else {
-                        shard_ids = ress.attachment.shard_hosts
-                      }
-                      for (let e = 0; e < shard_ids.length; e++) {
-                        for (var item in shard_ids[e]) {
-                          const shardgoing = {}
-                          var shard_idsValue = shard_ids[e][item]
-                          console.log(shard_idsValue)
-                          const shard_text = item + ':' + shard_idsValue
-                          console.log(shard_text)
-                          shardgoing.title =
-                            shard_idsValue !== '' ? shard_text : '正在' + info
-                          shardgoing.icon = 'el-icon-loading'
-                          shardgoing.status = 'process'
-                          shardgoing.description = ''
-                          shardgoing.shard_id = shard_idsValue
-                          this.shard.push(shardgoing)
+                        if (ress.attachment.hasOwnProperty('shard_ids')) {
+                          shard_ids = ress.attachment.shard_hosts
                         }
                       }
-                    }
+                      if(shard_ids.length>0){
+                        for (let e = 0; e < shard_ids.length; e++) {
+                          for (var item in shard_ids[e]) {
+                            const shardgoing = {}
+                            var shard_idsValue = shard_ids[e][item]
+                            console.log(shard_idsValue)
+                            const shard_text = item + ':' + shard_idsValue
+                            console.log(shard_text)
+                            shardgoing.title =
+                            shard_idsValue !== '' ? shard_text : '正在' + info
+                            shardgoing.icon =ress.attachment.storage_state =='done'? 'el-icon-circle-check':'el-icon-loading'
+                            shardgoing.status =ress.attachment.storage_state =='done'? 'success':'process'
+                            shardgoing.description = ''
+                            shardgoing.shard_id = shard_idsValue
+                            this.shard.push(shardgoing)
+                          }
+                        }
+                      }
                   } else {
                     if (ress.attachment.hasOwnProperty('storage_state')) {
                       if (ress.attachment.storage_state == 'done') {
@@ -4153,6 +4281,9 @@ export default {
                               for (var item in shard_ids[e]) {
                                 var shard_idsValue = shard_ids[e][item]
                                 if (this.shard[c].shard_id == shard_idsValue) {
+                                  this.shard[c].icon = 'el-icon-circle-check'
+                                  this.shard[c].status = 'success'
+                                }else{
                                   this.shard[c].icon = 'el-icon-circle-check'
                                   this.shard[c].status = 'success'
                                 }
@@ -4177,6 +4308,9 @@ export default {
                               for (var item in shard_ids[e]) {
                                 var shard_idsValue = shard_ids[e][item]
                                 if (this.shard[c].shard_id == shard_idsValue) {
+                                  this.shard[c].icon = 'el-icon-circle-close'
+                                  this.shard[c].status = 'error'
+                                }else{
                                   this.shard[c].icon = 'el-icon-circle-close'
                                   this.shard[c].status = 'error'
                                 }
@@ -4244,6 +4378,9 @@ export default {
                             if (this.shard[c].shard_id == shard_idsValue) {
                               this.shard[c].icon = 'el-icon-circle-close'
                               this.shard[c].status = 'error'
+                            }else{
+                              this.shard[c].icon = 'el-icon-circle-close'
+                              this.shard[c].status = 'error'
                             }
                           }
                         }
@@ -4301,6 +4438,9 @@ export default {
                             if (this.shard[c].shard_id == shard_idsValue) {
                               this.shard[c].icon = 'el-icon-circle-check'
                               this.shard[c].status = 'success'
+                            }else{
+                              this.shard[c].icon = 'el-icon-circle-check'
+                              this.shard[c].status = 'success'
                             }
                           }
                         }
@@ -4310,6 +4450,47 @@ export default {
                   clearInterval(timer)
                   this.getList()
                 }
+              }
+              //加进度条
+              if(ress.status == 'ongoing'){
+                if(ress.attachment.storage_state == 'prepare'){
+                  this.percentage=20;
+                  this.progress_format='正在'+info
+                }else if(ress.attachment.storage_state == 'failed'){
+                  this.progress_format=info+'失败'
+                }else if(ress.attachment.storage_state == 'done'){
+                  this.percentage=100;
+                  this.progress_format=info+'完成'
+                }else{
+                  if(this.percentage<70&&this.percentage>=30){
+                    this.percentage+=10;
+                  }else if(this.percentage<30&&this.percentage>=0){
+                    this.percentage=30;
+                  }
+                  this.progress_format='正在'+info
+                }
+              }else if(ress.status == 'failed'){
+                this.progress_status="exception";
+                if(ress.attachment.storage_state == 'prepare'){
+                  this.percentage=20;
+                  this.progress_format='正在'+info
+                }else if(ress.attachment.storage_state == 'failed'){
+                  this.progress_format=info+'失败'
+                }else if(ress.attachment.storage_state == 'done'){
+                  this.percentage=100;
+                  this.progress_format=info+'完成'
+                }else{
+                  if(this.percentage<70&&this.percentage>=30){
+                    this.percentage+=10;
+                  }else if(this.percentage<30&&this.percentage>=0){
+                    this.percentage=30;
+                  }
+                  this.progress_format='正在'+info
+                }
+              }else{
+                this.progress_status="success";
+                this.percentage=100;
+                this.progress_format=info+'完成'
               }
             } else if (
               ress.attachment == null &&
@@ -4327,6 +4508,10 @@ export default {
                   this.storage_state = 'error'
                   this.shard_icon = 'el-icon-circle-close'
                   this.shard_title = info + '失败'
+                  if(this.percentage<30){
+                    this.percentage+=10;
+                  }
+                  this.progress_format= info+ '失败'
                   clearInterval(timer)
                 }
               } else if (info == '添加计算节点') {
@@ -4336,10 +4521,15 @@ export default {
                 this.computer_state = 'process'
                 this.computer_icon = 'el-icon-loading'
                 this.computer_title = '正在' + info
+                if(this.percentage<30){
+                    this.percentage+=10;
+                  }
+                this.progress_format='正在'+info
                 if (i > 5) {
                   this.computer_state = 'error'
                   this.computer_icon = 'el-icon-circle-close'
                   this.computer_title = info + '失败'
+                  this.progress_format=info + '失败'
                   clearInterval(timer)
                 }
               }
@@ -4351,6 +4541,10 @@ export default {
                 this.storage_state = 'process'
                 this.shard_icon = 'el-icon-loading'
                 this.shard_title = '正在' + info
+                if(this.percentage<30){
+                  this.percentage+=10;
+                }
+                this.progress_format='正在' +info 
               } else if (info == '添加计算节点') {
                 this.shard_show = false
                 this.init_show = false
@@ -4358,6 +4552,10 @@ export default {
                 this.computer_state = 'process'
                 this.computer_icon = 'el-icon-loading'
                 this.computer_title = '正在' + info
+                if(this.percentage<30){
+                  this.percentage+=10;
+                }
+                this.progress_format='正在' +info 
               }
             } else if (ress.attachment == null && ress.status == 'done') {
               if (info == '添加shard' || info == '添加存储节点') {
@@ -4367,6 +4565,8 @@ export default {
                 this.storage_state = 'success'
                 this.shard_icon = 'el-icon-circle-check'
                 this.shard_title = info + '成功'
+                this.percentage=100;
+                this.progress_format=info +'完成'
               } else if (info == '添加计算节点') {
                 this.shard_show = false
                 this.init_show = false
@@ -4374,6 +4574,8 @@ export default {
                 this.computer_state = 'success'
                 this.computer_icon = 'el-icon-circle-check'
                 this.computer_title = info + '成功'
+                this.percentage=100;
+                this.progress_format=info +'完成'
               }
               clearInterval(timer)
             } else {
@@ -4384,6 +4586,7 @@ export default {
                 this.storage_state = 'error'
                 this.shard_icon = 'el-icon-circle-close'
                 this.shard_title = info + '失败'
+                this.progress_format=info + '失败'
               } else if (info == '添加计算节点') {
                 this.shard_show = false
                 this.init_show = false
@@ -4391,6 +4594,7 @@ export default {
                 this.computer_state = 'error'
                 this.computer_icon = 'el-icon-circle-close'
                 this.computer_title = info + '失败'
+                this.progress_format=info + '失败'
               }
               clearInterval(timer)
             }
