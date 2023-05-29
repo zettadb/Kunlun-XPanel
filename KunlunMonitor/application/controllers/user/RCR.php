@@ -198,8 +198,14 @@ class RCR extends CI_Controller
 			print_r(json_encode($data));
 			return;
 		}
-		$sql = "select id,rcr_meta,name from cluster_meta_info ";
+		$user_name = $this->input->get('user_name');
 		$this->load->model('Login_model');
+		$user_id='';
+		$res_user = $this->Login_model->getUserId($user_name);
+		if($res_user['code']==200){
+			$user_id=$res_user['message'];
+		}
+		$sql = "select id,rcr_meta,name from cluster_meta_info where user_id='$user_id' ";
 		$res = $this->Login_model->getList($sql);
 		$data['code'] = 200;
 		$data['list'] = $res;

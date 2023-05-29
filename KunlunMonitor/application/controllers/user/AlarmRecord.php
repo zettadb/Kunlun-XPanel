@@ -122,12 +122,11 @@ class AlarmRecord extends CI_Controller
 									$meta_slave=$rcr_list!==false?$rcr_list[0]['slave_rcr_meta']:'';
 									$slave_cluster_id=$rcr_list!==false?$rcr_list[0]['slave_cluster_id']:'';
 									$shard_maps=$rcr_list!==false?$rcr_list[0]['shard_maps']:'';
-									$status=$rcr_list!==false?$rcr_list[0]['status']:'';
+									$status_rcr=$rcr_list!==false?$rcr_list[0]['status']:'';
 									$meta_master=str_replace(",","<br>",$meta_master);
 									$meta_slave=str_replace(",","<br>",$meta_slave);
 									$shard_maps=json_decode($shard_maps,true);
-									print_r($shard_maps[0]['master_master_host']);exit;
-									$res[$row]['list'] = '<div>rcr_id：' . $string["rcr_infos_id"] . '</div><div>主元数据：<div>' . $meta_master . '</div></div><div>备元数据：<div>' . $meta_slave . '</div></div><div>主集群id：' . $master_cluster_id . '</div><div>备集群id：' . $slave_cluster_id . '</div><div>shard信息：<div>主元数据主节点：' . $shard_maps[0]['master_master_host'] . '</div><div>主元数据shard_id：' . $shard_maps[0]['master_shard_id'] . '</div><div>主元数据同步节点：' . $shard_maps[0]['master_sync_host'] . '</div><div>备元数据shard_id：' . $shard_maps[0]['slave_shard_id'] . '</div></div><div>状态：' . $status . '</div>'. $arr_list;
+									$res[$row]['list'] = '<div>rcr_id：' . $string["rcr_infos_id"] . '</div><div>主元数据：<div>' . $meta_master . '</div></div><div>备元数据：<div>' . $meta_slave . '</div></div><div>主集群id：' . $master_cluster_id . '</div><div>备集群id：' . $slave_cluster_id . '</div><div>shard信息：<div>主元数据主节点：' . $shard_maps[0]['master_master_host'] . '</div><div>主元数据shard_id：' . $shard_maps[0]['master_shard_id'] . '</div><div>主元数据同步节点：' . $shard_maps[0]['master_sync_host'] . '</div><div>备元数据shard_id：' . $shard_maps[0]['slave_shard_id'] . '</div></div><div>状态：' . $status_rcr . '</div>'. $arr_list;
 								}else {
 									foreach ($job_type as $k2 => $v2) {
 										if ($value2 == $v2['code']) {
