@@ -5,8 +5,9 @@ export function getAlarmRecordList(query) {
     url: '/user/AlarmRecord/getAlarmRecordList',
     method: 'get',
     params: query
-  });
+  })
 }
+
 export function update(data) {
   return request({
     url: '/user/AlarmRecord/update',
@@ -31,7 +32,6 @@ export function DeleteAlarmItem(data) {
   })
 }
 
-
 export function updateAlarmConfig(data) {
   return request({
     url: '/user/AlarmRecord/updateAlarmConfig',
@@ -40,13 +40,12 @@ export function updateAlarmConfig(data) {
   })
 }
 
-
 export function getAlarmConfig(query) {
   return request({
     url: '/user/AlarmRecord/getAlarmConfig',
     method: 'get',
     params: query
-  });
+  })
 }
 
 export function getAlarmSetList(query) {
@@ -54,5 +53,5 @@ export function getAlarmSetList(query) {
     url: '/user/AlarmRecord/getAlarmSetList',
     method: 'get',
     params: query
-  });
+  })
 }
