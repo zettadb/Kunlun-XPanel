@@ -76,6 +76,65 @@
           <el-input v-model="temp.port" placeholder="请输入端口号" :disabled="dialogStatus === 'detail'" />
         </el-form-item>
 
+        <el-row v-for="(table, index) in form.backup" :key="table.key">
+          <el-col :span="10">
+            <el-form-item
+              label="备份表:"
+              :prop="'backup.' + index + '.db_table'"
+              :rules="{
+                required: true,
+                message: '备份表不能为空',
+                trigger: 'blur',
+              }"
+            >
+              <el-cascader
+                :key="'srcTable' + index"
+                v-model="form.backup[index].db_table"
+                style="width: 100%"
+                clearable
+                placeholder="请选择 库名/模式/表"
+                :options="tableOptions"
+                filterable
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="备份时间范围:" :prop="'backup.' + index" :rules="rules.time">
+              <el-time-select
+                :key="'startTime' + index"
+                v-model="form.backup[index].startTime"
+                style="width: 48%"
+                placeholder="起始时间"
+                :arrow-control="true"
+                :picker-options="{
+                  start: '00:00',
+                  step: '00:30',
+                  end: '24:00',
+                }"
+              />
+              <span>-</span>
+              <el-time-select
+                :key="'endTime' + index"
+                v-model="form.backup[index].endTime"
+                style="width: 48%"
+                placeholder="结束时间"
+                :picker-options="{
+                  start: '00:00',
+                  step: '00:30',
+                  end: '24:00',
+                  minTime: form.backup[index].startTime,
+                }"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="4" style="margin-top: 4px">
+            <div style="margin-left: 3px">
+              <el-button v-if="index === 0" icon="el-icon-plus" size="small" @click="onPush(index)" />
+              <el-button v-else icon="el-icon-minus" size="small" @click="onRemove(index)" />
+            </div>
+          </el-col>
+        </el-row>
+
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button v-show="!dialogDetail" @click="dialogFormVisible = false">关闭</el-button>

@@ -1,32 +1,34 @@
 <template>
- <div class="icons-container">
-  <el-tabs v-model="activeName" @tab-click="handleClick" type="border-card" >
-    <el-tab-pane label="逻辑备份" name="first">
-      <LogicalBackup  />
-    </el-tab-pane>
-    <el-tab-pane label="物理备份" name="second">
-      <BackUp  />
-    </el-tab-pane>
-  </el-tabs>
- </div>
+  <div class="icons-container">
+    <el-tabs v-model="activeName" type="border-card" @tab-click="handleClick">
+      <el-tab-pane label="逻辑备份" name="first">
+        <LogicalBackup />
+      </el-tab-pane>
+      <el-tab-pane label="物理备份" name="second">
+        <BackUp />
+      </el-tab-pane>
+    </el-tabs>
+  </div>
 </template>
 <script>
-  import BackUp from "../cluster/backup.vue";
-  import LogicalBackup from  "../cluster/logicalbp.vue";
-  export default {
-    components: { BackUp ,LogicalBackup},
-    data() {
-      return {
-        activeName: 'first'
-      };
-    },
-    methods: {
-      handleClick(tab, event) {
-        console.log(tab, event);
-      }
-      
+
+import BackUp from '../cluster/backup.vue'
+import LogicalBackup from '../cluster/logicalbp.vue'
+
+export default {
+  components: { BackUp, LogicalBackup },
+  data() {
+    return {
+      activeName: 'first'
     }
-  };
+  },
+  methods: {
+    handleClick(tab, event) {
+      console.log(tab, event)
+    }
+
+  }
+}
 </script>
 <style lang="scss" scoped>
 .icons-container {

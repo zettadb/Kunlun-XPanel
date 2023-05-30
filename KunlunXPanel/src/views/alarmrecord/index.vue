@@ -587,7 +587,7 @@ export default {
             response.list[k].accept_user = v.accept_user === '' ? v.accept_user : v.accept_user.split(',')
           })
           this.alarmTypes = response.list
-          console.log(this.alarmTypes)
+          // console.log(this.alarmTypes)
         }
       })
     },

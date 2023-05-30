@@ -116,7 +116,7 @@
         </el-form-item>
 
         <div
-          v-if="temp.plugin_name == 'event_file'"
+          v-if="temp.plugin_name === 'event_file'"
           style="border:1px solid #ddd;width:80%;padding:32px;border-radius: 10px;"
         >
           <el-form-item label="plugin_param:" prop="plugin_param">
@@ -188,13 +188,9 @@
 </template>
 
 <script>
-import { messageTip, handleCofirm, getNowDate } from '@/utils'
+import { messageTip, getNowDate } from '@/utils'
 import {
-  // eslint-disable-next-line no-unused-vars
-  getStorageList,
   updateStorage,
-  delStorage,
-  getEvStatus,
   editCdc,
   getCdcList,
   getPGTableList,
@@ -203,6 +199,7 @@ import {
 } from '@/api/cluster/list'
 import { version_arr, storage_type_arr, timestamp_arr } from '@/utils/global_variable'
 import Pagination from '@/components/Pagination'
+import { Loading } from 'element-ui'
 
 export default {
   name: 'Account',
@@ -479,7 +476,7 @@ export default {
 
           let cluster_name = ''
           this.clusterOptions.forEach((v) => {
-            if (v.id == _this.temp.cluster_name) {
+            if (v.id === _this.temp.cluster_name) {
               cluster_name = v.name
             }
           })
@@ -490,7 +487,7 @@ export default {
           })
 
           let output_plugins = []
-          if (this.temp.plugin_name == 'event_file') {
+          if (this.temp.plugin_name === 'event_file') {
             output_plugins = [{
               plugin_name: 'event_file',
               plugin_param: this.temp.plugin_param,
@@ -599,102 +596,11 @@ export default {
       })
     },
     handleDelete(row) {
-      handleCofirm('此操作将永久删除该数据, 是否继续?')
-        .then(() => {
-          const tempData = {}
-          tempData.job_id = ''
-          tempData.job_type = 'delete_backup_storage'
-          tempData.version = version_arr[0].ver
-          tempData.timestamp = timestamp_arr[0].time + ''
-          tempData.user_name = sessionStorage.getItem('login_username')
-          tempData.paras = { name: row.name }
-          delStorage(tempData).then((response) => {
-            const res = response
-            if (res.status == 'accept') {
-              this.dialogFormVisible = false
-              this.dialogStatusVisible = true
-              this.activities = []
-              const newArr = {
-                content: '正在删除备份存储目标',
-                timestamp: getNowDate(),
-                size: 'large',
-                type: 'primary',
-                icon: 'el-icon-more'
-              }
-              this.activities.push(newArr)
-              // 调获取状态接口
-              let i = 0
-              const action_name = '删除备份存储目标'
-              this.timer = setInterval(() => {
-                this.getStatus(this.timer, res.job_id, i++, action_name)
-              }, 1000)
-            } else {
-              this.message_tips = res.error_info
-              this.message_type = 'error'
-              messageTip(this.message_tips, this.message_type)
-            }
-          })
-        })
-        .catch(() => {
-          console.log('quxiao')
-          messageTip('已取消删除', 'info')
-        })
+
     },
 
     getStatus(timer, data, i, action_name) {
-      setTimeout(() => {
-        const postarr = {}
-        postarr.job_type = 'get_status'
-        postarr.version = version_arr[0].ver
-        postarr.job_id = data
-        postarr.timestamp = timestamp_arr[0].time + ''
-        postarr.paras = {}
-        getEvStatus(postarr).then((res) => {
-          if (res.status == 'done' || res.status == 'failed') {
-            if (res.status == 'done') {
-              const newArrdone = {
-                content: action_name + '成功',
-                timestamp: getNowDate(),
-                color: '#0bbd87',
-                icon: 'el-icon-circle-check'
-              }
-              this.activities.push(newArrdone)
-              this.getList()
-              // this.dialogStatusVisible=false;
-              clearInterval(timer)
-            } else {
-              if (
-                res.attachment == null &&
-                res.error_code == '70001' &&
-                res.status == 'failed'
-              ) {
-                if (i > 5) {
-                  const newArr = {
-                    content: res.error_info,
-                    timestamp: getNowDate(),
-                    color: 'red',
-                    icon: 'el-icon-circle-close'
-                  }
-                  this.activities.push(newArr)
-                  clearInterval(timer)
-                }
-              } else {
-                const newArr = {
-                  content: res.error_info,
-                  timestamp: getNowDate(),
-                  color: 'red',
-                  icon: 'el-icon-circle-close'
-                }
-                this.activities.push(newArr)
-                clearInterval(timer)
-              }
-            }
-          }
-        })
-        if (i >= 86400) {
-          clearInterval(timer)
-        }
-      }, 0)
+
     }
   }
 }

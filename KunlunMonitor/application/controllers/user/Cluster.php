@@ -3085,12 +3085,8 @@ class Cluster extends CI_Controller
 		}
 		//调接口
 		$this->load->model('Cluster_model');
-		// $post_data = str_replace("\\/", "/", json_encode($string));
-		//print_r($string);
-		//exit;
-		//$post_arr = $this->Cluster_model->postData($post_data, $this->post_url);
 		try {
-			exit($string['paras']['variable']);
+			//exit($string['paras']['variable']);
 			$this->Cluster_model->updateList($string['paras']['variable']);
 			$resp = [
 				'error_code' => 0,
@@ -3099,7 +3095,6 @@ class Cluster extends CI_Controller
 			print_r(json_encode($resp));
 			return;
 		} catch (Exception $th) {
-			//throw $th;
 			$resp = [
 				'error_code' => 1,
 				'status' => '',

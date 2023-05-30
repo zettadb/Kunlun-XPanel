@@ -28,10 +28,21 @@ class Cluster_model extends CI_Model
 	}
 
 	//更新数据
+
+	/**
+	 * @throws Exception
+	 */
 	public function updateList($sql)
 	{
-		$this->db->query($sql);
-		return $this->db->affected_rows();
+		try {
+			$query = $this->db->query($sql);
+			if ($query === false) {
+				throw new Exception($this->db->error);
+			}
+			return $this->db->affected_rows();
+		} catch (Exception $e) {
+			throw new Exception($e->getMessage());
+		}
 	}
 
 	public function create_uuid($prefix = ""): string
