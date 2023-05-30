@@ -12,7 +12,8 @@
 	},
 	"require": {
 		"php": ">=7.1",
-      "ext-curl": "*"
+      "ext-curl": "*",
+      "ext-json": "*"
     },
 	"suggest": {
 		"paragonie/random_compat": "Provides better randomness in PHP 5.x"
