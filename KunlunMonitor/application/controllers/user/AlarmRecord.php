@@ -24,7 +24,16 @@ class AlarmRecord extends CI_Controller
 
 		try {
 
-			$sql_table = "CREATE TABLE IF NOT EXISTS `cluster_alarm_user` (`id` INT NOT NULL AUTO_INCREMENT,`uid` INT DEFAULT NULL,`alarm_type` VARCHAR (128) COLLATE utf8mb4_0900_as_cs DEFAULT NULL COMMENT '告警类型',`alarm_to_user` VARCHAR (255) COLLATE utf8mb4_0900_as_cs DEFAULT NULL COMMENT '提醒方式',`create_at` INT DEFAULT NULL,`update_at` INT DEFAULT NULL,`delete_at` INT DEFAULT NULL,`status` TINYINT DEFAULT NULL COMMENT '是否生效',PRIMARY KEY (`id`)) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;";
+			$sql_table = "CREATE TABLE IF NOT EXISTS `cluster_alarm_user` (
+  `id` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL COMMENT '告警类型',
+  `label` varchar(255) COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
+  `accept_user` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL COMMENT '提醒方式',
+  `create_at` int DEFAULT NULL,
+  `push_type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
+  `threshold` tinyint DEFAULT NULL,
+  `level` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;";
 			$this->Cluster_model->updateList($sql_table);
 
 			$push_comfig = "CREATE TABLE IF NOT EXISTS `cluster_alarm_message_config` (`id` INT NOT NULL AUTO_INCREMENT,`message` text COLLATE utf8mb4_0900_as_cs,`create_at` INT DEFAULT NULL,`update_at` INT DEFAULT NULL,`type` VARCHAR (64) COLLATE utf8mb4_0900_as_cs DEFAULT NULL,PRIMARY KEY (`id`)) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;";
@@ -53,7 +62,6 @@ class AlarmRecord extends CI_Controller
 		$alarm_level = $arr['alarm_level'];
 		$start = ($pageNo - 1) * $pageSize;
 		$job_type = $this->job_type;
-		//print_r($pageSize);exit;
 		//获取数据
 		$this->load->model('Cluster_model');
 		//先查表是否存在
@@ -71,7 +79,8 @@ class AlarmRecord extends CI_Controller
 				$sql .= " and  alarm_level ='$alarm_level'";
 			}
 			$sql .= " order by id desc limit " . $pageSize . " offset " . $start;
-			//print_r($sql);exit;
+			//print_r($sql);
+			//exit;
 			$res = $this->Cluster_model->getList($sql);
 			if ($res === false) {
 				$res = array();
@@ -107,28 +116,29 @@ class AlarmRecord extends CI_Controller
 										$arr_list = '<div>shard_id：' . $string["shardid"] . '</div>';
 									}
 									$res[$row]['list'] = '<div>job_id：' . $string["id"] . '</div><div>集群ID：' . $string["cluster_id"] . '</div><div>IP：' . $string["ip"] . '</div><div>端口：' . $string["port"] . '</div><div>开始时间：' . $string["when_started"] . '</div><div>结束时间：' . $string["when_ended"] . '</div>' . $arr_list;
-								} else if($value2 == 'rcr_sync_abnormal'){
+								} else if ($value2 == 'rcr_sync_abnormal') {
 									$arr_list = '';
 									$res[$row]['job_type'] = 'RCR同步异常';
-									$res[$row]['object'] = $string['dump_host'] ;
-									$res[$row]['list'] = '<div>rcr_id：' . $string["rcr_infos_id"] . '</div><div>dump_host：' . $string["dump_host"] . '</div>'. $arr_list;
-								}else if($value2 == 'rcr_delay'){
+									$res[$row]['object'] = $string['dump_host'];
+									$res[$row]['list'] = '<div>rcr_id：' . $string["rcr_infos_id"] . '</div><div>dump_host：' . $string["dump_host"] . '</div>' . $arr_list;
+								} else if ($value2 == 'rcr_delay') {
 									$arr_list = '';
 									$res[$row]['job_type'] = 'RCR延迟过大';
-									$res[$row]['object'] = $string['rcr_infos_id'] ;
+									$res[$row]['object'] = $string['rcr_infos_id'];
 									$rcr_list = $this->getThisRCRList($string['rcr_infos_id']);
-									$meta_master=$rcr_list!==false?$rcr_list[0]['master_rcr_meta']:'';
-									$master_cluster_id=$rcr_list!==false?$rcr_list[0]['master_cluster_id']:'';
-									$meta_slave=$rcr_list!==false?$rcr_list[0]['slave_rcr_meta']:'';
-									$slave_cluster_id=$rcr_list!==false?$rcr_list[0]['slave_cluster_id']:'';
-									$shard_maps=$rcr_list!==false?$rcr_list[0]['shard_maps']:'';
-									$status=$rcr_list!==false?$rcr_list[0]['status']:'';
-									$meta_master=str_replace(",","<br>",$meta_master);
-									$meta_slave=str_replace(",","<br>",$meta_slave);
-									$shard_maps=json_decode($shard_maps,true);
-									print_r($shard_maps[0]['master_master_host']);exit;
-									$res[$row]['list'] = '<div>rcr_id：' . $string["rcr_infos_id"] . '</div><div>主元数据：<div>' . $meta_master . '</div></div><div>备元数据：<div>' . $meta_slave . '</div></div><div>主集群id：' . $master_cluster_id . '</div><div>备集群id：' . $slave_cluster_id . '</div><div>shard信息：<div>主元数据主节点：' . $shard_maps[0]['master_master_host'] . '</div><div>主元数据shard_id：' . $shard_maps[0]['master_shard_id'] . '</div><div>主元数据同步节点：' . $shard_maps[0]['master_sync_host'] . '</div><div>备元数据shard_id：' . $shard_maps[0]['slave_shard_id'] . '</div></div><div>状态：' . $status . '</div>'. $arr_list;
-								}else {
+									$meta_master = $rcr_list !== false ? $rcr_list[0]['master_rcr_meta'] : '';
+									$master_cluster_id = $rcr_list !== false ? $rcr_list[0]['master_cluster_id'] : '';
+									$meta_slave = $rcr_list !== false ? $rcr_list[0]['slave_rcr_meta'] : '';
+									$slave_cluster_id = $rcr_list !== false ? $rcr_list[0]['slave_cluster_id'] : '';
+									$shard_maps = $rcr_list !== false ? $rcr_list[0]['shard_maps'] : '';
+									$status = $rcr_list !== false ? $rcr_list[0]['status'] : '';
+									$meta_master = str_replace(",", "<br>", $meta_master);
+									$meta_slave = str_replace(",", "<br>", $meta_slave);
+									$shard_maps = json_decode($shard_maps, true);
+									//print_r($shard_maps[0]['master_master_host']);
+									//exit;
+									$res[$row]['list'] = '<div>rcr_id：' . $string["rcr_infos_id"] . '</div><div>主元数据：<div>' . $meta_master . '</div></div><div>备元数据：<div>' . $meta_slave . '</div></div><div>主集群id：' . $master_cluster_id . '</div><div>备集群id：' . $slave_cluster_id . '</div><div>shard信息：<div>主元数据主节点：' . $shard_maps[0]['master_master_host'] . '</div><div>主元数据shard_id：' . $shard_maps[0]['master_shard_id'] . '</div><div>主元数据同步节点：' . $shard_maps[0]['master_sync_host'] . '</div><div>备元数据shard_id：' . $shard_maps[0]['slave_shard_id'] . '</div></div><div>状态：' . $status . '</div>' . $arr_list;
+								} else {
 									foreach ($job_type as $k2 => $v2) {
 										if ($value2 == $v2['code']) {
 											$res[$row]['job_type'] = $v2['name'];
@@ -312,9 +322,10 @@ class AlarmRecord extends CI_Controller
 		}
 		$data['code'] = 200;
 		$data['list'] = $res;
-		$data['total'] = $res_total ? (int) $res_total[0]['count'] : 0;
+		$data['total'] = $res_total ? (int)$res_total[0]['count'] : 0;
 		print_r(json_encode($data));
 	}
+
 	public function update()
 	{
 		//获取token
@@ -432,7 +443,6 @@ class AlarmRecord extends CI_Controller
 	}
 
 
-
 	public function getAlarmConfig()
 	{
 
@@ -459,7 +469,6 @@ class AlarmRecord extends CI_Controller
 		}
 		//判断参数
 		$string = json_decode(@file_get_contents('php://input'), true);
-
 		//验证token
 		$this->load->model('Login_model');
 		$this->load->model('Cluster_model');
@@ -473,31 +482,15 @@ class AlarmRecord extends CI_Controller
 					$data['message'] = 'token错误';
 					print_r(json_encode($data));
 				} else {
-					if ($string['id'] == 0) {
-						//新增
-						$addSql = "INSERT INTO `kunlun_metadata_db`.`cluster_alarm_user` ( `uid`, `alarm_type`, `alarm_to_user`, `create_at`, `status`) VALUES ( " . $string['user'] . ", '" . $string['alrmType'] . "', '" . implode(",", $string["alrm_to_user"]) . "', " . time() . ", " . $string['status'] . ")";
-						$res_update = $this->Cluster_model->updateList($addSql);
-						if ($res_update == 1) {
-							$data['code'] = 200;
-							$data['message'] = '成功';
-						} else {
-							$data['code'] = 501;
-							$data['message'] = '失败';
-						}
-						print_r(json_encode($data));
-					} else {
-						//update
-						$updateSql = "UPDATE `kunlun_metadata_db`.`cluster_alarm_user` SET `uid` = " . $string['user'] . ", `alarm_type` = '" . $string['alrmType'] . "', `alarm_to_user` = '" . implode(",", $string["alrm_to_user"]) . "', `update_at` = " . time() . ", `status` = " . $string['status'] . " WHERE `id` = " . $string['id'];
-						$res_update = $this->Cluster_model->updateList($updateSql);
-						if ($res_update == 1) {
-							$data['code'] = 200;
-							$data['message'] = '成功';
-						} else {
-							$data['code'] = 501;
-							$data['message'] = '失败';
-						}
-						print_r(json_encode($data));
+					$delSql = " delete from  cluster_alarm_user";
+					$this->Cluster_model->updateList($delSql);
+					foreach ($string as $item) {
+						$addSql = "insert into cluster_alarm_user (  `id`,`label`, `accept_user`, `create_at`,`push_type`,`threshold`,`level`) VALUES ( '" . $item['id'] . "','" . $item['label'] . "', '" . implode(",", $item["accept_user"]) . "'," . time() . ",'" . implode(",", $item["push_type"]) . "'," . $item['threshold'] . ",'" . $item['level'] . "')";
+						$this->Cluster_model->updateList($addSql);
 					}
+					$data['code'] = 200;
+					$data['message'] = '成功';
+					print_r(json_encode($data));
 				}
 			}
 		} else {
@@ -506,7 +499,6 @@ class AlarmRecord extends CI_Controller
 			print_r(json_encode($data));
 		}
 	}
-
 
 
 	public function updateAlarmConfig()
@@ -580,6 +572,7 @@ class AlarmRecord extends CI_Controller
 			return '';
 		}
 	}
+
 	public function getShardName($db_cluster_id, $id)
 	{
 		$sql = "select name from shards where id='$id' and db_cluster_id='$db_cluster_id'";
@@ -591,6 +584,7 @@ class AlarmRecord extends CI_Controller
 			return '';
 		}
 	}
+
 	public function getCompName($db_cluster_id, $id)
 	{
 		$sql = "select name from comp_nodes where id='$id' and db_cluster_id='$db_cluster_id'";
@@ -602,7 +596,8 @@ class AlarmRecord extends CI_Controller
 			return '';
 		}
 	}
-	public function getThisRCRList( $id)
+
+	public function getThisRCRList($id)
 	{
 		$sql = "select * from cluster_rcr_infos where id='$id' ";
 		$this->load->model('Cluster_model');

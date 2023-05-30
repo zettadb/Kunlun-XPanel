@@ -54,26 +54,30 @@
               <el-table-column property="label" prop="label" label="告警名称" />
               <el-table-column property="level" prop="level" label="告警级别">
                 <template slot-scope="scope">
-                  <el-select v-model="scope.row.level" placeholder="告警级别">
+                  <el-select v-model="scope.row.level" placeholder="告警级别" @change="createData()">
                     <el-option v-for="item in alarmLevel" :key="item.id" :label="item.id" :value="item.id" />
                   </el-select>
                 </template>
               </el-table-column>
               <el-table-column property="threshold" prop="threshold" label="告警阈值">
                 <template slot-scope="scope">
-                  <span>告警{{ scope.row.threshold }} 次触发</span>
+                  <span>告警</span>
+                  <span>
+                    <el-input v-model="scope.row.threshold" style="width: 50px" size="mini" @blur="createData()" />
+                  </span>
+                  <span>次触发</span>
                 </template>
               </el-table-column>
               <el-table-column property="accept_user" prop="accept_user" label="推送用户">
                 <template slot-scope="{ row }">
-                  <el-select v-model="row.accept_user" multiple clearable placeholder="推送用户">
+                  <el-select v-model="row.accept_user" multiple clearable placeholder="推送用户" @change="createData()">
                     <el-option v-for="item in userList" :key="item.id" :label="item.username" :value="item.id" />
                   </el-select>
                 </template>
               </el-table-column>
               <el-table-column property="accept_user" prop="accept_user" label="推送方式">
                 <template slot-scope="{ row }">
-                  <el-select v-model="row.push_type" multiple clearable placeholder="推送方式">
+                  <el-select v-model="row.push_type" multiple clearable placeholder="推送方式" @change="createData()">
                     <el-option key="0" label="系统提醒" value="system" />
                     <el-option key="1" label="短信提醒" value="phone_message" />
                     <el-option key="2" label="邮件提醒" value="mail" />
@@ -153,7 +157,7 @@
         </el-select>
         <el-button icon="el-icon-search" @click="handleFilter"> 查询</el-button>
         <el-button icon="el-icon-refresh-right" @click="handleClear"> 重置</el-button>
-        <el-button type="primary" icon="el-icon-plus" @click="addAlarm()"> 新增</el-button>
+        <!--        <el-button type="primary" icon="el-icon-plus" @click="addAlarm()"> 新增</el-button>-->
         <el-button type="primary" icon="el-icon-plus" @click="table = true"> 告警管理</el-button>
       </div>
       <div class="table-list-wrap" />
@@ -352,7 +356,7 @@ export default {
         this.total = response.total
         this.listLoading = false
       })
-    }, 60000) // 1min
+    }, 10000) // 1min
   },
   destroyed() {
     clearInterval(this.timer)
@@ -367,7 +371,7 @@ export default {
           console.log(tempData)
           updateAlarmConfig(tempData).then((response) => {
             const res = response
-            if (res.code == 200) {
+            if (res.code === 200) {
               this.message_tips = '成功'
               this.message_type = 'success'
               this.getList()
@@ -524,6 +528,7 @@ export default {
     handleClear() {
       this.listQuery.job_type = ''
       this.listQuery.pageNo = 1;
+      // eslint-disable-next-line no-sequences
       (this.listQuery.status = 'unhandled'), (this.alarm_level = '')
       this.getList()
     },
@@ -537,6 +542,7 @@ export default {
         for (let i = 0; i < configItem.length; i++) {
           switch (configItem[i].type) {
             case 'email':
+              // eslint-disable-next-line no-case-declarations
               const email = JSON.parse(configItem[i].message)
               _this.mail_config.AccessKeyId = email.AccessKeyId
               _this.mail_config.SecretKey = email.SecretKey
@@ -544,11 +550,14 @@ export default {
               _this.mail_config.id = configItem[i].id
               break
             case 'phone_message':
+              // eslint-disable-next-line no-case-declarations
               const phone_message = JSON.parse(configItem[i].message)
               _this.phone_message_config.AccessKeyId = phone_message.AccessKeyId
               _this.phone_message_config.SecretKey = phone_message.SecretKey
               _this.phone_message_config.TemplateId = phone_message.TemplateId
+              // eslint-disable-next-line no-case-declarations
               const str = phone_message.SigId.replace(/u/gi, '\\u')
+              // eslint-disable-next-line no-eval
               _this.phone_message_config.SigId = eval("'" + str + "'")
               _this.phone_message_config.id = configItem[i].id
               break
@@ -572,8 +581,14 @@ export default {
         user_name: sessionStorage.getItem('login_username')
       }
       getAlarmSetList(queryParam).then((response) => {
-        console.log(response)
-        this.gridData = response.list
+        if (response.list.length > 0) {
+          response.list.forEach((v, k) => {
+            response.list[k].push_type = v.push_type === '' ? '' : v.push_type.split(',')
+            response.list[k].accept_user = v.accept_user === '' ? v.accept_user : v.accept_user.split(',')
+          })
+          this.alarmTypes = response.list
+          console.log(this.alarmTypes)
+        }
       })
     },
 
@@ -658,26 +673,21 @@ export default {
     },
 
     createData() {
-      this.$refs['restoreForm'].validate((valid) => {
-        if (valid) {
-          const tempData = this.restoretemp
-          console.log(valid)
-          updateAlarmSet(tempData).then((response) => {
-            const res = response
-            if (res.code === 200) {
-              this.message_tips = '成功'
-              this.message_type = 'success'
-              this.getList()
-              this.getUserList()
-              this.getAlarmSetList()
-              this.dialogRestoreVisible = false
-            } else {
-              this.message_tips = '忽略失败'
-              this.message_type = 'error'
-            }
-            messageTip(this.message_tips, this.message_type)
-          })
+      const tempData = this.alarmTypes
+      updateAlarmSet(tempData).then((response) => {
+        const res = response
+        if (res.code === 200) {
+          this.message_tips = '成功'
+          this.message_type = 'success'
+          this.getList()
+          this.getUserList()
+          this.getAlarmSetList()
+          this.dialogRestoreVisible = false
+        } else {
+          this.message_tips = '忽略失败'
+          this.message_type = 'error'
         }
+        messageTip(this.message_tips, this.message_type)
       })
     }
   }
