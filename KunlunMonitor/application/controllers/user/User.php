@@ -101,7 +101,7 @@ class User extends CI_Controller
 					$res_user = $this->Login_model->getList($sql_user);
 					if (!empty($res_user)) {
 						if ($res_user[0]['count'] == 0) {
-							$sql_update = "INSERT INTO kunlun_user(`name`,`password`,`email`,`phone_number`,`wechat_number`) values ('$user_name',md5('$password'),'$email','$phone_number','$wechat_number');";
+							$sql_update = "INSERT INTO kunlun_user(`name`,`password`,`email`,`phone_number`,`wechat_number`) values ('$user_name','$password','$email','$phone_number','$wechat_number');";
 							$res_update = $this->Login_model->updateList($sql_update);
 							if ($res_update == 1) {
 								$data['code'] = 200;
