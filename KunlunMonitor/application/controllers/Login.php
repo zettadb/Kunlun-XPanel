@@ -36,7 +36,7 @@ class Login extends CI_Controller
 		//验证用户名和密码
 		$this->load->model('Login_model');
 		if ($user_name == 'super_dba' && $password == 'super_dba') {
-			$sql_super = "select count(id) as count,id from kunlun_user where name='$user_name' and password=md5('$password');";
+			$sql_super = "select count(id) as count,id from kunlun_user where name='$user_name' and password='$password';";
 			$res_super = $this->Login_model->getList($sql_super);
 			if ($res_super[0]['count'] == 1) {
 				$token = $this->Login_model->getToken($user_name, 'E', $this->key);
@@ -49,7 +49,7 @@ class Login extends CI_Controller
 				return;
 			}
 		}
-		$sql = "select count(id) as count,id from kunlun_user where name='$user_name' and password=md5('$password');";
+		$sql = "select count(id) as count,id from kunlun_user where name='$user_name' and password='$password';";
 		$res = $this->Login_model->getList($sql);
 		if (!empty($res)) {
 			if ($res[0]['count'] > 1) {
@@ -394,11 +394,11 @@ class Login extends CI_Controller
 					return;
 				} else {
 					//验证用户名是否存在
-					$sql_user = "select count(id) as count from kunlun_user where name='$user_name' and password=md5('$password')";
+					$sql_user = "select count(id) as count from kunlun_user where name='$user_name' and password='$password'";
 					$res_user = $this->Login_model->getList($sql_user);
 					if (!empty($res_user)) {
 						if ($res_user[0]['count'] == 0) {
-							$sql_update = "update kunlun_user set password=md5('$password') where name='$user_name';";
+							$sql_update = "update kunlun_user set password='$password' where name='$user_name';";
 							$res_update = $this->Login_model->updateList($sql_update);
 							if ($res_update == 1) {
 								$data['code'] = 200;
@@ -541,6 +541,7 @@ class Login extends CI_Controller
 					//获取元数据的主节点
 					$sql_main = "select * from meta_db_nodes WHERE member_state='source';";
 					$res = $this->Change_model->getMysql($ip, $port, 'pgx', 'pgx_pwd', 'kunlun_metadata_db', $sql_main);
+					//print_r($res);
 					if ($res) {
 						$res_main = [];
 						$res_main['code'] = 200;
@@ -559,25 +560,12 @@ class Login extends CI_Controller
 					$sql_main = "select MEMBER_HOST,MEMBER_PORT from performance_schema.replication_group_members where MEMBER_ROLE = 'PRIMARY' and MEMBER_STATE = 'ONLINE'";
 					$this->load->model('Change_model');
 					$res_main = $this->Change_model->getMysql($ip, $port, 'pgx', 'pgx_pwd', 'kunlun_metadata_db', $sql_main);
-					if ($res_main['code'] == 200&&(empty($res_main[0])||empty($res_main[1]))) {
-						//连不上报错
-						$data['code'] = 500;
-						$data['message'] = 'mgr元数据找不到主节点';
-						print_r(json_encode($data));
-						return;
-					}
+					//print_r($res_main);exit;
 				} else if ($dbha_mode == 'no_rep') {
 					//获取元数据的主节点
 					$sql_main = "select hostaddr,port from meta_db_nodes where member_state='source'";
 					$this->load->model('Change_model');
 					$res_main = $this->Change_model->getMysql($ip, $port, 'pgx', 'pgx_pwd', 'kunlun_metadata_db', $sql_main);
-					if ($res_main['code'] == 200&&(empty($res_main[0])||empty($res_main[1]))) {
-						//连不上报错
-						$data['code'] = 500;
-						$data['message'] = 'no_rep元数据找不到主节点';
-						print_r(json_encode($data));
-						return;
-					}
 				}
 
 				if ($res_main['code'] == 200) {
