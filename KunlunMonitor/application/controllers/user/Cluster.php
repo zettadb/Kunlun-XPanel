@@ -3680,24 +3680,26 @@ class Cluster extends CI_Controller
 		$sqldalay = "select * from cluster_alarm_user where `id`='" . $alarm_type . "'";
 		$res = $this->Cluster_model->getList($sqldalay);
 		if ($res) {
-
 			$accept_user = $res[0]['accept_user'];
 			$resp = [];
 			if ($accept_user != "") {
-				$alarm_type_content = $res[0]['push_type'];
-				$sql_user = "select * from kunlun_user where id=" . $res[0]['uid'];
-				$res_user = $this->Login_model->getList($sql_user);
-
-				if ($res_user) {
-					$alarm_type_Arr = explode(",", $alarm_type_content);
-					for ($i = 0; $i < count($alarm_type_Arr); $i++) {
-						$tmp = [];
-						$tmp['type'] = $alarm_type_Arr[$i];
-						$tmp['phone'] = $res_user[0]['phone_number'];
-						$tmp['email'] = $res_user[0]['email'];
-						$resp[] = $tmp;
+				$accept_user_array = explode(",", $accept_user);
+				foreach ($accept_user_array as $pk => $u) {
+					$alarm_type_content = $res[0]['push_type'];
+					$sql_user = "select * from kunlun_user where id=" . $accept_user_array[$pk];
+					$res_user = $this->Login_model->getList($sql_user);
+					if ($res_user) {
+						$alarm_type_Arr = explode(",", $alarm_type_content);
+						for ($i = 0; $i < count($alarm_type_Arr); $i++) {
+							$tmp = [];
+							$tmp['type'] = $alarm_type_Arr[$i];
+							$tmp['phone'] = $res_user[0]['phone_number'];
+							$tmp['email'] = $res_user[0]['email'];
+							$resp[] = $tmp;
+						}
 					}
 				}
+
 			}
 			return $resp;
 		}

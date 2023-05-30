@@ -124,3 +124,10 @@ export function findRcrRelat(query) {
     params: query
   })
 }
+export function delRCRMaxDalayInfo(data) {
+  return request({
+    url: '/user/RCR/delRCRMaxDalayInfo',
+    method: 'post',
+    data
+  })
+}
