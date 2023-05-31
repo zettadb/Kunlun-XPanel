@@ -426,6 +426,7 @@ export default {
       percentage:0,
       progress_status:null,
       progress_format:'',
+      user_name: sessionStorage.getItem('login_username'),
       rules: {
         nodes: [{ required: true, trigger: 'blur', validator: validateNodes }]
       }
