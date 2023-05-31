@@ -5,7 +5,6 @@ class Cluster_model extends CI_Model
 	public function __construct()
 	{
 		parent::__construct();
-		$i = 1;
 		$this->db = $this->load->database('default', true);
 		$this->config->load('myconfig');
 		$this->pg_database = $this->config->item('pg_database');
