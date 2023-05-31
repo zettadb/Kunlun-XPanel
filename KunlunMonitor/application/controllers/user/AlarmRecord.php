@@ -431,9 +431,9 @@ class AlarmRecord extends CI_Controller
 		$start = ($pageNo - 1) * $pageSize;
 		$this->load->model('Cluster_model');
 		if ($super_dba == "super_dba") {
-			$sqldalay = "select * from cluster_alarm_user ";
+			$sqldalay = "select * from cluster_alarm_user order by id asc ";
 		} else {
-			$sqldalay = "select * from cluster_alarm_user ";
+			$sqldalay = "select * from cluster_alarm_user order by id asc ";
 		}
 		$res = $this->Cluster_model->getList($sqldalay);
 		$data['code'] = 200;

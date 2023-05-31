@@ -701,4 +701,8 @@ export default {
 #el-drawer__title {
   font-size: large;
 }
+
+.el-table--fit {
+  margin-bottom: 50px !important;
+}
 </style>

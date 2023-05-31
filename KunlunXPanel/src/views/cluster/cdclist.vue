@@ -66,65 +66,39 @@
     />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" custom-class="single_dal_view">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="140px">
+      <el-form ref="form" :rules="rules" :model="form" label-position="left">
 
-        <el-form-item label="IP地址:" prop="hostaddr">
-          <el-input v-model="temp.hostaddr" placeholder="请输入IP地址" :disabled="dialogStatus === 'detail'" />
-        </el-form-item>
-
-        <el-form-item label="端口号:" prop="port">
-          <el-input v-model="temp.port" placeholder="请输入端口号" :disabled="dialogStatus === 'detail'" />
-        </el-form-item>
-
-        <el-row v-for="(table, index) in form.backup" :key="table.key">
+        <el-row v-for="(table, index) in form.temp" :key="index">
           <el-col :span="10">
             <el-form-item
-              label="备份表:"
-              :prop="'backup.' + index + '.db_table'"
+              :label="'IP地址('+index+'):'"
+              label-width="140px"
+              :prop="'temp.' + index + '.hostaddr'"
               :rules="{
                 required: true,
-                message: '备份表不能为空',
+                message: 'IP地址不能空',
                 trigger: 'blur',
               }"
             >
-              <el-cascader
-                :key="'srcTable' + index"
-                v-model="form.backup[index].db_table"
-                style="width: 100%"
-                clearable
-                placeholder="请选择 库名/模式/表"
-                :options="tableOptions"
-                filterable
+              <el-input
+                :key="index"
+                v-model="form.temp[index].hostaddr"
+                placeholder="请输入IP地址"
               />
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="备份时间范围:" :prop="'backup.' + index" :rules="rules.time">
-              <el-time-select
-                :key="'startTime' + index"
-                v-model="form.backup[index].startTime"
-                style="width: 48%"
-                placeholder="起始时间"
-                :arrow-control="true"
-                :picker-options="{
-                  start: '00:00',
-                  step: '00:30',
-                  end: '24:00',
-                }"
-              />
-              <span>-</span>
-              <el-time-select
-                :key="'endTime' + index"
-                v-model="form.backup[index].endTime"
-                style="width: 48%"
-                placeholder="结束时间"
-                :picker-options="{
-                  start: '00:00',
-                  step: '00:30',
-                  end: '24:00',
-                  minTime: form.backup[index].startTime,
-                }"
-              />
+            <el-form-item
+              label="端口号:"
+              label-width="80px"
+              :prop="'temp.' + index + '.port'"
+              :rules="{
+                required: true,
+                message: '端口不能空',
+                trigger: 'blur',
+              }"
+            >
+              <el-input v-model="form.temp[index].port" placeholder="请输入端口号" />
             </el-form-item>
           </el-col>
           <el-col :span="4" style="margin-top: 4px">
@@ -191,26 +165,8 @@ export default {
   name: 'Account',
   components: { Pagination },
   data() {
-    const validateIPAddress = (rule, value, callback) => {
-      const regexp = /^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$/
-      const valdata = value.split(',')
-      let isCorrect = true
-      if (valdata.length) {
-        for (let i = 0; i < valdata.length; i++) {
-          if (regexp.test(valdata[i]) === false) {
-            isCorrect = false
-          }
-        }
-      }
-      if (value === '') {
-        return callback(new Error('请输入IP地址'))
-      } else if (!isCorrect) {
-        callback(new Error('请输入正确对IP地址'))
-      } else {
-        callback()
-      }
-    }
     const validateName = (rule, value, callback) => {
+      console.log(value)
       if (!value) {
         callback(new Error('请输入目标名称'))
       } else {
@@ -225,6 +181,7 @@ export default {
       }
     }
     const validatePort = (rule, value, callback) => {
+      console.log(value)
       const number = /^[0-9]*$/
       if (!value) {
         callback(new Error('请输入端口号'))
@@ -246,12 +203,14 @@ export default {
         pageSize: 10,
         name: ''
       },
-      temp: {
-        hostaddr: '',
-        name: '',
-        stype: '',
-        port: '',
-        user_name: ''
+      form: {
+        temp: [{
+          hostaddr: '',
+          name: '',
+          stype: '',
+          port: '',
+          user_name: ''
+        }]
       },
       dialogFormVisible: false,
       dialogEditVisible: false,
@@ -273,18 +232,18 @@ export default {
       dialogStatusVisible: false,
       activities: [],
       rules: {
-        hostaddr: [
-          { required: true, trigger: 'blur', validator: validateIPAddress }
-        ],
-        name: [
-          { required: true, trigger: 'blur', validator: validateName }
-        ],
-        stype: [
-          { required: true, trigger: 'blur', validator: validateStype }
-        ],
-        port: [
-          { required: true, trigger: 'blur', validator: validatePort }
-        ]
+        // hostaddr: [
+        //   { required: true, trigger: 'blur', validator: validateName }
+        // ],
+        // name: [
+        //   { required: true, trigger: 'blur', validator: validateName }
+        // ],
+        // stype: [
+        //   { required: true, trigger: 'blur', validator: validateStype }
+        // ],
+        // port: [
+        //   { required: true, trigger: 'blur', validator: validatePort }
+        // ]
       }
     }
   },
@@ -333,25 +292,34 @@ export default {
       })
     },
     resetTemp() {
-      this.temp = {
+      this.form.temp = [{
         hostaddr: '',
         name: '',
         stype: 'HDFS',
         port: '',
         user_name: ''
-      }
+      }]
+    },
+    onPush(index) {
+      this.form.temp.push({
+        hostaddr: '',
+        name: '',
+        stype: 'HDFS',
+        port: '',
+        user_name: ''
+      })
+    },
+    onRemove(index) {
+      this.form.temp.splice(index, 1)
     },
     handleCreate() {
       this.resetTemp()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
       this.dialogDetail = false
-      this.$nextTick(() => {
-        this.$refs.dataForm.clearValidate()
-      })
     },
     createData() {
-      this.$refs['dataForm'].validate((valid) => {
+      this.$refs['form'].validate((valid) => {
         if (valid) {
           const tempData = {}
           tempData.job_id = ''
@@ -359,9 +327,9 @@ export default {
           tempData.version = '1.0'
           tempData.timestamp = timestamp_arr[0].time + ''
           tempData.user_name = sessionStorage.getItem('login_username')
-          tempData.paras = Object.assign({}, this.temp)
-          tempData.host_addr = tempData.paras.hostaddr
-          tempData.port = tempData.paras.port
+          tempData.paras = this.form
+          // tempData.host_addr = tempData.paras.hostaddr
+          // tempData.port = tempData.paras.port
           // 发送接口
           editCdc(tempData).then(response => {
             const res = response
