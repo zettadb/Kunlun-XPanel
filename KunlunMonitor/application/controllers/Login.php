@@ -499,8 +499,8 @@ class Login extends CI_Controller
 
 					if (is_array($get_arr) && count($get_arr) !== 0) {
 						if (array_key_exists('message', $get_arr)) {
-								//{"message":"Invalid Basic Auth Header","traceID":""}
-								if ($get_arr['message'] == 'invalid API key' || $get_arr['message'] == 'Unauthorized'||$get_arr['message'] == 'Invalid Basic Auth Header') {
+							//{"message":"Invalid Basic Auth Header","traceID":""}
+							if ($get_arr['message'] == 'invalid API key' || $get_arr['message'] == 'Unauthorized' || $get_arr['message'] == 'Invalid Basic Auth Header') {
 								//获取key
 								$post_keyDate = '{"name":"apikeycurl_002", "role": "Admin"}';
 								$post_keyurl = 'http://admin:admin@' . $this->grafana_svr . '/api/auth/keys';
@@ -574,7 +574,7 @@ class Login extends CI_Controller
 		defined('BASEPATH') OR exit('No direct script access allowed');
 		\$active_group = 'default';
 		\$query_builder = TRUE;
-		\$db_debug=TRUE;
+		\$db_debug=FALSE;
 		\$db['role']=array(
 			'dsn'	=> '',
 			'hostname' => '$res_main[0]',
@@ -608,7 +608,7 @@ class Login extends CI_Controller
 			'dbdriver' => 'mysqli',
 			'dbprefix' => '',
 			'pconnect' => FALSE,
-			'db_debug' => TRUE,
+			'db_debug' => FALSE,
 			'cache_on' => FALSE,
 			'cachedir' => '',
 			'char_set' => 'utf8',

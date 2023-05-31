@@ -18,13 +18,18 @@ class Cluster_model extends CI_Model
 	//查询数据
 	public function getList($sql)
 	{
-
-		$q = $this->db->query($sql); //自动转义
-		if ($q->num_rows() > 0) {
-			$arr = $q->result_array();
-			return $arr;
+		try {
+			$q = $this->db->query($sql); //自动转义
+			if ($q && $q->num_rows() > 0) {
+				$arr = $q->result_array();
+				return $arr;
+			} else {
+				//print_r($this->db->error());
+				return false;
+			}
+		} catch (Exception $e) {
+			throw new Exception($e->getMessage());
 		}
-		return false;
 	}
 
 	//更新数据
@@ -36,12 +41,14 @@ class Cluster_model extends CI_Model
 	{
 		try {
 			$query = $this->db->query($sql);
-			if ($query === false) {
-				throw new Exception($this->db->error);
+			if (!$query) {
+				return $this->db->error();
 			}
 			return $this->db->affected_rows();
 		} catch (Exception $e) {
-			throw new Exception($e->getMessage());
+			return -1;
+			//print_r($e->getMessage());
+			//throw new Exception($e->getMessage());
 		}
 	}
 

@@ -3,6 +3,8 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Cluster extends CI_Controller
 {
+
+
 	public function __construct()
 	{
 		parent::__construct();
@@ -22,6 +24,7 @@ class Cluster extends CI_Controller
 		$this->db_prefix = $this->config->item('db_prefix');
 
 		$this->load->model('Cluster_model');
+
 	}
 
 	public function createCluster()
@@ -63,12 +66,12 @@ class Cluster extends CI_Controller
 		for ($i = 0; $i < count($string); $i += 2) {
 			$arr[$string[$i]] = $string[$i + 1];
 		}
-		$pageNo = isset($arr['pageNo']) ? $arr['pageNo'] : 1;
-		$pageSize = isset($arr['pageSize']) ? $arr['pageSize'] : 10;
+		$pageNo = $arr['pageNo'] ?? 1;
+		$pageSize = $arr['pageSize'] ?? 10;
 		$username = $arr['name'];
 		$user_name = $arr['user_name'];
 		$effectCluster = $arr['effectCluster'] == 'null' ? null : $arr['effectCluster'];
-		$apply_all_cluster = isset($arr['apply_all_cluster']) ? $arr['apply_all_cluster'] : 1;
+		$apply_all_cluster = $arr['apply_all_cluster'] ?? 1;
 		$start = ($pageNo - 1) * $pageSize;
 		//获取用户数据
 		if ($apply_all_cluster == 1) {
@@ -83,7 +86,7 @@ class Cluster extends CI_Controller
 			if (empty($effectCluster)) {
 				$effectCluster = 'NULL';
 			}
-			if (strpos($effectCluster, ',') == false) {
+			if (!strpos($effectCluster, ',')) {
 				$sql = "select id,name,when_created,nick_name,ha_mode,memo from db_clusters where id=$effectCluster and memo!='' and memo is not null and status!='deleted'";
 			} else {
 				$sql = "select id,name,when_created,nick_name,ha_mode,memo from db_clusters where id in ($effectCluster) and memo!='' and memo is not null and status!='deleted'";
@@ -106,7 +109,7 @@ class Cluster extends CI_Controller
 			}
 		}
 		if ($apply_all_cluster == 2) {
-			if (strpos($effectCluster, ',') == false) {
+			if (!strpos($effectCluster, ',')) {
 				$total_sql = "select count(id) as count from db_clusters where id=$effectCluster  and memo!='' and memo is not null and status!='deleted'";
 			} else {
 				$total_sql = "select count(id) as count from db_clusters where id in ($effectCluster) and memo!='' and memo is not null and status!='deleted'";
@@ -3087,12 +3090,21 @@ class Cluster extends CI_Controller
 		$this->load->model('Cluster_model');
 		try {
 			//exit($string['paras']['variable']);
-			$this->Cluster_model->updateList($string['paras']['variable']);
-			$resp = [
-				'error_code' => 0,
-				'status' => 'done'
-			];
-			print_r(json_encode($resp));
+			$res = $this->Cluster_model->updateList($string['paras']['variable']);
+			if ($res == 1) {
+				$resp = [
+					'error_code' => 0,
+					'status' => 'done'
+				];
+				print_r(json_encode($resp));
+			} else {
+				$resp = [
+					'error_code' => 1,
+					'error_info' => json_encode($res)
+				];
+				print_r(json_encode($resp));
+				return;
+			}
 			return;
 		} catch (Exception $th) {
 			$resp = [
@@ -3130,14 +3142,12 @@ class Cluster extends CI_Controller
 			if ($data) {
 				$resp = [
 					'error_code' => 0,
-					'status' => 'done',
 					'list' => $data,
 				];
 				print_r(json_encode($resp));
 			} else {
 				$resp = [
 					'error_code' => 1,
-					'status' => '',
 					'error_info' => "获取失败"
 				];
 				print_r(json_encode($resp));
@@ -3768,7 +3778,7 @@ class Cluster extends CI_Controller
 						);
 						$select_comp_sql = "select job_info from cluster_alarm_info where job_info='$msg_data' and status='unhandled' ";
 						$res_comp_select = $this->Cluster_model->getList($select_comp_sql);
-						if ($res_comp_select == false) {
+						if (!$res_comp_select) {
 							$PushMessage = $this->getPushMessageType("comp_node_exception");
 							foreach ($PushMessage as $item) {
 								if ($item['type'] == 'phone_message') {
@@ -3808,7 +3818,7 @@ class Cluster extends CI_Controller
 								);
 								$select_sql = "select job_info from cluster_alarm_info where job_info='$msg_data' and status='unhandled' ";
 								$res_select = $this->Cluster_model->getList($select_sql);
-								if ($res_select == false) {
+								if (!$res_select) {
 									$PushMessage = $this->getPushMessageType("standby_delay");
 									foreach ($PushMessage as $item) {
 										if ($item['type'] == 'phone_message') {
@@ -3840,7 +3850,7 @@ class Cluster extends CI_Controller
 								);
 								$select_storage_sql = "select job_info from cluster_alarm_info where job_info='$msg_data' and status='unhandled' ";
 								$res_storage_select = $this->Cluster_model->getList($select_storage_sql);
-								if ($res_storage_select == false) {
+								if (!$res_storage_select) {
 									$PushMessage = $this->getPushMessageType("storage_node_exception");
 									foreach ($PushMessage as $item) {
 										if ($item['type'] == 'phone_message') {
@@ -3875,7 +3885,7 @@ class Cluster extends CI_Controller
 				);
 				$select_machine_sql = "select job_info from cluster_alarm_info where job_info='$msg_data' and status='unhandled' ";
 				$res_machine_select = $this->Cluster_model->getList($select_machine_sql);
-				if ($res_machine_select == false) {
+				if (!$res_machine_select) {
 					$PushMessage = $this->getPushMessageType("machine_offline");
 					foreach ($PushMessage as $item) {
 						if ($item['type'] == 'phone_message') {
@@ -3900,7 +3910,7 @@ class Cluster extends CI_Controller
 				$switch_row = json_encode($switch_row);
 				$select_switch_sql = "select job_info from cluster_alarm_info where job_info='$switch_row' ";
 				$res_select_switch = $this->Cluster_model->getList($select_switch_sql);
-				if ($res_select_switch == false) {
+				if (!$res_select_switch) {
 					$PushMessage = $this->getPushMessageType("manual_switch");
 					foreach ($PushMessage as $item) {
 						if ($item['type'] == 'phone_message') {
@@ -4080,7 +4090,7 @@ class Cluster extends CI_Controller
 		$error = array();
 		if (!empty($res)) {
 			foreach ($res as $row) {
-				array_push($error, $cluster_name . '(' . $cluster_id . ')集群的' . $shard_name . '中,' . $row['hostaddr'] . '(' . $row['port'] . ')' . '存储节点异常');
+				$error[] = $cluster_name . '(' . $cluster_id . ')集群的' . $shard_name . '中,' . $row['hostaddr'] . '(' . $row['port'] . ')' . '存储节点异常';
 			}
 		}
 		return $error;
@@ -4428,64 +4438,69 @@ class Cluster extends CI_Controller
 		$this->load->model('Cluster_model');
 		//判断参数
 		$string = json_decode(@file_get_contents('php://input'), true);
+		$string = $string['temp'];
+
 		$this->load->model('Cluster_model');
-		$getHostaddr = "select * from cluster_cdc_server where `host_addr`='" . $string['host_addr'] . "'";
-		$masterList = $this->Cluster_model->getList($getHostaddr);
-		if ($masterList) {
-			$data['code'] = 201;
-			$data['message'] = 'CDC 服务存在';
-			print_r(json_encode($data));
-			return;
-		}
-		$curl_addr = "http://" . $string['host_addr'] . ":" . $string['port'] . "/kunlun_cdc";
-		//echo $curl_addr;
-		$curl = curl_init();
-		curl_setopt_array(
-			$curl,
-			array(
-				CURLOPT_URL => $curl_addr,
-				CURLOPT_RETURNTRANSFER => true,
-				CURLOPT_ENCODING => '',
-				CURLOPT_MAXREDIRS => 10,
-				CURLOPT_TIMEOUT => 0,
-				CURLOPT_FOLLOWLOCATION => true,
-				CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-				CURLOPT_CUSTOMREQUEST => 'POST',
-				CURLOPT_POSTFIELDS => @file_get_contents('php://input'),
-				CURLOPT_HTTPHEADER => array(
-					'Content-Type: application/json'
-				),
-			)
-		);
-		$response = curl_exec($curl);
-		curl_close($curl);
-		if ($response) {
-			$sql = "INSERT INTO `kunlun_metadata_db`.`cluster_cdc_server` (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $string['host_addr'] . "', '" . $string['port'] . "',0, " . time() . ", 0);";
-			$this->Cluster_model->updateList($sql);
-			$responseArr = json_decode($response, true);
-			$master = $responseArr['attachment']['ipPort'];
-			$getmaster = "select * from cluster_cdc_server where master=1";
-			$masterList = $this->Cluster_model->getList($getmaster);
-			$masterArr = explode(":", $master);
+		foreach ($string as $key => $value) {
+
+			$getHostapd = "select * from cluster_cdc_server where `host_addr`='" . $value['host_addr'] . "'";
+			$masterList = $this->Cluster_model->getList($getHostapd);
 			if ($masterList) {
-				$updateMasterSql = "UPDATE `kunlun_metadata_db`.`cluster_cdc_server` SET `host_addr` = '" . $masterArr[0] . "', `port` = '" . $masterArr[1] . "', `master` = 1, `create_time` = NULL, `status` = 1 WHERE `id` = " . $masterList[0]['id'];
-				$this->Cluster_model->getList($updateMasterSql);
-			} else {
-				$sql = "INSERT INTO `kunlun_metadata_db`.`cluster_cdc_server` (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $masterArr[0] . "', '" . $masterArr[1] . "',1, " . time() . ", 0);";
-				$this->Cluster_model->updateList($sql);
+				$data['code'] = 201;
+				$data['message'] = 'CDC 服务存在';
+				print_r(json_encode($data));
+				return;
 			}
-			print_r(json_encode(json_decode($response, true)));
-			return;
-		} else {
-			$data['code'] = 201;
-			$data['message'] = '获取CDC 服务失败';
-			print_r(json_encode($data));
-			return;
+			$curl_addr = "http://" . $value['host_addr'] . ":" . $value['port'] . "/kunlun_cdc";
+			$curl = curl_init();
+			curl_setopt_array(
+				$curl,
+				array(
+					CURLOPT_URL => $curl_addr,
+					CURLOPT_RETURNTRANSFER => true,
+					CURLOPT_ENCODING => '',
+					CURLOPT_MAXREDIRS => 10,
+					CURLOPT_TIMEOUT => 0,
+					CURLOPT_FOLLOWLOCATION => true,
+					CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+					CURLOPT_CUSTOMREQUEST => 'POST',
+					CURLOPT_POSTFIELDS => @file_get_contents('php://input'),
+					CURLOPT_HTTPHEADER => array(
+						'Content-Type: application/json'
+					),
+				)
+			);
+			$response = curl_exec($curl);
+			curl_close($curl);
+			if ($response) {
+				$sql = "INSERT INTO `kunlun_metadata_db`.`cluster_cdc_server` (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $value['host_addr'] . "', '" . $string['port'] . "',0, " . time() . ", 0);";
+				$this->Cluster_model->updateList($sql);
+				$responseArr = json_decode($response, true);
+				$master = $responseArr['attachment']['ipPort'];
+				$master_sql = "select * from cluster_cdc_server where master=1";
+				$masterList = $this->Cluster_model->getList($master_sql);
+				$masterArr = explode(":", $master);
+				if ($masterList) {
+					$updateMasterSql = "UPDATE `kunlun_metadata_db`.`cluster_cdc_server` SET `host_addr` = '" . $masterArr[0] . "', `port` = '" . $masterArr[1] . "', `master` = 1, `create_time` = NULL, `status` = 1 WHERE `id` = " . $masterList[0]['id'];
+					$this->Cluster_model->getList($updateMasterSql);
+				} else {
+					$sql = "INSERT INTO `kunlun_metadata_db`.`cluster_cdc_server` (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $masterArr[0] . "', '" . $masterArr[1] . "',1, " . time() . ", 0);";
+					$this->Cluster_model->updateList($sql);
+				}
+
+			} else {
+				$data['code'] = 201;
+				$data['message'] = '获取CDC 服务失败';
+				print_r(json_encode($data));
+				return;
+			}
 		}
+
+		print_r(json_encode(json_decode($response, true)));
 
 	}
 
-	public function rcrError($user_id)
+	public function rcrError($user_id): array
 	{
 		//rcr同步异常
 		$this->load->model('Cluster_model');

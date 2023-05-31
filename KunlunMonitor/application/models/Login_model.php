@@ -1,4 +1,5 @@
 <?php
+
 class Login_model extends CI_Model
 {
 	public function __construct()
@@ -6,6 +7,7 @@ class Login_model extends CI_Model
 		parent::__construct();
 		$this->db = $this->load->database('role', true);
 	}
+
 	//查询数据
 	public function getList($sql)
 	{
@@ -17,6 +19,7 @@ class Login_model extends CI_Model
 		return false;
 		//return $this->db->_error_message();
 	}
+
 	//更新数据
 	public function updateList($sql)
 	{
@@ -41,7 +44,7 @@ class Login_model extends CI_Model
 		defined('BASEPATH') OR exit('No direct script access allowed');
 		\$active_group = 'default';
 		\$query_builder = TRUE;
-		\$db_debug=TRUE;
+		\$db_debug=FALSE;
 		\$db['role']=array(
 			'dsn'	=> '',
 			'hostname' => '$host',
@@ -75,7 +78,7 @@ class Login_model extends CI_Model
 			'dbdriver' => 'mysqli',
 			'dbprefix' => '',
 			'pconnect' => FALSE,
-			'db_debug' => TRUE,
+			'db_debug' => FALSE,
 			'cache_on' => FALSE,
 			'cachedir' => '',
 			'char_set' => 'utf8',
@@ -102,6 +105,7 @@ class Login_model extends CI_Model
 		}
 		return $this->db->affected_rows();
 	}
+
 	function getToken($string, $operation, $key)
 	{
 		$key = md5($key);
@@ -138,6 +142,7 @@ class Login_model extends CI_Model
 			return str_replace('=', '', base64_encode($result));
 		}
 	}
+
 	public function authority($user_name, $priv)
 	{
 		//user_id
@@ -183,6 +188,7 @@ class Login_model extends CI_Model
 			return false;
 		}
 	}
+
 	public function getUserId($user_name)
 	{
 		$user_sql = "select id from kunlun_user where name='$user_name';";
@@ -195,8 +201,9 @@ class Login_model extends CI_Model
 			$data['message'] = '该用户不存在';
 			return $data;
 		}
-		return  $data;
+		return $data;
 	}
+
 	public function getRBR()
 	{
 		$mysql1 = "select hostaddr as MEMBER_HOST,port as MEMBER_PORT from meta_db_nodes WHERE member_state='source'";

@@ -2,7 +2,7 @@
 		defined('BASEPATH') OR exit('No direct script access allowed');
 		$active_group = 'default';
 		$query_builder = TRUE;
-		$db_debug=TRUE;
+		$db_debug=FALSE;
 		$db['role']=array(
 			'dsn'	=> '',
 			'hostname' => '192.168.0.134',
@@ -36,7 +36,7 @@
 			'dbdriver' => 'mysqli',
 			'dbprefix' => '',
 			'pconnect' => FALSE,
-			'db_debug' => TRUE,
+			'db_debug' => FALSE,
 			'cache_on' => FALSE,
 			'cachedir' => '',
 			'char_set' => 'utf8',
