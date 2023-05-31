@@ -1411,11 +1411,11 @@ export default {
         } else if (res.total > 1) {
           const code = createCode()
           //判断是否为rcr关系
-          let tempdate={cluster_id:this.listsent.id};
-          getRCRRelater(tempdate).then((response) => {
-            if(response.total>0){
-              messageTip('该集群已建立rcr关系,请先前往RCR服务页面解除关系再进行删除操作', 'error');return;
-            }else{
+          // let tempdate={cluster_id:this.listsent.id};
+          // getRCRRelater(tempdate).then((response) => {
+          //   if(response.total>0){
+          //     messageTip('该集群已建立rcr关系,请先前往RCR服务页面解除关系再进行删除操作', 'error');return;
+          //   }else{
               const string = '此操作将永久删除' + row.name + ',是否继续?code=' + code
               gotoCofirm(string).then((res) => {
                 // 先执行删权限
@@ -1482,8 +1482,8 @@ export default {
                 console.log('quxiao')
                 messageTip('已取消删除', 'info')
               })
-            }
-          })
+          //   }
+          // })
           
         }
       })
