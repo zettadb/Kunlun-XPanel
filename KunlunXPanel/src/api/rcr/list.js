@@ -7,11 +7,11 @@ export function getRCRList(query) {
       params:query
   });
 }
-export function getMetaMachine() {
+export function getMetaMachine(query) {
   return request({
     url: '/user/RCR/getMetaMachine',
     method: 'get',
-    params: ''
+    params: query
   })
 }
 
@@ -130,4 +130,10 @@ export function delRCRMaxDalayInfo(data) {
     method: 'post',
     data
   })
+}
+export function getMetaSyncList(query) {
+  return request({
+    url: '/user/RCR/getMetaSyncList',
+    method: 'get',
+    params: query
 }
