@@ -165,33 +165,6 @@ export default {
   name: 'Account',
   components: { Pagination },
   data() {
-    const validateName = (rule, value, callback) => {
-      console.log(value)
-      if (!value) {
-        callback(new Error('请输入目标名称'))
-      } else {
-        callback()
-      }
-    }
-    const validateStype = (rule, value, callback) => {
-      if (!value) {
-        callback(new Error('请选择目标类型'))
-      } else {
-        callback()
-      }
-    }
-    const validatePort = (rule, value, callback) => {
-      console.log(value)
-      const number = /^[0-9]*$/
-      if (!value) {
-        callback(new Error('请输入端口号'))
-      } else if (!number.test(value)) {
-        callback(new Error('端口号只允许输入数字'))
-      } else {
-        callback()
-      }
-    }
-
     return {
       tableKey: 0,
       list: null,
