@@ -136,4 +136,5 @@ export function getMetaSyncList(query) {
     url: '/user/RCR/getMetaSyncList',
     method: 'get',
     params: query
+});
 }
