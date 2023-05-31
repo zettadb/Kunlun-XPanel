@@ -648,5 +648,14 @@ class RCR extends CI_Controller
 			print_r(json_encode($data));
 		}
 	}
-
+	public function getMetaSyncList(){
+		$rcr_id=$this->input->get('rcr_id');
+		$this->load->model('Cluster_model');
+		$sql = "select * from cluster_rcr_meta_sync where meta_sync_state!='deleted' and rcr_infos_id='$rcr_id';  ";
+		$res = $this->Cluster_model->getList($sql);
+		$data['code'] = 200;
+		$data['list'] = $res;
+		$data['total'] =$res ? (int) $res[0]['count'] : 0;
+		print_r(json_encode($data));
+	}
 }

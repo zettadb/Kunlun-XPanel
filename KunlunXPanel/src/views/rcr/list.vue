@@ -26,12 +26,11 @@
           icon=""
           @click="drawer = true"
         >元数据管理</el-button>
-        <div style="color:red;  float:right;"><p>设置延迟时间后，rcr关系的延迟时间超过最大延迟时间会进行延迟告警通知，不设置不告警</p></div>
+        <div style="color:red;  float:right;"><p>设置延迟告警时间后，rcr关系的延迟时间超过最大延迟告警时间会进行延迟告警通知，不设置不告警</p></div>
       </div>
       <div class="table-list-wrap"></div>
     </div>
     <el-table
-    ref="multipleTable"
       :key="tableKey"
       v-loading="listLoading"
       :data="list"
@@ -85,9 +84,9 @@
       <el-table-column
         prop="shard_maps"
         align="center"
-        label="shard同步信息">
+        label="同步信息">
         <template slot-scope="scope">
-          <el-button type="text" @click="shardDetail(scope.row.shard_maps)">详情</el-button>
+          <el-button type="text" @click="shardDetail(scope.row)">详情</el-button>
         </template>
       </el-table-column>
       <el-table-column
@@ -110,7 +109,7 @@
       <el-table-column
         prop="max_delay_time"
         align="center"
-        label="最大延迟时间">
+        label="最大同步延迟时间">
       </el-table-column>
       <el-table-column
         label="操作"
@@ -118,7 +117,8 @@
         width="250"
         class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
-          <el-button type="primary" size="mini" @click="handleDalay(row)" style="margin-left: 10px; margin-bottom: 2px">设置延迟时间</el-button>
+          <!-- <el-button type="primary" size="mini" @click="handleDalay(row)" style="margin-left: 10px; margin-bottom: 2px">设置同步延迟时间</el-button> -->
+          <el-button type="primary" size="mini" @click="handleDalay(row)" style="margin-left: 10px; margin-bottom: 2px">设置延迟告警时间</el-button>
           <el-button type="primary" size="mini" v-show="row.status=='running'||row.status=='manual_stop'" @click="handleAtion(row)" style="margin-bottom: 2px">
               <span v-if="row.status === 'running'">停止</span>
               <span v-else-if="row.status === 'manual_stop'">启动</span>
@@ -219,19 +219,52 @@
     <!-- shard同步信息 -->
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogShardVisible" custom-class="single_dal_view"
       :close-on-click-modal="false">
-      <el-form    label-position="left">
-        <el-form-item  label="主元数据的主节点:" prop="master_master_host">
-          <span>{{shardtemp.master_master_host}}</span>
-        </el-form-item>
-        <el-form-item  label="主集群shard_id:" prop="master_shard_id">
-          <span>{{shardtemp.master_shard_id}}</span>
-        </el-form-item>
-        <el-form-item  label="主元数据的同步节点:" prop="master_sync_host">
-          <span>{{shardtemp.master_sync_host}}</span>
-        </el-form-item>
-        <el-form-item  label="备集群shard_id:" prop="slave_shard_id">
-          <span>{{shardtemp.slave_shard_id}}</span>
-        </el-form-item>
+      <el-form  label-position="left">
+        <div class="bold-text"><p>shard同步信息：</p>
+          <el-table :key="tableKey" v-loading="listShardLoading" :data="shardtemp" border highlight-current-row
+        style="width: 100%; margin-bottom: 20px">
+            <el-table-column type="index" align="center" label="序号" width="50" />
+            <el-table-column  prop="master_master_host" label="主元数据主节点" align="center" ></el-table-column>
+            <el-table-column prop="master_shard_id" label=" 主shard_id" align="center" />
+            <el-table-column  prop="master_sync_host" label="同步元数据主节点" align="center"></el-table-column>
+            <el-table-column  prop="slave_shard_id"  label="备shard_id" align="center"></el-table-column>
+          </el-table>
+        </div>
+        <div class="bold-text"><p>元数据同步信息：</p>
+          <el-table :key="tableKey" v-loading="listMetaLoading" :data="metatemp" border highlight-current-row
+        style="width: 100%; margin-bottom: 20px">
+            <el-table-column type="index" align="center" label="序号" width="50" />
+            <el-table-column  prop="dump_host" label="dump节点" align="center"  width="160" ></el-table-column>
+            <el-table-column prop="meta_sync_state" label="状态" align="center" >
+              <template slot-scope="scope">
+                <span v-if="scope.row.meta_sync_state === 'dump'" style="color: #00ed37">全量同步中</span>
+                <span v-else-if="scope.row.meta_sync_state === 'creating'" style="color: #00ed37">创建中</span>
+                <span v-else-if="scope.row.meta_sync_state === 'sync'" style="color: #00ed37">增量同步中</span>
+                <span v-else-if="scope.row.meta_sync_state === 'disconnect'" style="color: red">断开连接</span>
+                <span v-else></span>
+              </template>
+            </el-table-column>
+            <el-table-column  prop="sync_binlog_file" label="同步binlog文件" align="center"></el-table-column>
+            <el-table-column  prop="sync_binlog_pos"  label="同步binlog位置" align="center"></el-table-column>
+            <el-table-column  prop="sync_gtid"  label="同步gtid" align="center">
+              <template slot-scope="scope">
+                <el-button class="filter-item" type="text" icon="el-icon-tickets"  @click="handleGtid(scope.row.sync_gtid)"></el-button>
+              </template>
+            </el-table-column>
+            <el-table-column  prop="update_ts"  label="更新时间" align="center"></el-table-column>
+          </el-table>
+        </div>
+      </el-form>
+    </el-dialog>
+    <!-- 同步gtid信息 -->
+    <el-dialog title="同步gtid" :visible.sync="dialogGtidVisible" custom-class="single_dal_view">
+       <el-form
+        ref="dataForm"
+        :model="gtidtemp"
+        label-position="left"
+        label-width="140px"
+      >
+        <div style="white-space: pre-wrap;">{{ gtidtemp.sync_gtid| salveGtidWrap(gtidtemp.sync_gtid)}}</div>
       </el-form>
     </el-dialog>
      <!--状态框 -->
@@ -257,8 +290,8 @@
   </div>
 </template>
 <script>
- import { messageTip,handleCofirm,getNowDate } from "@/utils";
- import { getRCRList,getMetaMachine,getStandbyMeta,addRCR,delMachine,update,createMetaTable,actionRCR,setRCRMaxDalay,findMetaDB,findMetaCluster,delRCRMaxDalayInfo} from '@/api/rcr/list'
+ import { messageTip,handleCofirm,getNowDate,gotoCofirm,createCode } from "@/utils";
+ import { getRCRList,getMetaMachine,getStandbyMeta,addRCR,delMachine,update,createMetaTable,actionRCR,setRCRMaxDalay,findMetaDB,findMetaCluster,delRCRMaxDalayInfo,getMetaSyncList} from '@/api/rcr/list'
  import { getEvStatus } from '@/api/cluster/list'
  import {version_arr,timestamp_arr,machine_type_arr,node_stats_arr} from "@/utils/global_variable"
  import Pagination from '@/components/Pagination' 
@@ -330,7 +363,7 @@ export default {
         create: "新增RCR",
         set_dalay: "设置延迟时间",
         detail: "详情",
-        shardDetail:'shard同步信息'
+        shardDetail:'同步信息'
       },
       dialogDetail: false,
       message_tips:'',
@@ -358,11 +391,16 @@ export default {
         master_cluster_id:'',
         slave_cluster_id:''
       },
-      shardtemp:{
-        master_master_host:'',
-        master_shard_id:'',
-        master_sync_host:'',
-        slave_shard_id:''
+      listShardLoading: true,
+      totalShard: 0,
+      shardtemp:null,
+      listMetaLoading: true,
+      searchMetaLoading:false,
+      totalMeta: 0,
+      metatemp:null,
+      dialogGtidVisible:false,
+      gtidtemp:{
+        sync_gtid:''
       },
       rules: {
         master_rcr_meta: [
@@ -392,18 +430,35 @@ export default {
     },
     salveMetaWrap(value) {
       return value.replace(eval(`/${','}/g`), `\n`)
+    },
+    salveGtidWrap(value) {
+      
+      return value.replace(eval(`/${','}/g`), `\n`)
     }
   },
   methods:{
-    shardDetail(info){
+     handleGtid(info) {
+        //this.$message(info);
+        console.log(info);
+        this.gtidtemp.sync_gtid=info;
+        this.dialogGtidVisible=true;
+      },
+    shardDetail(row){
+      //let info=[{"master_master_host":"192.168.0.136:28004","master_shard_id":1,"master_sync_host":"192.168.0.125:28004","slave_shard_id":6},{"master_master_host":"192.168.0.125:28006","master_shard_id":2,"master_sync_host":"192.168.0.128:28006","slave_shard_id":7}];
       this.dialogStatus = 'shardDetail'
-      let info1=info.replace("\\", ""); 
-      let shardtemp=  JSON.parse(info1.replace(/\r\n/g,'').replace(/\n/g,''));
-      this.shardtemp.master_master_host=shardtemp[0].master_master_host;
-      this.shardtemp.master_shard_id=shardtemp[0].master_shard_id;
-      this.shardtemp.master_sync_host=shardtemp[0].master_sync_host;
-      this.shardtemp.slave_shard_id=shardtemp[0].slave_shard_id;
+      this.shardtemp=JSON.parse(row.shard_maps);
+      //this.shardtemp=info;
+      //获取meta_sync信息
+      let temp={rcr_id:row.id}
+      getMetaSyncList(temp).then(response => {
+        this.metatemp = response.list;
+        this.metatotal = response.total;
+        setTimeout(() => {
+          this.listMetaLoading=false;
+        }, 0.5 * 1000)
+      });
       this.dialogShardVisible=true;
+      this.listShardLoading=false;
     },
     slaveMetaChange(row){
       this.temp.slave_cluster_id='';
@@ -504,49 +559,66 @@ export default {
       });
     },
     setDalayData(row) {
-      this.$refs["setForm"].validate((valid) => {
-        if (valid) {
-  
-          const temp = {};
-          temp.user_name = sessionStorage.getItem('login_username');
-          temp.job_id ='';
-          temp.job_type ='modify_rcr';
-          temp.version=version_arr[0].ver;
-          temp.timestamp=timestamp_arr[0].time+'';
-          const paras={}
-          paras.cluster_id=row.slave_cluster_id;
-          paras.master_info={'meta_db':row.master_rcr_meta,'cluster_id':row.master_cluster_id};
-          paras.work_mode = 'modify_sync_delay';
-          paras.sync_delay = row.maxtime;
-          temp.paras = paras;
-          actionRCR(temp).then((response)=>{
-            let res = response;
-            //异步接口
-            if(res.status=='accept'){
-              this.dialogSetDalayVisible = false;
-              this.job_id='设置同步延迟时间('+res.job_id+')';
-              this.dialogStatusVisible=true;
-              this.activities=[];
-              const newArr={
-                title:'正在设置同步延迟时间',
-                status: 'process',
-                icon: 'el-icon-loading',
-                description:''
-              };
-              this.activities.push(newArr)
-              let info='设置同步延迟时间';
-              let i=0;
-              this.timer = setInterval(() => {
-                this.getStatus(this.timer,res.job_id,i++,info,'')
-              }, 1000)   
-            }else{
-              this.message_tips = res.error_info;
-              this.message_type = 'error';
-              messageTip(this.message_tips,this.message_type);
+          this.$refs["setForm"].validate((valid) => {
+            if (valid) {
+              // const code = createCode()
+              // const string = '设置同步延迟时间，主上写完数据后相隔该设置的时间（s）后才同步数据, 是否继续?code=' + code
+              // gotoCofirm(string).then((res) => {
+              //   // 先执行删权限
+              //   if (!res.value) {
+              //     this.message_tips = 'code不能为空！'
+              //     this.message_type = 'error'
+              //     messageTip(this.message_tips, this.message_type)
+              //   } else if (res.value == code) {
+                  const temp = {};
+                  temp.user_name = sessionStorage.getItem('login_username');
+                  temp.job_id ='';
+                  temp.job_type ='modify_rcr';
+                  temp.version=version_arr[0].ver;
+                  temp.timestamp=timestamp_arr[0].time+'';
+                  const paras={}
+                  paras.cluster_id=row.slave_cluster_id;
+                  paras.master_info={'meta_db':row.master_rcr_meta,'cluster_id':row.master_cluster_id};
+                  paras.work_mode = 'modify_sync_delay';
+                  paras.sync_delay = row.maxtime;
+                  temp.paras = paras;
+                  actionRCR(temp).then((response)=>{
+                    let res = response;
+                    //异步接口
+                    if(res.status=='accept'){
+                      this.dialogSetDalayVisible = false;
+                      this.job_id='设置同步延迟时间('+res.job_id+')';
+                      this.dialogStatusVisible=true;
+                      this.activities=[];
+                      const newArr={
+                        title:'正在设置同步延迟时间',
+                        status: 'process',
+                        icon: 'el-icon-loading',
+                        description:''
+                      };
+                      this.activities.push(newArr)
+                      let info='设置同步延迟时间';
+                      let i=0;
+                      this.timer = setInterval(() => {
+                        this.getStatus(this.timer,res.job_id,i++,info,'')
+                      }, 1000)   
+                    }else{
+                      this.message_tips = res.error_info;
+                      this.message_type = 'error';
+                      messageTip(this.message_tips,this.message_type);
+                    }
+                  });
+              //   } else {
+              //     this.message_tips = 'code输入有误'
+              //     this.message_type = 'error'
+              //     messageTip(this.message_tips, this.message_type)
+              //   } 
+              // }).catch(() => {
+              //   console.log('quxiao')
+              //   messageTip('已取消设置','info');
+              // }); 
             }
           });
-        }
-      });
     },
     handleDalay(row) {
       this.resetTemp();
@@ -627,7 +699,9 @@ export default {
       this.dialogStatus = "create";
       this.master_rcr_metas=[];
       this.slave_rcr_metas=[];
-      getMetaMachine().then((res) => {
+      const tempData = {};
+      tempData.user_name = sessionStorage.getItem('login_username');
+      getMetaMachine(tempData).then((res) => {
         let rcr_metas = res.list
         let createCond =
           rcr_metas === null ||
@@ -721,8 +795,17 @@ export default {
     },
     
     handleDelete(row) {
-        handleCofirm("此操作将永久删除该数据, 是否继续?").then( () =>{
-         const tempData = {};
+      const code = createCode()
+      const string = '此操作将永久删除该数据, 是否继续?code=' + code
+      gotoCofirm(string).then((res) => {
+        // 先执行删权限
+        if (!res.value) {
+          this.message_tips = 'code不能为空！'
+          this.message_type = 'error'
+          messageTip(this.message_tips, this.message_type)
+        } else if (res.value == code) {
+          // handleCofirm("此操作将永久删除该数据, 是否继续?").then( () =>{
+          const tempData = {};
           tempData.user_name = sessionStorage.getItem('login_username');
           tempData.job_id ='';
           tempData.job_type ='delete_rcr';
@@ -740,7 +823,7 @@ export default {
               this.job_id='删除RCR('+res.job_id+')';
               this.dialogStatusVisible=true;
               this.activities=[];
-             const newArr={
+            const newArr={
                 title:'正在删除RCR',
                 status: 'process',
                 icon: 'el-icon-loading',
@@ -757,14 +840,28 @@ export default {
               this.message_type = 'error';
               messageTip(this.message_tips,this.message_type);
             }
-        })
-        }).catch(() => {
-            console.log('quxiao')
-            messageTip('已取消删除','info');
-        });   
+          })
+        } else {
+          this.message_tips = 'code输入有误'
+          this.message_type = 'error'
+          messageTip(this.message_tips, this.message_type)
+        } 
+      }).catch(() => {
+          console.log('quxiao')
+          messageTip('已取消删除','info');
+      });
     },
     handleUpdate(row) {
-        handleCofirm("此操作切换集群的数据将被覆盖, 是否继续?").then( () =>{
+      const code = createCode()
+      const string = '此操作将进行该RCR手动切换, 是否继续?code=' + code
+      gotoCofirm(string).then((res) => {
+        // 先执行删权限
+        if (!res.value) {
+          this.message_tips = 'code不能为空！'
+          this.message_type = 'error'
+          messageTip(this.message_tips, this.message_type)
+        } else if (res.value == code) {
+        // handleCofirm("即将进行该RCR手动切换, 是否继续?").then( () =>{
          const tempData = {};
           tempData.user_name = sessionStorage.getItem('login_username');
           tempData.job_id ='';
@@ -803,9 +900,14 @@ export default {
             }
 
           });
+        } else {
+          this.message_tips = 'code输入有误'
+          this.message_type = 'error'
+          messageTip(this.message_tips, this.message_type)
+        } 
         }).catch(() => {
             console.log('quxiao')
-            messageTip('已取消删除','info');
+            messageTip('已取消手动切换','info');
         });   
     },
     handleAtion(row) {
@@ -818,47 +920,61 @@ export default {
         action='启动'
         type='start_rcr'
       }
-      handleCofirm("确定要"+action+"该RCR吗, 是否继续?").then( () =>{
-        const tempData = {};
-        tempData.user_name = sessionStorage.getItem('login_username');
-        tempData.job_id ='';
-        tempData.job_type ='modify_rcr';
-        tempData.version=version_arr[0].ver;
-        tempData.timestamp=timestamp_arr[0].time+'';
-        const paras={}
-        paras.cluster_id=row.slave_cluster_id;
-        paras.master_info={'meta_db':row.master_rcr_meta,'cluster_id':row.master_cluster_id};
-        paras.work_mode = type;
-        tempData.paras = paras;
-        actionRCR(tempData).then((response)=>{
-          let res = response;
-          if(res.status=='accept'){
-            this.dialogFormVisible = false;
-            this.job_id=action+'RCR('+res.job_id+')';
-            this.dialogStatusVisible=true;
-            this.activities=[];
-            const newArr={
-              title:'正在'+action+'RCR',
-              status: 'process',
-              icon: 'el-icon-loading',
-              description:''
-            };
-            this.activities.push(newArr)
-            let info=action+'RCR';
-            let i=0;
-            this.timer = setInterval(() => {
-              this.getStatus(this.timer,res.job_id,i++,info,'')
-            }, 1000)   
-          }else{
-            this.message_tips = res.error_info;
-            this.message_type = 'error';
-            messageTip(this.message_tips,this.message_type);
-          }
-      })
-    }).catch(() => {
-        console.log('quxiao')
-        messageTip('已取消删除','info');
-    });   
+      const code = createCode()
+      const string = '确定要'+action+'该RCR吗, 是否继续?code=' + code
+      gotoCofirm(string).then((res) => {
+        // 先执行删权限
+        if (!res.value) {
+          this.message_tips = 'code不能为空！'
+          this.message_type = 'error'
+          messageTip(this.message_tips, this.message_type)
+        } else if (res.value == code) {
+          //handleCofirm("确定要"+action+"该RCR吗, 是否继续?").then( () =>{
+          const tempData = {};
+          tempData.user_name = sessionStorage.getItem('login_username');
+          tempData.job_id ='';
+          tempData.job_type ='modify_rcr';
+          tempData.version=version_arr[0].ver;
+          tempData.timestamp=timestamp_arr[0].time+'';
+          const paras={}
+          paras.cluster_id=row.slave_cluster_id;
+          paras.master_info={'meta_db':row.master_rcr_meta,'cluster_id':row.master_cluster_id};
+          paras.work_mode = type;
+          tempData.paras = paras;
+          actionRCR(tempData).then((response)=>{
+            let res = response;
+            if(res.status=='accept'){
+              this.dialogFormVisible = false;
+              this.job_id=action+'RCR('+res.job_id+')';
+              this.dialogStatusVisible=true;
+              this.activities=[];
+              const newArr={
+                title:'正在'+action+'RCR',
+                status: 'process',
+                icon: 'el-icon-loading',
+                description:''
+              };
+              this.activities.push(newArr)
+              let info=action+'RCR';
+              let i=0;
+              this.timer = setInterval(() => {
+                this.getStatus(this.timer,res.job_id,i++,info,'')
+              }, 1000)   
+            }else{
+              this.message_tips = res.error_info;
+              this.message_type = 'error';
+              messageTip(this.message_tips,this.message_type);
+            }
+          })
+        } else {
+          this.message_tips = 'code输入有误'
+          this.message_type = 'error'
+          messageTip(this.message_tips, this.message_type)
+        } 
+      }).catch(() => {
+          console.log('quxiao')
+          messageTip('已取消'+action,'info');
+      });   
     },
     getStatus (timer,data,i,info,row) {
       setTimeout(()=>{
@@ -908,5 +1024,11 @@ export default {
 <style >
 .right_input_min{
   width:25%;
+}
+.bold-text p{
+  font-weight: bold;
+}
+.gtid{
+  white-space: pre-wrap;
 }
 </style>
