@@ -20,10 +20,9 @@ class Cluster_model extends CI_Model
 		try {
 			$q = $this->db->query($sql); //自动转义
 			if ($q && $q->num_rows() > 0) {
-				$arr = $q->result_array();
-				return $arr;
+				return $q->result_array();
 			} else {
-				//print_r($this->db->error());
+				print_r($this->db->error());
 				return false;
 			}
 		} catch (Exception $e) {
@@ -43,7 +42,7 @@ class Cluster_model extends CI_Model
 			if (!$query) {
 				return $this->db->error();
 			}
-			return $this->db->affected_rows();
+			return true;
 		} catch (Exception $e) {
 			return -1;
 			//print_r($e->getMessage());

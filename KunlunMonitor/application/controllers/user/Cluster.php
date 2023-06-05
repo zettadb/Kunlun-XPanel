@@ -3091,7 +3091,7 @@ class Cluster extends CI_Controller
 		try {
 			//exit($string['paras']['variable']);
 			$res = $this->Cluster_model->updateList($string['paras']['variable']);
-			if ($res == 1) {
+			if ($res) {
 				$resp = [
 					'error_code' => 0,
 					'status' => 'done'
@@ -3099,7 +3099,7 @@ class Cluster extends CI_Controller
 				print_r(json_encode($resp));
 			} else {
 				$resp = [
-					'error_code' => 1,
+					'error_code' => 201,
 					'error_info' => json_encode($res)
 				];
 				print_r(json_encode($resp));
@@ -3645,6 +3645,7 @@ class Cluster extends CI_Controller
 				if ($cofig['signName'] == "云信发") {
 					$content = "4331";
 				}
+				//exit($mobile);
 				$status = $sms->send_verify($mobile, urlencode($content));
 				$log_sql = "INSERT INTO `kunlun_metadata_db`.`cluster_alarm_push_log` (`alarm_type`, `push_type`, `content`, `content_res`, `create_at`) VALUES ( '" . $titel . "', 'phone_message', '" . $content . "', '" . $status . "', " . time() . ")";
 				$this->Cluster_model->updateList($log_sql);
@@ -3735,6 +3736,10 @@ class Cluster extends CI_Controller
 			print_r(json_encode($data));
 			return;
 		}
+
+		//$this->SendSms("16698129676", "s 测试", "测试");
+
+		//$this->SendMail("934837044@qq.com", "comp_node_exception", $msg_data);
 
 		$sql = "select db_cluster_id,shard_id from shard_nodes where status!='deleted' group by db_cluster_id,shard_id;";
 		$this->load->model('Cluster_model');
@@ -4423,6 +4428,35 @@ class Cluster extends CI_Controller
 		print_r(json_encode($resp));
 	}
 
+	public function CdcDelete()
+	{
+		//获取token
+		$arr = apache_request_headers(); //获取请求头数组
+		$token = $arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));
+			return;
+		}
+		$this->load->model('Cluster_model');
+		//判断参数
+		$string = json_decode(@file_get_contents('php://input'), true);
+		$this->load->model('Cluster_model');
+		$cdc_id = $string['paras']['name'];
+		$delete_sql = "delete from cluster_cdc_server where id=" . $cdc_id;
+		$Res = $this->Cluster_model->updateList($delete_sql);
+
+		if ($Res > 0) {
+			$data['code'] = 200;
+			$data['message'] = '成功';
+		} else {
+			$data['code'] = 201;
+			$data['message'] = $Res;
+		}
+		print_r(json_encode($data));
+		return;
+	}
 
 	public function cdcEdit()
 	{
@@ -4438,20 +4472,11 @@ class Cluster extends CI_Controller
 		$this->load->model('Cluster_model');
 		//判断参数
 		$string = json_decode(@file_get_contents('php://input'), true);
-		$string = $string['temp'];
-
+		$stringArr = $string['paras']['temp'];
 		$this->load->model('Cluster_model');
-		foreach ($string as $key => $value) {
-
-			$getHostapd = "select * from cluster_cdc_server where `host_addr`='" . $value['host_addr'] . "'";
-			$masterList = $this->Cluster_model->getList($getHostapd);
-			if ($masterList) {
-				$data['code'] = 201;
-				$data['message'] = 'CDC 服务存在';
-				print_r(json_encode($data));
-				return;
-			}
-			$curl_addr = "http://" . $value['host_addr'] . ":" . $value['port'] . "/kunlun_cdc";
+		foreach ($stringArr as $key => $value) {
+			$curl_addr = "http://" . $value['hostaddr'] . ":" . $value['port'] . "/kunlun_cdc";
+			unset($string['paras']);
 			$curl = curl_init();
 			curl_setopt_array(
 				$curl,
@@ -4464,39 +4489,43 @@ class Cluster extends CI_Controller
 					CURLOPT_FOLLOWLOCATION => true,
 					CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
 					CURLOPT_CUSTOMREQUEST => 'POST',
-					CURLOPT_POSTFIELDS => @file_get_contents('php://input'),
+					CURLOPT_POSTFIELDS => json_encode($string),
 					CURLOPT_HTTPHEADER => array(
 						'Content-Type: application/json'
 					),
 				)
 			);
 			$response = curl_exec($curl);
-			curl_close($curl);
 			if ($response) {
-				$sql = "INSERT INTO `kunlun_metadata_db`.`cluster_cdc_server` (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $value['host_addr'] . "', '" . $string['port'] . "',0, " . time() . ", 0);";
-				$this->Cluster_model->updateList($sql);
+				$sql = "select * from cluster_cdc_server where `host_addr`='" . $value['hostaddr'] . "'";
+				$masterList = $this->Cluster_model->getList($sql);
+				if (!$masterList) {
+					$sql = "INSERT INTO cluster_cdc_server (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $value['hostaddr'] . "', '" . $value['port'] . "',0, " . time() . ", 1);";
+					$this->Cluster_model->updateList($sql);
+				}
+				//获取成功后cdc 返回主节点，如果历史列表存在主节点，就更新，没有就新增主节点
 				$responseArr = json_decode($response, true);
 				$master = $responseArr['attachment']['ipPort'];
 				$master_sql = "select * from cluster_cdc_server where master=1";
 				$masterList = $this->Cluster_model->getList($master_sql);
 				$masterArr = explode(":", $master);
 				if ($masterList) {
-					$updateMasterSql = "UPDATE `kunlun_metadata_db`.`cluster_cdc_server` SET `host_addr` = '" . $masterArr[0] . "', `port` = '" . $masterArr[1] . "', `master` = 1, `create_time` = NULL, `status` = 1 WHERE `id` = " . $masterList[0]['id'];
-					$this->Cluster_model->getList($updateMasterSql);
+					$updateMasterSql = "UPDATE cluster_cdc_server SET `host_addr` = '" . $masterArr[0] . "', `port` = '" . $masterArr[1] . "', `master` = 1, `create_time` = NULL, `status` = 1 WHERE `id` = " . $masterList[0]['id'];
+					$this->Cluster_model->updateList($updateMasterSql);
 				} else {
-					$sql = "INSERT INTO `kunlun_metadata_db`.`cluster_cdc_server` (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $masterArr[0] . "', '" . $masterArr[1] . "',1, " . time() . ", 0);";
+					$sql = "INSERT INTO cluster_cdc_server (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $masterArr[0] . "', '" . $masterArr[1] . "',1, " . time() . ", 0);";
 					$this->Cluster_model->updateList($sql);
 				}
-
 			} else {
-				$data['code'] = 201;
-				$data['message'] = '获取CDC 服务失败';
-				print_r(json_encode($data));
-				return;
+				//获取cdc 失败
+				$sql = "INSERT INTO cluster_cdc_server (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $value['hostaddr'] . "', '" . $value['port'] . "',0, " . time() . ", 0);";
+				$this->Cluster_model->updateList($sql);
 			}
 		}
-
-		print_r(json_encode(json_decode($response, true)));
+		$data['code'] = 200;
+		$data['message'] = '获取CDC 服务成功';
+		print_r(json_encode($data));
+		return;
 
 	}
 

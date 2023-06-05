@@ -5,7 +5,7 @@ dir_date=`date +%Y%m%d`
 base_dir=`pwd`
 kunlun_server_dir=$base_dir/KunlunMonitor
 kunlun_client_dir=$base_dir/KunlunXPanel
-build_dir=$base_dir/buid/$dir_date/platform/platform
+build_dir=$base_dir/buid/$dir_date/platform
 #echo $base_dir
 #echo $kunlun_client_dir
 #echo $kunlun_server_dir

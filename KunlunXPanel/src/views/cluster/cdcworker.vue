@@ -104,49 +104,106 @@
           />
         </el-form-item>
 
-        <el-form-item label="plugin_name:" prop="plugin_name">
-          <el-select v-model="temp.plugin_name" clearable placeholder="请选择目标表集群">
-            <el-option
-              v-for="item in plugin_name_list"
-              :key="item.id"
-              :label="item.plugin_name"
-              :value="item.plugin_name"
+        <el-form-item label="shard 参数:">
+
+          <el-table
+            :data="temp.shard_params"
+            border
+            size="mini"
+          >
+            <el-table-column
+              prop="shard_id"
+              label="shard_id"
             />
-          </el-select>
+            <el-table-column
+              prop="dump_hostaddr"
+              label="dump_hostaddr"
+            />
+            <el-table-column
+              prop="dump_port"
+              label="dump_port"
+            />
+
+            <el-table-column
+              prop="binlog_file"
+              label="binlog_file"
+            />
+            <el-table-column
+              prop="binlog_pos"
+              label="binlog_pos"
+            />
+
+            <el-table-column
+              prop="gtid_set"
+              label="gtid_set"
+            />
+
+            <el-table-column
+              label="操作"
+              align="center"
+            >
+              <template slot-scope="{ row }">
+                <el-tag
+                  closable
+                  size="mini"
+                  type="danger"
+                >
+                  删除
+                </el-tag>
+              </template>
+            </el-table-column>
+
+          </el-table>
+          <el-button size="mini" type="primary">添加<i class="el-icon-plus el-icon--right" /></el-button>
         </el-form-item>
 
-        <div
-          v-if="temp.plugin_name === 'event_file'"
-          style="border:1px solid #ddd;width:80%;padding:32px;border-radius: 10px;"
-        >
-          <el-form-item label="plugin_param:" prop="plugin_param">
-            <el-input v-model="temp.plugin_param" clearable placeholder="/home/barney/kunlun_cdc/temp/event.log" />
-          </el-form-item>
-          <el-form-item label="udf_name:" prop="udf_name">
-            <el-input v-model="temp.udf_name" clearable placeholder="test1" />
-          </el-form-item>
-        </div>
+        <el-form-item label="shard 参数:">
 
-        <div v-else style="border:1px solid #ddd;width:80%;padding:32px;border-radius: 10px;">
-          <el-form-item label="ip地址:" prop="kunlunsql_plugin_param.hostaddr">
-            <el-input v-model="temp.kunlunsql_plugin_param.hostaddr" clearable placeholder="ip地址" />
-          </el-form-item>
-          <el-form-item label="端口:" prop="kunlunsql_plugin_param.port">
-            <el-input v-model="temp.kunlunsql_plugin_param.port" clearable placeholder="端口" />
-          </el-form-item>
-          <el-form-item label="用户名:" prop="kunlunsql_plugin_param.user">
-            <el-input v-model="temp.kunlunsql_plugin_param.user" clearable placeholder="用户名" />
-          </el-form-item>
-          <el-form-item label="密码:" prop="kunlunsql_plugin_param.password">
-            <el-input v-model="temp.kunlunsql_plugin_param.password" clearable placeholder="密码" />
-          </el-form-item>
-          <el-form-item label="日志地址:" prop="kunlunsql_plugin_param.log_path">
-            <el-input v-model="temp.kunlunsql_plugin_param.log_path" clearable placeholder="日志地址" />
-          </el-form-item>
-          <el-form-item label="udf_name:" prop="udf_name">
-            <el-input v-model="temp.udf_name" clearable placeholder="日志地址" />
-          </el-form-item>
-        </div>
+          <el-table
+            :data="temp.output_plugins"
+            border
+            size="mini"
+          >
+            <el-table-column
+              prop="plugin_name"
+              label="plugin name"
+            />
+            <el-table-column
+              prop="plugin_param"
+              label="plugin param"
+            >
+              <template slot-scope="{ row }">
+                <span v-if="row.plugin_name==='event_file'">{{ row.plugin_param }}</span>
+                <span v-else>{{ JSON.stringify(row.plugin_param) }}</span>
+              </template>
+            </el-table-column>
+
+            <el-table-column
+              prop="udf_name"
+              label="udf name"
+            />
+
+            <el-table-column
+              label="操作"
+              align="center"
+            >
+              <template slot-scope="{ row }">
+                <el-tag
+                  closable
+                  size="mini"
+                  type="danger"
+                >
+                  删除
+                </el-tag>
+              </template>
+            </el-table-column>
+
+          </el-table>
+          <el-button size="mini" type="primary" @click="outputparamsvisible=true">
+            添加<i
+              class="el-icon-plus el-icon--right"
+            /></el-button>
+        </el-form-item>
 
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -162,26 +219,61 @@
     </el-dialog>
     <!--  状态框 -->
     <el-dialog
-      :visible.sync="dialogStatusVisible"
+      :visible.sync="outputparamsvisible"
       custom-class="single_dal_view"
-      width="400px"
       :close-on-click-modal="false"
       :before-close="beforeSyncDestory"
     >
       <div class="block">
-        <el-timeline>
-          <el-timeline-item
-            v-for="(activity, index) in activities"
-            :key="index"
-            :icon="activity.icon"
-            :type="activity.type"
-            :color="activity.color"
-            :size="activity.size"
-            :timestamp="activity.timestamp"
-          >
-            {{ activity.content }}
-          </el-timeline-item>
-        </el-timeline>
+        <el-form ref="form" :model="temp" label-width="120px">
+          <el-form-item label="output plugins:" prop="plugin_name">
+            <el-select v-model="temp.plugin_name_item" clearable placeholder="请选择目标表集群">
+              <el-option
+                v-for="item in temp.plugin_name_list"
+                :key="item.id"
+                :label="item.plugin_name"
+                :value="item.plugin_name"
+              />
+            </el-select>
+          </el-form-item>
+          <div v-if="temp.plugin_name_item==='event_file'">
+            <el-form-item label="plugin_param:" prop="plugin_param">
+              <el-input v-model="temp.plugin_param" clearable placeholder="/home/barney/kunlun_cdc/temp/event.log" />
+            </el-form-item>
+            <el-form-item label="udf_name:" prop="udf_name">
+              <el-input v-model="temp.udf_name" clearable placeholder="test1" />
+            </el-form-item>
+          </div>
+
+          <div v-else>
+            <el-form-item label="ip地址:" prop="kunlunsql_plugin_param.hostaddr">
+              <el-input v-model="temp.kunlunsql_plugin_param.hostaddr" clearable placeholder="ip地址" />
+            </el-form-item>
+            <el-form-item label="端口:" prop="kunlunsql_plugin_param.port">
+              <el-input v-model="temp.kunlunsql_plugin_param.port" clearable placeholder="端口" />
+            </el-form-item>
+            <el-form-item label="用户名:" prop="kunlunsql_plugin_param.user">
+              <el-input v-model="temp.kunlunsql_plugin_param.user" clearable placeholder="用户名" />
+            </el-form-item>
+            <el-form-item label="密码:" prop="kunlunsql_plugin_param.password">
+              <el-input v-model="temp.kunlunsql_plugin_param.password" clearable placeholder="密码" />
+            </el-form-item>
+            <el-form-item label="日志地址:" prop="kunlunsql_plugin_param.log_path">
+              <el-input v-model="temp.kunlunsql_plugin_param.log_path" clearable placeholder="日志地址" />
+            </el-form-item>
+          </div>
+        </el-form>
+      </div>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="outputparamsvisible = false">关闭</el-button>
+        <el-button
+          v-show="!dialogDetail"
+          type="primary"
+          @click="dialogStatus === 'create' ? createData() : updateData(row)"
+        >
+          确认
+        </el-button>
       </div>
     </el-dialog>
   </div>
@@ -200,6 +292,7 @@ import {
 import { version_arr, storage_type_arr, timestamp_arr } from '@/utils/global_variable'
 import Pagination from '@/components/Pagination'
 import { Loading } from 'element-ui'
+import { output } from 'echarts/extension/webpack.config'
 
 export default {
   name: 'Account',
@@ -242,6 +335,8 @@ export default {
       }
     }
     return {
+      shardparamsvisible: false,
+      outputparamsvisible: false,
       props: { multiple: true },
       tableKey: 0,
 
@@ -271,31 +366,65 @@ export default {
         meta_user: '',
         meta_passwd: '',
         dump_tables: '',
+        shard_params: [
+          {
+            shard_id: '1',
+            dump_hostaddr: '127.0.0.1',
+            dump_port: '28801',
+            binlog_file: 'xxx',
+            binlog_pos: '899',
+            gtid_set: 'xxxx'
+          }, {
+            shard_id: '2',
+            dump_hostaddr: '127.0.0.2',
+            dump_port: '28802',
+            binlog_file: 'xxx',
+            binlog_pos: '899',
+            gtid_set: 'xxxx'
+          }
+        ],
+        output_plugins: [
+          {
+            plugin_name: 'event_file',
+            plugin_param: '/xxx/event.log',
+            udf_name: 'test1'
+          },
+          {
+            plugin_name: 'event_sql',
+            plugin_param: {
+              hostaddr: '172.0.0.5',
+              port: '24002',
+              user: 'xxxx',
+              password: 'xxx',
+              log_path: '../log'
+            },
+            udf_name: 'test2'
+          }
+        ],
+
+        plugin_param: '',
+        plugin_name_item: 'event_file',
+        plugin_name_list: [
+          {
+            plugin_name: 'event_file',
+            plugin_param: '',
+            udf_name: ''
+          },
+          {
+            plugin_name: 'event_sql',
+            plugin_param: '',
+            udf_name: ''
+          }
+        ],
         kunlunsql_plugin_param: {
           hostaddr: '',
           port: '',
           user: '',
           password: '',
           log_path: ''
-        },
-        plugin_name: 'event_file',
-        udf_name: '',
-        plugin_param: ''
-      },
-
-      plugin_name_list: [
-        {
-          plugin_name: 'event_file',
-          plugin_param: '',
-          udf_name: ''
-        },
-        {
-          plugin_name: 'event_kunlunsql',
-          plugin_param: '',
-          udf_name: ''
         }
-      ],
-      dialogFormVisible: false,
+      },
+      dialogFormVisible: true,
       dialogEditVisible: false,
       dialogStatus: '',
       textMap: {
@@ -332,6 +461,11 @@ export default {
         plugin_name: [{ required: true, trigger: 'blur', validator: validateName }]
 
       }
+    }
+  },
+  computed: {
+    output() {
+      return output
     }
   },
 
@@ -442,6 +576,23 @@ export default {
         meta_user: '',
         meta_passwd: '',
         dump_tables: '',
+        shard_params: [
+          {
+            shard_id: '1',
+            dump_hostaddr: '127.0.0.1',
+            dump_port: '28801',
+            binlog_file: 'xxx',
+            binlog_pos: '899',
+            gtid_set: 'xxxx'
+          }, {
+            shard_id: '2',
+            dump_hostaddr: '127.0.0.2',
+            dump_port: '28802',
+            binlog_file: 'xxx',
+            binlog_pos: '899',
+            gtid_set: 'xxxx'
+          }
+        ],
         kunlunsql_plugin_param: {
           hostaddr: '',
           port: '',

@@ -40,7 +40,12 @@
       <el-table-column prop="host_addr" align="center" label="IP地址" />
       <el-table-column prop="port" align="center" label="端口号" />
       <el-table-column prop="master" align="center" label="主节点" />
-      <el-table-column prop="status" align="center" label="状态" />
+      <el-table-column prop="status" align="center" label="状态">
+        <template slot-scope="{row}">
+          <el-tag v-if="row.status==1">服务中</el-tag>
+          <el-tag v-else type="danger">无效</el-tag>
+        </template>
+      </el-table-column>
 
       <el-table-column
         v-if="user_name === 'super_dba'"
@@ -301,32 +306,17 @@ export default {
           tempData.timestamp = timestamp_arr[0].time + ''
           tempData.user_name = sessionStorage.getItem('login_username')
           tempData.paras = this.form
-          // tempData.host_addr = tempData.paras.hostaddr
-          // tempData.port = tempData.paras.port
           // 发送接口
           editCdc(tempData).then(response => {
-            const res = response
-            // eslint-disable-next-line eqeqeq
-            if (res.status === 'accept') {
+            console.log(response)
+            if (response.code === 200) {
+              this.getList()
+              this.message_tips = '成功'
+              this.message_type = 'success'
               this.dialogFormVisible = false
-              this.dialogStatusVisible = true
-              this.activities = []
-              const newArr = {
-                content: '正在新增备份存储目标',
-                timestamp: getNowDate(),
-                size: 'large',
-                type: 'primary',
-                icon: 'el-icon-more'
-              }
-              this.activities.push(newArr)
-              // 调获取状态接口
-              let i = 0
-              const action_name = '新增备份存储目标'
-              this.timer = setInterval(() => {
-                this.getStatus(this.timer, res.job_id, i++, action_name)
-              }, 1000)
+              messageTip(this.message_tips, this.message_type)
             } else {
-              this.message_tips = res.error_info
+              this.message_tips = response.message
               this.message_type = 'error'
               messageTip(this.message_tips, this.message_type)
             }
@@ -360,28 +350,15 @@ export default {
           tempData.user_name = sessionStorage.getItem('login_username')
           tempData.paras = Object.assign({}, this.temp)
           updateStorage(tempData).then((response) => {
-            const res = response
-            // eslint-disable-next-line eqeqeq
-            if (res.status === 'accept') {
-              this.dialogFormVisible = false
-              this.dialogStatusVisible = true
-              this.activities = []
-              const newArr = {
-                content: '正在编辑备份存储目标',
-                timestamp: getNowDate(),
-                size: 'large',
-                type: 'primary',
-                icon: 'el-icon-more'
-              }
-              this.activities.push(newArr)
-              // 调获取状态接口
-              let i = 0
-              const action_name = '编辑备份存储目标'
-              this.timer = setInterval(() => {
-                this.getStatus(this.timer, res.job_id, i++, action_name)
-              }, 1000)
+            console.log(response)
+            if (response.code === 200) {
+              this.getList()
+              this.message_tips = '成功'
+              this.message_type = 'success'
+              this.variableVisible = false
+              messageTip(this.message_tips, this.message_type)
             } else {
-              this.message_tips = res.error_info
+              this.message_tips = response.message
               this.message_type = 'error'
               messageTip(this.message_tips, this.message_type)
             }
@@ -394,7 +371,17 @@ export default {
         const tempData = {}
         tempData.paras = { 'name': row.id }
         DeleteCdc(tempData).then((response) => {
-          console.log(response)
+          if (response.code === 200) {
+            this.getList()
+            this.message_tips = '成功'
+            this.message_type = 'success'
+            this.variableVisible = false
+            messageTip(this.message_tips, this.message_type)
+          } else {
+            this.message_tips = response.message
+            this.message_type = 'error'
+            messageTip(this.message_tips, this.message_type)
+          }
         })
       }).catch(() => {
         console.log('quxiao')
