@@ -724,6 +724,14 @@ export function editCdc(data) {
   })
 }
 
+export function editCdcWork(data) {
+  return request({
+    url: '/user/Cluster/cdcEditWork',
+    method: 'post',
+    data
+  })
+}
+
 export function DeleteCdc(data) {
   return request({
     url: '/user/Cluster/CdcDelete',
@@ -747,6 +755,7 @@ export function getMetaClusterList(query) {
     params: query
   })
 }
+
 export function addESList(data) {
   return request({
     url: '/user/Cluster/addESList',
@@ -754,6 +763,7 @@ export function addESList(data) {
     data
   })
 }
+
 export function getESList(query) {
   return request({
     url: '/user/Cluster/getESList',
@@ -761,6 +771,7 @@ export function getESList(query) {
     params: query
   })
 }
+
 export function delESList(data) {
   return request({
     url: '/user/Cluster/delESList',

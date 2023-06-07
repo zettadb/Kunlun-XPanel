@@ -4529,6 +4529,111 @@ class Cluster extends CI_Controller
 
 	}
 
+	public function cdcEditWork()
+	{
+		//获取token
+		$arr = apache_request_headers(); //获取请求头数组
+		$token = $arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));
+			return;
+		}
+		$this->load->model('Cluster_model');
+		//判断参数
+		$string = json_decode(@file_get_contents('php://input'), true);
+
+		//获取cdc 主
+		$master_sql = "select * from cluster_cdc_server where master=1";
+		$masterList = $this->Cluster_model->getList($master_sql);
+
+		if ($masterList) {
+
+			$curl_addr = "http://" . $masterList[0]['host_addr'] . ":" . $masterList[0]['port'] . "/kunlun_cdc";
+			unset($string['paras']);
+			$curl = curl_init();
+			curl_setopt_array(
+				$curl,
+				array(
+					CURLOPT_URL => $curl_addr,
+					CURLOPT_RETURNTRANSFER => true,
+					CURLOPT_ENCODING => '',
+					CURLOPT_MAXREDIRS => 10,
+					CURLOPT_TIMEOUT => 0,
+					CURLOPT_FOLLOWLOCATION => true,
+					CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+					CURLOPT_CUSTOMREQUEST => 'POST',
+					CURLOPT_POSTFIELDS => json_encode($string),
+					CURLOPT_HTTPHEADER => array(
+						'Content-Type: application/json'
+					),
+				)
+			);
+			$response = curl_exec($curl);
+
+
+		} else {
+			//没有发现cdc 主
+		}
+
+		$stringArr = $string['paras']['temp'];
+		$this->load->model('Cluster_model');
+		foreach ($stringArr as $key => $value) {
+			$curl_addr = "http://" . $value['hostaddr'] . ":" . $value['port'] . "/kunlun_cdc";
+			unset($string['paras']);
+			$curl = curl_init();
+			curl_setopt_array(
+				$curl,
+				array(
+					CURLOPT_URL => $curl_addr,
+					CURLOPT_RETURNTRANSFER => true,
+					CURLOPT_ENCODING => '',
+					CURLOPT_MAXREDIRS => 10,
+					CURLOPT_TIMEOUT => 0,
+					CURLOPT_FOLLOWLOCATION => true,
+					CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+					CURLOPT_CUSTOMREQUEST => 'POST',
+					CURLOPT_POSTFIELDS => json_encode($string),
+					CURLOPT_HTTPHEADER => array(
+						'Content-Type: application/json'
+					),
+				)
+			);
+			$response = curl_exec($curl);
+			if ($response) {
+				$sql = "select * from cluster_cdc_server where `host_addr`='" . $value['hostaddr'] . "'";
+				$masterList = $this->Cluster_model->getList($sql);
+				if (!$masterList) {
+					$sql = "INSERT INTO cluster_cdc_server (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $value['hostaddr'] . "', '" . $value['port'] . "',0, " . time() . ", 1);";
+					$this->Cluster_model->updateList($sql);
+				}
+				//获取成功后cdc 返回主节点，如果历史列表存在主节点，就更新，没有就新增主节点
+				$responseArr = json_decode($response, true);
+				$master = $responseArr['attachment']['ipPort'];
+				$master_sql = "select * from cluster_cdc_server where master=1";
+				$masterList = $this->Cluster_model->getList($master_sql);
+				$masterArr = explode(":", $master);
+				if ($masterList) {
+					$updateMasterSql = "UPDATE cluster_cdc_server SET `host_addr` = '" . $masterArr[0] . "', `port` = '" . $masterArr[1] . "', `master` = 1, `create_time` = NULL, `status` = 1 WHERE `id` = " . $masterList[0]['id'];
+					$this->Cluster_model->updateList($updateMasterSql);
+				} else {
+					$sql = "INSERT INTO cluster_cdc_server (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $masterArr[0] . "', '" . $masterArr[1] . "',1, " . time() . ", 0);";
+					$this->Cluster_model->updateList($sql);
+				}
+			} else {
+				//获取cdc 失败
+				$sql = "INSERT INTO cluster_cdc_server (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $value['hostaddr'] . "', '" . $value['port'] . "',0, " . time() . ", 0);";
+				$this->Cluster_model->updateList($sql);
+			}
+		}
+		$data['code'] = 200;
+		$data['message'] = '获取CDC 服务成功';
+		print_r(json_encode($data));
+		return;
+
+	}
+
 	public function rcrError($user_id): array
 	{
 		//rcr同步异常

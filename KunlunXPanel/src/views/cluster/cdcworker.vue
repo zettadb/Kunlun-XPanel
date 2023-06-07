@@ -59,7 +59,12 @@
       @pagination="getList"
     />
 
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" custom-class="single_dal_view">
+    <el-dialog
+      title="新增CDC服务"
+      :close-on-click-modal="false"
+      :visible.sync="dialogFormVisible"
+      custom-class="single_dal_view"
+    >
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="140px">
 
         <el-form-item label="元数据:" prop="meta_db">
@@ -104,9 +109,10 @@
           />
         </el-form-item>
 
-        <el-form-item label="shard 参数:">
+        <el-form-item label="shard 参数:" prop="shard_params">
 
           <el-table
+            v-if="temp.shard_params.length>0"
             :data="temp.shard_params"
             border
             size="mini"
@@ -142,11 +148,12 @@
               label="操作"
               align="center"
             >
-              <template slot-scope="{ row }">
+              <template slot-scope="scope">
                 <el-tag
                   closable
                   size="mini"
                   type="danger"
+                  @close="deleteShardParams(scope.$index, scope.row)"
                 >
                   删除
                 </el-tag>
@@ -154,21 +161,26 @@
             </el-table-column>
 
           </el-table>
-          <el-button size="mini" type="primary">添加<i class="el-icon-plus el-icon--right" /></el-button>
+          <el-button size="mini" type="primary" @click="ShardParamSvisible=true">添加<i
+            class="el-icon-plus el-icon--right"
+          /></el-button>
         </el-form-item>
 
-        <el-form-item label="shard 参数:">
+        <el-form-item label="输出参数:" prop="output_plugins">
 
           <el-table
+            v-if="temp.output_plugins.length>0"
             :data="temp.output_plugins"
             border
             size="mini"
           >
             <el-table-column
+              width="100px"
               prop="plugin_name"
               label="plugin name"
             />
             <el-table-column
+              width="400px"
               prop="plugin_param"
               label="plugin param"
             >
@@ -179,19 +191,24 @@
             </el-table-column>
 
             <el-table-column
+              width="100px"
               prop="udf_name"
               label="udf name"
             />
 
             <el-table-column
+              width="100px"
               label="操作"
               align="center"
+              type="index"
+              :index="indexMethod"
             >
-              <template slot-scope="{ row }">
+              <template slot-scope="scope">
                 <el-tag
                   closable
                   size="mini"
                   type="danger"
+                  @close="deleteOutputParams(scope.$index, scope.row)"
                 >
                   删除
                 </el-tag>
@@ -211,7 +228,7 @@
         <el-button
           v-show="!dialogDetail"
           type="primary"
-          @click="dialogStatus === 'create' ? createData() : updateData(row)"
+          @click=" createData()"
         >
           确认
         </el-button>
@@ -219,10 +236,10 @@
     </el-dialog>
     <!--  状态框 -->
     <el-dialog
+      title="输出配置"
       :visible.sync="outputparamsvisible"
       custom-class="single_dal_view"
       :close-on-click-modal="false"
-      :before-close="beforeSyncDestory"
     >
       <div class="block">
         <el-form ref="form" :model="temp" label-width="120px">
@@ -237,10 +254,10 @@
             </el-select>
           </el-form-item>
           <div v-if="temp.plugin_name_item==='event_file'">
-            <el-form-item label="plugin_param:" prop="plugin_param">
+            <el-form-item label="plugin param:" prop="plugin_param">
               <el-input v-model="temp.plugin_param" clearable placeholder="/home/barney/kunlun_cdc/temp/event.log" />
             </el-form-item>
-            <el-form-item label="udf_name:" prop="udf_name">
+            <el-form-item label="udf name:" prop="udf_name">
               <el-input v-model="temp.udf_name" clearable placeholder="test1" />
             </el-form-item>
           </div>
@@ -261,6 +278,9 @@
             <el-form-item label="日志地址:" prop="kunlunsql_plugin_param.log_path">
               <el-input v-model="temp.kunlunsql_plugin_param.log_path" clearable placeholder="日志地址" />
             </el-form-item>
+            <el-form-item label="udf name:" prop="udf_name">
+              <el-input v-model="temp.udf_name" clearable placeholder="test1" />
+            </el-form-item>
           </div>
         </el-form>
       </div>
@@ -270,7 +290,55 @@
         <el-button
           v-show="!dialogDetail"
           type="primary"
-          @click="dialogStatus === 'create' ? createData() : updateData(row)"
+          @click="addOutputPlugins()"
+        >
+          确认
+        </el-button>
+      </div>
+    </el-dialog>
+
+    <el-dialog
+      title="Shard 配置"
+      :visible.sync="ShardParamSvisible"
+      custom-class="single_dal_view"
+      :close-on-click-modal="false"
+    >
+      <div class="block">
+        <el-form ref="form" :model="temp" label-width="120px">
+          <el-form-item label="shard id:" prop="shard_id">
+            <el-select v-model="temp.shard_params_item.shard_id" clearable placeholder="请选择目标表集群">
+              <el-option
+                v-for="item in shardList"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="dump hostaddr:" prop="shard_params_item.dump_hostaddr">
+            <el-input v-model="temp.shard_params_item.dump_hostaddr" clearable placeholder="dump hostaddr" />
+          </el-form-item>
+          <el-form-item label="dump port:" prop="shard_params_item.dump_port">
+            <el-input v-model="temp.shard_params_item.dump_port" clearable placeholder="dump port" />
+          </el-form-item>
+          <el-form-item label="binlog file:" prop="shard_params_item.binlog_file">
+            <el-input v-model="temp.shard_params_item.binlog_file" clearable placeholder="binlog file" />
+          </el-form-item>
+          <el-form-item label="binlog pos:" prop="shard_params_item.binlog_pos">
+            <el-input v-model="temp.shard_params_item.binlog_pos" clearable placeholder="binlog pos" />
+          </el-form-item>
+          <el-form-item label="gtid set:" prop="shard_params_item.gtid_set">
+            <el-input v-model="temp.shard_params_item.gtid_set" clearable placeholder="gtid set" />
+          </el-form-item>
+        </el-form>
+      </div>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="ShardParamSvisible = false">关闭</el-button>
+        <el-button
+          v-show="!dialogDetail"
+          type="primary"
+          @click="addShardParams()"
         >
           确认
         </el-button>
@@ -280,14 +348,15 @@
 </template>
 
 <script>
-import { messageTip, getNowDate } from '@/utils'
+import { messageTip, getNowDate, handleCofirm } from '@/utils'
 import {
   updateStorage,
   editCdc,
   getCdcList,
   getPGTableList,
   clusterOptions,
-  getMetaClusterList
+  getMetaClusterList,
+  shardList, editCdcWork
 } from '@/api/cluster/list'
 import { version_arr, storage_type_arr, timestamp_arr } from '@/utils/global_variable'
 import Pagination from '@/components/Pagination'
@@ -337,10 +406,12 @@ export default {
     return {
       shardparamsvisible: false,
       outputparamsvisible: false,
+      ShardParamSvisible: false,
       props: { multiple: true },
       tableKey: 0,
 
       list: null,
+      shardList: [],
       MetaClusterList: null,
       listLoading: true,
       searchLoading: false,
@@ -352,7 +423,10 @@ export default {
       listQuery: {
         pageNo: 1,
         pageSize: 10,
-        name: ''
+        name: '',
+        id: '',
+        hostaddr: '',
+        ha_mode: 'rbr'
       },
       temp: {
         hostaddr: '',
@@ -366,42 +440,16 @@ export default {
         meta_user: '',
         meta_passwd: '',
         dump_tables: '',
-        shard_params: [
-          {
-            shard_id: '1',
-            dump_hostaddr: '127.0.0.1',
-            dump_port: '28801',
-            binlog_file: 'xxx',
-            binlog_pos: '899',
-            gtid_set: 'xxxx'
-          }, {
-            shard_id: '2',
-            dump_hostaddr: '127.0.0.2',
-            dump_port: '28802',
-            binlog_file: 'xxx',
-            binlog_pos: '899',
-            gtid_set: 'xxxx'
-          }
-        ],
-        output_plugins: [
-          {
-            plugin_name: 'event_file',
-            plugin_param: '/xxx/event.log',
-            udf_name: 'test1'
-          },
-          {
-            plugin_name: 'event_sql',
-            plugin_param: {
-              hostaddr: '172.0.0.5',
-              port: '24002',
-              user: 'xxxx',
-              password: 'xxx',
-              log_path: '../log'
-            },
-            udf_name: 'test2'
-          }
-        ],
-
+        shard_params: [],
+        output_plugins: [],
+        shard_params_item: {
+          shard_id: '',
+          dump_hostaddr: '',
+          dump_port: '',
+          binlog_file: '',
+          binlog_pos: '',
+          gtid_set: ''
+        },
         plugin_param: '',
         plugin_name_item: 'event_file',
         plugin_name_list: [
@@ -424,7 +472,7 @@ export default {
           log_path: ''
         }
       },
-      dialogFormVisible: true,
+      dialogFormVisible: false,
       dialogEditVisible: false,
       dialogStatus: '',
       textMap: {
@@ -458,8 +506,9 @@ export default {
         meta_passwd: [{ required: true, trigger: 'blur', validator: validateName }],
         cluster_name: [{ required: true, trigger: 'blur', validator: validateName }],
         dump_tables: [{ required: true, trigger: 'blur', validator: validateName }],
-        plugin_name: [{ required: true, trigger: 'blur', validator: validateName }]
-
+        plugin_name: [{ required: true, trigger: 'blur', validator: validateName }],
+        shard_params: [{ required: true, trigger: 'blur', validator: validateName }],
+        output_plugins: [{ required: true, trigger: 'blur', validator: validateName }]
       }
     }
   },
@@ -494,10 +543,20 @@ export default {
   },
   methods: {
 
+    getShardList() {
+      const queryParam = Object.assign({}, this.listQuery)
+      // 模糊搜索
+      shardList(queryParam).then(response => {
+        this.shardList = response.list
+      })
+    },
+
     handleChangeCluster(e) {
       console.log(e)
       this.src_cluster_id = e
+      this.listQuery.id = e
       this.getPGTable()
+      this.getShardList()
     },
 
     getPGTable() {
@@ -576,23 +635,8 @@ export default {
         meta_user: '',
         meta_passwd: '',
         dump_tables: '',
-        shard_params: [
-          {
-            shard_id: '1',
-            dump_hostaddr: '127.0.0.1',
-            dump_port: '28801',
-            binlog_file: 'xxx',
-            binlog_pos: '899',
-            gtid_set: 'xxxx'
-          }, {
-            shard_id: '2',
-            dump_hostaddr: '127.0.0.2',
-            dump_port: '28802',
-            binlog_file: 'xxx',
-            binlog_pos: '899',
-            gtid_set: 'xxxx'
-          }
-        ],
+        shard_params: [],
+        output_plugins: [],
         kunlunsql_plugin_param: {
           hostaddr: '',
           port: '',
@@ -600,6 +644,27 @@ export default {
           password: '',
           log_path: ''
         },
+        shard_params_item: {
+          shard_id: '',
+          dump_hostaddr: '',
+          dump_port: '',
+          binlog_file: '',
+          binlog_pos: '',
+          gtid_set: ''
+        },
+        plugin_name_item: 'event_file',
+        plugin_name_list: [
+          {
+            plugin_name: 'event_file',
+            plugin_param: '',
+            udf_name: ''
+          },
+          {
+            plugin_name: 'event_sql',
+            plugin_param: '',
+            udf_name: ''
+          }
+        ],
         plugin_name: 'event_file',
         udf_name: '',
         plugin_param: ''
@@ -613,6 +678,61 @@ export default {
       this.$nextTick(() => {
         this.$refs.dataForm.clearValidate()
       })
+    },
+
+    indexMethod(index) {
+      return index * 2
+    },
+
+    deleteOutputParams(index, row) {
+      handleCofirm('此操作删除该数据, 是否继续?').then(() => {
+        this.temp.output_plugins.splice(index, 1)
+      }).catch(() => {
+        messageTip('已取消删除', 'info')
+      })
+    },
+
+    deleteShardParams(index, row) {
+      handleCofirm('此操作删除该数据, 是否继续?').then(() => {
+        this.temp.shard_params.splice(index, 1)
+      }).catch(() => {
+        messageTip('已取消删除', 'info')
+      })
+    },
+    addShardParams() {
+      this.temp.shard_params.push(this.temp.shard_params_item)
+      this.ShardParamSvisible = false
+      this.dialogFormVisible = true
+    },
+    addOutputPlugins() {
+      const _this = this
+      if (_this.temp.plugin_name_item === 'event_file') {
+        const tmp = {
+          plugin_name: 'event_file',
+          plugin_param: _this.temp.plugin_param,
+          udf_name: _this.temp.udf_name
+        }
+        _this.message_tips = '成功'
+        _this.message_type = 'success'
+        _this.dialogFormVisible = false
+        messageTip(this.message_tips, this.message_type)
+        _this.temp.output_plugins.push(tmp)
+        _this.outputparamsvisible = false
+        _this.dialogFormVisible = true
+      } else {
+        const tmp = {
+          plugin_name: 'event_sql',
+          plugin_param: JSON.stringify(_this.temp.kunlunsql_plugin_param),
+          udf_name: _this.temp.udf_name
+        }
+        _this.message_tips = '成功'
+        _this.message_type = 'success'
+        _this.dialogFormVisible = false
+        messageTip(this.message_tips, this.message_type)
+        _this.temp.output_plugins.push(tmp)
+        _this.outputparamsvisible = false
+        _this.dialogFormVisible = true
+      }
     },
     createData() {
       const _this = this
@@ -637,56 +757,20 @@ export default {
             dump_tables.push(v[0] + '_$$_' + v[1] + '.' + v[2])
           })
 
-          let output_plugins = []
-          if (this.temp.plugin_name === 'event_file') {
-            output_plugins = [{
-              plugin_name: 'event_file',
-              plugin_param: this.temp.plugin_param,
-              udf_name: this.temp.udf_name
-            }]
-          } else {
-            output_plugins = [{
-              plugin_name: 'event_kunlunsql',
-              plugin_param: JSON.stringify(this.temp.kunlunsql_plugin_param),
-              udf_name: this.temp.udf_name
-            }]
-          }
           const param = {
             meta_db: this.temp.meta_db.join(','),
             meta_user: this.temp.meta_user,
             meta_passwd: this.temp.meta_passwd,
             cluster_name: cluster_name,
             dump_tables: dump_tables.join(','),
-            output_plugins: output_plugins
+            output_plugins: this.temp.output_plugins,
+            shard_params: this.temp.shard_params
           }
           console.log(param)
           tempData.paras = param
           // 发送接口
-          editCdc(tempData).then((response) => {
-            const res = response
-            if (res.status === 'accept') {
-              this.dialogFormVisible = false
-              this.dialogStatusVisible = true
-              this.activities = []
-              const newArr = {
-                content: '正在新增备份存储目标',
-                timestamp: getNowDate(),
-                size: 'large',
-                type: 'primary',
-                icon: 'el-icon-more'
-              }
-              this.activities.push(newArr)
-              // 调获取状态接口
-              let i = 0
-              const action_name = '新增备份存储目标'
-              this.timer = setInterval(() => {
-                this.getStatus(this.timer, res.job_id, i++, action_name)
-              }, 1000)
-            } else {
-              this.message_tips = res.error_info
-              this.message_type = 'error'
-              messageTip(this.message_tips, this.message_type)
-            }
+          editCdcWork(tempData).then((response) => {
+
           })
         }
       })
@@ -717,31 +801,7 @@ export default {
           tempData.user_name = sessionStorage.getItem('login_username')
           tempData.paras = Object.assign({}, this.temp)
           updateStorage(tempData).then((response) => {
-            const res = response
-            // eslint-disable-next-line eqeqeq
-            if (res.status === 'accept') {
-              this.dialogFormVisible = false
-              this.dialogStatusVisible = true
-              this.activities = []
-              const newArr = {
-                content: '正在编辑备份存储目标',
-                timestamp: getNowDate(),
-                size: 'large',
-                type: 'primary',
-                icon: 'el-icon-more'
-              }
-              this.activities.push(newArr)
-              // 调获取状态接口
-              let i = 0
-              const action_name = '编辑备份存储目标'
-              this.timer = setInterval(() => {
-                this.getStatus(this.timer, res.job_id, i++, action_name)
-              }, 1000)
-            } else {
-              this.message_tips = res.error_info
-              this.message_type = 'error'
-              messageTip(this.message_tips, this.message_type)
-            }
+
           })
         }
       })

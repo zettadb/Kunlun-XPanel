@@ -22,7 +22,7 @@ class Cluster_model extends CI_Model
 			if ($q && $q->num_rows() > 0) {
 				return $q->result_array();
 			} else {
-				print_r($this->db->error());
+				//print_r($this->db->error());
 				return false;
 			}
 		} catch (Exception $e) {

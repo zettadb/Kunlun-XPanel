@@ -91,7 +91,12 @@
               <template slot-scope="{row,$index}">
                 <el-button v-if="row.status == 'online'" size="mini" type="primary" @click="nodeMonitor(row)">节点监控
                 </el-button>
-                <el-button v-if="row.status == 'online'&&user_name=='super_dba'" size="mini" type="primary" @click="handleSetCpu(row)">设置
+                <el-button
+                  v-if="row.status == 'online'&&user_name=='super_dba'"
+                  size="mini"
+                  type="primary"
+                  @click="handleSetCpu(row)"
+                >设置
                 </el-button>
                 <el-button
                   v-if="row.status !== 'online'&&user_name=='super_dba'"
@@ -114,9 +119,19 @@
                   @click="handleControlNode(row, 'restart')"
                 >重启
                 </el-button>
-                <el-button v-if="row.master == 'true'&&user_name=='super_dba'" size="mini" type="primary" @click="handleSwitch(row)">主备切换
+                <el-button
+                  v-if="row.master == 'true'&&user_name=='super_dba'"
+                  size="mini"
+                  type="primary"
+                  @click="handleSwitch(row)"
+                >主备切换
                 </el-button>
-                <el-button v-if="row.master == 'true'&&user_name=='super_dba'" size="mini" type="primary" @click="handleReDo(row)">重做备机节点
+                <el-button
+                  v-if="row.master == 'true'&&user_name=='super_dba'"
+                  size="mini"
+                  type="primary"
+                  @click="handleReDo(row)"
+                >重做备机节点
                 </el-button>
                 <el-button
                   v-if="storage_node_drop_priv === 'Y' && row.master !== 'true'"
@@ -213,7 +228,7 @@
             <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">个</i>
           </el-input>
         </el-form-item>
-        <el-form-item style="color:red;" v-show="if_show==='true'"><p>该集群已建立RCR关系</p></el-form-item>
+        <el-form-item v-show="if_show==='true'" style="color:red;"><p>该集群已建立RCR关系</p></el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogNodeVisible = false">关闭</el-button>
@@ -230,7 +245,13 @@
       :before-close="beforeDestory"
     >
       <div style="width: 100%;background: #fff;padding:0 20px;">
-        <el-progress :text-inside="true" :stroke-width="20"  :percentage="percentage"   :status="progress_status" :format="setText" ></el-progress>
+        <el-progress
+          :text-inside="true"
+          :stroke-width="20"
+          :percentage="percentage"
+          :status="progress_status"
+          :format="setText"
+        />
         <el-steps direction="vertical" :active="init_active">
           <el-step v-if="init_show" :title="init_title" icon="el-icon-more" />
           <el-step
@@ -729,10 +750,10 @@ export default {
         conf_degrade_state: '',
         degrade_conf_time: ''
       },
-      if_show:'false',
-      percentage:0,
-      progress_status:null,
-      progress_format:'',
+      if_show: 'false',
+      percentage: 0,
+      progress_status: null,
+      progress_format: '',
       rules: {
         nodes: [
           { required: true, trigger: 'blur', validator: validateNodes }
@@ -774,8 +795,8 @@ export default {
     this.timer = null
   },
   methods: {
-     setText(percentage){
-      return this.progress_format+ percentage+'%'
+    setText(percentage) {
+      return this.progress_format + percentage + '%'
     },
     handleUpdate(row) {
       this.shardEdit.shardid = row.id
@@ -1219,13 +1240,13 @@ export default {
         this.strogemachines = []
         this.strogemachines = res.list
       })
-      //判断是否为rcr关系
-      let tempdate={cluster_id:this.listsent.id};
+      // 判断是否为rcr关系
+      const tempdate = { cluster_id: this.listsent.id }
       getRCRRelater(tempdate).then((response) => {
-        if(response.total==0){
-          this.if_show='false';
-        }else{
-          this.if_show='true';
+        if (response.total == 0) {
+          this.if_show = 'false'
+        } else {
+          this.if_show = 'true'
         }
       })
       this.$nextTick(() => {
@@ -1280,9 +1301,9 @@ export default {
               this.finish_show = false
               this.finish_state = ''
               const info = '添加shard'
-              this.percentage=0
-              this.progress_status=null
-              this.progress_format=''
+              this.percentage = 0
+              this.progress_status = null
+              this.progress_format = ''
               let i = 0
               this.getFStatus(this.timer, res.job_id, i++, info, '')
               this.timer = setInterval(() => {
@@ -1375,9 +1396,9 @@ export default {
               this.finish_show = false
               this.finish_state = ''
               const info = '添加存储节点'
-              this.percentage=0
-              this.progress_status=null
-              this.progress_format=''
+              this.percentage = 0
+              this.progress_status = null
+              this.progress_format = ''
               let i = 0
               this.getFStatus(this.timer, res.job_id, i++, info, '')
               this.timer = setInterval(() => {
@@ -1410,81 +1431,80 @@ export default {
           messageTip('该集群当前有且仅有一个shard,不能进行删除操作', 'error')
         } else if (res.total > 1) {
           const code = createCode()
-          //判断是否为rcr关系
+          // 判断是否为rcr关系
           // let tempdate={cluster_id:this.listsent.id};
           // getRCRRelater(tempdate).then((response) => {
           //   if(response.total>0){
           //     messageTip('该集群已建立rcr关系,请先前往RCR服务页面解除关系再进行删除操作', 'error');return;
           //   }else{
-              const string = '此操作将永久删除' + row.name + ',是否继续?code=' + code
-              gotoCofirm(string).then((res) => {
-                // 先执行删权限
-                if (!res.value) {
-                  this.message_tips = 'code不能为空！'
-                  this.message_type = 'error'
-                  messageTip(this.message_tips, this.message_type)
-                } else if (res.value == code) {
-                  const tempData = {}
-                  tempData.user_name = sessionStorage.getItem('login_username')
-                  tempData.job_id = ''
-                  tempData.job_type = 'delete_shard'
-                  tempData.version = version_arr[0].ver
-                  tempData.timestamp = timestamp_arr[0].time + ''
-                  const paras = {}
-                  paras.cluster_id = row.db_cluster_id
-                  paras.nick_name = this.listsent.nick_name
-                  paras.shard_id = row.id
-                  tempData.paras = paras
-                  // console.log(tempData);return;
-                  delShard(tempData).then((response) => {
-                    const res = response
-                    if (res.status == 'accept') {
-                      this.dialogStatusShowVisible = true
-                      // 调获取状态接口
-                      let i = 0
-                      this.shard = []
-                      this.storage_state = ''
-                      this.shard_icon = ''
-                      this.shard_title = ''
-                      this.shard_active = 0
-                      this.strogemachines = []
-                      this.init_title = ''
-                      this.init_active = 0
-                      this.finish_title = ''
-                      this.finish_icon = ''
-                      this.finish_description = ''
-                      this.shard_description = ''
-                      this.job_id = ''
-                      this.timer = null
-                      this.init_show = true
-                      this.finish_show = false
-                      this.finish_state = ''
-                      const info = '删除shard'
-                      this.percentage=0
-                      this.progress_status=null
-                      this.progress_format=''
-                      this.getFStatus(this.timer, res.job_id, i++, info, '')
-                      this.timer = setInterval(() => {
-                        this.getFStatus(this.timer, res.job_id, i++, info, '')
-                      }, 1000)
-                    } else {
-                      this.message_tips = res.error_info
-                      this.message_type = 'error'
-                      messageTip(this.message_tips, this.message_type)
-                    }
-                  })
+          const string = '此操作将永久删除' + row.name + ',是否继续?code=' + code
+          gotoCofirm(string).then((res) => {
+            // 先执行删权限
+            if (!res.value) {
+              this.message_tips = 'code不能为空！'
+              this.message_type = 'error'
+              messageTip(this.message_tips, this.message_type)
+            } else if (res.value == code) {
+              const tempData = {}
+              tempData.user_name = sessionStorage.getItem('login_username')
+              tempData.job_id = ''
+              tempData.job_type = 'delete_shard'
+              tempData.version = version_arr[0].ver
+              tempData.timestamp = timestamp_arr[0].time + ''
+              const paras = {}
+              paras.cluster_id = row.db_cluster_id
+              paras.nick_name = this.listsent.nick_name
+              paras.shard_id = row.id
+              tempData.paras = paras
+              // console.log(tempData);return;
+              delShard(tempData).then((response) => {
+                const res = response
+                if (res.status == 'accept') {
+                  this.dialogStatusShowVisible = true
+                  // 调获取状态接口
+                  let i = 0
+                  this.shard = []
+                  this.storage_state = ''
+                  this.shard_icon = ''
+                  this.shard_title = ''
+                  this.shard_active = 0
+                  this.strogemachines = []
+                  this.init_title = ''
+                  this.init_active = 0
+                  this.finish_title = ''
+                  this.finish_icon = ''
+                  this.finish_description = ''
+                  this.shard_description = ''
+                  this.job_id = ''
+                  this.timer = null
+                  this.init_show = true
+                  this.finish_show = false
+                  this.finish_state = ''
+                  const info = '删除shard'
+                  this.percentage = 0
+                  this.progress_status = null
+                  this.progress_format = ''
+                  this.getFStatus(this.timer, res.job_id, i++, info, '')
+                  this.timer = setInterval(() => {
+                    this.getFStatus(this.timer, res.job_id, i++, info, '')
+                  }, 1000)
                 } else {
-                  this.message_tips = 'code输入有误'
+                  this.message_tips = res.error_info
                   this.message_type = 'error'
                   messageTip(this.message_tips, this.message_type)
                 }
-              }).catch(() => {
-                console.log('quxiao')
-                messageTip('已取消删除', 'info')
               })
+            } else {
+              this.message_tips = 'code输入有误'
+              this.message_type = 'error'
+              messageTip(this.message_tips, this.message_type)
+            }
+          }).catch(() => {
+            console.log('quxiao')
+            messageTip('已取消删除', 'info')
+          })
           //   }
           // })
-          
         }
       })
     },
@@ -1542,9 +1562,9 @@ export default {
                   this.finish_show = false
                   this.finish_state = ''
                   const info = '删除存储节点'
-                  this.percentage=0
-                  this.progress_status=null
-                  this.progress_format=''
+                  this.percentage = 0
+                  this.progress_status = null
+                  this.progress_format = ''
                   const ip_port = row.hostaddr + '_' + row.port
                   this.getFStatus(this.timer, res.job_id, i++, info, ip_port)
                   this.timer = setInterval(() => {
@@ -2233,7 +2253,7 @@ export default {
           } else if (info == '添加shard' || info == '添加存储节点' || info == '删除shard' || info == '删除存储节点') {
             // 新增shard,存储节点
             if (ress.attachment !== null) {
-              //console.log(5)
+              // console.log(5)
               if (info == '添加shard' || info == '添加存储节点' || info == '删除shard' || info == '删除存储节点') {
                 this.shard_show = true
                 this.init_show = false
@@ -2261,7 +2281,7 @@ export default {
                             if (this.shard[c].shard_id == shard_idsValue) {
                               this.shard[c].icon = 'el-icon-circle-check'
                               this.shard[c].status = 'success'
-                            }else{
+                            } else {
                               this.shard[c].icon = 'el-icon-circle-check'
                               this.shard[c].status = 'success'
                             }
@@ -2275,7 +2295,7 @@ export default {
                             if (this.shard[c].shard_id == shard_idsValue) {
                               this.shard[c].icon = 'el-icon-circle-check'
                               this.shard[c].status = 'success'
-                            }else{
+                            } else {
                               this.shard[c].icon = 'el-icon-circle-check'
                               this.shard[c].status = 'success'
                             }
@@ -2319,7 +2339,7 @@ export default {
                             if (this.shard[c].shard_id == shard_idsValue) {
                               this.shard[c].icon = 'el-icon-circle-close'
                               this.shard[c].status = 'error'
-                            }else{
+                            } else {
                               this.shard[c].icon = 'el-icon-circle-close'
                               this.shard[c].status = 'error'
                             }
@@ -2333,7 +2353,7 @@ export default {
                             if (this.shard[c].shard_id == shard_idsValue) {
                               this.shard[c].icon = 'el-icon-circle-close'
                               this.shard[c].status = 'error'
-                            }else{
+                            } else {
                               this.shard[c].icon = 'el-icon-circle-close'
                               this.shard[c].status = 'error'
                             }
@@ -2469,7 +2489,7 @@ export default {
                               if (this.shard[c].shard_id == shard_idsValue) {
                                 this.shard[c].icon = 'el-icon-circle-close'
                                 this.shard[c].status = 'error'
-                              }else{
+                              } else {
                                 this.shard[c].icon = 'el-icon-circle-close'
                                 this.shard[c].status = 'error'
                               }
@@ -2483,7 +2503,7 @@ export default {
                               if (this.shard[c].shard_id == shard_idsValue) {
                                 this.shard[c].icon = 'el-icon-circle-close'
                                 this.shard[c].status = 'error'
-                              }else{
+                              } else {
                                 this.shard[c].icon = 'el-icon-circle-close'
                                 this.shard[c].status = 'error'
                               }
@@ -2605,7 +2625,7 @@ export default {
                               if (this.shard[c].shard_id == shard_idsValue) {
                                 this.shard[c].icon = 'el-icon-circle-check'
                                 this.shard[c].status = 'success'
-                              }else{
+                              } else {
                                 this.shard[c].icon = 'el-icon-circle-check'
                                 this.shard[c].status = 'success'
                               }
@@ -2619,7 +2639,7 @@ export default {
                               if (this.shard[c].shard_id == shard_idsValue) {
                                 this.shard[c].icon = 'el-icon-circle-check'
                                 this.shard[c].status = 'success'
-                              }else{
+                              } else {
                                 this.shard[c].icon = 'el-icon-circle-check'
                                 this.shard[c].status = 'success'
                               }
@@ -2718,7 +2738,7 @@ export default {
                   this.getList()
                 }
               } else {
-                //console.log(4)
+                // console.log(4)
                 if (ress.status == 'ongoing') {
                   if (ress.attachment.hasOwnProperty('storage_state')) {
                     if (ress.attachment.storage_state == 'done') {
@@ -2737,7 +2757,7 @@ export default {
                                 if (this.shard[c].shard_id == shard_idsValue) {
                                   this.shard[c].icon = 'el-icon-circle-check'
                                   this.shard[c].status = 'success'
-                                }else{
+                                } else {
                                   this.shard[c].icon = 'el-icon-circle-check'
                                   this.shard[c].status = 'success'
                                 }
@@ -2751,7 +2771,7 @@ export default {
                                 if (this.shard[c].shard_id == shard_idsValue) {
                                   this.shard[c].icon = 'el-icon-circle-check'
                                   this.shard[c].status = 'success'
-                                }else{
+                                } else {
                                   this.shard[c].icon = 'el-icon-circle-check'
                                   this.shard[c].status = 'success'
                                 }
@@ -2779,7 +2799,7 @@ export default {
                         }
                       }
                     } else if (ress.attachment.storage_state == 'failed') {
-                      //console.log(6)
+                      // console.log(6)
                       this.storage_state = 'error'
                       this.shard_icon = 'el-icon-circle-close'
                       this.shard_title = info + '失败'
@@ -2795,7 +2815,7 @@ export default {
                                 if (this.shard[c].shard_id == shard_idsValue) {
                                   this.shard[c].icon = 'el-icon-circle-close'
                                   this.shard[c].status = 'error'
-                                }else{
+                                } else {
                                   this.shard[c].icon = 'el-icon-circle-close'
                                   this.shard[c].status = 'error'
                                 }
@@ -2809,7 +2829,7 @@ export default {
                                 if (this.shard[c].shard_id == shard_idsValue) {
                                   this.shard[c].icon = 'el-icon-circle-close'
                                   this.shard[c].status = 'error'
-                                }else{
+                                } else {
                                   this.shard[c].icon = 'el-icon-circle-close'
                                   this.shard[c].status = 'error'
                                 }
@@ -2869,7 +2889,7 @@ export default {
                               if (this.shard[c].shard_id == shard_idsValue) {
                                 this.shard[c].icon = 'el-icon-circle-close'
                                 this.shard[c].status = 'error'
-                              }else{
+                              } else {
                                 this.shard[c].icon = 'el-icon-circle-close'
                                 this.shard[c].status = 'error'
                               }
@@ -2883,7 +2903,7 @@ export default {
                               if (this.shard[c].shard_id == shard_idsValue) {
                                 this.shard[c].icon = 'el-icon-circle-close'
                                 this.shard[c].status = 'error'
-                              }else{
+                              } else {
                                 this.shard[c].icon = 'el-icon-circle-close'
                                 this.shard[c].status = 'error'
                               }
@@ -2936,7 +2956,7 @@ export default {
                               if (this.shard[c].shard_id == shard_idsValue) {
                                 this.shard[c].icon = 'el-icon-circle-check'
                                 this.shard[c].status = 'success'
-                              }else{
+                              } else {
                                 this.shard[c].icon = 'el-icon-circle-check'
                                 this.shard[c].status = 'success'
                               }
@@ -2950,7 +2970,7 @@ export default {
                               if (this.shard[c].shard_id == shard_idsValue) {
                                 this.shard[c].icon = 'el-icon-circle-check'
                                 this.shard[c].status = 'success'
-                              }else{
+                              } else {
                                 this.shard[c].icon = 'el-icon-circle-check'
                                 this.shard[c].status = 'success'
                               }
@@ -2969,7 +2989,7 @@ export default {
                             // }
                           }
                         } else {
-                          shard_ids =ress.attachment.shard_id
+                          shard_ids = ress.attachment.shard_id
                           if (this.shard[c].shard_id == shard_ids) {
                             this.shard[c].icon = 'el-icon-circle-check'
                             this.shard[c].status = 'success'
@@ -2982,46 +3002,46 @@ export default {
                   this.getList()
                 }
               }
-              //加进度条
-              if(ress.status == 'ongoing'){
-                if(ress.attachment.storage_state == 'prepare'){
-                  this.percentage=20;
-                  this.progress_format='正在'+info
-                }else if(ress.attachment.storage_state == 'failed'){
-                  this.progress_format=info+'失败'
-                }else if(ress.attachment.storage_state == 'done'){
-                  this.percentage=100;
-                  this.progress_format=info+'完成'
-                }else{
-                  if(this.percentage<70&&this.percentage>=30){
-                    this.percentage+=10;
-                  }else if(this.percentage<30&&this.percentage>=0){
-                    this.percentage=30;
+              // 加进度条
+              if (ress.status == 'ongoing') {
+                if (ress.attachment.storage_state == 'prepare') {
+                  this.percentage = 20
+                  this.progress_format = '正在' + info
+                } else if (ress.attachment.storage_state == 'failed') {
+                  this.progress_format = info + '失败'
+                } else if (ress.attachment.storage_state == 'done') {
+                  this.percentage = 100
+                  this.progress_format = info + '完成'
+                } else {
+                  if (this.percentage < 70 && this.percentage >= 30) {
+                    this.percentage += 10
+                  } else if (this.percentage < 30 && this.percentage >= 0) {
+                    this.percentage = 30
                   }
-                  this.progress_format='正在'+info
+                  this.progress_format = '正在' + info
                 }
-              }else if(ress.status == 'failed'){
-                this.progress_status="exception";
-                if(ress.attachment.storage_state == 'prepare'){
-                  this.percentage=20;
-                  this.progress_format='正在'+info
-                }else if(ress.attachment.storage_state == 'failed'){
-                  this.progress_format=info+'失败'
-                }else if(ress.attachment.storage_state == 'done'){
-                  this.percentage=100;
-                  this.progress_format=info+'完成'
-                }else{
-                  if(this.percentage<70&&this.percentage>=30){
-                    this.percentage+=10;
-                  }else if(this.percentage<30&&this.percentage>=0){
-                    this.percentage=30;
+              } else if (ress.status == 'failed') {
+                this.progress_status = 'exception'
+                if (ress.attachment.storage_state == 'prepare') {
+                  this.percentage = 20
+                  this.progress_format = '正在' + info
+                } else if (ress.attachment.storage_state == 'failed') {
+                  this.progress_format = info + '失败'
+                } else if (ress.attachment.storage_state == 'done') {
+                  this.percentage = 100
+                  this.progress_format = info + '完成'
+                } else {
+                  if (this.percentage < 70 && this.percentage >= 30) {
+                    this.percentage += 10
+                  } else if (this.percentage < 30 && this.percentage >= 0) {
+                    this.percentage = 30
                   }
-                  this.progress_format='正在'+info
+                  this.progress_format = '正在' + info
                 }
-              }else{
-                this.progress_status="success";
-                this.percentage=100;
-                this.progress_format=info+'完成'
+              } else {
+                this.progress_status = 'success'
+                this.percentage = 100
+                this.progress_format = info + '完成'
               }
             } else if (ress.attachment == null && ress.error_code == '70001' && ress.status == 'failed') {
               if (info == '添加shard' || info == '添加存储节点' || info == '删除shard' || info == '删除存储节点') {
@@ -3035,10 +3055,10 @@ export default {
                   this.storage_state = 'error'
                   this.shard_icon = 'el-icon-circle-close'
                   this.shard_title = info + '失败'
-                  if(this.percentage<30){
-                  this.percentage+=10;
-                }
-                this.progress_format= info + '失败'
+                  if (this.percentage < 30) {
+                    this.percentage += 10
+                  }
+                  this.progress_format = info + '失败'
                   clearInterval(timer)
                 }
               }
@@ -3050,10 +3070,10 @@ export default {
                 this.storage_state = 'process'
                 this.shard_icon = 'el-icon-loading'
                 this.shard_title = '正在' + info
-                if(this.percentage<30){
-                  this.percentage+=10;
+                if (this.percentage < 30) {
+                  this.percentage += 10
                 }
-                this.progress_format= '正在' + info
+                this.progress_format = '正在' + info
               }
             } else if (ress.attachment == null && ress.status == 'done') {
               if (info == '添加shard' || info == '添加存储节点') {
@@ -3063,10 +3083,10 @@ export default {
                 this.storage_state = 'success'
                 this.shard_icon = 'el-icon-circle-check'
                 this.shard_title = info + '成功'
-                if(this.percentage<30){
-                    this.percentage+=10;
-                  }
-                this.progress_format= info+ '成功'
+                if (this.percentage < 30) {
+                  this.percentage += 10
+                }
+                this.progress_format = info + '成功'
               }
               clearInterval(timer)
             } else {
@@ -3077,10 +3097,10 @@ export default {
                 this.storage_state = 'error'
                 this.shard_icon = 'el-icon-circle-close'
                 this.shard_title = info + '失败'
-                if(this.percentage<30){
-                    this.percentage+=10;
-                  }
-                this.progress_format= info+ '失败'
+                if (this.percentage < 30) {
+                  this.percentage += 10
+                }
+                this.progress_format = info + '失败'
               }
               clearInterval(timer)
             }
