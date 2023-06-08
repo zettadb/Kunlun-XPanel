@@ -101,49 +101,53 @@ class RCR extends CI_Controller
 
 		$this->load->model('Cluster_model');
 		$post_data = str_replace("\\/", "/", json_encode($postJson));
+		$post_arr = $this->Cluster_model->postData($post_data, $this->post_url);
+		$post_arr = json_decode($post_arr, TRUE);
+		$data = $post_arr;
+		print_r(json_encode($data));
 
 		//查元数据是否一致
-		$sql = "select hostaddr,port from meta_db_nodes; ";
-		$res = $this->Cluster_model->getList($sql);
-		if ($res !== false) {
-			foreach ($res as $key=>$row){
-				$ips.=$res[$key]['hostaddr'].':'.$res[$key]['port'].',';
-			}
-			$slave_meta=substr($ips,0,strlen($ips)-1);
-		}
-		if($slave===$slave_meta){
-			$post_url = $this->post_url;
-			$post_arr = $this->Cluster_model->postData($post_data, $post_url);
-			$post_arr = json_decode($post_arr, TRUE);
-			$data = $post_arr;
-			print_r(json_encode($data));
-		}else{
-			$slave=substr($slave,0,strlen($slave)-1);
-			$slave=explode(',',$slave);
-			$meta_count=count($slave);
-			foreach ($slave as $knode => $vnode) {
-				$ips=explode(':',$vnode);
-				$sql = "select hostaddr,port from cluster_mgr_nodes where  member_state='source' ";
-				$res_meta = $this->getMetaClusters($ips[0], $ips[1],$sql,$string_info);
-				if ($res_meta['code'] == 200) {
-					$ip = $res_meta['list'][0]['host'];
-					$port = $res_meta['list'][0]['port'];
-					$post_url = 'http://' .$ip. ':' . $port . '/HttpService/Emit';
-					$post_arr = $this->Cluster_model->postData($post_data, $post_url);
-					$post_arr = json_decode($post_arr, TRUE);
-					$data = $post_arr;
-					print_r(json_encode($data));
-					break;
-				} else if ($meta_count == ($knode + 1)) {
-					$data['code'] = 500;
-					$data['message'] = $res_meta[0] . $vnode['hostaddr'] . '(' . $vnode['port'] . ')';
-					print_r(json_encode($data));
-					return;
-				} else {
-					continue;
-				}
-			}
-		}
+//		$sql = "select hostaddr,port from meta_db_nodes; ";
+//		$res = $this->Cluster_model->getList($sql);
+//		if ($res !== false) {
+//			foreach ($res as $key=>$row){
+//				$ips.=$res[$key]['hostaddr'].':'.$res[$key]['port'].',';
+//			}
+//			$slave_meta=substr($ips,0,strlen($ips)-1);
+//		}
+//		if($slave===$slave_meta){
+//			$post_url = $this->post_url;
+//			$post_arr = $this->Cluster_model->postData($post_data, $post_url);
+//			$post_arr = json_decode($post_arr, TRUE);
+//			$data = $post_arr;
+//			print_r(json_encode($data));
+//		}else{
+//			$slave=substr($slave,0,strlen($slave)-1);
+//			$slave=explode(',',$slave);
+//			$meta_count=count($slave);
+//			foreach ($slave as $knode => $vnode) {
+//				$ips=explode(':',$vnode);
+//				$sql = "select hostaddr,port from cluster_mgr_nodes where  member_state='source' ";
+//				$res_meta = $this->getMetaClusters($ips[0], $ips[1],$sql,$string_info);
+//				if ($res_meta['code'] == 200) {
+//					$ip = $res_meta['list'][0]['host'];
+//					$port = $res_meta['list'][0]['port'];
+//					$post_url = 'http://' .$ip. ':' . $port . '/HttpService/Emit';
+//					$post_arr = $this->Cluster_model->postData($post_data, $post_url);
+//					$post_arr = json_decode($post_arr, TRUE);
+//					$data = $post_arr;
+//					print_r(json_encode($data));
+//					break;
+//				} else if ($meta_count == ($knode + 1)) {
+//					$data['code'] = 500;
+//					$data['message'] = $res_meta[0] . $vnode['hostaddr'] . '(' . $vnode['port'] . ')';
+//					print_r(json_encode($data));
+//					return;
+//				} else {
+//					continue;
+//				}
+//			}
+//		}
 	}
 
 	public function editMachine()
@@ -547,7 +551,6 @@ class RCR extends CI_Controller
 		$meta=substr($meta,0,strlen($meta)-1);
 		$meta_res=explode(',',$meta);
 		$string='cluster_info';
-		$this->load->model('Change_model');
 		foreach ($meta_res as $knode => $vnode) {
 			$ips=explode(':',$vnode);
 			$sql = "select id,name,nick_name from db_clusters where  memo!='' and memo is not null and status!='deleted' ";
