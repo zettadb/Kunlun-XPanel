@@ -354,10 +354,11 @@
                     :status="item.status"
                     :description="item.description"
                   >
-                    <template slot="description">
-                      <span>{{ item.description }}</span>
-                      <div style="padding:20px;">
-                        <el-steps direction="vertical" :active="three_active">
+                    <template slot="description" >
+                      <el-collapse v-model="activeName" >
+                      <el-collapse-item  :name="index">
+                      <div style="padding:20px;" >
+                        <el-steps direction="vertical" :active="three_active" >
                           <el-step
                             v-for="(three,thindex) of statusList[key].second[index].three"
                             :key="thindex"
@@ -367,7 +368,6 @@
                             :description="three.description"
                           >
                             <template slot="description">
-                              <span>{{ three.description }}</span>
                               <div style="padding:20px;">
                                 <el-steps direction="vertical" :active="four_active">
                                   <el-step
@@ -380,7 +380,6 @@
                                     
                                   >
                                   <template slot="description">
-                                    <span>{{ three.description }}</span>
                                     <div style="padding:20px;">
                                       <el-steps direction="vertical" :active="five_active">
                                         <el-step
@@ -401,6 +400,8 @@
                           </el-step>
                         </el-steps>
                       </div>
+                      </el-collapse-item>
+                      </el-collapse>
                     </template>
                   </el-step>
                 </el-steps>
@@ -575,6 +576,8 @@ export default {
       active: 0,
       job_id: '',
       timer: null,
+      add_loading:false,
+      activeName:'1',
       //statusList: [],
       statusList:[
         // {
@@ -676,6 +679,13 @@ export default {
     }
   },
   methods:{
+    handleChange() {
+      if (this.init_active= 3) {
+        this.init_active = 0;
+      } else {
+        this.init_active++;
+      }
+    },
     beforeRedoDestory() {
       clearInterval(this.timer)
       this.dialogStatusVisible = false
@@ -1083,6 +1093,7 @@ export default {
     createData() {
       this.$refs["dataForm"].validate((valid) => {
         if (valid) {
+          this.add_loading=true;
           const tempData = {};
           tempData.user_name = sessionStorage.getItem('login_username');
           tempData.job_id ='';
@@ -2331,7 +2342,7 @@ export default {
   },
 };
 </script>
-<style  scoped>
+<style >
 .right_input_min{
   width:25%;
 }
@@ -2357,5 +2368,17 @@ export default {
 }
 .right_input{
   width: 50%;
+}
+.el-collapse{
+  border-top: 1px solid #ffffff; 
+  border-bottom: 1px solid #ffffff;
+}
+.el-collapse-item__header{
+  height: 8px !important;
+  line-height: 8px !important;
+  border-bottom: 1px solid #ffffff ;
+}
+.el-collapse-item__arrow{
+  margin: -36px 8px 0 auto ;
 }
 </style>

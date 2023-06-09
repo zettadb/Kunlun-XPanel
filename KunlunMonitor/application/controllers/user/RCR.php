@@ -442,6 +442,23 @@ class RCR extends CI_Controller
 						$select_sql = "select id from cluster_meta_info where  user_id='$user_id' and rcr_meta='$ips'";
 						$res_select = $this->Login_model->getList($select_sql);
 						if(empty($res_select)){
+							//验证元数据ip端口是否能通
+							$ips_arr=explode(',',$ips);
+							$meta_count=count($ips_arr);
+							foreach ($ips_arr as $knode => $vnode) {
+								$meta_arr=explode(':',$vnode);
+								$res_meta = $this->getMeta($meta_arr[0], $meta_arr[1]);
+								if ($res_meta['code'] == 200) {
+									break;
+								} else if ($meta_count == ($knode + 1)) {
+									$data['code'] = 500;
+									$data['message'] = $res_meta[0] . $meta_arr[0] . '(' . $meta_arr[1] . ')';
+									print_r(json_encode($data));
+									return;
+								} else {
+									continue;
+								}
+							}
 							$sql_update = "INSERT INTO cluster_meta_info(`name`,`user_id`,`rcr_meta`) values ('$meta_name','$user_id','$ips');";
 							$res_update = $this->Login_model->updateList($sql_update);
 							if ($res_update == 1) {
@@ -660,5 +677,12 @@ class RCR extends CI_Controller
 		$data['list'] = $res;
 		$data['total'] =$res ? (int) $res[0]['count'] : 0;
 		print_r(json_encode($data));
+	}
+	public function getMeta($ip, $port)
+	{
+		$sql = "select hostaddr,port from cluster_mgr_nodes where member_state='source'";
+		$this->load->model('Change_model');
+		$res = $this->Change_model->getMysql($ip, $port, 'pgx', 'pgx_pwd', 'kunlun_metadata_db', $sql);
+		return $res;
 	}
 }
