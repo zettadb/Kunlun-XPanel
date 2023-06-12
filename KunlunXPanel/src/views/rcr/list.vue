@@ -190,6 +190,9 @@
             </el-option>
           </el-select>
         </el-form-item>
+         <el-collapse accordion style="border:0;">
+          <el-collapse-item style="border:0;">
+            <span class="collapse-title" slot="title">高级设置</span>
         <el-form-item label="shard延迟时间(主):" prop="sync_host_delay" class="right_input">
           <el-input  v-model="temp.sync_host_delay" placeholder="shard延迟时间(主)">
             <i slot="suffix" class="input_width">s</i>
@@ -200,6 +203,8 @@
             <i slot="suffix" class="input_width">s</i>
           </el-input>
         </el-form-item>
+          </el-collapse-item>
+         </el-collapse>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false" v-show="!dialogDetail">关闭</el-button>
@@ -343,7 +348,7 @@
             :description="items.description"
           >
             <template slot="description">
-              <div style="padding:20px;max-height: 500px;overflow-y: auto;">
+              <div class="second_warp" >
                 <el-steps direction="vertical" :active="second_active">
                   <el-step
                     v-for="(item,index) of statusList[key].second"
@@ -1443,7 +1448,8 @@ export default {
                             firstlist[b].second=secondlist;
                             //第三层
                             let three_steps=res.attachment['shard_sync']['job_steps'];
-                              three_steps = (three_steps).replace(/\s+/g, '').split(',')
+                            three_steps = (three_steps).replace(/\s+/g, '').split(',')
+                            let threelist=[];
                             for (let g = 0; g < three_steps.length; g++) {
                             let threegoing = { title: three_steps[g], icon: '', status: 'wait', description: '' }
                             threelist.push(threegoing)
@@ -1465,6 +1471,7 @@ export default {
                               //第三层
                               let  three_steps=res.attachment[Object.keys(res.attachment)[d]][f]['job_steps'];
                               three_steps = (three_steps).replace(/\s+/g, '').split(',')
+                              let threelist=[];
                               for (let g = 0; g < three_steps.length; g++) {
                                 let threegoing = { title: three_steps[g], icon: '', status: 'wait', description: '' }
                                 
@@ -2324,16 +2331,34 @@ export default {
 .right_input{
   width: 50%;
 }
-.el-collapse{
-  border-top: 1px solid #ffffff; 
-  border-bottom: 1px solid #ffffff;
+.second_warp{
+  padding:20px;
+  max-height: 500px;
+  overflow-y: auto;
 }
-.el-collapse-item__header{
+.second_warp .el-collapse{
+  border:0;
+}
+.second_warp .el-collapse-item__header{
   height: 8px !important;
   line-height: 8px !important;
-  border-bottom: 1px solid #ffffff ;
+  border:0 ;
 }
-.el-collapse-item__arrow{
+.el-collapse-item__header{
+  border:0 ;
+}
+.second_warp .el-collapse-item__arrow{
   margin: -36px 8px 0 auto ;
 }
+</style>
+<style scoped lang='scss'>
+::v-deep .collapse-title {
+  flex: 1 0 90%;
+  order: 1;
+  .el-collapse-item__header {
+    flex: 1 0 auto;
+    order: -1;
+  }
+}
+
 </style>
