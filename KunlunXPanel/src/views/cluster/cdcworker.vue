@@ -32,12 +32,17 @@
     >
       >
       <el-table-column type="index" align="center" label="序号" width="50" />
-
-      <el-table-column prop="host_addr" align="center" label="IP地址" />
-      <el-table-column prop="port" align="center" label="端口号" />
-      <el-table-column prop="master" align="center" label="主节点" />
-      <el-table-column prop="status" align="center" label="状态" />
-
+      <el-table-column prop="worker_param" align="center" label="参数">
+        <template slot-scope="{ row }">
+          <el-link type="primary" @click="showParam(row)">配置详情</el-link>
+        </template>
+      </el-table-column>
+      <el-table-column prop="status" align="center" label="状态">
+        <template slot-scope="{ row }">
+          <el-tag v-if="row.status===1">服务中</el-tag>
+          <el-tag v-else type="danger">无效</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column
         label="操作"
         align="center"
@@ -67,6 +72,16 @@
     >
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="140px">
 
+        <el-form-item label="目标表集群:" prop="cluster_name">
+          <el-select
+            v-model="temp.cluster_name"
+            clearable
+            placeholder="请选择目标表集群"
+            @change="handleChangeCluster($event)"
+          >
+            <el-option v-for="item in clusterOptions" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="元数据:" prop="meta_db">
           <el-select v-model="temp.meta_db" clearable placeholder="请选择目标表集群" multiple style="width: 100%">
             <el-option
@@ -83,17 +98,6 @@
 
         <el-form-item label="元数据密码:" prop="meta_passwd">
           <el-input v-model="temp.meta_passwd" clearable placeholder="元数据密码" />
-        </el-form-item>
-
-        <el-form-item label="目标表集群:" prop="cluster_name">
-          <el-select
-            v-model="temp.cluster_name"
-            clearable
-            placeholder="请选择目标表集群"
-            @change="handleChangeCluster($event)"
-          >
-            <el-option v-for="item in clusterOptions" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
         </el-form-item>
 
         <el-form-item label="数据表:" prop="dump_tables">
@@ -180,7 +184,7 @@
               label="plugin name"
             />
             <el-table-column
-              width="400px"
+              width="350px"
               prop="plugin_param"
               label="plugin param"
             >
@@ -344,19 +348,31 @@
         </el-button>
       </div>
     </el-dialog>
+
+    <el-dialog
+      title="参数"
+      :visible.sync="cdcWorkerItemParamDg"
+      custom-class="single_dal_view"
+      :close-on-click-modal="false"
+    >
+      <json-viewer :value="expondInfo" />
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
+// eslint-disable-next-line no-unused-vars
 import { messageTip, getNowDate, handleCofirm } from '@/utils'
+import JsonViewer from 'vue-json-viewer'
 import {
   updateStorage,
-  editCdc,
-  getCdcList,
+  CdcWorkList,
   getPGTableList,
   clusterOptions,
   getMetaClusterList,
-  shardList, editCdcWork
+  shardList,
+  editCdcWork, DeleteCdcWorker
 } from '@/api/cluster/list'
 import { version_arr, storage_type_arr, timestamp_arr } from '@/utils/global_variable'
 import Pagination from '@/components/Pagination'
@@ -365,7 +381,7 @@ import { output } from 'echarts/extension/webpack.config'
 
 export default {
   name: 'Account',
-  components: { Pagination },
+  components: { JsonViewer, Pagination },
   data() {
     const validateIPAddress = (rule, value, callback) => {
       console.log(value)
@@ -404,6 +420,8 @@ export default {
       }
     }
     return {
+      expondInfo: '',
+      cdcWorkerItemParamDg: false,
       shardparamsvisible: false,
       outputparamsvisible: false,
       ShardParamSvisible: false,
@@ -543,6 +561,11 @@ export default {
   },
   methods: {
 
+    showParam(row) {
+      console.log(row)
+      this.expondInfo = row.worker_param
+      this.cdcWorkerItemParamDg = true
+    },
     getShardList() {
       const queryParam = Object.assign({}, this.listQuery)
       // 模糊搜索
@@ -609,9 +632,16 @@ export default {
       this.listLoading = true
       this.installStatus = false
       const queryParam = Object.assign({}, this.listQuery)
-      getCdcList(queryParam).then((response) => {
+      CdcWorkList(queryParam).then((response) => {
         if (response.list !== false) {
+          response.list.forEach((v) => {
+            v.worker_param.paras.output_plugins.forEach((j) => {
+              j.plugin_param = decodeURIComponent(j.plugin_param)
+            })
+          })
           this.list = response.list
+          // this.list.worker_param.paras.output_plugins
+
           this.total = response.total
         } else {
           this.list = []
@@ -770,7 +800,17 @@ export default {
           tempData.paras = param
           // 发送接口
           editCdcWork(tempData).then((response) => {
-
+            if (response.code === 200) {
+              this.getList()
+              this.message_tips = '成功'
+              this.message_type = 'success'
+              this.dialogFormVisible = false
+              messageTip(this.message_tips, this.message_type)
+            } else {
+              this.message_tips = response.message
+              this.message_type = 'error'
+              messageTip(this.message_tips, this.message_type)
+            }
           })
         }
       })
@@ -807,7 +847,26 @@ export default {
       })
     },
     handleDelete(row) {
-
+      handleCofirm('此操作将永久删除该数据, 是否继续?').then(() => {
+        const tempData = {}
+        tempData.paras = { 'name': row.id }
+        DeleteCdcWorker(tempData).then((response) => {
+          if (response.code === 200) {
+            this.getList()
+            this.message_tips = '成功'
+            this.message_type = 'success'
+            this.variableVisible = false
+            messageTip(this.message_tips, this.message_type)
+          } else {
+            this.message_tips = response.message
+            this.message_type = 'error'
+            messageTip(this.message_tips, this.message_type)
+          }
+        })
+      }).catch(() => {
+        console.log('quxiao')
+        messageTip('已取消删除', 'info')
+      })
     },
 
     getStatus(timer, data, i, action_name) {

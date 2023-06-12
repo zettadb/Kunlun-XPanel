@@ -4402,21 +4402,18 @@ class Cluster extends CI_Controller
 
 		$this->load->model('Cluster_model');
 		try {
-			$sql_table = "CREATE TABLE IF NOT EXISTS `cluster_cdc_server` (`id` INT NOT NULL,`host_addr` VARCHAR (128) COLLATE utf8mb4_0900_as_cs DEFAULT NULL,`port` VARCHAR (8) COLLATE utf8mb4_0900_as_cs DEFAULT NULL,`master` INT DEFAULT NULL,`create_time` INT DEFAULT NULL,`status` INT DEFAULT NULL,PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;";
+			$sql_table = "CREATE TABLE IF NOT EXISTS `cluster_cdc_server` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,`host_addr` VARCHAR (128) CHARACTER 
+SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,`port` VARCHAR (8) CHARACTER 
+SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,`master` INT DEFAULT NULL,`create_time` INT DEFAULT NULL,`status` INT DEFAULT NULL,PRIMARY KEY (`id`)) ENGINE=INNODB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;";
 			$this->Cluster_model->updateList($sql_table);
 
-		} catch (\Throwable $th) {
+
+			$cdc_worker_table="CREATE TABLE IF NOT EXISTS `cluster_cdc_worker` ( `id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `worker_param` TEXT COLLATE utf8mb4_0900_as_cs, `create_time` INT DEFAULT NULL, `status` INT DEFAULT NULL, PRIMARY KEY ( `id` ) ) ENGINE = INNODB AUTO_INCREMENT = 9 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_as_cs;";
+			$this->Cluster_model->updateList($cdc_worker_table);
+
+		} catch (Exception $th) {
 
 		}
-
-		// //判断参数
-		// $string = json_decode(@file_get_contents('php://input'), true);
-		// //调接口
-		// $this->load->model('Cluster_model');
-		// $post_data = str_replace("\\/", "/", json_encode($string));
-		// $post_arr = $this->Cluster_model->postData($post_data, $this->post_url);
-		// $post_arr = json_decode($post_arr, TRUE);
-		// $data = $post_arr;
 
 		$sql = "select * from cluster_cdc_server";
 		$res = $this->Cluster_model->getList($sql);
@@ -4426,6 +4423,82 @@ class Cluster extends CI_Controller
 			'total' => count($res)
 		];
 		print_r(json_encode($resp));
+	}
+
+
+	public function getCdcWorkerList()
+	{
+		//获取token
+		$arr = apache_request_headers(); //获取请求头数组
+		$token = $arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));
+			return;
+		}
+
+		$this->load->model('Cluster_model');
+		try {
+			$sql_table = "CREATE TABLE IF NOT EXISTS `cluster_cdc_server` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,`host_addr` VARCHAR (128) CHARACTER 
+SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,`port` VARCHAR (8) CHARACTER 
+SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,`master` INT DEFAULT NULL,`create_time` INT DEFAULT NULL,`status` INT DEFAULT NULL,PRIMARY KEY (`id`)) ENGINE=INNODB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;";
+			$this->Cluster_model->updateList($sql_table);
+
+			$cdc_worker_table="CREATE TABLE IF NOT EXISTS `cluster_cdc_worker` ( `id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `worker_param` TEXT COLLATE utf8mb4_0900_as_cs, `create_time` INT DEFAULT NULL, `status` INT DEFAULT NULL, PRIMARY KEY ( `id` ) ) ENGINE = INNODB AUTO_INCREMENT = 9 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_as_cs;";
+			$this->Cluster_model->updateList($cdc_worker_table);
+
+		} catch (Exception $th) {
+
+		}
+
+		$sql = "select * from cluster_cdc_worker";
+		$res = $this->Cluster_model->getList($sql);
+
+		if ($res){
+			foreach ($res as $key=>$v){
+				$res[$key]['worker_param']=json_decode($v['worker_param'],true);
+			}
+		}
+		$resp = [
+			'code' => 200,
+			'list' => $res,
+			'total' => count($res)
+		];
+		print_r(json_encode($resp));
+	}
+
+
+
+
+	public function DeleteCdcWorker()
+	{
+		//获取token
+		$arr = apache_request_headers(); //获取请求头数组
+		$token = $arr["Token"];
+		if (empty($token)) {
+			$data['code'] = 201;
+			$data['message'] = 'token不能为空';
+			print_r(json_encode($data));
+			return;
+		}
+		$this->load->model('Cluster_model');
+		//判断参数
+		$string = json_decode(@file_get_contents('php://input'), true);
+		$this->load->model('Cluster_model');
+		$cdc_id = $string['paras']['name'];
+		$delete_sql = "delete from cluster_cdc_worker where id=" . $cdc_id;
+		$Res = $this->Cluster_model->updateList($delete_sql);
+
+		if ($Res > 0) {
+			$data['code'] = 200;
+			$data['message'] = '成功';
+		} else {
+			$data['code'] = 201;
+			$data['message'] = $Res;
+		}
+		print_r(json_encode($data));
+		return;
 	}
 
 	public function CdcDelete()
@@ -4496,15 +4569,15 @@ class Cluster extends CI_Controller
 				)
 			);
 			$response = curl_exec($curl);
-			if ($response) {
+			//获取成功后cdc 返回主节点，如果历史列表存在主节点，就更新，没有就新增主节点
+			$responseArr = json_decode($response, true);
+			if ($response && $responseArr['status']=='Done') {
 				$sql = "select * from cluster_cdc_server where `host_addr`='" . $value['hostaddr'] . "'";
 				$masterList = $this->Cluster_model->getList($sql);
 				if (!$masterList) {
 					$sql = "INSERT INTO cluster_cdc_server (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $value['hostaddr'] . "', '" . $value['port'] . "',0, " . time() . ", 1);";
 					$this->Cluster_model->updateList($sql);
 				}
-				//获取成功后cdc 返回主节点，如果历史列表存在主节点，就更新，没有就新增主节点
-				$responseArr = json_decode($response, true);
 				$master = $responseArr['attachment']['ipPort'];
 				$master_sql = "select * from cluster_cdc_server where master=1";
 				$masterList = $this->Cluster_model->getList($master_sql);
@@ -4514,12 +4587,12 @@ class Cluster extends CI_Controller
 					$this->Cluster_model->updateList($updateMasterSql);
 				} else {
 					$sql = "INSERT INTO cluster_cdc_server (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $masterArr[0] . "', '" . $masterArr[1] . "',1, " . time() . ", 0);";
-					$this->Cluster_model->updateList($sql);
+					$res=$this->Cluster_model->updateList($sql);
 				}
 			} else {
 				//获取cdc 失败
 				$sql = "INSERT INTO cluster_cdc_server (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $value['hostaddr'] . "', '" . $value['port'] . "',0, " . time() . ", 0);";
-				$this->Cluster_model->updateList($sql);
+				$res=$this->Cluster_model->updateList($sql);
 			}
 		}
 		$data['code'] = 200;
@@ -4549,9 +4622,7 @@ class Cluster extends CI_Controller
 		$masterList = $this->Cluster_model->getList($master_sql);
 
 		if ($masterList) {
-
 			$curl_addr = "http://" . $masterList[0]['host_addr'] . ":" . $masterList[0]['port'] . "/kunlun_cdc";
-			unset($string['paras']);
 			$curl = curl_init();
 			curl_setopt_array(
 				$curl,
@@ -4571,67 +4642,28 @@ class Cluster extends CI_Controller
 				)
 			);
 			$response = curl_exec($curl);
+			$status=0;
+			if ($response){
+				$status=1;
+			}
 
+			foreach ($string['paras']['output_plugins'] as $k=>$v){
+				$string['paras']['output_plugins'][$k]['plugin_param']=urlencode($v['plugin_param']);
+			}
 
+			$sql = "INSERT INTO cluster_cdc_worker (`worker_param`, `create_time`,`status`) VALUES ( '" . json_encode($string) . "', " . time() . ", $status);";
+			$this->Cluster_model->updateList($sql);
+			$data['code'] = 200;
+			$data['message'] = '获取CDC 服务成功';
+			print_r(json_encode($data));
+			return;
 		} else {
 			//没有发现cdc 主
+			$data['code'] = 201;
+			$data['message'] = '添加CDC失败。没有CDC主';
+			print_r(json_encode($data));
+			return;
 		}
-
-		$stringArr = $string['paras']['temp'];
-		$this->load->model('Cluster_model');
-		foreach ($stringArr as $key => $value) {
-			$curl_addr = "http://" . $value['hostaddr'] . ":" . $value['port'] . "/kunlun_cdc";
-			unset($string['paras']);
-			$curl = curl_init();
-			curl_setopt_array(
-				$curl,
-				array(
-					CURLOPT_URL => $curl_addr,
-					CURLOPT_RETURNTRANSFER => true,
-					CURLOPT_ENCODING => '',
-					CURLOPT_MAXREDIRS => 10,
-					CURLOPT_TIMEOUT => 0,
-					CURLOPT_FOLLOWLOCATION => true,
-					CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-					CURLOPT_CUSTOMREQUEST => 'POST',
-					CURLOPT_POSTFIELDS => json_encode($string),
-					CURLOPT_HTTPHEADER => array(
-						'Content-Type: application/json'
-					),
-				)
-			);
-			$response = curl_exec($curl);
-			if ($response) {
-				$sql = "select * from cluster_cdc_server where `host_addr`='" . $value['hostaddr'] . "'";
-				$masterList = $this->Cluster_model->getList($sql);
-				if (!$masterList) {
-					$sql = "INSERT INTO cluster_cdc_server (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $value['hostaddr'] . "', '" . $value['port'] . "',0, " . time() . ", 1);";
-					$this->Cluster_model->updateList($sql);
-				}
-				//获取成功后cdc 返回主节点，如果历史列表存在主节点，就更新，没有就新增主节点
-				$responseArr = json_decode($response, true);
-				$master = $responseArr['attachment']['ipPort'];
-				$master_sql = "select * from cluster_cdc_server where master=1";
-				$masterList = $this->Cluster_model->getList($master_sql);
-				$masterArr = explode(":", $master);
-				if ($masterList) {
-					$updateMasterSql = "UPDATE cluster_cdc_server SET `host_addr` = '" . $masterArr[0] . "', `port` = '" . $masterArr[1] . "', `master` = 1, `create_time` = NULL, `status` = 1 WHERE `id` = " . $masterList[0]['id'];
-					$this->Cluster_model->updateList($updateMasterSql);
-				} else {
-					$sql = "INSERT INTO cluster_cdc_server (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $masterArr[0] . "', '" . $masterArr[1] . "',1, " . time() . ", 0);";
-					$this->Cluster_model->updateList($sql);
-				}
-			} else {
-				//获取cdc 失败
-				$sql = "INSERT INTO cluster_cdc_server (`host_addr`, `port`, `master`, `create_time`, `status`) VALUES ( '" . $value['hostaddr'] . "', '" . $value['port'] . "',0, " . time() . ", 0);";
-				$this->Cluster_model->updateList($sql);
-			}
-		}
-		$data['code'] = 200;
-		$data['message'] = '获取CDC 服务成功';
-		print_r(json_encode($data));
-		return;
-
 	}
 
 	public function rcrError($user_id): array

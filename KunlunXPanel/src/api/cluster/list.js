@@ -748,6 +748,22 @@ export function getCdcList(data) {
   })
 }
 
+export function CdcWorkList(data) {
+  return request({
+    url: '/user/Cluster/getCdcWorkerList',
+    method: 'post',
+    data
+  })
+}
+
+export function DeleteCdcWorker(data) {
+  return request({
+    url: '/user/Cluster/DeleteCdcWorker',
+    method: 'post',
+    data
+  })
+}
+
 export function getMetaClusterList(query) {
   return request({
     url: '/user/MetaCluster/getMetaClusterList',

@@ -33,7 +33,7 @@ class Login extends CI_Controller
 			print_r(json_encode($data));
 			return;
 		}
-		//验证用户名和密码
+		//验证用户名和密码_
 		$this->load->model('Login_model');
 		if ($user_name == 'super_dba' && $password == 'super_dba') {
 			$sql_super = "select count(id) as count,id from kunlun_user where name='$user_name' and password='$password';";
