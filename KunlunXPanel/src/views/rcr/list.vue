@@ -415,7 +415,7 @@
         </el-steps>
       </div>
     </el-dialog>
-    <!-- <Info /> -->
+    
   </div>
 </template>
 <script>
@@ -425,10 +425,10 @@
  import {version_arr,timestamp_arr,machine_type_arr,node_stats_arr} from "@/utils/global_variable"
  import Pagination from '@/components/Pagination' 
  import Mate from "../rcr/matelist.vue";
- import Info from "../cluster/info.vue";
+
 export default {
   name: "account",
-  components: { Pagination,Mate ,Info},
+  components: { Pagination,Mate },
   data() {
    const validateMeta=(rule, value, callback)=>{
       if (!value) {
