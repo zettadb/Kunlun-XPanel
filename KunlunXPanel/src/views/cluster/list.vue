@@ -2908,7 +2908,6 @@ export default {
       })
     },
     handleSetUp(row) {
-      console.log(row)
       if (this.comment.active == 'delcluster') {
         this.handleClear()
       }

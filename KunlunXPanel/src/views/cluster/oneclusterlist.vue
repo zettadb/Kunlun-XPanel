@@ -5,7 +5,7 @@
         <el-menu default-active="1" class="el-menu-vertical-demo" @select="selected">
           <el-menu-item index="1">
             <i class="el-icon-setting" />
-            <span>基础设置</span>
+            <span>基础信息</span>
           </el-menu-item>
           <el-menu-item index="2" v-if="user_name=='super_dba'">
             <i class="el-icon-setting" />
