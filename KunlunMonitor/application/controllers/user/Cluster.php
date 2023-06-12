@@ -194,6 +194,7 @@ class Cluster extends CI_Controller
 							} else {
 								$res[$row]['fullsync_level'] = '';
 							}
+							$res[$row]['memo'] = $string;
 
 						} else {
 							// $res[$row]['snode_count'] = '';
@@ -642,7 +643,7 @@ class Cluster extends CI_Controller
 		$status = '';
 		if($res_rcr!==false){
 			$data['nodedetail'] = '';
-			$data['list'] = false;
+			$data['list'] = [];
 			$data['status'] = $status;
 		}else {
 			$sql = "select * from shards where db_cluster_id='$id' and status!='deleted'";
@@ -737,7 +738,7 @@ class Cluster extends CI_Controller
 				$data['status'] = $status;
 			} else {
 				$data['nodedetail'] = '';
-				$data['list'] = false;
+				$data['list'] = [];
 				$data['status'] = $status;
 			}
 		}
