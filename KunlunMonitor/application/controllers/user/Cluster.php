@@ -635,66 +635,33 @@ class Cluster extends CI_Controller
 
 	public function getThisShards($id, $user_name)
 	{
-		$sql = "select * from shards where db_cluster_id='$id' and status!='deleted'";
 		$this->load->model('Cluster_model');
-		$res = $this->Cluster_model->getList($sql);
-		$count = 0;
-		$list = array();
+		//判断该集群是否建立rcr关系
+		$sql_rcr = "select id from cluster_rcr_infos where status!='deleted' and (master_cluster_id='$id' or slave_cluster_id='$id') ";
+		$res_rcr = $this->Cluster_model->getList($sql_rcr);
 		$status = '';
-		if ($res !== false) {
-			$count = count((array)$res);
-		}
-		$data['shards_count'] = $count;
-		if ($count == 1) {
-			$resnode = $this->getThisNodes($id, $res[0]['id']);
-			//print_r($resnode);exit;
-			$data['nodedetail'] = $count . '个shard，' . $res[0]['name'] . '(' . count($resnode) . '个副本)';
-			foreach ($resnode as &$item) {
-				$item['name'] = $res[0]['name'];
-			}
-			$data['list'] = $resnode;
-			foreach ($resnode as $i) {
-				//异常
-				if ($i['status'] == 'inactive') {
-					$status .= $i['name'] . '(' . $i['ip'] . '_' . $i['port'] . ')' . '异常;';
-				}
-				//获取shard的最大延迟时间
-				//查user_id
-				$this->load->model('Login_model');
-				$user_sql = "select id from kunlun_user where name='$user_name';";
-				$res_user = $this->Login_model->getList($user_sql);
-				if (!empty($res_user)) {
-					$user_id = $res_user[0]['id'];
-				}
-				$result = 100;
-				//先查表是否存在
-				$sqldalay = "select TABLE_NAME from information_schema.TABLES where TABLE_NAME = 'shard_max_dalay';";
-				$resdalay = $this->Login_model->getList($sqldalay);
-				if ($resdalay !== false) {
-					//表存在的情况
-					$shard_id = $res[0]['id'];
-					$sql_select = "select max_delay_time from shard_max_dalay where db_cluster_id='$id' and shard_id='$shard_id' and user_id='$user_id'";
-					$res_select = $this->Login_model->getList($sql_select);
-					if ($res_select !== false) {
-						$result = $res_select[0]['max_delay_time'];
-					}
-				}
-				if ($i['replica_delay'] > $result) {
-					$status .= $i['name'] . '(' . $i['ip'] . '_' . $i['port'] . ')' . '延迟过大;';
-				}
-			}
+		if($res_rcr!==false){
+			$data['nodedetail'] = '';
+			$data['list'] = false;
 			$data['status'] = $status;
-		} elseif ($count > 1) {
-			$node = '';
-			foreach ($res as $key) {
-				$resnode = $this->getThisNodes($id, $key['id']);
-				$node .= $key['name'] . '(' . count($resnode) . '个副本)，';
-				//$data[$key['name']]=$resnode;
+		}else {
+			$sql = "select * from shards where db_cluster_id='$id' and status!='deleted'";
+			$res = $this->Cluster_model->getList($sql);
+			$count = 0;
+			$list = array();
+			if ($res !== false) {
+				$count = count((array)$res);
+			}
+			$data['shards_count'] = $count;
+			if ($count == 1) {
+				$resnode = $this->getThisNodes($id, $res[0]['id']);
+				$data['nodedetail'] = $count . '个shard，' . $res[0]['name'] . '(' . count($resnode) . '个副本)';
 				foreach ($resnode as &$item) {
-					$item['name'] = $key['name'];
+					$item['name'] = $res[0]['name'];
 				}
+				$data['list'] = $resnode;
 				foreach ($resnode as $i) {
-					$list[] = $i;
+					//异常
 					if ($i['status'] == 'inactive') {
 						$status .= $i['name'] . '(' . $i['ip'] . '_' . $i['port'] . ')' . '异常;';
 					}
@@ -712,7 +679,7 @@ class Cluster extends CI_Controller
 					$resdalay = $this->Login_model->getList($sqldalay);
 					if ($resdalay !== false) {
 						//表存在的情况
-						$shard_id = $key['id'];
+						$shard_id = $res[0]['id'];
 						$sql_select = "select max_delay_time from shard_max_dalay where db_cluster_id='$id' and shard_id='$shard_id' and user_id='$user_id'";
 						$res_select = $this->Login_model->getList($sql_select);
 						if ($res_select !== false) {
@@ -723,15 +690,56 @@ class Cluster extends CI_Controller
 						$status .= $i['name'] . '(' . $i['ip'] . '_' . $i['port'] . ')' . '延迟过大;';
 					}
 				}
+				$data['status'] = $status;
+			} elseif ($count > 1) {
+				$node = '';
+				foreach ($res as $key) {
+					$resnode = $this->getThisNodes($id, $key['id']);
+					$node .= $key['name'] . '(' . count($resnode) . '个副本)，';
+					//$data[$key['name']]=$resnode;
+					foreach ($resnode as &$item) {
+						$item['name'] = $key['name'];
+					}
+					foreach ($resnode as $i) {
+						$list[] = $i;
+						if ($i['status'] == 'inactive') {
+							$status .= $i['name'] . '(' . $i['ip'] . '_' . $i['port'] . ')' . '异常;';
+						}
+						//获取shard的最大延迟时间
+						//查user_id
+						$this->load->model('Login_model');
+						$user_sql = "select id from kunlun_user where name='$user_name';";
+						$res_user = $this->Login_model->getList($user_sql);
+						if (!empty($res_user)) {
+							$user_id = $res_user[0]['id'];
+						}
+						$result = 100;
+						//先查表是否存在
+						$sqldalay = "select TABLE_NAME from information_schema.TABLES where TABLE_NAME = 'shard_max_dalay';";
+						$resdalay = $this->Login_model->getList($sqldalay);
+						if ($resdalay !== false) {
+							//表存在的情况
+							$shard_id = $key['id'];
+							$sql_select = "select max_delay_time from shard_max_dalay where db_cluster_id='$id' and shard_id='$shard_id' and user_id='$user_id'";
+							$res_select = $this->Login_model->getList($sql_select);
+							if ($res_select !== false) {
+								$result = $res_select[0]['max_delay_time'];
+							}
+						}
+						if ($i['replica_delay'] > $result) {
+							$status .= $i['name'] . '(' . $i['ip'] . '_' . $i['port'] . ')' . '延迟过大;';
+						}
+					}
+				}
+				$data['list'] = $list;
+				$node = rtrim($node, "，");
+				$data['nodedetail'] = $count . '个shard，' . $node;
+				$data['status'] = $status;
+			} else {
+				$data['nodedetail'] = '';
+				$data['list'] = false;
+				$data['status'] = $status;
 			}
-			$data['list'] = $list;
-			$node = rtrim($node, "，");
-			$data['nodedetail'] = $count . '个shard，' . $node;
-			$data['status'] = $status;
-		} else {
-			$data['nodedetail'] = '';
-			$data['list'] = false;
-			$data['status'] = $status;
 		}
 		return $data;
 	}
