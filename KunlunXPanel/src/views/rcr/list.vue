@@ -203,7 +203,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false" v-show="!dialogDetail">关闭</el-button>
-        <el-button type="primary" @click="createData()"  v-show="!dialogDetail">确认</el-button>
+        <el-button type="primary" @click="createData()"  v-show="!dialogDetail"  :loading="add_loading">确认</el-button>
       </div>
     </el-dialog>
     <!-- 设置rcr延迟时间 -->
@@ -343,8 +343,7 @@
             :description="items.description"
           >
             <template slot="description">
-              <span>{{ items.description }}</span>
-              <div style="padding:20px;max-height: 800px;overflow-y: auto;">
+              <div style="padding:20px;max-height: 500px;overflow-y: auto;">
                 <el-steps direction="vertical" :active="second_active">
                   <el-step
                     v-for="(item,index) of statusList[key].second"
@@ -365,7 +364,7 @@
                             :title="three.title"
                             :icon="three.icon"
                             :status="three.status"
-                            :description="three.description"
+                            :description="three.description" 
                           >
                             <template slot="description">
                               <div style="padding:20px;">
@@ -578,62 +577,7 @@ export default {
       timer: null,
       add_loading:false,
       activeName:'1',
-      //statusList: [],
-      statusList:[
-        // {
-        //   title: "192.168.0.136_47001;",
-        //   icon: "el-icon-loading",
-        //   status: 'process',
-        //   description:'11',
-        //   second:[
-        //     {
-        //     title: '1',
-        //     icon: 'el-icon-loading',
-        //     status: 'process',
-        //     description:''
-        //     },
-        //     {
-        //     title: '2',
-        //     icon: 'el-icon-loading',
-        //     status: 'process',
-        //     description:''
-        //     },
-        //     {
-        //     title: '3',
-        //     icon: 'el-icon-loading',
-        //     status: 'process',
-        //     description:''
-        //     },
-        //     {
-        //     title: '4',
-        //     icon: 'el-icon-loading',
-        //     status: 'process',
-        //     description:''
-        //     },
-        //     {
-        //     title: '5',
-        //     icon: 'el-icon-loading',
-        //     status: 'process',
-        //     description:''
-        //     },
-
-        // ]
-        // },
-        // {
-        //   title: '192.168.0.136_37001;',
-        //   icon: 'el-icon-loading',
-        //   status: 'process',
-        //   computer_id:'101',
-        //   description:'22'
-        // },
-        // {
-        //   title: '192.168.0.125_37001;',
-        //   icon: 'el-icon-loading',
-        //   status: 'process',
-        //   computer_id:'101',
-        //   description:''
-        // },
-      ],
+      statusList:[],
       init_active: 0,
       second_active: 0,
       three_active:0,
@@ -773,13 +717,13 @@ export default {
       findMetaDB().then((response) => {
         if(response.ips!==row.value){
           //选择的主元数据不是当前元数据时，备元数据只能是当前元数据
-          let arr=this.slave_rcr_metas;
-          let arr1 = arr.filter(item => {
-            if(item.value==response.ips){
-              return  item;
-            }
-          })
-          this.slave_rcr_metas=arr1;
+          // let arr=this.slave_rcr_metas;
+          // let arr1 = arr.filter(item => {
+          //   if(item.value==response.ips){
+          //     return  item;
+          //   }
+          // })
+          // this.slave_rcr_metas=arr1;
           //连上该元数据的集群id
           this.master_clusters=[];
           let temp={res:row.value,cluster_id:''};
@@ -946,7 +890,7 @@ export default {
           this.setAlarmform.master_cluster_id=row.master_cluster_id;
           this.setAlarmform.master_rcr_meta=row.master_rcr_meta;
           this.setAlarmform.slave_cluster_id=row.slave_cluster_id;
-           this.setAlarmform.conf_delay_sync=row.conf_delay_sync;
+          this.setAlarmform.conf_delay_sync=row.conf_delay_sync;
           this.$nextTick(() => {
             this.$refs.setAlarmForm.clearValidate();
           });
@@ -997,21 +941,21 @@ export default {
       this.listQuery.hostaddr = ''
       this.listQuery.pageNo = 1
       this.getList()
-    //   let i=0;
-    //   let info='新增RCR';
-    //   this.statusList = []
-    //   this.timer = null
-    //   this.init_active = 0
-    //   this.second_active = 0
-    //   this.three_active = 0
-    //   this.dialogFormVisible = false;
-    //   this.dialogStatusVisible=true;
-    //   let res1={"attachment":{"build_rcrs":[{"job_steps":"rebuild_shard_data,build_rcr_relation,done","shard_id":"5","step":"rebuild_shard_data","sub_id":"357","sub_jobs":[{"192.168.0.125_28004":{"error_code":"0","error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"ongoing","step":"recover_data"}}]}],"job_steps":"check_params,check_shard_in_sw,build_rcrs,update_meta_record,done","master_cluster_id":"3","master_master_hosts":"192.168.0.136:28008,","master_rcr_meta":"192.168.0.136:28002,192.168.0.128:28002,192.168.0.125:28002","master_shard_ids":"3,","master_sync_hosts":"192.168.0.125:28008,","slave_cluster_id":"5","slave_cluster_name":"cluster_1686202130_000005","slave_master_hosts":"192.168.0.125:28004,","slave_rcr_meta":"192.168.0.136:28002,192.168.0.128:28002,192.168.0.125:28002","slave_shard_ids":"5,","step":"build_rcrs"},"error_code":"0","error_info":"OK","job_id":"","job_type":"","status":"ongoing","version":"1.0"}
+      // let i=0;
+      // let info='新增RCR';
+      // this.statusList = []
+      // this.timer = null
+      // this.init_active = 0
+      // this.second_active = 0
+      // this.three_active = 0
+      // this.dialogFormVisible = false;
+      // this.dialogStatusVisible=true;
+      // let res1={"attachment":{"build_rcrs":[{"job_steps":"rebuild_shard_data,build_rcr_relation,done","shard_id":"5","step":"rebuild_shard_data","sub_id":"357","sub_jobs":[{"192.168.0.125_28004":{"error_code":"0","error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"ongoing","step":"recover_data"}}]}],"job_steps":"check_params,check_shard_in_sw,build_rcrs,update_meta_record,done","master_cluster_id":"3","master_master_hosts":"192.168.0.136:28008,","master_rcr_meta":"192.168.0.136:28002,192.168.0.128:28002,192.168.0.125:28002","master_shard_ids":"3,","master_sync_hosts":"192.168.0.125:28008,","slave_cluster_id":"5","slave_cluster_name":"cluster_1686202130_000005","slave_master_hosts":"192.168.0.125:28004,","slave_rcr_meta":"192.168.0.136:28002,192.168.0.128:28002,192.168.0.125:28002","slave_shard_ids":"5,","step":"build_rcrs"},"error_code":"0","error_info":"OK","job_id":"","job_type":"","status":"ongoing","version":"1.0"}
       
-    //   this.getStatus(this.timer,'105',i++,info,res1)
-    //   this.timer = setInterval(() => {
-    //     let res={"attachment":{"build_rcrs":[{"job_steps":"rebuild_shard_data,build_rcr_relation,done","shard_id":"5","step":"rebuild_shard_data","sub_id":"357","sub_jobs":[{"192.168.0.125_28004":{"error_code":0,"error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"done","step":"done"}},{"192.168.0.128_28004":{"error_code":"0","error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"ongoing","step":"recover_data"}},{"192.168.0.136_28004":{"error_code":"0","error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"done","step":"done"}}]}],"job_steps":"check_params,check_shard_in_sw,build_rcrs,update_meta_record,done","master_cluster_id":"3","master_master_hosts":"192.168.0.136:28008,","master_rcr_meta":"192.168.0.136:28002,192.168.0.128:28002,192.168.0.125:28002","master_shard_ids":"3,","master_sync_hosts":"192.168.0.125:28008,","slave_cluster_id":"5","slave_cluster_name":"cluster_1686202130_000005","slave_master_hosts":"192.168.0.125:28004,","slave_rcr_meta":"192.168.0.136:28002,192.168.0.128:28002,192.168.0.125:28002","slave_shard_ids":"5,","step":"build_rcrs"},"error_code":"0","error_info":"OK","job_id":"","job_type":"","status":"ongoing","version":"1.0"}
-    //     this.getStatus(this.timer,res.job_id,i++,info,res)
+      // this.getStatus(this.timer,'105',i++,info,res1)
+      // this.timer = setInterval(() => {
+        // let res={"attachment":{"build_rcrs":[{"job_steps":"rebuild_shard_data,build_rcr_relation,done","shard_id":"5","step":"rebuild_shard_data","sub_id":"357","sub_jobs":[{"192.168.0.125_28004":{"error_code":0,"error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"done","step":"done"}},{"192.168.0.128_28004":{"error_code":"0","error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"ongoing","step":"recover_data"}},{"192.168.0.136_28004":{"error_code":"0","error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"done","step":"done"}}]},{"job_steps":"rebuild_shard_data,build_rcr_relation,done","shard_id":"5","step":"rebuild_shard_data","sub_id":"357","sub_jobs":[{"192.168.0.125_28004":{"error_code":0,"error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"done","step":"done"}},{"192.168.0.128_28004":{"error_code":"0","error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"ongoing","step":"recover_data"}},{"192.168.0.136_28004":{"error_code":"0","error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"done","step":"done"}}]}],"job_steps":"check_params,check_shard_in_sw,build_rcrs,update_meta_record,done","master_cluster_id":"3","master_master_hosts":"192.168.0.136:28008,","master_rcr_meta":"192.168.0.136:28002,192.168.0.128:28002,192.168.0.125:28002","master_shard_ids":"3,","master_sync_hosts":"192.168.0.125:28008,","slave_cluster_id":"5","slave_cluster_name":"cluster_1686202130_000005","slave_master_hosts":"192.168.0.125:28004,","slave_rcr_meta":"192.168.0.136:28002,192.168.0.128:28002,192.168.0.125:28002","slave_shard_ids":"5,","step":"build_rcrs"},"error_code":"0","error_info":"OK","job_id":"","job_type":"","status":"ongoing","version":"1.0"}
+        // this.getStatus(this.timer,res.job_id,i++,info,res)
     //  }, 10000)
 
     },
@@ -1059,11 +1003,22 @@ export default {
           this.dialogFormVisible = true;
           this.dialogDetail = false;
           if (res.list !== null) {
+            
             for (let i = 0; i < res.list.length; i++) {
-              const arr = { 'value':res.list[i].rcr_meta, 'label': res.list[i].name }
+              let arr = { 'value':res.list[i].rcr_meta, 'label': res.list[i].name }
               this.master_rcr_metas.push(arr)
+              //先查当前元数据(备元数据只能选择当前元数据)
+              findMetaDB().then((response) => {
+                arr=this.master_rcr_metas;
+                let arr1 = arr.filter(item => {
+                  if(item.value==response.ips){
+                    return  item;
+                  }
+                })
+                this.slave_rcr_metas=arr1;
+              });
             }
-            this.slave_rcr_metas=this.master_rcr_metas;
+            //this.slave_rcr_metas=this.master_rcr_metas;
             if(rcr_metas.length===1){
               //获取主集群、备集群
                 const temps = {}
@@ -1108,7 +1063,7 @@ export default {
           paras.slave_rcr_meta=this.temp.slave_rcr_meta;
           tempData.paras = paras;
           let postjson={postData:tempData,slave:this.temp.slave_rcr_meta}
-          //console.log(tempData);return;
+          // console.log(tempData);return;
           
           addRCR(postjson).then(response=>{
             let res = response;
