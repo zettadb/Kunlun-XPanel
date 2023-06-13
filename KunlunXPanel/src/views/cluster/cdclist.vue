@@ -42,7 +42,7 @@
       <el-table-column prop="master" align="center" label="主节点" />
       <el-table-column prop="status" align="center" label="状态">
         <template slot-scope="{row}">
-          <el-tag v-if="row.status==1">服务中</el-tag>
+          <el-tag v-if="row.status===1">服务中</el-tag>
           <el-tag v-else type="danger">无效</el-tag>
         </template>
       </el-table-column>
@@ -72,6 +72,23 @@
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" custom-class="single_dal_view">
       <el-form ref="form" :rules="rules" :model="form" label-position="left">
+
+        <el-form-item label="分组:" label-width="140px" prop="meta_user">
+          <el-select
+            v-model="form.CdcGroupItem"
+            filterable
+            allow-create
+            default-first-option
+            placeholder="CDC 分组"
+          >
+            <el-option
+              v-for="item in CdcGroup"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
 
         <el-row v-for="(table, index) in form.temp" :key="index">
           <el-col :span="10">
@@ -181,7 +198,18 @@ export default {
         pageSize: 10,
         name: ''
       },
+      CdcGroup: [
+        {
+          label: '广州',
+          value: 1
+        },
+        {
+          label: '深圳',
+          value: 2
+        }
+      ],
       form: {
+        CdcGroupItem: 0,
         temp: [{
           hostaddr: '',
           name: '',
