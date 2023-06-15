@@ -36,13 +36,13 @@
     >
       >
       <el-table-column type="index" align="center" label="序号" width="50" />
-
+      <el-table-column prop="group_name" align="center" label="CDC分组" />
       <el-table-column prop="host_addr" align="center" label="IP地址" />
       <el-table-column prop="port" align="center" label="端口号" />
       <el-table-column prop="master" align="center" label="主节点" />
       <el-table-column prop="status" align="center" label="状态">
         <template slot-scope="{row}">
-          <el-tag v-if="row.status===1">服务中</el-tag>
+          <el-tag v-if="row.status==1">服务中</el-tag>
           <el-tag v-else type="danger">无效</el-tag>
         </template>
       </el-table-column>
@@ -82,10 +82,10 @@
             placeholder="CDC 分组"
           >
             <el-option
-              v-for="item in CdcGroup"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+              v-for="(item,key) in CdcGroup"
+              :key="key"
+              :label="item"
+              :value="item"
             />
           </el-select>
         </el-form-item>
@@ -175,10 +175,9 @@ import { messageTip, handleCofirm, getNowDate } from '@/utils'
 import {
   updateStorage,
   getEvStatus,
-  editCdc,
   getCdcList,
-  DeleteCdc
-
+  DeleteCdc,
+  editCdc
 } from '@/api/cluster/list'
 import { version_arr, storage_type_arr, timestamp_arr } from '@/utils/global_variable'
 import Pagination from '@/components/Pagination'
@@ -199,17 +198,10 @@ export default {
         name: ''
       },
       CdcGroup: [
-        {
-          label: '广州',
-          value: 1
-        },
-        {
-          label: '深圳',
-          value: 2
-        }
+        '北京', '广州'
       ],
       form: {
-        CdcGroupItem: 0,
+        CdcGroupItem: '',
         temp: [{
           hostaddr: '',
           name: '',
@@ -334,6 +326,7 @@ export default {
           tempData.timestamp = timestamp_arr[0].time + ''
           tempData.user_name = sessionStorage.getItem('login_username')
           tempData.paras = this.form
+          tempData.cdc_group_name = this.form.CdcGroupItem
           // 发送接口
           editCdc(tempData).then(response => {
             console.log(response)

@@ -32,6 +32,9 @@
     >
       >
       <el-table-column type="index" align="center" label="序号" width="50" />
+      <el-table-column prop="group_name" align="center" label="CDC服务组" />
+      <el-table-column prop="job_id" align="center" label="任务ID" />
+
       <el-table-column prop="worker_param" align="center" label="参数">
         <template slot-scope="{ row }">
           <el-link type="primary" @click="showParam(row)">配置详情</el-link>
@@ -39,7 +42,7 @@
       </el-table-column>
       <el-table-column prop="status" align="center" label="状态">
         <template slot-scope="{ row }">
-          <el-tag v-if="row.status===1">服务中</el-tag>
+          <el-tag v-if="row.status==1">服务中</el-tag>
           <el-tag v-else type="danger">无效</el-tag>
         </template>
       </el-table-column>
@@ -72,46 +75,101 @@
     >
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="140px">
 
-        <el-form-item label="目标表集群:" prop="cluster_name">
+        <el-form-item label="分组:" label-width="140px" prop="meta_user">
           <el-select
-            v-model="temp.cluster_name"
-            clearable
-            placeholder="请选择目标表集群"
-            @change="handleChangeCluster($event)"
+            v-model="temp.CdcGroupItem"
+            filterable
+            allow-create
+            default-first-option
+            placeholder="CDC 分组"
           >
-            <el-option v-for="item in clusterOptions" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="元数据:" prop="meta_db">
-          <el-select v-model="temp.meta_db" clearable placeholder="请选择目标表集群" multiple style="width: 100%">
             <el-option
-              v-for="item in MetaClusterList"
-              :key="item.id"
-              :label="item.hostaddr + ':' + item.port"
-              :value="item.hostaddr + ':' + item.port"
+              v-for="(item,key) in cdcGroup"
+              :key="key"
+              :label="item.group_name"
+              :value="key"
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="元数据账号:" prop="meta_user">
-          <el-input v-model="temp.meta_user" clearable placeholder="元数据账号" />
+
+        <el-form-item label="导出源:" label-width="140px" prop="meta_user">
+          <el-select
+            v-model="temp.DumpSourceItem"
+          >
+            <el-option
+              v-for="(item,key) in DumpSource"
+              :key="key"
+              :label="item"
+              :value="item"
+            />
+          </el-select>
         </el-form-item>
 
-        <el-form-item label="元数据密码:" prop="meta_passwd">
-          <el-input v-model="temp.meta_passwd" clearable placeholder="元数据密码" />
-        </el-form-item>
+        <div v-if="temp.DumpSourceItem==='Mysql'">
 
-        <el-form-item label="数据表:" prop="dump_tables">
-          <el-cascader
-            ref="tableOptions"
-            v-model="temp.dump_tables"
-            clearable
-            placeholder="请选择 库名/模式/表"
-            :options="srcTableOptions"
-            filterable
-            :props="props"
-            @change="handleTableChange"
-          />
-        </el-form-item>
+          <el-form-item label="MySQL IP:" prop="mysql_db">
+            <el-input v-model="temp.mysql_db" clearable placeholder="127.0.0.1:3306" />
+          </el-form-item>
+
+          <el-form-item label="账号:" prop="meta_user">
+            <el-input v-model="temp.meta_user" clearable placeholder="mysql 账号" />
+          </el-form-item>
+
+          <el-form-item label="密码:" prop="meta_passwd">
+            <el-input v-model="temp.meta_passwd" clearable placeholder="mysql 密码" />
+          </el-form-item>
+
+          <el-form-item label="数据库:" prop="cluster_name">
+            <el-input v-model="temp.cluster_name" clearable placeholder="数据库" />
+          </el-form-item>
+
+          <el-form-item label="数据表:" prop="mysql_dump_tables">
+            <el-input v-model="temp.mysql_dump_tables" clearable placeholder="数据库.表,分开 (test.t1/test.*)" />
+          </el-form-item>
+        </div>
+        <div v-else>
+          <el-form-item label="目标表集群:" prop="cluster_name">
+            <el-select
+              v-model="temp.cluster_name"
+              clearable
+              placeholder="请选择目标表集群"
+              @change="handleChangeCluster($event)"
+            >
+              <el-option v-for="item in clusterOptions" :key="item.id" :label="item.name" :value="item.id" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="元数据:" prop="meta_db">
+            <el-select v-model="temp.meta_db" clearable placeholder="请选择目标表集群" multiple style="width: 100%">
+              <el-option
+                v-for="item in MetaClusterList"
+                :key="item.id"
+                :label="item.hostaddr + ':' + item.port"
+                :value="item.hostaddr + ':' + item.port"
+              />
+            </el-select>
+          </el-form-item>
+
+          <el-form-item label="元数据账号:" prop="meta_user">
+            <el-input v-model="temp.meta_user" clearable placeholder="元数据账号" />
+          </el-form-item>
+
+          <el-form-item label="元数据密码:" prop="meta_passwd">
+            <el-input v-model="temp.meta_passwd" clearable placeholder="元数据密码" />
+          </el-form-item>
+
+          <el-form-item label="数据表:" prop="dump_tables">
+            <el-cascader
+              ref="tableOptions"
+              v-model="temp.dump_tables"
+              clearable
+              placeholder="请选择 库名/模式/表"
+              :options="srcTableOptions"
+              filterable
+              :props="props"
+              @change="handleTableChange"
+            />
+          </el-form-item>
+        </div>
 
         <el-form-item label="shard 参数:" prop="shard_params">
 
@@ -122,14 +180,17 @@
             size="mini"
           >
             <el-table-column
+              v-if="temp.DumpSourceItem==='KunlunBase'"
               prop="shard_id"
               label="shard_id"
             />
             <el-table-column
+              v-if="temp.DumpSourceItem==='KunlunBase'"
               prop="dump_hostaddr"
               label="dump_hostaddr"
             />
             <el-table-column
+              v-if="temp.DumpSourceItem==='KunlunBase'"
               prop="dump_port"
               label="dump_port"
             />
@@ -171,7 +232,6 @@
         </el-form-item>
 
         <el-form-item label="输出参数:" prop="output_plugins">
-
           <el-table
             v-if="temp.output_plugins.length>0"
             :data="temp.output_plugins"
@@ -250,10 +310,10 @@
           <el-form-item label="output plugins:" prop="plugin_name">
             <el-select v-model="temp.plugin_name_item" clearable placeholder="请选择目标表集群">
               <el-option
-                v-for="item in temp.plugin_name_list"
-                :key="item.id"
-                :label="item.plugin_name"
-                :value="item.plugin_name"
+                v-for="(item,index) in cdcGroup[temp.CdcGroupItem].support_plugins"
+                :key="index"
+                :label="item"
+                :value="item"
               />
             </el-select>
           </el-form-item>
@@ -309,22 +369,25 @@
     >
       <div class="block">
         <el-form ref="form" :model="temp" label-width="120px">
-          <el-form-item label="shard id:" prop="shard_id">
-            <el-select v-model="temp.shard_params_item.shard_id" clearable placeholder="请选择目标表集群">
-              <el-option
-                v-for="item in shardList"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-              />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="dump hostaddr:" prop="shard_params_item.dump_hostaddr">
-            <el-input v-model="temp.shard_params_item.dump_hostaddr" clearable placeholder="dump hostaddr" />
-          </el-form-item>
-          <el-form-item label="dump port:" prop="shard_params_item.dump_port">
-            <el-input v-model="temp.shard_params_item.dump_port" clearable placeholder="dump port" />
-          </el-form-item>
+
+          <div v-if="temp.DumpSourceItem==='KunlunBase'">
+            <el-form-item label="shard id:" prop="shard_id">
+              <el-select v-model="temp.shard_params_item.shard_id" clearable placeholder="请选择目标表集群">
+                <el-option
+                  v-for="item in shardList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="dump hostaddr:" prop="shard_params_item.dump_hostaddr">
+              <el-input v-model="temp.shard_params_item.dump_hostaddr" clearable placeholder="dump hostaddr" />
+            </el-form-item>
+            <el-form-item label="dump port:" prop="shard_params_item.dump_port">
+              <el-input v-model="temp.shard_params_item.dump_port" clearable placeholder="dump port" />
+            </el-form-item>
+          </div>
           <el-form-item label="binlog file:" prop="shard_params_item.binlog_file">
             <el-input v-model="temp.shard_params_item.binlog_file" clearable placeholder="binlog file" />
           </el-form-item>
@@ -372,7 +435,7 @@ import {
   clusterOptions,
   getMetaClusterList,
   shardList,
-  editCdcWork, DeleteCdcWorker
+  editCdcWork, DeleteCdcWorker, CdcListDumpJobs
 } from '@/api/cluster/list'
 import { version_arr, storage_type_arr, timestamp_arr } from '@/utils/global_variable'
 import Pagination from '@/components/Pagination'
@@ -427,14 +490,19 @@ export default {
       ShardParamSvisible: false,
       props: { multiple: true },
       tableKey: 0,
-
+      DumpSource: ['KunlunBase', 'Mysql'],
+      cdcGroup: [
+        {
+          group_name: '',
+          support_plugins: []
+        }
+      ],
       list: null,
       shardList: [],
       MetaClusterList: null,
       listLoading: true,
       searchLoading: false,
       total: 0,
-
       clusterOptions: [],
       repartition_tables: [],
       srcTableOptions: [],
@@ -447,6 +515,8 @@ export default {
         ha_mode: 'rbr'
       },
       temp: {
+        DumpSourceItem: 'KunlunBase',
+        CdcGroupItem: 0,
         hostaddr: '',
         name: 'name',
         stype: '',
@@ -458,8 +528,10 @@ export default {
         meta_user: '',
         meta_passwd: '',
         dump_tables: '',
+        mysql_dump_tables: '',
         shard_params: [],
         output_plugins: [],
+        CdcListDumpJobs: [],
         shard_params_item: {
           shard_id: '',
           dump_hostaddr: '',
@@ -470,18 +542,6 @@ export default {
         },
         plugin_param: '',
         plugin_name_item: 'event_file',
-        plugin_name_list: [
-          {
-            plugin_name: 'event_file',
-            plugin_param: '',
-            udf_name: ''
-          },
-          {
-            plugin_name: 'event_sql',
-            plugin_param: '',
-            udf_name: ''
-          }
-        ],
         kunlunsql_plugin_param: {
           hostaddr: '',
           port: '',
@@ -526,7 +586,9 @@ export default {
         dump_tables: [{ required: true, trigger: 'blur', validator: validateName }],
         plugin_name: [{ required: true, trigger: 'blur', validator: validateName }],
         shard_params: [{ required: true, trigger: 'blur', validator: validateName }],
-        output_plugins: [{ required: true, trigger: 'blur', validator: validateName }]
+        output_plugins: [{ required: true, trigger: 'blur', validator: validateName }],
+        mysql_dump_tables: [{ required: true, trigger: 'blur', validator: validateName }],
+        mysql_db: [{ required: true, trigger: 'blur', validator: validateName }]
       }
     }
   },
@@ -553,6 +615,7 @@ export default {
     })
   },
   created() {
+    this.getCdcListDumpJobs()
     this.getList()
   },
   destroyed() {
@@ -571,6 +634,26 @@ export default {
       // 模糊搜索
       shardList(queryParam).then(response => {
         this.shardList = response.list
+      })
+    },
+
+    async getCdcListDumpJobs() {
+      const queryParam = Object.assign({}, this.listQuery)
+      CdcListDumpJobs(queryParam).then(response => {
+        if (response.code === 200) {
+          this.CdcListDumpJobs = response.data
+          this.CdcListDumpJobs.forEach((v) => {
+            this.cdcGroup = []
+            if (v.list_dumps) {
+              const tmp = {
+                group_name: v.group_name,
+                support_plugins: v.list_dumps.attachment.split(',')
+              }
+              this.cdcGroup.push(tmp)
+            }
+          })
+          console.log(this.cdcGroup)
+        }
       })
     },
 
@@ -635,13 +718,11 @@ export default {
       CdcWorkList(queryParam).then((response) => {
         if (response.list !== false) {
           response.list.forEach((v) => {
-            v.worker_param.paras.output_plugins.forEach((j) => {
+            v.worker_param.out_plugins.forEach((j) => {
               j.plugin_param = decodeURIComponent(j.plugin_param)
             })
           })
           this.list = response.list
-          // this.list.worker_param.paras.output_plugins
-
           this.total = response.total
         } else {
           this.list = []
@@ -654,6 +735,8 @@ export default {
     },
     resetTemp() {
       this.temp = {
+        DumpSourceItem: 'KunlunBase',
+        CdcGroupItem: 0,
         hostaddr: '',
         name: 'name',
         stype: '',
@@ -662,9 +745,11 @@ export default {
         user_name: '',
         cluster_name: '',
         meta_db: '',
+        mysql_db: '',
         meta_user: '',
         meta_passwd: '',
         dump_tables: '',
+        mysql_dump_tables: '',
         shard_params: [],
         output_plugins: [],
         kunlunsql_plugin_param: {
@@ -768,6 +853,7 @@ export default {
       const _this = this
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
+          this.listLoading = true
           const tempData = {}
           tempData.job_id = ''
           tempData.job_type = 'add_dump_table'
@@ -782,24 +868,50 @@ export default {
             }
           })
 
-          const dump_tables = []
-          this.temp.dump_tables.forEach((v) => {
-            dump_tables.push(v[0] + '_$$_' + v[1] + '.' + v[2])
-          })
-
-          const param = {
-            meta_db: this.temp.meta_db.join(','),
-            meta_user: this.temp.meta_user,
-            meta_passwd: this.temp.meta_passwd,
-            cluster_name: cluster_name,
-            dump_tables: dump_tables.join(','),
-            output_plugins: this.temp.output_plugins,
-            shard_params: this.temp.shard_params
+          let param = {}
+          if (this.temp.DumpSourceItem === 'Mysql') {
+            const sdParms = []
+            this.temp.shard_params.forEach((v) => {
+              sdParms.push({
+                binlog_file: v.binlog_file,
+                binlog_pos: v.binlog_pos,
+                gtid_set: v.gtid_set
+              })
+            })
+            param = {
+              meta_db: this.temp.mysql_db,
+              meta_user: this.temp.meta_user,
+              meta_passwd: this.temp.meta_passwd,
+              cluster_name: this.temp.cluster_name,
+              dump_tables: this.temp.mysql_dump_tables,
+              is_kunlun: '0',
+              output_plugins: this.temp.output_plugins,
+              shard_params: sdParms,
+              cdc_group_name: this.cdcGroup[this.temp.CdcGroupItem].group_name
+            }
+          } else {
+            const dump_tables = []
+            this.temp.dump_tables.forEach((v) => {
+              dump_tables.push(v[0] + '_$$_' + v[1] + '.' + v[2])
+            })
+            param = {
+              meta_db: this.temp.meta_db.join(','),
+              meta_user: this.temp.meta_user,
+              meta_passwd: this.temp.meta_passwd,
+              cluster_name: cluster_name,
+              dump_tables: dump_tables.join(','),
+              output_plugins: this.temp.output_plugins,
+              shard_params: this.temp.shard_params,
+              cdc_group_name: this.cdcGroup[this.temp.CdcGroupItem].group_name
+            }
           }
-          console.log(param)
           tempData.paras = param
           // 发送接口
           editCdcWork(tempData).then((response) => {
+            this.getCdcListDumpJobs()
+            this.getList()
+            this.listLoading = false
+            this.dialogFormVisible = false
             if (response.code === 200) {
               this.getList()
               this.message_tips = '成功'

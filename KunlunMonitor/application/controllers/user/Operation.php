@@ -668,7 +668,6 @@ class Operation extends CI_Controller
 									if (!empty($string['paras']['comp_datadir'])) {
 										$comp_datadir = $string['paras']['comp_datadir'];
 									}
-
 									$res[$row]['list'] = '<div>ip：' . $hostaddr . '</div><div>机架编号：' . $rack_id . '</div><div>存储节点数据目录：' . $datadir . '</div><div>日志目录：' . $logdir . '</div><div>wal日志目录：' . $wal_log_dir . '</div><div>计算节点数据目录：' . $comp_datadir . '</div>';
 									$res[$row]['object'] = $hostaddr;
 								} else {

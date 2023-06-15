@@ -724,6 +724,14 @@ export function editCdc(data) {
   })
 }
 
+export function CdcListDumpJobs(data) {
+  return request({
+    url: '/user/Cluster/CdcListDumpJobs',
+    method: 'post',
+    data
+  })
+}
+
 export function editCdcWork(data) {
   return request({
     url: '/user/Cluster/cdcEditWork',
