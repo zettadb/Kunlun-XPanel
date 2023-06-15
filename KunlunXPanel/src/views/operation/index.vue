@@ -64,7 +64,7 @@
             label="结果信息">
             <template slot-scope="scope">
           <span v-if="scope.row.job_type==='新增集群' && scope.row.status==='failed'"><el-button type="text" @click="failedDetail(scope.row.memo)">详情</el-button></span>
-          <span v-else-if="scope.row.job_type==='表重分布' && scope.row.status==='done'"><el-button type="text" @click="handleDelete(scope.row)">删除源表</el-button></span>
+          <span v-else-if="scope.row.job_type==='表重分布' && scope.row.status==='done'&& scope.row.if_del==='false'"><el-button type="text" @click="handleDelete(scope.row)">删除源表</el-button></span>
           <span v-else>{{scope.row.info}}</span>
         </template>
       </el-table-column>

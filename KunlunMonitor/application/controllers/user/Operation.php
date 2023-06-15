@@ -1130,6 +1130,16 @@ class Operation extends CI_Controller
 								//$data=json_decode()
 
 							}
+							if ($value2 == "table_repartition") {
+								$res[$row]['job_type'] = '表重分布';
+								//需要获取是否删除源表
+								$if_del=$this->getDelSourceTable($res[$row]['id']);
+								if($if_del=='deleted'){
+									$res[$row]['if_del'] = 'true';
+								}else{
+									$res[$row]['if_del'] = 'false';
+								}
+							}
 							if ($value2 == 'delete_rcr') {
 								$res[$row]['job_type'] = '刪除RCR';
 								if (!empty($string)) {
@@ -1143,7 +1153,7 @@ class Operation extends CI_Controller
 										for ($i = 0; $i < count($comparr); $i++) {
 											$child_master_db .= '<div>' . $comparr[$i] . '</div>';
 										}
-										$meta_db = '<div>元数据主：<div style="margin-left:30px;">' . $child_master_db. '</div></div>';
+										$meta_db = '<div>主元数据：<div style="margin-left:30px;">' . $child_master_db. '</div></div>';
 									}
 									if (!empty($string['paras']['master_info']['cluster_id'])) {
 										$master_cluster_id = $string['paras']['master_info']['cluster_id'];
@@ -1154,10 +1164,10 @@ class Operation extends CI_Controller
 										for ($i = 0; $i < count($comparr); $i++) {
 											$child_slave_db .= '<div>' . $comparr[$i] . '</div>';
 										}
-										$slave_meta_db = '<div>元数据主：<div style="margin-left:30px;">' . $child_slave_db. '</div></div>';
+										$slave_meta_db = '<div>主元数据：<div style="margin-left:30px;">' . $child_slave_db. '</div></div>';
 									}
 									if (!is_null($string['paras']['sync_host_delay'])) {
-										$sync_host_delay = '<div>shard延迟时间(主)：'.$string['paras']['sync_host_delay'].'s</div>';
+										$sync_host_delay = '<div>shard延迟时间：'.$string['paras']['sync_host_delay'].'s</div>';
 									}
 									if (!is_null($string['paras']['delay_sync'])) {
 										$delay_sync= '<div>延迟复制时间：'.$string['paras']['delay_sync'].'s</div>';
@@ -1166,6 +1176,7 @@ class Operation extends CI_Controller
 									$res[$row]['object'] = $master_cluster_id.'→'.$slave_cluster_id;
 								} else {
 									$res[$row]['list'] = '';
+									$res[$row]['object'] = '';
 								}
 							}
 							if ($value2 == 'create_rcr') {
@@ -1180,7 +1191,7 @@ class Operation extends CI_Controller
 										for ($i = 0; $i < count($comparr); $i++) {
 											$child_master_db .= '<div>' . $comparr[$i] . '</div>';
 										}
-										$meta_db = '<div>元数据主：<div style="margin-left:30px;">' . $child_master_db. '</div></div>';
+										$meta_db = '<div>主元数据：<div style="margin-left:30px;">' . $child_master_db. '</div></div>';
 									}
 									if (!empty($string['paras']['master_info']['cluster_id'])) {
 										$master_cluster_id = $string['paras']['master_info']['cluster_id'];
@@ -1190,10 +1201,10 @@ class Operation extends CI_Controller
 										for ($i = 0; $i < count($comparr); $i++) {
 											$child_slave_db .= '<div>' . $comparr[$i] . '</div>';
 										}
-										$slave_meta_db = '<div>元数据主：<div style="margin-left:30px;">' . $child_slave_db. '</div></div>';
+										$slave_meta_db = '<div>备元数据：<div style="margin-left:30px;">' . $child_slave_db. '</div></div>';
 									}
 									if (!is_null($string['paras']['sync_host_delay'])) {
-										$sync_host_delay = '<div>shard延迟时间(主)：'.$string['paras']['sync_host_delay'].'s</div>';
+										$sync_host_delay = '<div>shard延迟时间：'.$string['paras']['sync_host_delay'].'s</div>';
 									}
 									if (!is_null($string['paras']['delay_sync'])) {
 										$delay_sync= '<div>延迟复制时间：'.$string['paras']['delay_sync'].'s</div>';
@@ -1205,15 +1216,70 @@ class Operation extends CI_Controller
 								}
 							}
 							if ($value2 == 'modify_rcr') {
+								if (!empty($string)) {
+									$slave_cluster_id='';$master_cluster_id='';$child_master_db='';$action_rcr='';$rcr_id='';$meta_db='';
+									if (!empty($string['paras']['work_mode'])) {
+										$work_mode = $string['paras']['work_mode'];
+										if($work_mode=='start_rcr'){
+											$action_rcr='启动RCR';
+										}
+										if($work_mode=='stop_rcr'){
+											$action_rcr='停止RCR';
+										}
+									}
+									if (!empty($string['paras']['rcr_id'])) {
+										$rcr_id = $string['paras']['rcr_id'];
+									}
+									if (!empty($string['paras']['rcr_id'])) {
+										$slave_cluster_id = $string['paras']['rcr_id'];
+									}
+									if (!empty($string['paras']['master_info']['cluster_id'])) {
+										$master_cluster_id = $string['paras']['master_info']['cluster_id'];
+									}
 
-								$res[$row]['job_type'] = '设置RCR';
+									if (!empty($string['paras']['master_info']['meta_db'])) {
+										$comparr = explode(',', $string['paras']['master_info']['meta_db']);
+										for ($i = 0; $i < count($comparr); $i++) {
+											$child_master_db .= '<div>' . $comparr[$i] . '</div>';
+										}
+										$meta_db = '<div>主元数据：<div style="margin-left:30px;">' . $child_master_db. '</div></div>';
+									}
+
+									$res[$row]['list'] = '<div>rcr_id：' . $rcr_id . '</div>'.$meta_db.'<div>主集群ID：' . $master_cluster_id . '</div><div>备集群ID：' . $slave_cluster_id . '</div>'  ;
+									$res[$row]['object'] = $master_cluster_id.'→'.$slave_cluster_id;
+								} else {
+									$res[$row]['list'] = '';
+									$res[$row]['object'] = '';
+								}
+								$res[$row]['job_type'] = $action_rcr;
 							}
 							if ($value2 == 'manualsw_rcr') {
-//								if (!empty($string['paras']['rcr_id'])) {
-//									$rcr_id = $string['paras']['rcr_id'];
-//								}
+								if (!empty($string)) {
+									$allow_sw_delay = '';$slave_cluster_id='';$master_cluster_id='';$slave_meta_db='';$meta_db='';$child_master_db='';
+									if (!empty($string['paras']['allow_sw_delay'])) {
+										$allow_sw_delay = $string['paras']['allow_sw_delay'];
+									}
+									if (!empty($string['paras']['cluster_id'])) {
+										$master_cluster_id = $string['paras']['cluster_id'];
+									}
+									if (!empty($string['paras']['slave_info']['cluster_id'])) {
+										$slave_cluster_id = $string['paras']['slave_info']['cluster_id'];
+									}
+									if (!empty($string['paras']['slave_info']['meta_db'])) {
+										$comparr = explode(',', $string['paras']['slave_info']['meta_db']);
+										for ($i = 0; $i < count($comparr); $i++) {
+											$child_master_db .= '<div>' . $comparr[$i] . '</div>';
+										}
+										$meta_db = '<div>备元数据：<div style="margin-left:30px;">' . $child_master_db. '</div></div>';
+									}
+
+									$res[$row]['list'] =  '<div>允许切换最大延迟时间：' . $allow_sw_delay . '<div>主集群ID：' . $master_cluster_id . '</div><div>备集群ID：' . $slave_cluster_id . '</div>'.$meta_db  ;
+									$res[$row]['object'] = $master_cluster_id.'→'.$slave_cluster_id;
+								} else {
+									$res[$row]['list'] = '';
+									$res[$row]['object'] = '';
+								}
 								$res[$row]['job_type'] = '手动切换RCR';
-//								$res[$row]['object'] =
 							}
 
 						} else {
@@ -1621,6 +1687,13 @@ class Operation extends CI_Controller
 		$post_arr = json_decode($post_arr, TRUE);
 		$data = $post_arr;
 		print_r(json_encode($data));
+	}
+	public function getDelSourceTable($id)
+	{
+		$sql = "select status from cluster_scheduler_jobs where  job_type='del_table_repartition_src_table' and memo like '%$id%'";
+		$this->load->model('Cluster_model');
+		$res = $this->Cluster_model->getList($sql);
+		return $res[0]['status'];
 	}
 
 

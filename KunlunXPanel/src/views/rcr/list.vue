@@ -123,7 +123,7 @@
               <span v-if="row.status === 'running'">停止</span>
               <span v-else-if="row.status === 'manual_stop'">启动</span>
           </el-button>
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">手动切换</el-button>
+          <el-button type="primary" size="mini" @click="handleUpdate(row)" v-show="ifWitch(row.when_created)">手动切换</el-button>
           <el-button
             size="mini"
             type="danger"
@@ -192,7 +192,7 @@
         </el-form-item>
          <el-collapse accordion style="border:0;">
           <el-collapse-item style="border:0;">
-            <span class="collapse-title" slot="title">高级设置</span>
+            <span class="collapse-title" slot="title">高级选项</span>
         <el-form-item label="shard延迟时间(主):" prop="sync_host_delay" class="right_input">
           <el-input  v-model="temp.sync_host_delay" placeholder="shard延迟时间(主)">
             <i slot="suffix" class="input_width">s</i>
@@ -233,7 +233,38 @@
         <el-button type="primary" @click="setDalayData(setform)">确认</el-button>
       </div>
     </el-dialog>
-    <!-- 设置延迟告警时间 -->
+    <!-- 允许切换最大超时时间 -->
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogSwitchVisible" custom-class="single_dal_view">
+      <el-form
+        ref="setSwitchForm"
+        :rules="rules"
+        :model="switchform"
+        label-position="left"
+        label-width="160px"
+      >
+      <!-- <el-form-item label="主元数据:" prop="master_rcr_meta" >
+       <div style="white-space: pre-wrap;">{{switchform.master_rcr_meta|salveMetaWrap(switchform.master_rcr_meta)}}</div>
+      </el-form-item>
+      <el-form-item label=" 主集群ID:" prop="master_cluster_id" >
+       <span>{{switchform.master_cluster_id}}</span>
+      </el-form-item>
+      <el-form-item label=" 备集群ID:" prop="slave_cluster_id" >
+       <span>{{switchform.slave_cluster_id}}</span>
+      </el-form-item>
+      <el-form-item label="备元数据:" prop="master_rcr_meta" >
+       <div style="white-space: pre-wrap;">{{switchform.slave_rcr_meta|salveMetaWrap(switchform.slave_rcr_meta)}}</div>
+      </el-form-item> -->
+     <el-form-item label="允许切换最大超时时间:" prop="allow_sw_delay" >
+        <el-input  v-model="switchform.allow_sw_delay" placeholder="请输入允许切换最大超时时间">
+        <i slot="suffix" style="font-style:normal;margin-right: 10px; line-height: 30px;">s</i>
+        </el-input>
+      </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogSwitchVisible = false" >关闭</el-button>
+        <el-button type="primary" @click="setSwitchData(switchform)">确认</el-button>
+      </div>
+    </el-dialog>
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogSetDalayAlarmVisible" custom-class="single_dal_view">
       <el-form
         ref="setAlarmForm"
@@ -480,6 +511,16 @@ export default {
           callback();
       }
     };
+    const validateAllowSWDelay = (rule, value, callback) => {
+      if(!value){
+          callback(new Error("允许切换最大超时时间不能为空"));
+      }else if(!(/^[0-9]+$/.test(value))){
+          callback(new Error("允许切换最大超时时间只能输入数字"));
+      }
+      else {
+          callback();
+      }
+    };
     const validSyncHostDelay = (rule, value, callback) => {
       if(!value){
           callback(new Error("shard延迟时间(主)不能为空"));
@@ -528,7 +569,8 @@ export default {
         set_dalay: "设置延迟复制时间",
         set_dalay_alarm: "设置延迟告警时间",
         detail: "详情",
-        shardDetail:'同步信息'
+        shardDetail:'同步信息',
+        switch:'手动切换'
       },
       dialogDetail: false,
       message_tips:'',
@@ -577,6 +619,7 @@ export default {
         conf_delay_sync:''
       },
       dialogStatusRedoVisible: false,
+      dialogSwitchVisible:false,
       active: 0,
       job_id: '',
       timer: null,
@@ -588,6 +631,14 @@ export default {
       three_active:0,
       four_active:0,
       five_active:0,
+      switch:false,
+      switchform:{
+        allow_sw_delay:'5',
+        master_rcr_meta:'',
+        slave_cluster_id:'',
+        master_cluster_id:'',
+        slave_rcr_meta:'',
+      },
       rules: {
         master_rcr_meta: [
           { required: true, trigger: "blur",validator: validateMeta },
@@ -613,6 +664,9 @@ export default {
         conf_delay_sync: [
           { required: true, trigger: "blur",validator: validConfDelaySync },
         ],
+        allow_sw_delay: [
+          { required: true, trigger: "blur",validator: validateAllowSWDelay },
+        ],
       },
     };
   },
@@ -626,8 +680,14 @@ export default {
     salveMetaWrap(value) {
       return value.replace(eval(`/${','}/g`), `\n`)
     }
+    
   },
   methods:{
+    ifWitch(value){
+      let now=getNowDate();
+      if(value<now) return true;
+      else false;
+    },
     handleChange() {
       if (this.init_active= 3) {
         this.init_active = 0;
@@ -641,8 +701,6 @@ export default {
       this.timer = null
     },
      handleGtid(info) {
-        //this.$message(info);
-        console.log(info);
         this.gtidtemp.sync_gtid=info;
         this.dialogGtidVisible=true;
       },
@@ -793,14 +851,6 @@ export default {
               this.dialogSetDalayVisible = false;
               this.job_id='设置延迟复制时间(任务ID:'+res.job_id+')';
               this.dialogStatusVisible=true;
-              // this.activities=[];
-              // const newArr={
-              //   title:'正在设置延迟复制时间',
-              //   status: 'process',
-              //   icon: 'el-icon-loading',
-              //   description:''
-              // };
-              // this.activities.push(newArr)
               let info='设置延迟复制时间';
               let i=0;
               this.statusList = []
@@ -833,7 +883,6 @@ export default {
           setRCRMaxDalay(tempData).then((response)=>{
             let res = response;
              if (res.code === 200) {
-              //this.getList()
               this.dialogSetDalayAlarmVisible = false
               this.message_tips = '设置成功'
               this.message_type = 'success'
@@ -955,13 +1004,12 @@ export default {
       // this.three_active = 0
       // this.dialogFormVisible = false;
       // this.dialogStatusVisible=true;
-      // let res1={"attachment":{"build_rcrs":[{"job_steps":"rebuild_shard_data,build_rcr_relation,done","shard_id":"5","step":"rebuild_shard_data","sub_id":"357","sub_jobs":[{"192.168.0.125_28004":{"error_code":"0","error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"ongoing","step":"recover_data"}}]}],"job_steps":"check_params,check_shard_in_sw,build_rcrs,update_meta_record,done","master_cluster_id":"3","master_master_hosts":"192.168.0.136:28008,","master_rcr_meta":"192.168.0.136:28002,192.168.0.128:28002,192.168.0.125:28002","master_shard_ids":"3,","master_sync_hosts":"192.168.0.125:28008,","slave_cluster_id":"5","slave_cluster_name":"cluster_1686202130_000005","slave_master_hosts":"192.168.0.125:28004,","slave_rcr_meta":"192.168.0.136:28002,192.168.0.128:28002,192.168.0.125:28002","slave_shard_ids":"5,","step":"build_rcrs"},"error_code":"0","error_info":"OK","job_id":"","job_type":"","status":"ongoing","version":"1.0"}
-      
+      // let res1={"attachment":{"build_rcrs":[{"job_steps":"rebuild_shard_data,build_rcr_relation,done","shard_id":"5","step":"rebuild_shard_data","sub_id":"107","sub_jobs":[{"192.168.0.130_28010":{"error_code":0,"error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"done","step":"done"}},{"192.168.0.145_28010":{"error_code":"0","error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"ongoing","step":"recover_data"}},{"192.168.0.157_28010":{"error_code":"0","error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"ongoing","step":"recover_data"}}]}],"job_steps":"check_params,check_shard_in_sw,build_rcrs,update_meta_record,done","master_cluster_id":"4","master_master_hosts":"192.168.0.157:28008,192.168.0.130:28006,","master_rcr_meta":"192.168.0.130:28002,192.168.0.145:28002,192.168.0.157:28002","master_shard_ids":"4,8,","master_sync_hosts":"192.168.0.145:28008,192.168.0.145:28006,","slave_cluster_id":"5","slave_cluster_name":"cluster_1686635556_000005","slave_master_hosts":"192.168.0.130:28010,192.168.0.145:28004,","slave_rcr_meta":"192.168.0.130:28002,192.168.0.145:28002,192.168.0.157:28002","slave_shard_ids":"5,7,","step":"build_rcrs"},"error_code":"0","error_info":"OK","job_id":"","job_type":"","status":"ongoing","version":"1.0"}
       // this.getStatus(this.timer,'105',i++,info,res1)
       // this.timer = setInterval(() => {
-        // let res={"attachment":{"build_rcrs":[{"job_steps":"rebuild_shard_data,build_rcr_relation,done","shard_id":"5","step":"rebuild_shard_data","sub_id":"357","sub_jobs":[{"192.168.0.125_28004":{"error_code":0,"error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"done","step":"done"}},{"192.168.0.128_28004":{"error_code":"0","error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"ongoing","step":"recover_data"}},{"192.168.0.136_28004":{"error_code":"0","error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"done","step":"done"}}]},{"job_steps":"rebuild_shard_data,build_rcr_relation,done","shard_id":"5","step":"rebuild_shard_data","sub_id":"357","sub_jobs":[{"192.168.0.125_28004":{"error_code":0,"error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"done","step":"done"}},{"192.168.0.128_28004":{"error_code":"0","error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"ongoing","step":"recover_data"}},{"192.168.0.136_28004":{"error_code":"0","error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"done","step":"done"}}]}],"job_steps":"check_params,check_shard_in_sw,build_rcrs,update_meta_record,done","master_cluster_id":"3","master_master_hosts":"192.168.0.136:28008,","master_rcr_meta":"192.168.0.136:28002,192.168.0.128:28002,192.168.0.125:28002","master_shard_ids":"3,","master_sync_hosts":"192.168.0.125:28008,","slave_cluster_id":"5","slave_cluster_name":"cluster_1686202130_000005","slave_master_hosts":"192.168.0.125:28004,","slave_rcr_meta":"192.168.0.136:28002,192.168.0.128:28002,192.168.0.125:28002","slave_shard_ids":"5,","step":"build_rcrs"},"error_code":"0","error_info":"OK","job_id":"","job_type":"","status":"ongoing","version":"1.0"}
-        // this.getStatus(this.timer,res.job_id,i++,info,res)
-    //  }, 10000)
+      //   let res={"attachment":{"build_rcrs":[{"job_steps":"rebuild_shard_data,build_rcr_relation,done","shard_id":"5","step":"done","sub_id":"107","sub_jobs":[{"192.168.0.130_28010":{"error_code":0,"error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"done","step":"done"}},{"192.168.0.145_28010":{"error_code":0,"error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"done","step":"done"}},{"192.168.0.157_28010":{"error_code":0,"error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"done","step":"done"}}]},{"job_steps":"rebuild_shard_data,build_rcr_relation,done","shard_id":"7","step":"rebuild_shard_data","sub_id":"111","sub_jobs":[{"192.168.0.145_28004":{"error_code":"0","error_info":"OK","job_steps":"check_param, xtracback_data, checksum_data, backup_old_data, clear_old_data, recover_data, rebuild_sync, done","status":"ongoing","step":"check_param"}}]}],"job_steps":"check_params,check_shard_in_sw,build_rcrs,update_meta_record,done","master_cluster_id":"4","master_master_hosts":"192.168.0.157:28008,192.168.0.130:28006,","master_rcr_meta":"192.168.0.130:28002,192.168.0.145:28002,192.168.0.157:28002","master_shard_ids":"4,8,","master_sync_hosts":"192.168.0.145:28008,192.168.0.145:28006,","slave_cluster_id":"5","slave_cluster_name":"cluster_1686635556_000005","slave_master_hosts":"192.168.0.130:28010,192.168.0.145:28004,","slave_rcr_meta":"192.168.0.130:28002,192.168.0.145:28002,192.168.0.157:28002","slave_shard_ids":"5,7,","step":"build_rcrs"},"error_code":"0","error_info":"OK","job_id":"","job_type":"","status":"ongoing","version":"1.0"}
+      //   this.getStatus(this.timer,'105',i++,info,res)
+      // }, 1000)
 
     },
     getList() {
@@ -987,6 +1035,15 @@ export default {
        slave_cluster_id:'',
        sync_host_delay:'1800',
        conf_delay_sync:'0'
+      };
+    },
+     resetSwitchTemp() {
+      this.switchform={
+        allow_sw_delay:'5',
+        master_rcr_meta:'',
+        slave_cluster_id:'',
+        master_cluster_id:'',
+        slave_rcr_meta:''
       };
     },
     handleCreate() {
@@ -1175,19 +1232,43 @@ export default {
           this.message_type = 'error'
           messageTip(this.message_tips, this.message_type)
         } else if (res.value == code) {
-        // handleCofirm("即将进行该RCR手动切换, 是否继续?").then( () =>{
-         const tempData = {};
+          this.resetSwitchTemp();
+          this.dialogStatus = "switch";
+          this.dialogSwitchVisible = true;
+          this.switchform.master_cluster_id=row.master_cluster_id;
+          this.switchform.slave_rcr_meta=row.slave_rcr_meta;
+          this.switchform.master_rcr_meta=row.master_rcr_meta;
+          this.switchform.slave_cluster_id=row.slave_cluster_id;
+          this.switchform.rcr_id=row.id
+          this.$nextTick(() => {
+            this.$refs.setSwitchForm.clearValidate();
+          });
+        } else {
+          this.message_tips = 'code输入有误'
+          this.message_type = 'error'
+          messageTip(this.message_tips, this.message_type)
+        } 
+        }).catch(() => {
+            console.log('quxiao')
+            messageTip('已取消手动切换','info');
+        });   
+    },
+    setSwitchData(){
+       this.$refs["setSwitchForm"].validate((valid) => {
+        if (valid) {
+          const tempData = {};
           tempData.user_name = sessionStorage.getItem('login_username');
           tempData.job_id ='';
           tempData.job_type ='manualsw_rcr';
           tempData.version=version_arr[0].ver;
           tempData.timestamp=timestamp_arr[0].time+'';
           const paras={}
-          paras.cluster_id=row.master_cluster_id;
-          paras.allow_sw_delay='100';
-          paras.slave_info={'meta_db':row.master_rcr_meta,'cluster_id':row.slave_cluster_id}
-          // paras.rcr_id=row.id;
+          paras.cluster_id=this.switchform.master_cluster_id;
+          paras.allow_sw_delay=this.switchform.allow_sw_delay;
+          paras.slave_info={'meta_db':this.switchform.slave_rcr_meta,'cluster_id':this.switchform.slave_cluster_id}
+          //paras.rcr_id=this.switchform.rcr_id;
           tempData.paras=paras;
+          //console.log(tempData);return;
           
           update(tempData).then((response) => {
             let res = response;
@@ -1195,14 +1276,6 @@ export default {
               this.dialogFormVisible = false;
               this.job_id='手动切换RCR(任务ID:'+res.job_id+')';
               this.dialogStatusVisible=true;
-              // this.activities=[];
-              // const newArr={
-              //   title:'正在手动切换RCR',
-              //   status: 'process',
-              //   icon: 'el-icon-loading',
-              //   description:''
-              // };
-              // this.activities.push(newArr)
               let i=0;
               let info='手动切换RCR';
               this.statusList = []
@@ -1221,17 +1294,9 @@ export default {
               this.message_type = 'error';
               messageTip(this.message_tips,this.message_type);
             }
-
           });
-        } else {
-          this.message_tips = 'code输入有误'
-          this.message_type = 'error'
-          messageTip(this.message_tips, this.message_type)
-        } 
-        }).catch(() => {
-            console.log('quxiao')
-            messageTip('已取消手动切换','info');
-        });   
+        }
+       })
     },
     handleAtion(row) {
       let action='';
@@ -1530,13 +1595,7 @@ export default {
                               for(let p=0;p<six_step.length;p++){
                                 let steps_arr = (rcrs_arrs[m].job_steps).replace(/\s+/g, '').split(',')
                                 for(let q=0;q<steps_arr.length;q++){
-                                  // //后面再返的参数push进去
-                                  // if(six_step.length>this.statusList[2].second[l].three[0].four.length){
-                                  //   if (this.statusList[2].second[l].three[0].four[p].title!==Object.keys(six_step[p])[0]) {
-                                  //     let fourgoing={title:Object.keys(six_step[p])[0],icon: '', status: 'wait', description: '',five:this.statusList[2].second[l].three[0].four[0].five};
-                                  //     this.statusList[2].second[l].three[0].four.push(fourgoing)
-                                  //   }
-                                  // }
+                                  
                                   let five_len=this.statusList[2].second[l].three[0].four[p].five;
                                   for(let r=0;r<five_len.length;r++){
                                     this.statusList[2].second[l].three[0].four[p].five[r].icon = 'el-icon-circle-check'
@@ -1605,6 +1664,7 @@ export default {
                             this.statusList[k].status = 'success'
                           }
                         }else{
+                          
                           this.statusList[a].icon = 'el-icon-loading'
                           this.statusList[a].status = 'process'
                           for (let k = 0; k < a; k++) { 
@@ -1615,40 +1675,16 @@ export default {
                       }
                       
                     }
+                    
                     //第三层修改状态
                     if(res.attachment.step =='build_rcrs'||res.attachment.step =='delete_rcrs'||res.attachment.step =='shard_sync'){
-                      
                       if(info=='新增RCR'){
-                      for (let l = 0;  l< this.statusList[2].second.length; l++) {
-                        for(let m=0;m<res.attachment.build_rcrs.length;m++){
+                      for(let m=0;m<res.attachment.build_rcrs.length;m++){
+                        for (let l = 0;  l< this.statusList[2].second.length; l++) {
                           let sencond_len=0;
-                          
-                          if (res.attachment.build_rcrs[m].step == this.statusList[2].second[l].step) {
-                            //不是rebuild_shard_data时，ip里的状态要改变
-                            if(res.attachment.build_rcrs[m].step!=='rebuild_shard_data'){
-                              let six_step=res.attachment.build_rcrs[m].sub_jobs
-                              for(let p=0;p<six_step.length;p++){
-                                // console.log(six_step)
-                                // //后面再返的参数push进去
-                                // if(six_step.length>this.statusList[2].second[l].three[0].four.length){
-                                //   if (this.statusList[2].second[l].three[0].four[p].title!==Object.keys(six_step[p])[0]) {
-                                //     let fourgoing={title:Object.keys(p)[0],icon: '', status: 'wait', description: '',five:this.statusList[2].second[l].three[0].four[0].five};
-                                //     this.statusList[2].second[l].three[0].four.push(fourgoing)
-                                //   }
-                                // }
-                                let five_len=this.statusList[2].second[l].three[0].four[p].five;
-                                let six_ip=Object.keys(six_step[p])[0];
-                                if(six_ip==this.statusList[2].second[l].three[0].four[p].title){
-                                  for(let r=0;r<five_len.length;r++){
-                                    this.statusList[2].second[l].three[0].four[p].five[r].icon = 'el-icon-circle-check'
-                                    this.statusList[2].second[l].three[0].four[p].five[r].status = 'success'
-                                    this.statusList[2].second[l].three[0].four[p].icon='el-icon-circle-check'
-                                    this.statusList[2].second[l].three[0].four[p].status='success'
-                                  }
-                                }
-                              }
-                            }
-
+                          let second_steps=this.statusList[2].second[l].title.split('(')[0];
+                          let build_rcr_steps='shard_id:'+res.attachment.build_rcrs[m].shard_id
+                          if(second_steps==build_rcr_steps){
                             if(res.attachment.build_rcrs[m].step !=='done'){
                               this.statusList[2].second[l].icon = 'el-icon-loading'
                               this.statusList[2].second[l].status = 'process'
@@ -1659,24 +1695,83 @@ export default {
                               let index2=sencond_arr.indexOf(')');
                               let change_arr=sencond_arr.substring(index1+1,index2);
                               if(change_arr!=res.attachment.build_rcrs[m].step){
-                                this.statusList[2].second[l].title=sencond_arr.substring(index1)+'('+res.attachment.build_rcrs[m].step+')'
+                                this.statusList[2].second[l].title=sencond_arr.split('(')[0]+'('+res.attachment.build_rcrs[m].step+')'
                               }
-                              for (let k = 0; k < l; k++) { 
-                                this.statusList[2].second[k].icon = 'el-icon-circle-check'
-                                this.statusList[2].second[k].status = 'success'
-                              }
-                              
                             }else {
+                              this.statusList[2].second[l].step=res.attachment.build_rcrs[m].step
+                              //修改第二层title括号内容
+                              const sencond_arr=this.statusList[2].second[l].title;
+                              let index1=sencond_arr.indexOf('(');
+                              let index2=sencond_arr.indexOf(')');
+                              let change_arr=sencond_arr.substring(index1+1,index2);
+                              if(change_arr!=res.attachment.build_rcrs[m].step){
+                                this.statusList[2].second[l].title=sencond_arr.split('(')[0]+'('+res.attachment.build_rcrs[m].step+')'
+                              }
                               //如果底层执行完了，第一层build_rcrs要改状态
                               sencond_len++;
-                              console.log(sencond_len )
                               if(sencond_len==res.attachment.build_rcrs.length){
                                 this.statusList[2].icon = 'el-icon-circle-check'
                                 this.statusList[2].status = 'success'
                               }
+
                               this.statusList[2].second[l].icon = 'el-icon-circle-check'
                               this.statusList[2].second[l].status = 'success'
+                              //第三层
+                              for(let r=0;r<this.statusList[2].second[l].three.length;r++){
+                                this.statusList[2].second[l].three[r].icon = 'el-icon-circle-check'
+                                this.statusList[2].second[l].three[r].status = 'success'
+                              }
                             }
+                          }
+                          if (res.attachment.build_rcrs[m].step == this.statusList[2].second[l].step) {
+                            //不是rebuild_shard_data时，ip里的状态要改变
+                            if(res.attachment.build_rcrs[m].step!=='rebuild_shard_data'){
+                              let six_step=res.attachment.build_rcrs[m].sub_jobs
+                              for(let p=0;p<six_step.length;p++){
+                                for(let v=0;v<this.statusList[2].second[l].three[0].four.length;v++){
+                                  let five_len=this.statusList[2].second[l].three[0].four[v].five;
+                                  let six_ip=Object.keys(six_step[p])[0];
+                                  if(six_ip==this.statusList[2].second[l].three[0].four[v].title){
+                                    for(let r=0;r<five_len.length;r++){
+                                      this.statusList[2].second[l].three[0].four[v].five[r].icon = 'el-icon-circle-check'
+                                      this.statusList[2].second[l].three[0].four[v].five[r].status = 'success'
+                                      this.statusList[2].second[l].three[0].four[v].icon='el-icon-circle-check'
+                                      this.statusList[2].second[l].three[0].four[v].status='success'
+                                    }
+                                  }
+                                }
+                              }
+                            }
+
+                            // if(res.attachment.build_rcrs[m].step !=='done'){
+                            //   this.statusList[2].second[l].icon = 'el-icon-loading'
+                            //   this.statusList[2].second[l].status = 'process'
+                            //   this.statusList[2].second[l].step=res.attachment.build_rcrs[m].step
+                            //   //修改第二层title括号内容
+                            //   const sencond_arr=this.statusList[2].second[l].title;
+                            //   let index1=sencond_arr.indexOf('(');
+                            //   let index2=sencond_arr.indexOf(')');
+                            //   let change_arr=sencond_arr.substring(index1+1,index2);
+                            //   if(change_arr!=res.attachment.build_rcrs[m].step){
+                            //     this.statusList[2].second[l].title=sencond_arr.substring(index1)+'('+res.attachment.build_rcrs[m].step+')'
+                            //   }
+                            // }else {
+                            //   //如果底层执行完了，第一层build_rcrs要改状态
+                            //   sencond_len++;
+                            //   console.log(sencond_len )
+                            //   if(sencond_len==res.attachment.build_rcrs.length){
+                            //     this.statusList[2].icon = 'el-icon-circle-check'
+                            //     this.statusList[2].status = 'success'
+                            //   }
+                            //   // 第二层
+                            //   this.statusList[2].second[l].icon = 'el-icon-circle-check'
+                            //   this.statusList[2].second[l].status = 'success'
+                            //   //第三层
+                            //   for(let r=0;r<this.statusList[2].second[l].three.length;r++){
+                            //     this.statusList[2].second[l].three[r].icon = 'el-icon-circle-check'
+                            //     this.statusList[2].second[l].three[r].status = 'success'
+                            //   }
+                            // }
                             //修改第四层的状态
                             let four_str=this.statusList[2].second[l].three;
                             for(let n=0;n<four_str.length;n++){
@@ -1726,7 +1821,7 @@ export default {
                               }
                               if(six_ip==this.statusList[2].second[l].three[0].four[p].title){
                                 if(six_info.status=='done'){
-                                  console.log(1);
+                                  // console.log(1);
                                   let five_len=this.statusList[2].second[l].three[0].four[p].five;
                                   for(let r=0;r<five_len.length;r++){
                                     this.statusList[2].second[l].three[0].four[p].five[r].icon = 'el-icon-circle-check'
@@ -1900,17 +1995,20 @@ export default {
                     for(let m=0;m<rcrs_arrs.length;m++){
                       if(info=='新增RCR'){
                         for (let l = 0;l< this.statusList[2].second.length; l++) {
+                          //修改第二层title括号内容
+                          this.statusList[2].second[l].step=res.attachment.build_rcrs[m].step
+                          const sencond_arr=this.statusList[2].second[l].title;
+                          let index1=sencond_arr.indexOf('(');
+                          let index2=sencond_arr.indexOf(')');
+                          let change_arr=sencond_arr.substring(index1+1,index2);
+                          if(change_arr!=res.attachment.build_rcrs[m].step){
+                            this.statusList[2].second[l].title=sencond_arr.split('(')[0]+'('+res.attachment.build_rcrs[m].step+')'
+                          }
+                          
                           let six_step=rcrs_arrs[m].sub_jobs
                           for(let p=0;p<six_step.length;p++){
                             let steps_arr = (rcrs_arrs[m].job_steps).replace(/\s+/g, '').split(',')
                             for(let q=0;q<steps_arr.length;q++){
-                              // //后面再返的参数push进去
-                              // if(six_step.length>this.statusList[2].second[l].three[0].four.length){
-                              //   if (this.statusList[2].second[l].three[0].four[p].title!==Object.keys(six_step[p])[0]) {
-                              //     let fourgoing={title:Object.keys(six_step[p])[0],icon: '', status: 'wait', description: '',five:this.statusList[2].second[l].three[0].four[0].five};
-                              //     this.statusList[2].second[l].three[0].four.push(fourgoing)
-                              //   }
-                              // }
                               let five_len=this.statusList[2].second[l].three[0].four[p].five;
                               for(let r=0;r<five_len.length;r++){
                                 this.statusList[2].second[l].three[0].four[p].five[r].icon = 'el-icon-circle-check'
@@ -1963,92 +2061,133 @@ export default {
                     }
                   }
                   if (res.attachment.step == this.statusList[a].title) {
-                        this.init_active = a
-                        if(res.status=='failed'){
-                          this.statusList[a].icon = 'el-icon-circle-close'
-                          this.statusList[a].status = 'error'
-                          this.statusList[a].description = res.error_info
-                          for (let k = 0; k < a; k++) { 
-                            this.statusList[k].icon = 'el-icon-circle-check'
-                            this.statusList[k].status = 'success'
-                          }
-                        }else if(res.status=='done'){
-                          for (let k = 0; k <=a; k++) { 
-                            this.statusList[k].icon = 'el-icon-circle-check'
-                            this.statusList[k].status = 'success'
-                          }
-                        }else{
-                          this.statusList[a].icon = 'el-icon-loading'
-                          this.statusList[a].status = 'process'
-                          for (let k = 0; k < a; k++) { 
-                            this.statusList[k].icon = 'el-icon-circle-check'
-                            this.statusList[k].status = 'success'
-                          }
-                        }
+                    this.init_active = a
+                    if(res.status=='failed'){
+                      this.statusList[a].icon = 'el-icon-circle-close'
+                      this.statusList[a].status = 'error'
+                      this.statusList[a].description = res.error_info
+                      for (let k = 0; k < a; k++) { 
+                        this.statusList[k].icon = 'el-icon-circle-check'
+                        this.statusList[k].status = 'success'
                       }
-                  
+                    }else if(res.status=='done'){
+                      for (let k = 0; k <=a; k++) { 
+                        this.statusList[k].icon = 'el-icon-circle-check'
+                        this.statusList[k].status = 'success'
+                      }
+                    }else{
+                      this.statusList[a].icon = 'el-icon-loading'
+                      this.statusList[a].status = 'process'
+                      for (let k = 0; k < a; k++) { 
+                        this.statusList[k].icon = 'el-icon-circle-check'
+                        this.statusList[k].status = 'success'
+                      }
+                    }
+                  }
                 }
                 //第三层修改状态
                 if(res.attachment.step =='build_rcrs'||res.attachment.step =='delete_rcrs'||res.attachment.step =='shard_sync'){
-                  
                   if(info=='新增RCR'){
-                  for (let l = 0;  l< this.statusList[2].second.length; l++) {
                     for(let m=0;m<res.attachment.build_rcrs.length;m++){
-                      let sencond_len=0;
-                      
-                      if (res.attachment.build_rcrs[m].step == this.statusList[2].second[l].step) {
+                      for (let l = 0;  l< this.statusList[2].second.length; l++) {
+                        //如果是多shard，第二个shard todo
+                        if(res.attachment.build_rcrs.length>this.statusList[2].second.length){
+                          let three_arr=this.statusList[2].second[l].title.split('(');
+                          let res_three_arr='shard_id:'+res.attachment.build_rcrs[m].shard_id
+                          if (three_arr[0]!==res_three_arr) {
+                            //第三层
+                            let  three_steps=res.attachment.build_rcrs[m]['job_steps'];
+                            three_steps = (three_steps).replace(/\s+/g, '').split(',')
+                            let threelist=[];
+                            for (let g = 0; g < three_steps.length; g++) {
+                              //第四、五层
+                              let six_step=res.attachment.build_rcrs[m].sub_jobs;
+                              let fourlist=[]
+                              if(three_steps[g]=='rebuild_shard_data'){
+                                for(let p=0;p<six_step.length;p++){
+                                  let six_ip=Object.keys(six_step[p])[0];
+                                  let six_info=six_step[p][six_ip];
+                                  let five_add=[];
+                                  let five_add_steps=six_step[p][six_ip]['job_steps'];
+                                  five_add_steps = (five_add_steps).replace(/\s+/g, '').split(',');
+                                  for(let v=0;v<five_add_steps.length;v++){
+                                    let five_add_going={title:five_add_steps[v],status:'wait',description: ''}
+                                    five_add.push(five_add_going)
+                                  }
+                                  let fourgoing={title:Object.keys(six_step[p])[0],icon: '', status: 'wait', description: '',five:five_add};
+                                  fourlist.push(fourgoing)
+                                }
+                              }
+                              let threegoing = { title: three_steps[g], icon: '', status: 'wait', description: '',four:fourlist }
+                              threelist.push(threegoing) 
+                            }
+                            //第二层
+                            let three_add_steps=res_three_arr+'('+res.attachment.build_rcrs[m].step+')';
+                            let three_add_going={title:three_add_steps,icon: '',status:'wait',description: '',three:threelist}
+                            this.statusList[2].second.push(three_add_going)
+                          }
+                        }
+
+                        let sencond_len=0;
+                        let second_steps=this.statusList[2].second[l].title.split('(')[0];
+                        let build_rcr_steps='shard_id:'+res.attachment.build_rcrs[m].shard_id
+                        if(second_steps==build_rcr_steps){
+                          if(res.attachment.build_rcrs[m].step !=='done'){
+                            this.statusList[2].second[l].icon = 'el-icon-loading'
+                            this.statusList[2].second[l].status = 'process'
+                            this.statusList[2].second[l].step=res.attachment.build_rcrs[m].step
+                            //修改第二层title括号内容
+                            const sencond_arr=this.statusList[2].second[l].title;
+                            let index1=sencond_arr.indexOf('(');
+                            let index2=sencond_arr.indexOf(')');
+                            let change_arr=sencond_arr.substring(index1+1,index2);
+                            if(change_arr!=res.attachment.build_rcrs[m].step){
+                              console.log(sencond_arr.split('(')[0]);
+                              this.statusList[2].second[l].title=sencond_arr.split('(')[0]+'('+res.attachment.build_rcrs[m].step+')'
+                            }
+                          }else {
+                            this.statusList[2].second[l].step=res.attachment.build_rcrs[m].step
+                            //修改第二层title括号内容
+                            const sencond_arr=this.statusList[2].second[l].title;
+                            let index1=sencond_arr.indexOf('(');
+                            let index2=sencond_arr.indexOf(')');
+                            let change_arr=sencond_arr.substring(index1+1,index2);
+                            if(change_arr!=res.attachment.build_rcrs[m].step){
+                              this.statusList[2].second[l].title=sencond_arr.split('(')[0]+'('+res.attachment.build_rcrs[m].step+')'
+                            }
+                            //如果底层执行完了，第一层build_rcrs要改状态
+                            sencond_len++;
+                            if(sencond_len==res.attachment.build_rcrs.length){
+                              this.statusList[2].icon = 'el-icon-circle-check'
+                              this.statusList[2].status = 'success'
+                            }
+                            this.statusList[2].second[l].icon = 'el-icon-circle-check'
+                            this.statusList[2].second[l].status = 'success'
+                            //第三层
+                            for(let r=0;r<this.statusList[2].second[l].three.length;r++){
+                              this.statusList[2].second[l].three[r].icon = 'el-icon-circle-check'
+                              this.statusList[2].second[l].three[r].status = 'success'
+                            }
+                          }
+                        }
+                      if(res.attachment.build_rcrs[m].step == this.statusList[2].second[l].step) {
                         //不是rebuild_shard_data时，ip里的状态要改变
                         if(res.attachment.build_rcrs[m].step!=='rebuild_shard_data'){
                           let six_step=res.attachment.build_rcrs[m].sub_jobs
                           for(let p=0;p<six_step.length;p++){
-                            // console.log(six_step)
-                            // //后面再返的参数push进去
-                            // if(six_step.length>this.statusList[2].second[l].three[0].four.length){
-                            //   if (this.statusList[2].second[l].three[0].four[p].title!==Object.keys(six_step[p])[0]) {
-                            //     let fourgoing={title:Object.keys(p)[0],icon: '', status: 'wait', description: '',five:this.statusList[2].second[l].three[0].four[0].five};
-                            //     this.statusList[2].second[l].three[0].four.push(fourgoing)
-                            //   }
-                            // }
-                            let five_len=this.statusList[2].second[l].three[0].four[p].five;
-                            let six_ip=Object.keys(six_step[p])[0];
-                            if(six_ip==this.statusList[2].second[l].three[0].four[p].title){
-                              for(let r=0;r<five_len.length;r++){
-                                this.statusList[2].second[l].three[0].four[p].five[r].icon = 'el-icon-circle-check'
-                                this.statusList[2].second[l].three[0].four[p].five[r].status = 'success'
-                                this.statusList[2].second[l].three[0].four[p].icon='el-icon-circle-check'
-                                this.statusList[2].second[l].three[0].four[p].status='success'
+                            for(let v=0;v<this.statusList[2].second[l].three[0].four.length;v++){
+                              let five_len=this.statusList[2].second[l].three[0].four[v].five;
+                              let six_ip=Object.keys(six_step[p])[0];
+                              if(six_ip==this.statusList[2].second[l].three[0].four[v].title){
+                                for(let r=0;r<five_len.length;r++){
+                                  this.statusList[2].second[l].three[0].four[v].five[r].icon = 'el-icon-circle-check'
+                                  this.statusList[2].second[l].three[0].four[v].five[r].status = 'success'
+                                  this.statusList[2].second[l].three[0].four[v].icon='el-icon-circle-check'
+                                  this.statusList[2].second[l].three[0].four[v].status='success'
+                                }
                               }
                             }
                           }
-                        }
-
-                        if(res.attachment.build_rcrs[m].step !=='done'){
-                          this.statusList[2].second[l].icon = 'el-icon-loading'
-                          this.statusList[2].second[l].status = 'process'
-                          this.statusList[2].second[l].step=res.attachment.build_rcrs[m].step
-                          //修改第二层title括号内容
-                          const sencond_arr=this.statusList[2].second[l].title;
-                          let index1=sencond_arr.indexOf('(');
-                          let index2=sencond_arr.indexOf(')');
-                          let change_arr=sencond_arr.substring(index1+1,index2);
-                          if(change_arr!=res.attachment.build_rcrs[m].step){
-                            this.statusList[2].second[l].title=sencond_arr.substring(index1)+'('+res.attachment.build_rcrs[m].step+')'
-                          }
-                          for (let k = 0; k < l; k++) { 
-                            this.statusList[2].second[k].icon = 'el-icon-circle-check'
-                            this.statusList[2].second[k].status = 'success'
-                          }
-                          
-                        }else {
-                          //如果底层执行完了，第一层build_rcrs要改状态
-                          sencond_len++;
-                          console.log(sencond_len )
-                          if(sencond_len==res.attachment.build_rcrs.length){
-                            this.statusList[2].icon = 'el-icon-circle-check'
-                            this.statusList[2].status = 'success'
-                          }
-                          this.statusList[2].second[l].icon = 'el-icon-circle-check'
-                          this.statusList[2].second[l].status = 'success'
                         }
                         //修改第四层的状态
                         let four_str=this.statusList[2].second[l].three;
